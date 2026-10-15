@@ -32,5 +32,6 @@ export function mockApi(handlers: Record<string, Handler>) {
 export const ME: MeResponse = {
   member: { id: 'm1', name: 'Ann Lee', email: 'ann@push30.test', locale: null },
   workspace: { companyName: 'Push30', defaultLocale: 'ru' },
+  organizationPermissions: ['org.manage'],
   departments: [{ id: 'd1', name: 'IT', teams: [{ id: 't1', key: 'HELP', name: 'Helpdesk' }] }],
 };

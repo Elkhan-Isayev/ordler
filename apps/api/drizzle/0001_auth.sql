@@ -48,10 +48,10 @@ CREATE TABLE "sessions" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "auth_strategies" ADD CONSTRAINT "auth_strategies_default_role_id_roles_id_fk" FOREIGN KEY ("default_role_id") REFERENCES "public"."roles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "member_identities" ADD CONSTRAINT "member_identities_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "member_passwords" ADD CONSTRAINT "member_passwords_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "auth_strategies" ADD CONSTRAINT "auth_strategies_default_role_id_roles_id_fk" FOREIGN KEY ("default_role_id") REFERENCES "roles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "member_identities" ADD CONSTRAINT "member_identities_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "member_passwords" ADD CONSTRAINT "member_passwords_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_member_id_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "auth_strategies_kind_uq" ON "auth_strategies" USING btree ("kind");--> statement-breakpoint
 CREATE UNIQUE INDEX "member_identities_subject_uq" ON "member_identities" USING btree ("strategy_kind","provider_subject");--> statement-breakpoint
 CREATE INDEX "otp_challenges_email_idx" ON "otp_challenges" USING btree ("email","created_at");--> statement-breakpoint

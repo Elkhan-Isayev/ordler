@@ -76,5 +76,18 @@
     "password_mismatch": "Şifrələr uyğun gəlmir.",
     "network": "Serverlə əlaqə yoxdur. Bağlantınızı yoxlayın.",
     "unknown": "Nəsə səhv getdi. Yenidən cəhd edin."
+  },
+  "updates": {
+    "title": "Ordler {latest} versiyası mövcuddur",
+    "current": "Hazırda {current} versiyası quraşdırılıb.",
+    "major": "Əsas versiya: yeniləmədən əvvəl buraxılış qeydlərini oxuyun, ayarlarda dəyişiklik tələb oluna bilər.",
+    "releaseNotes": "Buraxılış qeydləri",
+    "howTo": "Necə yeniləmək olar",
+    "hideHowTo": "Təlimatı gizlət",
+    "dismiss": "Gizlət",
+    "backup": "1. Əvvəlcə verilənlər bazasının ehtiyat nüsxəsini çıxarın (məsələn, RDS snapshot).",
+    "compose": "2. Docker Compose: obraz teqini {latest} edin və icra edin",
+    "helm": "Və ya Kubernetes-də Helm buraxılışını yeniləyin",
+    "dataSafety": "Məlumatlarınız PostgreSQL-də qalır. Ordler işə düşəndə yeni miqrasiyaları avtomatik tətbiq edir: onlar sxemi yalnız genişləndirir və xəta olarsa tamamilə geri qaytarılır."
   }
 }

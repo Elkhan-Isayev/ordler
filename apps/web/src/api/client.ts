@@ -1,4 +1,9 @@
-import type { ApiErrorBody, MeResponse, PublicStrategy } from '@ordler/shared';
+import type {
+  ApiErrorBody,
+  MeResponse,
+  PublicStrategy,
+  UpdateStatusResponse,
+} from '@ordler/shared';
 
 export class ApiError extends Error {
   override name = 'ApiError';
@@ -49,6 +54,7 @@ export const api = {
   verifyOtp: (email: string, code: string) =>
     apiRequest<MeResponse>('/api/auth/otp/verify', { method: 'POST', body: { email, code } }),
   signOut: () => apiRequest<void>('/api/auth/sign-out', { method: 'POST' }),
+  updateStatus: () => apiRequest<UpdateStatusResponse>('/api/admin/updates'),
 };
 
 export const GOOGLE_START_URL = '/api/auth/google/start';

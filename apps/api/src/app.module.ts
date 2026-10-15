@@ -9,6 +9,7 @@ import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/htt
 import { MeController } from './members/me.controller.js';
 import { ACCESS_CONTEXT, PermissionGuard } from './rbac/permission.guard.js';
 import { SetupController } from './setup/setup.controller.js';
+import { UpdatesController } from './updates/updates.controller.js';
 
 @Module({})
 export class AppModule {
@@ -21,6 +22,7 @@ export class AppModule {
         AuthController,
         MeController,
         AdminStrategiesController,
+        UpdatesController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },

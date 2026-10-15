@@ -6,6 +6,7 @@ import { RateLimiter } from './auth/rate-limiter.js';
 import { SessionService, type Clock } from './auth/sessions.js';
 import { StrategyService } from './auth/strategies.js';
 import type { Argon2Params } from './crypto/password.js';
+import { DEFAULT_RELEASE_REPOSITORY } from './config/env.js';
 import { SecretBox } from './crypto/secret-box.js';
 import type { Db } from './db/client.js';
 import type { ReadinessCheck } from './health/health.controller.js';
@@ -13,6 +14,8 @@ import type { Mailer } from './mail/mailer.js';
 import { DbAccessContext } from './rbac/db-access-context.js';
 import type { AccessContextSource } from './rbac/permission.guard.js';
 import { SetupService } from './setup/setup.service.js';
+import type { FetchFn as UpdateFetchFn } from './updates/github.js';
+import { UpdateService } from './updates/update.service.js';
 
 const FIFTEEN_MINUTES = 15 * 60_000;
 
@@ -30,10 +33,12 @@ export interface AppContext {
   passwordAuth: PasswordAuthService;
   otp: OtpService;
   google: GoogleAuthService;
+  updates: UpdateService;
   limits: {
     signIn: RateLimiter;
     otpRequest: RateLimiter;
     otpVerify: RateLimiter;
+    updateCheck: RateLimiter;
   };
 }
 
@@ -49,6 +54,9 @@ export interface AppContextDeps {
   otpPolicy?: OtpPolicy;
   googleFetch?: FetchFn;
   googleJwks?: JWTVerifyGetKey;
+  version?: string | undefined;
+  updateCheck?: { enabled: boolean; repository: string };
+  updatesFetch?: UpdateFetchFn;
 }
 
 export function createAppContext(deps: AppContextDeps): AppContext {
@@ -89,10 +97,20 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       ...(deps.googleFetch ? { fetch: deps.googleFetch } : {}),
       ...(deps.googleJwks ? { jwks: deps.googleJwks } : {}),
     }),
+    updates: new UpdateService({
+      db: deps.db,
+      enabled: deps.updateCheck?.enabled ?? false,
+      repository: deps.updateCheck?.repository ?? DEFAULT_RELEASE_REPOSITORY,
+      currentVersion: deps.version,
+      now,
+      ...(deps.updatesFetch ? { fetch: deps.updatesFetch } : {}),
+    }),
     limits: {
       signIn: new RateLimiter(10, FIFTEEN_MINUTES),
       otpRequest: new RateLimiter(10, FIFTEEN_MINUTES),
       otpVerify: new RateLimiter(20, FIFTEEN_MINUTES),
+      // Manual "check now" clicks; GitHub allows 60 anonymous requests an hour per IP.
+      updateCheck: new RateLimiter(1, 60_000),
     },
   };
 }

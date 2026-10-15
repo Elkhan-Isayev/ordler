@@ -447,7 +447,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 
 | Section                         | Capabilities                                                                                                                                                                                     |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Overview                        | Seats, active users, request volume, SLA compliance.                                                                                                                                             |
+| Overview                        | Seats, active users, request volume, SLA compliance; current version and update availability (§16.5).                                                                                            |
 | Members                         | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only).                                    |
 | Departments                     | Create / rename / archive, head, supervisors, business hours calendar.                                                                                                                           |
 | Teams                           | Create inside department, key, privacy, members, team lead, move team between departments.                                                                                                       |
@@ -900,6 +900,42 @@ with PostgreSQL as the only mandatory external service.
 - Logs to stdout (JSON); optional OpenTelemetry exporter.
 - No outbound internet access required at runtime (except configured SMTP/OAuth providers).
 
+### 16.5 Updates and data safety
+
+**New-version notification**
+
+- The worker checks the GitHub releases of the configured repository
+  (`UPDATE_CHECK_REPOSITORY`, default the public Ordler repository) at most once a day, using
+  the ETag so unchanged answers cost nothing. Only stable SemVer releases count; drafts and
+  pre-releases are ignored. The request carries no installation data.
+- The result is stored in the database, so every replica and admin sees the same answer.
+  A failed check keeps the last known release and records the error.
+- Members with `org.manage` see a banner when a newer version exists: current and latest
+  version, release-notes link, a warning for major versions, copy-paste upgrade commands for
+  Docker Compose and Helm, and a reminder to snapshot the database first. Dismissing hides the
+  banner until a newer release appears. Admins can trigger a check (at most once a minute).
+- Development builds (no `ORDLER_VERSION`) never show the banner. `UPDATE_CHECK=false`
+  disables the check for air-gapped installations.
+
+**Upgrade procedure**: take a database snapshot, change the image tag (`docker compose pull &&
+docker compose up -d`, or `helm upgrade --set image.tag=X`). On start Ordler applies pending
+migrations. One-click upgrades through an optional companion container are Phase 2: they need
+access to the Docker socket or the Kubernetes API, which must stay an explicit opt-in.
+
+**Data-safety guarantees** (enforced by tests in CI):
+
+1. All pending migrations run in a single transaction; a failure leaves the schema and data
+   untouched and the previous version keeps working.
+2. Migrations are additive (expand/contract). `DROP`, `TRUNCATE`, `DELETE`, renames and type
+   changes are rejected unless the file carries `-- ordler:allow-destructive <reason>`, and
+   such removals only ship in a major release after the data has been moved.
+3. For every migration, data written with the previous schema must survive it; data from the
+   first release must survive an upgrade straight to the latest.
+4. An image refuses to start on a schema written by a newer version (no silent downgrades);
+   downgrades go through restoring the pre-upgrade snapshot.
+5. With `ORDLER_MIGRATE=false`, the app refuses to start while migrations are pending.
+6. Migrations run once across replicas, under a PostgreSQL advisory lock.
+
 ---
 
 ## 17. Licensing and distribution
@@ -924,5 +960,5 @@ Modelled on Wiki.js.
   chart → GitHub Release with changelog.
 - **Versioning**: SemVer. Breaking config, PostgreSQL minimum or migration changes only in a
   major release, announced in release notes with an upgrade guide.
-- **Telemetry**: none by default. An optional, opt-in anonymous update check may be added
-  later and must be disclosed in the docs.
+- **Telemetry**: none. The only outbound call Ordler makes on its own is the anonymous daily
+  release check (§16.5), which admins can switch off with `UPDATE_CHECK=false`.

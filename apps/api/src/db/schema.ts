@@ -247,3 +247,16 @@ export const sessions = pgTable(
     index('sessions_member_idx').on(t.memberId),
   ],
 );
+
+/** Single row: the last result of the GitHub release check (SPEC §16.5). */
+export const updateStatus = pgTable('update_status', {
+  id: integer('id').primaryKey().default(1),
+  latestVersion: text('latest_version'),
+  releaseName: text('release_name'),
+  releaseUrl: text('release_url'),
+  releaseNotes: text('release_notes'),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  etag: text('etag'),
+  checkedAt: timestamp('checked_at', { withTimezone: true }),
+  lastError: text('last_error'),
+});

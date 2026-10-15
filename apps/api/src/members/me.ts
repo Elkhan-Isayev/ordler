@@ -1,7 +1,8 @@
-import type { MeResponse } from '@ordler/shared';
+import { effectivePermissions, ORGANIZATION_SCOPE, type MeResponse } from '@ordler/shared';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { departments, teamMemberships, teams } from '../db/schema.js';
+import { DbAccessContext } from '../rbac/db-access-context.js';
 import { getInstance } from '../setup/setup.service.js';
 import { findMemberById } from './members.js';
 
@@ -44,9 +45,20 @@ export async function loadMe(db: Db, memberId: string): Promise<MeView | undefin
     byDepartment.set(row.departmentId, department);
   }
 
+  const access = await new DbAccessContext(db).load(memberId);
+  const organizationPermissions = [
+    ...effectivePermissions(
+      access.assignments,
+      access.rolePermissions,
+      ORGANIZATION_SCOPE,
+      access.directory,
+    ),
+  ].sort();
+
   return {
     member: { id: member.id, name: member.name, email: member.email, locale: member.locale },
     workspace: { companyName: instance.companyName, defaultLocale: instance.defaultLocale },
+    organizationPermissions,
     departments: [...byDepartment.values()],
   };
 }

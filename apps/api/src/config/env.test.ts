@@ -136,6 +136,33 @@ describe('secrets and mail', () => {
   });
 });
 
+describe('version and update check', () => {
+  const base = { DB_HOST: 'db', ENCRYPTION_KEY: KEY };
+
+  it('checks the public repository by default', () => {
+    const config = loadConfig(base);
+    expect(config.updateCheck).toEqual({ enabled: true, repository: 'Elkhan-Isayev/ordler' });
+    expect(config.version).toBeUndefined();
+  });
+
+  it('can be disabled for air-gapped installs and pointed at a fork', () => {
+    const config = loadConfig({
+      ...base,
+      UPDATE_CHECK: 'false',
+      UPDATE_CHECK_REPOSITORY: 'acme/ordler-fork',
+      ORDLER_VERSION: '1.4.2',
+    });
+    expect(config.updateCheck).toEqual({ enabled: false, repository: 'acme/ordler-fork' });
+    expect(config.version).toBe('1.4.2');
+  });
+
+  it('rejects malformed repositories', () => {
+    expect(() => loadConfig({ ...base, UPDATE_CHECK_REPOSITORY: 'https://evil/x' })).toThrow(
+      /owner\/repo/,
+    );
+  });
+});
+
 describe('describeConfig', () => {
   it('never exposes passwords or connection strings', () => {
     const fromUrl = describeConfig(

@@ -1,6 +1,7 @@
 import type { MeResponse } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { Sidebar } from './components/Sidebar.js';
+import { UpdateBanner } from './components/UpdateBanner.js';
 
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
   const { t } = useTranslation();
@@ -24,10 +25,13 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           </div>
         }
       />
-      <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-        <h1 className="text-xl font-semibold">{t('home.title')}</h1>
-        <p className="text-ink-muted">{t('home.hint')}</p>
-      </main>
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        <UpdateBanner isAdmin={me.organizationPermissions.includes('org.manage')} />
+        <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+          <h1 className="text-xl font-semibold">{t('home.title')}</h1>
+          <p className="text-ink-muted">{t('home.hint')}</p>
+        </main>
+      </div>
     </div>
   );
 }

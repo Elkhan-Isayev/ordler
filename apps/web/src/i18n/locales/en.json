@@ -76,5 +76,18 @@
     "password_mismatch": "The passwords do not match.",
     "network": "Cannot reach the server. Check your connection.",
     "unknown": "Something went wrong. Try again."
+  },
+  "updates": {
+    "title": "Ordler {latest} is available",
+    "current": "You are running {current}.",
+    "major": "Major version: read the release notes before updating, they may require configuration changes.",
+    "releaseNotes": "Release notes",
+    "howTo": "How to update",
+    "hideHowTo": "Hide instructions",
+    "dismiss": "Dismiss",
+    "backup": "1. Take a database backup first (for example an RDS snapshot).",
+    "compose": "2. Docker Compose: set the image tag to {latest}, then run",
+    "helm": "Or, on Kubernetes, upgrade the Helm release",
+    "dataSafety": "Your data stays in PostgreSQL. On start Ordler applies new migrations automatically; they only add to the schema and roll back completely if anything fails."
   }
 }

@@ -76,5 +76,18 @@
     "password_mismatch": "Die Passwörter stimmen nicht überein.",
     "network": "Der Server ist nicht erreichbar. Prüfe deine Verbindung.",
     "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
+  },
+  "updates": {
+    "title": "Ordler {latest} ist verfügbar",
+    "current": "Installiert ist {current}.",
+    "major": "Hauptversion: Lies vor dem Update die Release Notes, eventuell sind Konfigurationsänderungen nötig.",
+    "releaseNotes": "Release Notes",
+    "howTo": "So aktualisierst du",
+    "hideHowTo": "Anleitung ausblenden",
+    "dismiss": "Ausblenden",
+    "backup": "1. Erstelle zuerst ein Datenbank-Backup (zum Beispiel einen RDS-Snapshot).",
+    "compose": "2. Docker Compose: Setze das Image-Tag auf {latest} und führe aus",
+    "helm": "Oder in Kubernetes das Helm-Release aktualisieren",
+    "dataSafety": "Deine Daten bleiben in PostgreSQL. Beim Start wendet Ordler neue Migrationen automatisch an; sie erweitern das Schema nur und werden bei einem Fehler vollständig zurückgerollt."
   }
 }

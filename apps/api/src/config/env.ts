@@ -44,7 +44,13 @@ export interface AppConfig {
   sessionTtlDays: number;
   /** Absent until SMTP is configured; email OTP stays unavailable meanwhile. */
   smtp?: SmtpConfig;
+  /** Release version baked into the image; `undefined` for development builds. */
+  version: string | undefined;
+  updateCheck: { enabled: boolean; repository: string };
 }
+
+/** Public GitHub repository whose releases announce new Ordler versions. */
+export const DEFAULT_RELEASE_REPOSITORY = 'Elkhan-Isayev/ordler';
 
 const booleanString = z
   .enum(['true', 'false', '1', '0'])
@@ -79,6 +85,12 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(3).optional(),
+  ORDLER_VERSION: z.string().trim().min(1).optional(),
+  UPDATE_CHECK: booleanString.default(true),
+  UPDATE_CHECK_REPOSITORY: z
+    .string()
+    .regex(/^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/, 'UPDATE_CHECK_REPOSITORY must be owner/repo')
+    .default(DEFAULT_RELEASE_REPOSITORY),
 });
 
 /** Variables that may instead be read from a mounted file via `<NAME>_FILE` (Kubernetes secrets). */
@@ -152,6 +164,8 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
     },
     encryptionKey,
     sessionTtlDays: e.SESSION_TTL_DAYS,
+    version: e.ORDLER_VERSION,
+    updateCheck: { enabled: e.UPDATE_CHECK, repository: e.UPDATE_CHECK_REPOSITORY },
     ...(e.SMTP_HOST
       ? {
           smtp: {
@@ -187,5 +201,7 @@ export function describeConfig(config: AppConfig): Record<string, unknown> {
       poolMax: database.poolMax,
     },
     smtp: config.smtp ? `${config.smtp.host}:${config.smtp.port}` : 'not configured',
+    version: config.version ?? 'development',
+    updateCheck: config.updateCheck.enabled ? config.updateCheck.repository : 'disabled',
   };
 }

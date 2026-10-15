@@ -9,7 +9,7 @@
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate && node scripts/unqualify-migrations.mjs"
   },
   "dependencies": {
     "@nestjs/common": "11.2.7",

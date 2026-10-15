@@ -7,7 +7,7 @@ departments (Jira Service Management-like requests with cross-department approva
   any feature work; use its glossary terms (Department, Team, Issue, Request, Approval step,
   Approver selector…) in code, tests and UI copy.
 - Architecture decisions: `docs/adr/` (0001 stack, 0002 on-prem single-tenant, 0003 AGPL
-  and distribution, 0004 authentication). Record any deviation or new major dependency as a new ADR.
+  and distribution, 0004 authentication, 0005 updates). Record any deviation or new major dependency as a new ADR.
 - The repository is public and AGPL-3.0: add only AGPL-compatible dependencies, and keep
   fixtures, tests and docs free of secrets and real company data.
 - Ordler ships on-premises only: one Docker image, Compose and Helm chart, PostgreSQL 18+
@@ -53,7 +53,9 @@ Every change set adds a new file to `.ai/changelog/` following `.ai/README.md`
 - Authorization happens on the server for every read and write, through the permission
   catalog in `packages/shared` (permission constants, never ad-hoc role-name checks).
   The UI only mirrors it to hide controls.
-- Schema migrations are forward-only and safe when several replicas start at once.
+- Schema migrations are forward-only, additive (expand/contract) and safe when several
+  replicas start at once; a destructive statement needs `-- ordler:allow-destructive <reason>`
+  and a major release (SPEC §16.5). Upgrades must never lose data.
 - Personal tokens and MCP tools act exactly as their member: same domain services, RBAC
   and visibility as the UI; approvals are decided only by a signed-in human.
 - Approval decisions and audit log rows are append-only.
