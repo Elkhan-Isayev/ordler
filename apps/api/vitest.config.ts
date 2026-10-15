@@ -12,5 +12,10 @@ export default defineConfig({
       ),
     },
   },
-  test: { include: ['src/**/*.test.ts'] },
+  test: {
+    include: ['src/**/*.test.ts'],
+    // Database tests boot PostgreSQL (PGlite/WASM); shared CI runners can be several times slower.
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
+  },
 });
