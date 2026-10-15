@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "search": "Axtarış",
+    "newIssue": "Yeni tapşırıq",
+    "inbox": "Gələnlər",
+    "myIssues": "Tapşırıqlarım",
+    "myRequests": "Sorğularım",
+    "approvals": "Təsdiqlər",
+    "pendingApprovals": "{count, plural, one {# təsdiq gözləyir} other {# təsdiq gözləyir}}",
+    "workspace": "İş sahəsi",
+    "initiatives": "Təşəbbüslər",
+    "projects": "Layihələr",
+    "views": "Görünüşlər",
+    "servicePortals": "Xidmət portalları",
+    "yourDepartments": "Departamentləriniz",
+    "requests": "Sorğular",
+    "triage": "Triaj",
+    "issues": "Tapşırıqlar",
+    "cycles": "Dövrlər",
+    "currentCycle": "Cari",
+    "upcomingCycle": "Növbəti"
+  },
+  "settings": {
+    "language": "Dil"
+  },
+  "home": {
+    "title": "Ordler-ə xoş gəlmisiniz",
+    "hint": "Tapşırıqlarını görmək üçün yan paneldə komanda seçin."
+  }
+}

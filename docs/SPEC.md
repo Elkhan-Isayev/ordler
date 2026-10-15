@@ -1,11 +1,11 @@
 # Ordler — Technical Specification
 
-| Field    | Value                                  |
-| -------- | -------------------------------------- |
-| Product  | Ordler (working name, `ordler.com`)     |
-| Version  | 0.5 (draft)                            |
-| Date     | 2026-10-14                             |
-| Status   | Draft — open for review                |
+| Field   | Value                               |
+| ------- | ----------------------------------- |
+| Product | Ordler (working name, `ordler.com`) |
+| Version | 0.5 (draft)                         |
+| Date    | 2026-10-14                          |
+| Status  | Draft — open for review             |
 
 ---
 
@@ -50,31 +50,31 @@ images and Helm chart are public, like Wiki.js (§17).
 
 ## 2. Glossary
 
-| Term | Definition |
-| --- | --- |
-| **Organization** | The company that owns the installation. Exactly one per installation; its settings (name, URL, branding, default language) live in the admin panel. |
-| **Department** | Business unit inside an organization (IT, Finance, Customer Support). Owns teams, a service portal and request types. |
-| **Team** | Working group inside a department. Owns issues, workflow, cycles. Has a short key (e.g. `ITOPS`) used in issue identifiers (`ITOPS-142`). |
-| **Member** | A user account inside an organization. Can belong to several teams across departments. |
-| **Issue** | Unit of internal work owned by one team. |
-| **Request** | Unit of cross-department work: created by a requester from department A via the portal of department B. Becomes visible to B's triage queue. Has requester-facing and internal sides. |
-| **Request group** | A request sent to several departments at once: one shared description and approvals, one child request per target department (§6.4). |
-| **Request type** | Template for a request: form fields, routing target team, SLA policy, approval policy. Defined by the receiving department. |
-| **Service portal** | Per-department catalog of request types available to other departments. |
-| **Approval** | A decision (approve / reject / request changes) required from a designated approver before the request can proceed. |
-| **Approval policy** | Ordered set of approval steps attached to a request type, or added by the requester. |
-| **Approval step** | One stage of an approval policy: approver selector + decision rule (any / all / quorum). |
-| **Approver selector** | Rule resolving to concrete users: a user, a role in a department, a team lead, the requester's manager, etc. |
-| **Workflow** | Set of statuses and allowed transitions for a team's issues or a request type. |
-| **Status category** | Fixed semantic bucket every status maps to: `backlog`, `unstarted`, `started`, `completed`, `canceled` (+ `pending_approval`, `waiting_for_requester` for requests). |
-| **Cycle** | Time-boxed iteration (sprint) of a team. |
-| **Project** | Set of issues (possibly across teams) with a goal, lead, target date. |
-| **Initiative** | Group of projects aligned with an organizational objective. |
-| **View** | Saved filter + display configuration over issues/requests. |
-| **Inbox** | Per-user notification feed. |
-| **SLA** | Service level target (time to first response, time to resolution) attached to a request type. |
-| **Role** | Named set of permissions, granted to a member at a **scope** (organization, department, team). |
-| **Permission** | Atomic capability string, e.g. `issue.create`, `request.approve`. |
+| Term                  | Definition                                                                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Organization**      | The company that owns the installation. Exactly one per installation; its settings (name, URL, branding, default language) live in the admin panel.                                   |
+| **Department**        | Business unit inside an organization (IT, Finance, Customer Support). Owns teams, a service portal and request types.                                                                 |
+| **Team**              | Working group inside a department. Owns issues, workflow, cycles. Has a short key (e.g. `ITOPS`) used in issue identifiers (`ITOPS-142`).                                             |
+| **Member**            | A user account inside an organization. Can belong to several teams across departments.                                                                                                |
+| **Issue**             | Unit of internal work owned by one team.                                                                                                                                              |
+| **Request**           | Unit of cross-department work: created by a requester from department A via the portal of department B. Becomes visible to B's triage queue. Has requester-facing and internal sides. |
+| **Request group**     | A request sent to several departments at once: one shared description and approvals, one child request per target department (§6.4).                                                  |
+| **Request type**      | Template for a request: form fields, routing target team, SLA policy, approval policy. Defined by the receiving department.                                                           |
+| **Service portal**    | Per-department catalog of request types available to other departments.                                                                                                               |
+| **Approval**          | A decision (approve / reject / request changes) required from a designated approver before the request can proceed.                                                                   |
+| **Approval policy**   | Ordered set of approval steps attached to a request type, or added by the requester.                                                                                                  |
+| **Approval step**     | One stage of an approval policy: approver selector + decision rule (any / all / quorum).                                                                                              |
+| **Approver selector** | Rule resolving to concrete users: a user, a role in a department, a team lead, the requester's manager, etc.                                                                          |
+| **Workflow**          | Set of statuses and allowed transitions for a team's issues or a request type.                                                                                                        |
+| **Status category**   | Fixed semantic bucket every status maps to: `backlog`, `unstarted`, `started`, `completed`, `canceled` (+ `pending_approval`, `waiting_for_requester` for requests).                  |
+| **Cycle**             | Time-boxed iteration (sprint) of a team.                                                                                                                                              |
+| **Project**           | Set of issues (possibly across teams) with a goal, lead, target date.                                                                                                                 |
+| **Initiative**        | Group of projects aligned with an organizational objective.                                                                                                                           |
+| **View**              | Saved filter + display configuration over issues/requests.                                                                                                                            |
+| **Inbox**             | Per-user notification feed.                                                                                                                                                           |
+| **SLA**               | Service level target (time to first response, time to resolution) attached to a request type.                                                                                         |
+| **Role**              | Named set of permissions, granted to a member at a **scope** (organization, department, team).                                                                                        |
+| **Permission**        | Atomic capability string, e.g. `issue.create`, `request.approve`.                                                                                                                     |
 
 ---
 
@@ -119,7 +119,7 @@ Rules:
   a grant at department scope applies to all teams of that department.
 - **Resolution** — effective permissions = union of all grants whose scope contains the
   target resource. v1 has no explicit deny.
-- **Resource-level overrides** — a team can be marked *private*: only its members
+- **Resource-level overrides** — a team can be marked _private_: only its members
   (and org admins) can see its issues. Requests are always visible to their requester,
   approvers, watchers and the receiving team.
 - **Authorization is enforced on the server** for every read and write. The UI uses the
@@ -127,16 +127,16 @@ Rules:
 
 ### 4.2 System roles
 
-| Role | Default scope | Summary |
-| --- | --- | --- |
-| Organization Owner | org | Everything, incl. instance settings, transferring ownership. One or more owners; the last owner cannot be removed. |
-| Organization Admin | org | Admin panel: members, departments, teams, roles, policies, audit log. |
-| Department Admin | department | Manage teams, portal, request types, workflows and approval policies of the department. |
-| Department Supervisor | department | Approve requests where the selector is "supervisor of this department"; see all department work. |
-| Team Lead | team | Manage team settings, workflow, cycles; triage incoming requests. |
-| Member | team | Create/edit issues, comment, create requests to other departments. |
-| Viewer | team/department | Read-only. |
-| Guest | org | Can only create requests and see own requests (e.g. contractors). |
+| Role                  | Default scope   | Summary                                                                                                            |
+| --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Organization Owner    | org             | Everything, incl. instance settings, transferring ownership. One or more owners; the last owner cannot be removed. |
+| Organization Admin    | org             | Admin panel: members, departments, teams, roles, policies, audit log.                                              |
+| Department Admin      | department      | Manage teams, portal, request types, workflows and approval policies of the department.                            |
+| Department Supervisor | department      | Approve requests where the selector is "supervisor of this department"; see all department work.                   |
+| Team Lead             | team            | Manage team settings, workflow, cycles; triage incoming requests.                                                  |
+| Member                | team            | Create/edit issues, comment, create requests to other departments.                                                 |
+| Viewer                | team/department | Read-only.                                                                                                         |
+| Guest                 | org             | Can only create requests and see own requests (e.g. contractors).                                                  |
 
 ### 4.3 Permission catalog (v1)
 
@@ -166,22 +166,22 @@ updates system roles + tests.
 
 ### 4.4 Default permission matrix (abridged)
 
-| Permission | Owner | Org Admin | Dept Admin | Dept Supervisor | Team Lead | Member | Viewer | Guest |
-| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| org.manage | ✓ | ✓ | | | | | | |
-| auth.manage, mail.manage | ✓ | ✓ | | | | | | |
-| member.invite | ✓ | ✓ | ✓¹ | | | | | |
-| department.create | ✓ | ✓ | | | | | | |
-| team.create | ✓ | ✓ | ✓ | | | | | |
-| request_type.manage | ✓ | ✓ | ✓ | | | | | |
-| approval_policy.manage | ✓ | ✓ | ✓ | | | | | |
-| request.approve | ✓² | ✓² | ✓² | ✓² | ✓² | ✓² | | |
-| request.triage | ✓ | ✓ | ✓ | | ✓ | | | |
-| issue.create | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | |
-| issue.read | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| request.create | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
-| token.create_personal, mcp.use | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| org.audit.read | ✓ | ✓ | | | | | | |
+| Permission                     | Owner | Org Admin | Dept Admin | Dept Supervisor | Team Lead | Member | Viewer | Guest |
+| ------------------------------ | :---: | :-------: | :--------: | :-------------: | :-------: | :----: | :----: | :---: |
+| org.manage                     |   ✓   |     ✓     |            |                 |           |        |        |       |
+| auth.manage, mail.manage       |   ✓   |     ✓     |            |                 |           |        |        |       |
+| member.invite                  |   ✓   |     ✓     |     ✓¹     |                 |           |        |        |       |
+| department.create              |   ✓   |     ✓     |            |                 |           |        |        |       |
+| team.create                    |   ✓   |     ✓     |     ✓      |                 |           |        |        |       |
+| request_type.manage            |   ✓   |     ✓     |     ✓      |                 |           |        |        |       |
+| approval_policy.manage         |   ✓   |     ✓     |     ✓      |                 |           |        |        |       |
+| request.approve                |  ✓²   |    ✓²     |     ✓²     |       ✓²        |    ✓²     |   ✓²   |        |       |
+| request.triage                 |   ✓   |     ✓     |     ✓      |                 |     ✓     |        |        |       |
+| issue.create                   |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |       |
+| issue.read                     |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
+| request.create                 |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |   ✓   |
+| token.create_personal, mcp.use |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
+| org.audit.read                 |   ✓   |     ✓     |            |                 |           |        |        |       |
 
 ¹ Only into own department. ² The permission is necessary but not sufficient: a user can
 approve a specific request only if the approval step's selector resolves to them (§6.3).
@@ -192,23 +192,23 @@ approve a specific request only if the approval step's selector resolves to them
 
 ### 5.1 Issue
 
-| Field | Notes |
-| --- | --- |
-| Identifier | `<TEAM_KEY>-<number>`, sequential per team, immutable. Moving to another team assigns a new identifier and keeps the old one as an alias/redirect. |
-| Title | Required, ≤ 255 chars. |
-| Description | Rich text (Markdown-compatible), mentions, embeds, attachments. |
-| Status | From team workflow; always maps to a status category. |
-| Priority | `none`, `urgent`, `high`, `medium`, `low`. |
-| Assignee | One member of the team (or none). |
-| Labels | Organization-level and team-level labels, grouped. |
-| Estimate | Optional, team-configurable scale (points / t-shirt). |
-| Cycle, Project | Optional. |
-| Due date | Optional. |
-| Parent / sub-issues | Unlimited depth in data, UI shows 2 levels. |
-| Relations | `blocks` / `blocked_by`, `related`, `duplicate_of`. |
-| Source request | Link to the request that spawned it (§6). |
-| Watchers | Auto: creator, assignee, mentioned users. |
-| Activity | Immutable history of field changes + comments. |
+| Field               | Notes                                                                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identifier          | `<TEAM_KEY>-<number>`, sequential per team, immutable. Moving to another team assigns a new identifier and keeps the old one as an alias/redirect. |
+| Title               | Required, ≤ 255 chars.                                                                                                                             |
+| Description         | Rich text (Markdown-compatible), mentions, embeds, attachments.                                                                                    |
+| Status              | From team workflow; always maps to a status category.                                                                                              |
+| Priority            | `none`, `urgent`, `high`, `medium`, `low`.                                                                                                         |
+| Assignee            | One member of the team (or none).                                                                                                                  |
+| Labels              | Organization-level and team-level labels, grouped.                                                                                                 |
+| Estimate            | Optional, team-configurable scale (points / t-shirt).                                                                                              |
+| Cycle, Project      | Optional.                                                                                                                                          |
+| Due date            | Optional.                                                                                                                                          |
+| Parent / sub-issues | Unlimited depth in data, UI shows 2 levels.                                                                                                        |
+| Relations           | `blocks` / `blocked_by`, `related`, `duplicate_of`.                                                                                                |
+| Source request      | Link to the request that spawned it (§6).                                                                                                          |
+| Watchers            | Auto: creator, assignee, mentioned users.                                                                                                          |
+| Activity            | Immutable history of field changes + comments.                                                                                                     |
 
 ### 5.2 Team features
 
@@ -271,16 +271,16 @@ Your departments
 Each department has a **service portal** listing its request types, grouped into categories.
 A Department Admin configures each request type:
 
-| Setting | Description |
-| --- | --- |
-| Name, description, icon, category | Shown in the portal. |
-| Form | Field builder: text, long text, number, date, select (single/multi), user picker, department picker, attachment, checkbox. Required flag, help text, conditional visibility (show field X if field Y = value). |
-| Who can submit | All members / specific departments / specific roles. |
-| Routing | Target team (default triage), optional routing rules by field value (e.g. `category = Hardware → INFRA`). |
-| Workflow | Request workflow (statuses mapped to categories incl. `pending_approval`, `waiting_for_requester`). |
-| SLA policy | Targets for first response and resolution, per priority, with business hours calendar. |
-| Approval policy | Mandatory steps (§6.3) + whether the requester may **add optional approvals**. |
-| Auto-create issue | Optionally create an internal issue in the target team on acceptance. |
+| Setting                           | Description                                                                                                                                                                                                    |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name, description, icon, category | Shown in the portal.                                                                                                                                                                                           |
+| Form                              | Field builder: text, long text, number, date, select (single/multi), user picker, department picker, attachment, checkbox. Required flag, help text, conditional visibility (show field X if field Y = value). |
+| Who can submit                    | All members / specific departments / specific roles.                                                                                                                                                           |
+| Routing                           | Target team (default triage), optional routing rules by field value (e.g. `category = Hardware → INFRA`).                                                                                                      |
+| Workflow                          | Request workflow (statuses mapped to categories incl. `pending_approval`, `waiting_for_requester`).                                                                                                            |
+| SLA policy                        | Targets for first response and resolution, per priority, with business hours calendar.                                                                                                                         |
+| Approval policy                   | Mandatory steps (§6.3) + whether the requester may **add optional approvals**.                                                                                                                                 |
+| Auto-create issue                 | Optionally create an internal issue in the target team on acceptance.                                                                                                                                          |
 
 ### 6.2 Request lifecycle
 
@@ -309,10 +309,10 @@ open ──accept──▶ in_progress ──▶ waiting_for_requester ⇄ in_pr
 This is the core cross-department feature.
 
 **Example scenario.** Customer Support needs IT to purchase and set up 20 headsets.
-The CS agent opens *IT Services → Hardware purchase*. IT has configured this request type
+The CS agent opens _IT Services → Hardware purchase_. IT has configured this request type
 with a mandatory step "Supervisor of the requester's department". Because the purchase
 costs money, the CS agent also ticks **"Requires approval from Finance"** and selects
-*Finance → Department Supervisor*. On submit:
+_Finance → Department Supervisor_. On submit:
 
 1. Request `IT-REQ-57` is created in status `pending_approval`.
 2. Step 1 (CS supervisor) is activated; CS supervisors receive an Inbox notification + email.
@@ -322,14 +322,14 @@ costs money, the CS agent also ticks **"Requires approval from Finance"** and se
 
 **Approval step configuration**
 
-| Attribute | Values |
-| --- | --- |
+| Attribute         | Values                                                                                                                                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Approver selector | `user:<id>` · `role:<role>@department:<id>` (e.g. Finance Supervisor) · `department_head:<id>` · `requester_department_supervisor` · `requester_manager` · `team_lead:<id>` · `field:<user_picker_field>` (approver chosen in the form) |
-| Decision rule | `any` (first decision wins) · `all` · `quorum:N` |
-| Order | Steps run **sequentially**; approvers inside one step decide **in parallel**. |
-| Origin | `mandatory` (from request type, cannot be removed by requester) · `requester_added` (optional, if request type allows). |
-| Timeout | Optional: after T business hours → reminder, then escalate to a fallback selector, or auto-reject. |
-| Condition | Optional: activate the step only if a field matches (e.g. `amount > 1000`). |
+| Decision rule     | `any` (first decision wins) · `all` · `quorum:N`                                                                                                                                                                                        |
+| Order             | Steps run **sequentially**; approvers inside one step decide **in parallel**.                                                                                                                                                           |
+| Origin            | `mandatory` (from request type, cannot be removed by requester) · `requester_added` (optional, if request type allows).                                                                                                                 |
+| Timeout           | Optional: after T business hours → reminder, then escalate to a fallback selector, or auto-reject.                                                                                                                                      |
+| Condition         | Optional: activate the step only if a field matches (e.g. `amount > 1000`).                                                                                                                                                             |
 
 **Rules**
 
@@ -343,7 +343,7 @@ costs money, the CS agent also ticks **"Requires approval from Finance"** and se
   decisions record both the delegate and the original approver.
 - Decisions: `approve`, `reject` (reason required), `request_changes` (comment required →
   `waiting_for_requester`; resubmission restarts the current step).
-- Editing form fields that are marked *approval-relevant* after an approval resets the
+- Editing form fields that are marked _approval-relevant_ after an approval resets the
   approvals of steps already passed (configurable per request type).
 - Every decision is immutable and recorded in the audit log with actor, time, comment,
   and the request snapshot hash the approver saw.
@@ -445,54 +445,54 @@ installation, since every company runs its own Ordler.
 
 Accessible to members with any `*.manage` permission; each section is gated by its permission.
 
-| Section | Capabilities |
-| --- | --- |
-| Overview | Seats, active users, request volume, SLA compliance. |
-| Members | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only). |
-| Departments | Create / rename / archive, head, supervisors, business hours calendar. |
-| Teams | Create inside department, key, privacy, members, team lead, move team between departments. |
-| Roles & permissions | List system roles (read-only), create custom roles from the permission catalog, assign roles at scope, "effective permissions" inspector for any member. |
-| Workflows | Team workflows and request workflows editor. |
-| Service portals & request types | Form builder, routing rules, SLA, approval policies with a step editor and a "simulate approvers" preview for a sample requester. |
-| SLA policies & calendars | Targets, business hours, holidays. |
-| Labels & custom fields | Org-level labels and custom fields. |
-| Authentication & registration | Sign-in strategies, self-registration rules, default roles for new accounts (§8.1). |
-| Mail server | SMTP configuration used for OTP codes, invites and notifications (§8.2). |
-| Security | Session lifetime, 2FA enforcement, password policy, IP allowlist (Phase 3). |
-| API, tokens & MCP | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2). |
-| Integrations | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3). |
-| Audit log | Searchable, filterable, exportable (CSV/JSON); retention configurable. |
-| Data | Export all data (JSON), import from Linear/Jira CSV (Phase 2). |
+| Section                         | Capabilities                                                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Overview                        | Seats, active users, request volume, SLA compliance.                                                                                                                                             |
+| Members                         | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only).                                    |
+| Departments                     | Create / rename / archive, head, supervisors, business hours calendar.                                                                                                                           |
+| Teams                           | Create inside department, key, privacy, members, team lead, move team between departments.                                                                                                       |
+| Roles & permissions             | List system roles (read-only), create custom roles from the permission catalog, assign roles at scope, "effective permissions" inspector for any member.                                         |
+| Workflows                       | Team workflows and request workflows editor.                                                                                                                                                     |
+| Service portals & request types | Form builder, routing rules, SLA, approval policies with a step editor and a "simulate approvers" preview for a sample requester.                                                                |
+| SLA policies & calendars        | Targets, business hours, holidays.                                                                                                                                                               |
+| Labels & custom fields          | Org-level labels and custom fields.                                                                                                                                                              |
+| Authentication & registration   | Sign-in strategies, self-registration rules, default roles for new accounts (§8.1).                                                                                                              |
+| Mail server                     | SMTP configuration used for OTP codes, invites and notifications (§8.2).                                                                                                                         |
+| Security                        | Session lifetime, 2FA enforcement, password policy, IP allowlist (Phase 3).                                                                                                                      |
+| API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2). |
+| Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                  |
+| Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                           |
+| Data                            | Export all data (JSON), import from Linear/Jira CSV (Phase 2).                                                                                                                                   |
 
 ### 8.1 Authentication strategies and registration
 
-Modelled on the Wiki.js *Administration → Authentication* page: the admin sees a list of
+Modelled on the Wiki.js _Administration → Authentication_ page: the admin sees a list of
 **authentication strategies**, enables any combination of them, and configures each one
 independently. The sign-in page renders exactly the enabled strategies, in the order the
 admin sets.
 
 **Strategies**
 
-| Strategy | Phase | Configuration fields |
-| --- | --- | --- |
-| Email + password (local) | 1 | Password policy (min length, complexity, breach check), require email verification. |
-| Email OTP (passwordless code) | 1 | Code length (6), TTL (10 min), max attempts (5), resend cooldown (60 s). Requires a configured mail server (§8.2). |
-| Google | 1 | Client ID, client secret, allowed Google Workspace domain (`hd`) — optional. |
-| Microsoft Entra ID | 2 | Tenant ID, client ID, client secret. |
-| Generic OIDC | 2 | Issuer URL (discovery), client ID/secret, scopes, claim mapping (email, name, groups). |
-| SAML 2.0 | 3 | IdP metadata URL/XML, entity ID, certificate, attribute mapping. |
-| LDAP / Active Directory | 3 | URL, bind DN/credentials, search base, filter, TLS. |
+| Strategy                      | Phase | Configuration fields                                                                                               |
+| ----------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------ |
+| Email + password (local)      | 1     | Password policy (min length, complexity, breach check), require email verification.                                |
+| Email OTP (passwordless code) | 1     | Code length (6), TTL (10 min), max attempts (5), resend cooldown (60 s). Requires a configured mail server (§8.2). |
+| Google                        | 1     | Client ID, client secret, allowed Google Workspace domain (`hd`) — optional.                                       |
+| Microsoft Entra ID            | 2     | Tenant ID, client ID, client secret.                                                                               |
+| Generic OIDC                  | 2     | Issuer URL (discovery), client ID/secret, scopes, claim mapping (email, name, groups).                             |
+| SAML 2.0                      | 3     | IdP metadata URL/XML, entity ID, certificate, attribute mapping.                                                   |
+| LDAP / Active Directory       | 3     | URL, bind DN/credentials, search base, filter, TLS.                                                                |
 
 **Per-strategy settings** (common to all strategies, as in Wiki.js):
 
-| Setting | Description |
-| --- | --- |
-| Enabled | Show the strategy on the sign-in page. |
-| Display name & order | Label and position on the sign-in page. |
-| Allow self-registration | If on, an unknown user who authenticates successfully gets an account created automatically. If off, only invited members can sign in with this strategy. |
-| Allowed email domains | Self-registration is limited to these domains (e.g. `company.com`). Empty = any domain. |
-| Default role & scope on registration | Role (and optionally department/team) assigned to accounts created via this strategy, e.g. `Guest` at org scope. |
-| Callback URL | Read-only, shown for copying into the IdP console. |
+| Setting                              | Description                                                                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Enabled                              | Show the strategy on the sign-in page.                                                                                                                    |
+| Display name & order                 | Label and position on the sign-in page.                                                                                                                   |
+| Allow self-registration              | If on, an unknown user who authenticates successfully gets an account created automatically. If off, only invited members can sign in with this strategy. |
+| Allowed email domains                | Self-registration is limited to these domains (e.g. `company.com`). Empty = any domain.                                                                   |
+| Default role & scope on registration | Role (and optionally department/team) assigned to accounts created via this strategy, e.g. `Guest` at org scope.                                          |
+| Callback URL                         | Read-only, shown for copying into the IdP console.                                                                                                        |
 
 **Rules**
 
@@ -511,21 +511,21 @@ admin sets.
 
 ### 8.2 Mail server (SMTP)
 
-Modelled on Wiki.js *Administration → Mail*. Required for email OTP, email verification,
+Modelled on Wiki.js _Administration → Mail_. Required for email OTP, email verification,
 invites, password reset and email notifications. Until configured, strategies that depend
 on email are shown as unavailable and admins see a banner.
 
-| Field | Notes |
-| --- | --- |
-| Sender name / sender email | `From` header, e.g. `Ordler <no-reply@company.com>`. |
-| SMTP host / port | e.g. `smtp.company.com` / `587`. |
-| Security | `none`, `STARTTLS`, `SSL/TLS`. |
-| Verify TLS certificate | Toggle (on by default). |
-| Authentication | Username + password (encrypted, write-only). |
-| DKIM (optional) | Domain name, key selector, private key. |
-| Send test email | Sends a test message to an address entered by the admin; shows the SMTP response or error. |
+| Field                      | Notes                                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| Sender name / sender email | `From` header, e.g. `Ordler <no-reply@company.com>`.                                       |
+| SMTP host / port           | e.g. `smtp.company.com` / `587`.                                                           |
+| Security                   | `none`, `STARTTLS`, `SSL/TLS`.                                                             |
+| Verify TLS certificate     | Toggle (on by default).                                                                    |
+| Authentication             | Username + password (encrypted, write-only).                                               |
+| DKIM (optional)            | Domain name, key selector, private key.                                                    |
+| Send test email            | Sends a test message to an address entered by the admin; shows the SMTP response or error. |
 
-- Until SMTP is configured, only email + password sign-in and invite *links* (copied
+- Until SMTP is configured, only email + password sign-in and invite _links_ (copied
   manually by the admin) work; email OTP is disabled.
 - SMTP can also be preset via environment variables (§16.2); values set in env are shown
   read-only in the admin panel.
@@ -566,7 +566,7 @@ access, but self-service: **every member creates tokens for themselves**.
 
 **Personal access tokens (PAT)**
 
-- Created in *Settings → Access tokens*: name, expiry (default 90 days, max set by admin,
+- Created in _Settings → Access tokens_: name, expiry (default 90 days, max set by admin,
   "no expiry" only if the admin allows it), scopes.
 - Scopes: `read` (issues, requests, projects, comments the member can see), `issues:write`
   (create/update issues, comment), `requests:write` (create requests, comment on own
@@ -598,8 +598,8 @@ access, but self-service: **every member creates tokens for themselves**.
   so clients can attach items as context.
 - **Approvals cannot be decided through MCP or tokens**: `list_my_approvals` is read-only;
   approve/reject/request changes remain human actions in the signed-in UI (§6.3).
-- Every write is recorded in the audit log and activity history as the member *via token
-  "<name>"*, so humans see what an agent did.
+- Every write is recorded in the audit log and activity history as the member _via token
+  "<name>"_, so humans see what an agent did.
 - Rate limits per token (default 120 requests/min); tool results are paginated and
   truncated to keep responses small for agents.
 - Tool descriptions are English; returned data keeps the original language of the content.
@@ -608,17 +608,17 @@ access, but self-service: **every member creates tokens for themselves**.
 
 ## 11. Non-functional requirements
 
-| Area | Requirement |
-| --- | --- |
-| Performance | API p95 < 200 ms for reads, < 400 ms for writes at 1k concurrent users on the reference sizing (2 app replicas × 2 vCPU/4 GB, PostgreSQL db.m6g.large); list of 1 000 issues renders < 1 s; UI interactions feel instant via optimistic updates. |
-| Real-time | Changes propagate to connected clients < 1 s (WebSocket). |
-| Availability | Zero-downtime rolling upgrades in Kubernetes with ≥ 2 replicas; stateless app nodes (all state in PostgreSQL and file storage). |
-| Scalability | 10k members and 1M issues per installation without degradation; horizontal scaling by adding replicas. |
-| Security | OWASP ASVS L2, TLS 1.2+, passwords hashed with Argon2id, CSRF protection, strict CSP, secrets never logged, attachments scanned and served via signed URLs. |
-| Privacy | GDPR: data export, account deletion (pseudonymize authored content). No telemetry leaves the installation unless the admin opts in. |
-| Accessibility | WCAG 2.1 AA, full keyboard operability, screen-reader labels. |
-| Observability | Structured JSON logs, OpenTelemetry traces, metrics, error tracking. |
-| Backups | Database backups are the operator's responsibility (e.g. RDS automated backups); docs describe backup/restore of DB + file storage. Admin panel offers full JSON export. |
+| Area          | Requirement                                                                                                                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Performance   | API p95 < 200 ms for reads, < 400 ms for writes at 1k concurrent users on the reference sizing (2 app replicas × 2 vCPU/4 GB, PostgreSQL db.m6g.large); list of 1 000 issues renders < 1 s; UI interactions feel instant via optimistic updates. |
+| Real-time     | Changes propagate to connected clients < 1 s (WebSocket).                                                                                                                                                                                        |
+| Availability  | Zero-downtime rolling upgrades in Kubernetes with ≥ 2 replicas; stateless app nodes (all state in PostgreSQL and file storage).                                                                                                                  |
+| Scalability   | 10k members and 1M issues per installation without degradation; horizontal scaling by adding replicas.                                                                                                                                           |
+| Security      | OWASP ASVS L2, TLS 1.2+, passwords hashed with Argon2id, CSRF protection, strict CSP, secrets never logged, attachments scanned and served via signed URLs.                                                                                      |
+| Privacy       | GDPR: data export, account deletion (pseudonymize authored content). No telemetry leaves the installation unless the admin opts in.                                                                                                              |
+| Accessibility | WCAG 2.1 AA, full keyboard operability, screen-reader labels.                                                                                                                                                                                    |
+| Observability | Structured JSON logs, OpenTelemetry traces, metrics, error tracking.                                                                                                                                                                             |
+| Backups       | Database backups are the operator's responsibility (e.g. RDS automated backups); docs describe backup/restore of DB + file storage. Admin panel offers full JSON export.                                                                         |
 
 ### 11.1 Localization
 
@@ -839,31 +839,31 @@ with PostgreSQL as the only mandatory external service.
 
 ### 16.1 Artifacts
 
-| Artifact | Description |
-| --- | --- |
-| Container image `ghcr.io/ordlerhq/ordler`, `docker.io/ordlerhq/ordler` | Multi-arch (amd64, arm64), non-root user, read-only root FS. Contains API, worker and built web assets. Role selected by `ORDLER_ROLE=all` (default) / `web` / `worker`. |
-| `docker-compose.yml` example | Ordler + optional bundled PostgreSQL, or Ordler alone pointed at an external DB. |
-| Helm chart `ordler` | Deployment (web), Deployment (worker), Service, Ingress, ConfigMap, Secret, PVC (local storage mode), HPA, PodDisruptionBudget, migration Job (pre-upgrade hook), ServiceAccount. Values for `externalDatabase`, `storage`, `smtp`, `ingress`, `resources`. |
-| Docs | Install (Docker, Compose, Helm), configuration reference, RDS guide, backup/restore, upgrade, sizing. |
+| Artifact                                                               | Description                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Container image `ghcr.io/ordlerhq/ordler`, `docker.io/ordlerhq/ordler` | Multi-arch (amd64, arm64), non-root user, read-only root FS. Contains API, worker and built web assets. Role selected by `ORDLER_ROLE=all` (default) / `web` / `worker`.                                                                                    |
+| `docker-compose.yml` example                                           | Ordler + optional bundled PostgreSQL, or Ordler alone pointed at an external DB.                                                                                                                                                                            |
+| Helm chart `ordler`                                                    | Deployment (web), Deployment (worker), Service, Ingress, ConfigMap, Secret, PVC (local storage mode), HPA, PodDisruptionBudget, migration Job (pre-upgrade hook), ServiceAccount. Values for `externalDatabase`, `storage`, `smtp`, `ingress`, `resources`. |
+| Docs                                                                   | Install (Docker, Compose, Helm), configuration reference, RDS guide, backup/restore, upgrade, sizing.                                                                                                                                                       |
 
 ### 16.2 Configuration (environment variables)
 
-| Variable | Example | Notes |
-| --- | --- | --- |
-| `DATABASE_URL` | `postgres://ordler:***@db.xxxx.rds.amazonaws.com:5432/ordler` | Alternative to the `DB_*` set below. |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` / `DB_PASS_FILE` | | `*_FILE` variants read secrets from mounted files (K8s secrets). |
-| `DB_SSL` | `disable` / `require` / `verify-full` | `verify-full` recommended for RDS. |
-| `DB_SSL_CA` / `DB_SSL_CA_FILE` | RDS global CA bundle | |
-| `DB_SCHEMA` | `ordler` | Allows sharing a database with other apps. |
-| `DB_POOL_MAX` | `20` | Per replica; size against RDS `max_connections` (or use RDS Proxy / PgBouncer in transaction mode). |
-| `BASE_URL` | `https://tasks.company.com` | Used in emails and OAuth callbacks. |
-| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE` | 32-byte key | Encrypts stored secrets (OAuth, SMTP). Losing it = re-entering secrets. |
-| `SESSION_SECRET` | | |
-| `STORAGE_DRIVER` | `local` / `s3` | `s3` needs `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (MinIO), credentials or IAM role (IRSA). |
-| `SMTP_*` (optional) | | Presets mail settings (§8.2). |
-| `LOG_LEVEL`, `LOG_FORMAT` | `info`, `json` | |
-| `ORDLER_ROLE` | `all` | |
-| `TRUST_PROXY` | `true` | Behind ingress / load balancer. |
+| Variable                                                               | Example                                                       | Notes                                                                                               |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                         | `postgres://ordler:***@db.xxxx.rds.amazonaws.com:5432/ordler` | Alternative to the `DB_*` set below.                                                                |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` / `DB_PASS_FILE` |                                                               | `*_FILE` variants read secrets from mounted files (K8s secrets).                                    |
+| `DB_SSL`                                                               | `disable` / `require` / `verify-full`                         | `verify-full` recommended for RDS.                                                                  |
+| `DB_SSL_CA` / `DB_SSL_CA_FILE`                                         | RDS global CA bundle                                          |                                                                                                     |
+| `DB_SCHEMA`                                                            | `ordler`                                                      | Allows sharing a database with other apps.                                                          |
+| `DB_POOL_MAX`                                                          | `20`                                                          | Per replica; size against RDS `max_connections` (or use RDS Proxy / PgBouncer in transaction mode). |
+| `BASE_URL`                                                             | `https://tasks.company.com`                                   | Used in emails and OAuth callbacks.                                                                 |
+| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE`                               | 32-byte key                                                   | Encrypts stored secrets (OAuth, SMTP). Losing it = re-entering secrets.                             |
+| `SESSION_SECRET`                                                       |                                                               |                                                                                                     |
+| `STORAGE_DRIVER`                                                       | `local` / `s3`                                                | `s3` needs `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (MinIO), credentials or IAM role (IRSA).         |
+| `SMTP_*` (optional)                                                    |                                                               | Presets mail settings (§8.2).                                                                       |
+| `LOG_LEVEL`, `LOG_FORMAT`                                              | `info`, `json`                                                |                                                                                                     |
+| `ORDLER_ROLE`                                                          | `all`                                                         |                                                                                                     |
+| `TRUST_PROXY`                                                          | `true`                                                        | Behind ingress / load balancer.                                                                     |
 
 ### 16.3 External PostgreSQL / AWS RDS
 

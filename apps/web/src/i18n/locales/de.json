@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "search": "Suche",
+    "newIssue": "Neue Aufgabe",
+    "inbox": "Posteingang",
+    "myIssues": "Meine Aufgaben",
+    "myRequests": "Meine Anfragen",
+    "approvals": "Freigaben",
+    "pendingApprovals": "{count, plural, one {# Freigabe wartet} other {# Freigaben warten}}",
+    "workspace": "Arbeitsbereich",
+    "initiatives": "Initiativen",
+    "projects": "Projekte",
+    "views": "Ansichten",
+    "servicePortals": "Serviceportale",
+    "yourDepartments": "Deine Abteilungen",
+    "requests": "Anfragen",
+    "triage": "Triage",
+    "issues": "Aufgaben",
+    "cycles": "Zyklen",
+    "currentCycle": "Aktuell",
+    "upcomingCycle": "Anstehend"
+  },
+  "settings": {
+    "language": "Sprache"
+  },
+  "home": {
+    "title": "Willkommen bei Ordler",
+    "hint": "Wähle in der Seitenleiste ein Team, um seine Aufgaben zu sehen."
+  }
+}

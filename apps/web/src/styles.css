@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/* Light by default; dark follows the OS (SPEC §5.4). */
+@theme {
+  --color-sidebar: #f7f7f8;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1e;
+  --color-ink-muted: #4b4b55;
+  --color-ink-faint: #8a8a94;
+  --color-line: #e4e4e8;
+  --color-hover: #ececf0;
+  --color-accent: #8b3fbf;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-sidebar: #1b1b1f;
+    --color-surface: #141417;
+    --color-ink: #f2f2f5;
+    --color-ink-muted: #b4b4bc;
+    --color-ink-faint: #7c7c86;
+    --color-line: #2c2c33;
+    --color-hover: #2a2a31;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}

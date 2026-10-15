@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "search": "Поиск",
+    "newIssue": "Новая задача",
+    "inbox": "Входящие",
+    "myIssues": "Мои задачи",
+    "myRequests": "Мои запросы",
+    "approvals": "Согласования",
+    "pendingApprovals": "{count, plural, one {# согласование ожидает} few {# согласования ожидают} many {# согласований ожидают} other {# согласования ожидают}}",
+    "workspace": "Рабочее пространство",
+    "initiatives": "Инициативы",
+    "projects": "Проекты",
+    "views": "Представления",
+    "servicePortals": "Сервисные порталы",
+    "yourDepartments": "Ваши департаменты",
+    "requests": "Запросы",
+    "triage": "Разбор",
+    "issues": "Задачи",
+    "cycles": "Циклы",
+    "currentCycle": "Текущий",
+    "upcomingCycle": "Следующие"
+  },
+  "settings": {
+    "language": "Язык"
+  },
+  "home": {
+    "title": "Добро пожаловать в Ordler",
+    "hint": "Выберите команду в боковой панели, чтобы увидеть её задачи."
+  }
+}

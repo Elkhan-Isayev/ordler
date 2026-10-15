@@ -35,6 +35,13 @@ Every change to UI or server code ships with unit tests in the same change:
   the denied path.
 - Done = the full test suite and type-check pass locally; report the actual result.
 
+## Commands
+
+Scripts live in the root and package `package.json` files; run them with pnpm from Corepack.
+Turbo needs a `pnpm` binary on `PATH`, so use `corepack enable` (or a shim) rather than
+`corepack pnpm` when running root scripts. Tests import `@ordler/shared` from source via a
+Vitest alias; runtime code imports its built `dist`.
+
 ## Changelog
 
 Every change set adds a new file to `.ai/changelog/` following `.ai/README.md`
@@ -57,4 +64,4 @@ Every change set adds a new file to `.ai/changelog/` following `.ai/README.md`
 
 - TypeScript `strict`; validate external input with Zod schemas from `packages/shared`.
 - Conventional Commits (`feat(api): …`, `fix(web): …`, `test: …`, `docs: …`).
-- Comments explain *why*, one line where possible.
+- Comments explain _why_, one line where possible.

@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "search": "Search",
+    "newIssue": "New issue",
+    "inbox": "Inbox",
+    "myIssues": "My issues",
+    "myRequests": "My requests",
+    "approvals": "Approvals",
+    "pendingApprovals": "{count, plural, one {# approval waiting} other {# approvals waiting}}",
+    "workspace": "Workspace",
+    "initiatives": "Initiatives",
+    "projects": "Projects",
+    "views": "Views",
+    "servicePortals": "Service portals",
+    "yourDepartments": "Your departments",
+    "requests": "Requests",
+    "triage": "Triage",
+    "issues": "Issues",
+    "cycles": "Cycles",
+    "currentCycle": "Current",
+    "upcomingCycle": "Upcoming"
+  },
+  "settings": {
+    "language": "Language"
+  },
+  "home": {
+    "title": "Welcome to Ordler",
+    "hint": "Pick a team in the sidebar to see its issues."
+  }
+}
