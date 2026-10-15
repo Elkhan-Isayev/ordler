@@ -1,32 +1,40 @@
 import { Module, type DynamicModule } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import {
-  HealthController,
-  READINESS_CHECK,
-  type ReadinessCheck,
-} from './health/health.controller.js';
-import {
-  ACCESS_CONTEXT,
-  PermissionGuard,
-  type AccessContextSource,
-} from './rbac/permission.guard.js';
-
-export interface AppModuleOptions {
-  readiness: ReadinessCheck;
-  access: AccessContextSource;
-}
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { AppContext } from './app-context.js';
+import { AdminStrategiesController } from './auth/admin-strategies.controller.js';
+import { AuthController } from './auth/auth.controller.js';
+import { HealthController, READINESS_CHECK } from './health/health.controller.js';
+import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
+import { MeController } from './members/me.controller.js';
+import { ACCESS_CONTEXT, PermissionGuard } from './rbac/permission.guard.js';
+import { SetupController } from './setup/setup.controller.js';
 
 @Module({})
 export class AppModule {
-  static forRoot(options: AppModuleOptions): DynamicModule {
+  static forRoot(ctx: AppContext): DynamicModule {
     return {
       module: AppModule,
-      controllers: [HealthController],
+      controllers: [
+        HealthController,
+        SetupController,
+        AuthController,
+        MeController,
+        AdminStrategiesController,
+      ],
       providers: [
-        { provide: READINESS_CHECK, useValue: options.readiness },
-        { provide: ACCESS_CONTEXT, useValue: options.access },
+        { provide: APP_CONTEXT, useValue: ctx },
+        { provide: READINESS_CHECK, useValue: ctx.readiness },
+        { provide: ACCESS_CONTEXT, useValue: ctx.access },
         { provide: APP_GUARD, useClass: PermissionGuard },
+        { provide: APP_FILTER, useClass: DomainErrorFilter },
       ],
     };
   }
+}
+
+/** Shared by main.ts and tests so both serve the exact same HTTP surface. */
+export function configureApp(app: NestFastifyApplication, ctx: AppContext): void {
+  app.setGlobalPrefix('api', { exclude: ['healthz', 'readyz'] });
+  registerRequestHooks(app.getHttpAdapter().getInstance(), ctx);
 }

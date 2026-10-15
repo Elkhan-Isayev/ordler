@@ -26,5 +26,55 @@
   "home": {
     "title": "Ordler-ə xoş gəlmisiniz",
     "hint": "Tapşırıqlarını görmək üçün yan paneldə komanda seçin."
+  },
+  "setup": {
+    "title": "Ordler-in quraşdırılması",
+    "subtitle": "İş sahənizi və ilk administrator hesabını yaradın.",
+    "companyName": "Şirkətin adı",
+    "defaultLanguage": "Standart dil",
+    "ownerSection": "Administrator hesabı",
+    "name": "Adınız",
+    "email": "E-poçt",
+    "password": "Şifrə",
+    "passwordConfirm": "Şifrəni təkrarlayın",
+    "passwordHint": "Ən azı {min, plural, one {# simvol} other {# simvol}}.",
+    "submit": "İş sahəsini yarat",
+    "submitting": "Yaradılır…"
+  },
+  "auth": {
+    "title": "Ordler-ə daxil olun",
+    "email": "E-poçt",
+    "password": "Şifrə",
+    "signIn": "Daxil ol",
+    "signingIn": "Daxil olunur…",
+    "or": "və ya",
+    "otpSend": "Giriş kodunu e-poçtla göndər",
+    "otpSent": "Əgər {email} ünvanı ilə daxil olmaq mümkündürsə, 6 rəqəmli kod göndərildi.",
+    "code": "Giriş kodu",
+    "verify": "Kodu təsdiqlə",
+    "useAnotherEmail": "Başqa e-poçt",
+    "google": "Google ilə davam et",
+    "noStrategies": "Giriş mümkün deyil. Administratorla əlaqə saxlayın.",
+    "signOut": "Çıxış",
+    "loading": "Yüklənir…"
+  },
+  "errors": {
+    "invalid_credentials": "E-poçt və ya şifrə yanlışdır.",
+    "invalid_code": "Kod yanlışdır və ya vaxtı bitib.",
+    "strategy_disabled": "Bu giriş üsulu söndürülüb.",
+    "registration_closed": "Bu iş sahəsi yeni hesablar qəbul etmir. Administratordan dəvət istəyin.",
+    "domain_not_allowed": "Bu e-poçt domeni ilə hesablara icazə verilmir.",
+    "rate_limited": "Çox sayda cəhd. Bir neçə dəqiqə gözləyib yenidən cəhd edin.",
+    "setup_completed": "Ordler artıq quraşdırılıb.",
+    "setup_required": "Ordler hələ quraşdırılmayıb.",
+    "lockout_prevented": "Bu dəyişiklik sizin girişinizi bağlayardı.",
+    "mail_not_configured": "E-poçt göndərilməsi qurulmayıb.",
+    "oauth_failed": "Google ilə giriş alınmadı. Yenidən cəhd edin.",
+    "email_not_verified": "Google e-poçt ünvanınız təsdiqlənməyib.",
+    "validation_failed": "Qeyd olunmuş sahələri yoxlayın.",
+    "password_too_short": "Şifrə çox qısadır.",
+    "password_mismatch": "Şifrələr uyğun gəlmir.",
+    "network": "Serverlə əlaqə yoxdur. Bağlantınızı yoxlayın.",
+    "unknown": "Nəsə səhv getdi. Yenidən cəhd edin."
   }
 }

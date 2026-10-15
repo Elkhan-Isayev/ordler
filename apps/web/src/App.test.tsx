@@ -1,18 +1,23 @@
-import { render, screen } from '@testing-library/react';
-import { I18nextProvider } from 'react-i18next';
-import { describe, expect, it } from 'vitest';
+import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { App } from './App.js';
-import { createI18n } from './i18n/index.js';
+import { ME } from './test/api-mock.js';
+import { renderWithI18n } from './test/render.js';
 
 describe('App', () => {
-  it('renders the sidebar and the welcome screen in the chosen language', async () => {
-    const i18n = await createI18n('de');
-    render(
-      <I18nextProvider i18n={i18n}>
-        <App workspaceName="Ordler" inboxCount={0} pendingApprovals={0} departments={[]} />
-      </I18nextProvider>,
-    );
-    expect(screen.getByRole('navigation', { name: 'Ordler' })).toBeInTheDocument();
+  it('shows the workspace, the member’s departments and the welcome screen', async () => {
+    await renderWithI18n(<App me={ME} onSignOut={vi.fn()} />, 'de');
+    expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /IT/ })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Willkommen bei Ordler' })).toBeInTheDocument();
+    expect(screen.getByText('Ann Lee')).toBeInTheDocument();
+  });
+
+  it('signs out from the sidebar', async () => {
+    const onSignOut = vi.fn();
+    await renderWithI18n(<App me={ME} onSignOut={onSignOut} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(onSignOut).toHaveBeenCalledOnce();
   });
 });

@@ -7,7 +7,7 @@ departments (Jira Service Management-like requests with cross-department approva
   any feature work; use its glossary terms (Department, Team, Issue, Request, Approval step,
   Approver selector…) in code, tests and UI copy.
 - Architecture decisions: `docs/adr/` (0001 stack, 0002 on-prem single-tenant, 0003 AGPL
-  and distribution). Record any deviation or new major dependency as a new ADR.
+  and distribution, 0004 authentication). Record any deviation or new major dependency as a new ADR.
 - The repository is public and AGPL-3.0: add only AGPL-compatible dependencies, and keep
   fixtures, tests and docs free of secrets and real company data.
 - Ordler ships on-premises only: one Docker image, Compose and Helm chart, PostgreSQL 18+
@@ -29,8 +29,9 @@ Every change to UI or server code ships with unit tests in the same change:
 - New behaviour → tests that describe it. Changed behaviour → updated tests.
 - Bug fix → first a failing regression test, then the fix.
 - Web: Vitest + Testing Library, test files next to the component (`*.test.tsx`).
-- API/worker/shared: Vitest, `*.test.ts` next to the module; integration tests against real
-  PostgreSQL via Testcontainers in `*.int.test.ts`.
+- API/worker/shared: Vitest, `*.test.ts` next to the module. Database code is tested on real
+  PostgreSQL 18 through PGlite (`apps/api/src/test/pglite.ts`, no Docker needed); network/TLS
+  integration tests via Testcontainers go in `*.int.test.ts`.
 - Permissions, approvals, SLA and workflow transitions need tests for both the allowed and
   the denied path.
 - Done = the full test suite and type-check pass locally; report the actual result.

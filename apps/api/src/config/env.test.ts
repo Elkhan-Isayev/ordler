@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { ConfigError, describeConfig, loadConfig } from './env.js';
 
+const KEY = Buffer.alloc(32, 7).toString('base64');
 const RDS_CA = '-----BEGIN CERTIFICATE-----\nMIIfake\n-----END CERTIFICATE-----';
 
 describe('loadConfig', () => {
   it('applies defaults with a connection string', () => {
-    const config = loadConfig({ DATABASE_URL: 'postgres://u:p@localhost/ordler' });
+    const config = loadConfig({
+      DATABASE_URL: 'postgres://u:p@localhost/ordler',
+      ENCRYPTION_KEY: KEY,
+    });
     expect(config).toMatchObject({
       port: 3000,
       role: 'all',
@@ -35,6 +39,7 @@ describe('loadConfig', () => {
         DB_SSL_CA_FILE: '/run/secrets/rds-ca.pem',
         ORDLER_MIGRATE: 'false',
         BASE_URL: 'https://tasks.example.com/',
+        ENCRYPTION_KEY: KEY,
       },
       (path) => files[path] ?? '',
     );
@@ -49,36 +54,96 @@ describe('loadConfig', () => {
   });
 
   it('rejects a missing database', () => {
-    expect(() => loadConfig({})).toThrow(ConfigError);
+    expect(() => loadConfig({ ENCRYPTION_KEY: KEY })).toThrow(ConfigError);
   });
 
   it('rejects both DATABASE_URL and DB_HOST', () => {
-    expect(() => loadConfig({ DATABASE_URL: 'postgres://x', DB_HOST: 'db' })).toThrow(/not both/);
+    expect(() =>
+      loadConfig({ DATABASE_URL: 'postgres://x', DB_HOST: 'db', ENCRYPTION_KEY: KEY }),
+    ).toThrow(/not both/);
   });
 
   it('rejects a variable set both directly and via _FILE', () => {
     expect(() =>
-      loadConfig({ DB_HOST: 'db', DB_PASS: 'a', DB_PASS_FILE: '/x' }, () => 'b'),
+      loadConfig(
+        { DB_HOST: 'db', DB_PASS: 'a', DB_PASS_FILE: '/x', ENCRYPTION_KEY: KEY },
+        () => 'b',
+      ),
     ).toThrow(/DB_PASS or DB_PASS_FILE/);
   });
 
   it('requires a CA bundle for verify-full', () => {
-    expect(() => loadConfig({ DB_HOST: 'db', DB_SSL: 'verify-full' })).toThrow(/DB_SSL_CA/);
+    expect(() => loadConfig({ DB_HOST: 'db', DB_SSL: 'verify-full', ENCRYPTION_KEY: KEY })).toThrow(
+      /DB_SSL_CA/,
+    );
   });
 
   it('rejects unsafe schema names', () => {
-    expect(() => loadConfig({ DB_HOST: 'db', DB_SCHEMA: 'public; drop' })).toThrow(/DB_SCHEMA/);
+    expect(() =>
+      loadConfig({ DB_HOST: 'db', DB_SCHEMA: 'public; drop', ENCRYPTION_KEY: KEY }),
+    ).toThrow(/DB_SCHEMA/);
   });
 
   it('rejects unsupported locales', () => {
-    expect(() => loadConfig({ DB_HOST: 'db', DEFAULT_LOCALE: 'fr' })).toThrow(/DEFAULT_LOCALE/);
+    expect(() => loadConfig({ DB_HOST: 'db', DEFAULT_LOCALE: 'fr', ENCRYPTION_KEY: KEY })).toThrow(
+      /DEFAULT_LOCALE/,
+    );
+  });
+});
+
+describe('secrets and mail', () => {
+  const base = { DB_HOST: 'db', ENCRYPTION_KEY: KEY };
+
+  it('requires a 32-byte encryption key', () => {
+    expect(() => loadConfig({ DB_HOST: 'db' })).toThrow(/ENCRYPTION_KEY/);
+    expect(() =>
+      loadConfig({ DB_HOST: 'db', ENCRYPTION_KEY: Buffer.alloc(16).toString('base64') }),
+    ).toThrow(/32 bytes/);
+    expect(loadConfig(base).encryptionKey).toEqual(Buffer.alloc(32, 7));
+  });
+
+  it('reads the encryption key from a file', () => {
+    const config = loadConfig({ DB_HOST: 'db', ENCRYPTION_KEY_FILE: '/k' }, () => `${KEY}\n`);
+    expect(config.encryptionKey.length).toBe(32);
+  });
+
+  it('leaves SMTP unconfigured by default', () => {
+    expect(loadConfig(base).smtp).toBeUndefined();
+  });
+
+  it('builds SMTP settings and requires a sender', () => {
+    expect(() => loadConfig({ ...base, SMTP_HOST: 'smtp.example.com' })).toThrow(/SMTP_FROM/);
+    const config = loadConfig(
+      {
+        ...base,
+        SMTP_HOST: 'smtp.example.com',
+        SMTP_FROM: 'Ordler <no-reply@example.com>',
+        SMTP_USER: 'mailer',
+        SMTP_PASS_FILE: '/smtp',
+      },
+      () => 'smtp-secret',
+    );
+    expect(config.smtp).toEqual({
+      host: 'smtp.example.com',
+      port: 587,
+      security: 'starttls',
+      verifyTls: true,
+      user: 'mailer',
+      password: 'smtp-secret',
+      from: 'Ordler <no-reply@example.com>',
+    });
+    expect(JSON.stringify(describeConfig(config))).not.toContain('smtp-secret');
   });
 });
 
 describe('describeConfig', () => {
   it('never exposes passwords or connection strings', () => {
-    const fromUrl = describeConfig(loadConfig({ DATABASE_URL: 'postgres://u:topsecret@h/db' }));
-    const fromHost = describeConfig(loadConfig({ DB_HOST: 'db', DB_PASS: 'topsecret' }));
+    const fromUrl = describeConfig(
+      loadConfig({ DATABASE_URL: 'postgres://u:topsecret@h/db', ENCRYPTION_KEY: KEY }),
+    );
+    const fromHost = describeConfig(
+      loadConfig({ DB_HOST: 'db', DB_PASS: 'topsecret', ENCRYPTION_KEY: KEY }),
+    );
     expect(JSON.stringify(fromUrl)).not.toContain('topsecret');
     expect(JSON.stringify(fromHost)).not.toContain('topsecret');
     expect(fromHost).toMatchObject({ database: { target: 'db:5432' } });

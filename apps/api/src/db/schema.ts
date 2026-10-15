@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   index,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -163,5 +164,86 @@ export const auditLog = pgTable(
   (t) => [
     index('audit_log_created_idx').on(t.createdAt),
     index('audit_log_target_idx').on(t.targetType, t.targetId),
+  ],
+);
+
+export const memberPasswords = pgTable('member_passwords', {
+  memberId: uuid('member_id')
+    .primaryKey()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  hash: text('hash').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One row per strategy kind; secrets are sealed with ENCRYPTION_KEY (SPEC §8.1). */
+export const authStrategies = pgTable(
+  'auth_strategies',
+  {
+    id: id(),
+    kind: text('kind', { enum: ['local', 'email_otp', 'google'] }).notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    position: integer('position').notNull().default(0),
+    displayName: text('display_name'),
+    config: jsonb('config').$type<Record<string, unknown>>().notNull().default({}),
+    secretsEncrypted: text('secrets_encrypted'),
+    allowSelfRegistration: boolean('allow_self_registration').notNull().default(false),
+    allowedDomains: text('allowed_domains')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    defaultRoleId: uuid('default_role_id').references(() => roles.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('auth_strategies_kind_uq').on(t.kind)],
+);
+
+/** External identities (Google subject, later OIDC/SAML) linked to a member. */
+export const memberIdentities = pgTable(
+  'member_identities',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    strategyKind: text('strategy_kind').notNull(),
+    providerSubject: text('provider_subject').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('member_identities_subject_uq').on(t.strategyKind, t.providerSubject)],
+);
+
+export const otpChallenges = pgTable(
+  'otp_challenges',
+  {
+    id: id(),
+    email: text('email').notNull(),
+    codeHash: text('code_hash').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('otp_challenges_email_idx').on(t.email, t.createdAt)],
+);
+
+/** Opaque session tokens; only the SHA-256 of the cookie value is stored. */
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    strategyKind: text('strategy_kind').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('sessions_token_hash_uq').on(t.tokenHash),
+    index('sessions_member_idx').on(t.memberId),
   ],
 );

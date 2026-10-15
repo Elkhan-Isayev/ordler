@@ -18,6 +18,8 @@ export interface SidebarProps {
   inboxCount: number;
   pendingApprovals: number;
   departments: SidebarDepartment[];
+  /** Pinned to the bottom: the signed-in member and their actions. */
+  footer?: ReactNode;
 }
 
 /** Badges cap like Linear's, so the sidebar width stays stable. */
@@ -32,6 +34,7 @@ export function Sidebar({
   inboxCount,
   pendingApprovals,
   departments,
+  footer,
 }: SidebarProps) {
   const { t } = useTranslation();
 
@@ -76,6 +79,7 @@ export function Sidebar({
           ))}
         </Section>
       )}
+      {footer && <div className="mt-auto border-t border-line pt-3">{footer}</div>}
     </nav>
   );
 }

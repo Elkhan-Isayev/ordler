@@ -21,6 +21,16 @@ export interface DatabaseConfig {
   poolMax: number;
 }
 
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  security: 'none' | 'starttls' | 'tls';
+  verifyTls: boolean;
+  user?: string;
+  password?: string;
+  from: string;
+}
+
 export interface AppConfig {
   port: number;
   baseUrl: string;
@@ -29,6 +39,11 @@ export interface AppConfig {
   defaultLocale: (typeof SUPPORTED_LOCALES)[number];
   logLevel: 'debug' | 'info' | 'warn' | 'error';
   database: DatabaseConfig;
+  /** 32-byte key sealing stored secrets (OAuth, SMTP) and OAuth state cookies. */
+  encryptionKey: Buffer;
+  sessionTtlDays: number;
+  /** Absent until SMTP is configured; email OTP stays unavailable meanwhile. */
+  smtp?: SmtpConfig;
 }
 
 const booleanString = z
@@ -55,10 +70,25 @@ const envSchema = z.object({
   DB_SSL: z.enum(['disable', 'require', 'verify-full']).default('disable'),
   DB_SSL_CA: z.string().optional(),
   DB_POOL_MAX: z.coerce.number().int().min(1).max(500).default(20),
+  ENCRYPTION_KEY: z.string().min(1, 'ENCRYPTION_KEY is required'),
+  SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_SECURITY: z.enum(['none', 'starttls', 'tls']).default('starttls'),
+  SMTP_VERIFY_TLS: booleanString.default(true),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().min(3).optional(),
 });
 
 /** Variables that may instead be read from a mounted file via `<NAME>_FILE` (Kubernetes secrets). */
-const FILE_VARIABLES = ['DATABASE_URL', 'DB_PASS', 'DB_SSL_CA'] as const;
+const FILE_VARIABLES = [
+  'DATABASE_URL',
+  'DB_PASS',
+  'DB_SSL_CA',
+  'ENCRYPTION_KEY',
+  'SMTP_PASS',
+] as const;
 
 export class ConfigError extends Error {
   override name = 'ConfigError';
@@ -93,6 +123,15 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
   if (e.DB_SSL === 'verify-full' && !e.DB_SSL_CA) {
     throw new ConfigError('DB_SSL=verify-full requires DB_SSL_CA or DB_SSL_CA_FILE');
   }
+  const encryptionKey = Buffer.from(e.ENCRYPTION_KEY, 'base64');
+  if (encryptionKey.length !== 32) {
+    throw new ConfigError(
+      'ENCRYPTION_KEY must be 32 bytes, base64-encoded (openssl rand -base64 32)',
+    );
+  }
+  if (e.SMTP_HOST && !e.SMTP_FROM) {
+    throw new ConfigError('SMTP_FROM is required when SMTP_HOST is set');
+  }
 
   return {
     port: e.PORT,
@@ -111,6 +150,21 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
       ...(e.DB_SSL_CA ? { sslCa: e.DB_SSL_CA } : {}),
       poolMax: e.DB_POOL_MAX,
     },
+    encryptionKey,
+    sessionTtlDays: e.SESSION_TTL_DAYS,
+    ...(e.SMTP_HOST
+      ? {
+          smtp: {
+            host: e.SMTP_HOST,
+            port: e.SMTP_PORT,
+            security: e.SMTP_SECURITY,
+            verifyTls: e.SMTP_VERIFY_TLS,
+            ...(e.SMTP_USER ? { user: e.SMTP_USER } : {}),
+            ...(e.SMTP_PASS ? { password: e.SMTP_PASS } : {}),
+            from: e.SMTP_FROM!,
+          },
+        }
+      : {}),
   };
 }
 
@@ -132,5 +186,6 @@ export function describeConfig(config: AppConfig): Record<string, unknown> {
       ssl: database.ssl,
       poolMax: database.poolMax,
     },
+    smtp: config.smtp ? `${config.smtp.host}:${config.smtp.port}` : 'not configured',
   };
 }

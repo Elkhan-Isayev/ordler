@@ -6,11 +6,16 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
-import { AppModule } from './app.module.js';
+import { createAppContext } from './app-context.js';
+import { AppModule, configureApp } from './app.module.js';
 import { describeConfig, loadConfig } from './config/env.js';
+import type { Db } from './db/client.js';
 import { createSchemaSql, MIGRATION_LOCK_KEY, withAdvisoryLock } from './db/migrate.js';
 import { toPoolConfig } from './db/pool-config.js';
 import { DatabaseReadiness } from './db/readiness.js';
+import * as schema from './db/schema.js';
+import { SmtpMailer } from './mail/mailer.js';
+import { syncSystemRoles } from './setup/system-roles.js';
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL('../drizzle', import.meta.url));
 
@@ -20,23 +25,24 @@ async function bootstrap(): Promise<void> {
   logger.log(`Starting Ordler ${JSON.stringify(describeConfig(config))}`);
 
   const pool = new pg.Pool(toPoolConfig(config.database));
+  const db = drizzle(pool, { schema }) as unknown as Db;
   const readiness = new DatabaseReadiness(pool);
+  const ctx = createAppContext({
+    db,
+    baseUrl: config.baseUrl,
+    encryptionKey: config.encryptionKey,
+    sessionTtlDays: config.sessionTtlDays,
+    mailer: config.smtp ? new SmtpMailer(config.smtp) : undefined,
+    readiness,
+  });
 
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule.forRoot({
-      readiness,
-      // Authentication lands in the next increment; until then no member has any grants.
-      access: {
-        load: async () => ({
-          assignments: [],
-          rolePermissions: () => undefined,
-          directory: { departmentOfTeam: () => undefined },
-        }),
-      },
-    }),
+    AppModule.forRoot(ctx),
     new FastifyAdapter({ trustProxy: true }),
   );
+  configureApp(app, ctx);
   app.enableShutdownHooks();
+  // Listen before migrating so liveness probes pass; /readyz stays 503 until migrations finish.
   await app.listen(config.port, '0.0.0.0');
 
   if (config.migrateOnStart) {
@@ -54,6 +60,8 @@ async function bootstrap(): Promise<void> {
     }
     logger.log('Database migrations are up to date');
   }
+  await syncSystemRoles(db);
+  await ctx.strategies.ensureDefaults();
   readiness.markMigrated();
   logger.log(`Listening on port ${config.port}`);
 }

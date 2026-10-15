@@ -26,5 +26,55 @@
   "home": {
     "title": "Welcome to Ordler",
     "hint": "Pick a team in the sidebar to see its issues."
+  },
+  "setup": {
+    "title": "Set up Ordler",
+    "subtitle": "Create your workspace and the first administrator account.",
+    "companyName": "Company name",
+    "defaultLanguage": "Default language",
+    "ownerSection": "Administrator account",
+    "name": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Repeat password",
+    "passwordHint": "At least {min, plural, one {# character} other {# characters}}.",
+    "submit": "Create workspace",
+    "submitting": "Creating…"
+  },
+  "auth": {
+    "title": "Sign in to Ordler",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "or": "or",
+    "otpSend": "Email me a sign-in code",
+    "otpSent": "If {email} can sign in, a 6-digit code is on its way.",
+    "code": "Sign-in code",
+    "verify": "Verify code",
+    "useAnotherEmail": "Use another email",
+    "google": "Continue with Google",
+    "noStrategies": "Sign-in is not available. Contact your administrator.",
+    "signOut": "Sign out",
+    "loading": "Loading…"
+  },
+  "errors": {
+    "invalid_credentials": "Wrong email or password.",
+    "invalid_code": "This code is wrong or has expired.",
+    "strategy_disabled": "This sign-in method is turned off.",
+    "registration_closed": "This workspace does not accept new accounts. Ask an administrator for an invite.",
+    "domain_not_allowed": "Accounts from this email domain are not allowed.",
+    "rate_limited": "Too many attempts. Wait a few minutes and try again.",
+    "setup_completed": "Ordler is already set up.",
+    "setup_required": "Ordler is not set up yet.",
+    "lockout_prevented": "This change would lock you out.",
+    "mail_not_configured": "Email delivery is not configured.",
+    "oauth_failed": "Google sign-in failed. Try again.",
+    "email_not_verified": "Your Google email address is not verified.",
+    "validation_failed": "Check the highlighted fields.",
+    "password_too_short": "The password is too short.",
+    "password_mismatch": "The passwords do not match.",
+    "network": "Cannot reach the server. Check your connection.",
+    "unknown": "Something went wrong. Try again."
   }
 }

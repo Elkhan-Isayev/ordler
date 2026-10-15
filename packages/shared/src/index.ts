@@ -4,3 +4,5 @@ export * from './rbac.js';
 export * from './status.js';
 export * from './locales.js';
 export * from './schemas.js';
+export * from './auth.js';
+export * from './api-types.js';

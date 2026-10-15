@@ -8,7 +8,7 @@ service-portal requests with cross-department approval chains.
 - [Changelog](.ai/changelog/)
 - [Product and architecture map (Miro)](https://miro.com/app/board/uXjVEaKDHrU=/)
 
-Status: Phase 1 in progress — monorepo foundation (shared RBAC core, API skeleton, web shell).
+Status: Phase 1 in progress — foundation, setup wizard and sign-in (password, email OTP, Google).
 
 ## Development
 
@@ -28,12 +28,22 @@ pnpm build
 | `apps/api`        | NestJS + Fastify API, Drizzle schema and migrations, health checks      |
 | `apps/web`        | React SPA shell with i18n (en, ru, de, az)                              |
 
-Run the API against a database:
+Run locally (API on :3000, web on :5173 with `/api` proxied to the API):
 
 ```bash
-pnpm build
-DATABASE_URL=postgres://ordler:ordler@localhost:5432/ordler pnpm --filter @ordler/api start
+export DATABASE_URL=postgres://ordler:ordler@localhost:5432/ordler
+export ENCRYPTION_KEY=$(openssl rand -base64 32)
+export BASE_URL=http://localhost:5173
+pnpm build && pnpm --filter @ordler/api start
 ```
+
+```bash
+pnpm --filter @ordler/web dev
+```
+
+Open http://localhost:5173 — a fresh database shows the setup wizard, which creates the first
+Owner. Email OTP needs `SMTP_HOST` and `SMTP_FROM`; Google sign-in is configured through
+`/api/admin/auth/strategies/google` (admin UI comes later).
 
 ## License
 

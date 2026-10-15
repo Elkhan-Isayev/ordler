@@ -26,5 +26,55 @@
   "home": {
     "title": "Willkommen bei Ordler",
     "hint": "Wähle in der Seitenleiste ein Team, um seine Aufgaben zu sehen."
+  },
+  "setup": {
+    "title": "Ordler einrichten",
+    "subtitle": "Lege deinen Arbeitsbereich und das erste Administratorkonto an.",
+    "companyName": "Firmenname",
+    "defaultLanguage": "Standardsprache",
+    "ownerSection": "Administratorkonto",
+    "name": "Dein Name",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "passwordConfirm": "Passwort wiederholen",
+    "passwordHint": "Mindestens {min, plural, one {# Zeichen} other {# Zeichen}}.",
+    "submit": "Arbeitsbereich anlegen",
+    "submitting": "Wird angelegt…"
+  },
+  "auth": {
+    "title": "Bei Ordler anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung läuft…",
+    "or": "oder",
+    "otpSend": "Anmeldecode per E-Mail senden",
+    "otpSent": "Wenn sich {email} anmelden darf, ist ein 6-stelliger Code unterwegs.",
+    "code": "Anmeldecode",
+    "verify": "Code bestätigen",
+    "useAnotherEmail": "Andere E-Mail verwenden",
+    "google": "Mit Google fortfahren",
+    "noStrategies": "Anmeldung ist nicht verfügbar. Wende dich an deinen Administrator.",
+    "signOut": "Abmelden",
+    "loading": "Wird geladen…"
+  },
+  "errors": {
+    "invalid_credentials": "E-Mail oder Passwort ist falsch.",
+    "invalid_code": "Der Code ist falsch oder abgelaufen.",
+    "strategy_disabled": "Diese Anmeldemethode ist deaktiviert.",
+    "registration_closed": "Dieser Arbeitsbereich nimmt keine neuen Konten an. Bitte einen Administrator um eine Einladung.",
+    "domain_not_allowed": "Konten mit dieser E-Mail-Domain sind nicht erlaubt.",
+    "rate_limited": "Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.",
+    "setup_completed": "Ordler ist bereits eingerichtet.",
+    "setup_required": "Ordler ist noch nicht eingerichtet.",
+    "lockout_prevented": "Diese Änderung würde dich aussperren.",
+    "mail_not_configured": "Der E-Mail-Versand ist nicht eingerichtet.",
+    "oauth_failed": "Die Anmeldung mit Google ist fehlgeschlagen. Versuche es erneut.",
+    "email_not_verified": "Deine Google-E-Mail-Adresse ist nicht bestätigt.",
+    "validation_failed": "Prüfe die markierten Felder.",
+    "password_too_short": "Das Passwort ist zu kurz.",
+    "password_mismatch": "Die Passwörter stimmen nicht überein.",
+    "network": "Der Server ist nicht erreichbar. Prüfe deine Verbindung.",
+    "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
   }
 }
