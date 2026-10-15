@@ -18,7 +18,8 @@
     "issues": "Tapşırıqlar",
     "cycles": "Dövrlər",
     "currentCycle": "Cari",
-    "upcomingCycle": "Növbəti"
+    "upcomingCycle": "Növbəti",
+    "admin": "İdarəetmə"
   },
   "settings": {
     "language": "Dil"
@@ -75,7 +76,16 @@
     "password_too_short": "Şifrə çox qısadır.",
     "password_mismatch": "Şifrələr uyğun gəlmir.",
     "network": "Serverlə əlaqə yoxdur. Bağlantınızı yoxlayın.",
-    "unknown": "Nəsə səhv getdi. Yenidən cəhd edin."
+    "unknown": "Nəsə səhv getdi. Yenidən cəhd edin.",
+    "not_found": "Bu artıq mövcud deyil. Səhifəni yeniləyin.",
+    "team_key_taken": "Bu açar artıq başqa komanda tərəfindən istifadə olunur.",
+    "department_name_taken": "Bu adda departament artıq var.",
+    "email_taken": "Bu e-poçtla iştirakçı artıq var.",
+    "last_owner": "Təşkilatda ən azı bir aktiv sahib qalmalıdır.",
+    "cannot_change_self": "Öz statusunuzu dəyişə bilməzsiniz.",
+    "owner_only": "Sahib rolunu yalnız sahib verə və ya geri ala bilər.",
+    "invite_invalid": "Bu dəvət linki etibarsızdır və ya vaxtı bitib.",
+    "archived": "Bu arxivdədir və dəyişdirilə bilməz."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -89,5 +99,117 @@
     "compose": "2. Docker Compose: obraz teqini {latest} edin və icra edin",
     "helm": "Və ya Kubernetes-də Helm buraxılışını yeniləyin",
     "dataSafety": "Məlumatlarınız PostgreSQL-də qalır. Ordler işə düşəndə yeni miqrasiyaları avtomatik tətbiq edir: onlar sxemi yalnız genişləndirir və xəta olarsa tamamilə geri qaytarılır."
+  },
+  "admin": {
+    "title": "İdarəetmə",
+    "noAccess": "İdarəetməyə girişiniz yoxdur.",
+    "nav": {
+      "departments": "Departamentlər və komandalar",
+      "members": "İştirakçılar",
+      "authentication": "Giriş",
+      "updates": "Yeniləmələr"
+    },
+    "departments": {
+      "title": "Departamentlər və komandalar",
+      "subtitle": "Komandalar və xidmət portalları departamentlərə, tapşırıqlar isə komandalara aiddir.",
+      "newDepartment": "Yeni departament",
+      "name": "Ad",
+      "create": "Yarat",
+      "addTeam": "Komanda əlavə et",
+      "teamName": "Komandanın adı",
+      "teamKey": "Açar",
+      "teamKeyHint": "2–10 böyük latın hərfi və ya rəqəm, məsələn HELP. Tapşırıq nömrələrinin prefiksidir.",
+      "private": "Qapalı",
+      "archive": "Arxivə göndər",
+      "archived": "Arxivdə",
+      "confirmArchive": "«{name}» arxivə göndərilsin? Tarixçədə qalacaq, amma istifadə etmək olmayacaq.",
+      "empty": "Hələ departament yoxdur. İlkini yaradın.",
+      "noTeams": "Hələ komanda yoxdur.",
+      "memberCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}"
+    },
+    "members": {
+      "title": "İştirakçılar",
+      "subtitle": "İnsanları dəvət edin, onların rollarını və komandalarını idarə edin.",
+      "invite": "İştirakçı dəvət et",
+      "email": "E-poçt",
+      "name": "Ad",
+      "role": "Rol",
+      "noRole": "Rol yoxdur",
+      "scope": "Harada",
+      "organization": "Bütün təşkilat",
+      "send": "Dəvət göndər",
+      "inviteLink": "{email} üçün dəvət linki",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı",
+      "emailed": "Bu linklə məktub göndərildi.",
+      "notEmailed": "E-poçt qurulmayıb, linki özünüz göndərin. O, birdəfəlikdir və 7 gün etibarlıdır.",
+      "statusInvited": "Dəvət olunub",
+      "statusActive": "Aktiv",
+      "statusDeactivated": "Deaktiv",
+      "deactivate": "Deaktiv et",
+      "reactivate": "Aktiv et",
+      "resend": "Yeni dəvət linki",
+      "addRole": "Rol əlavə et",
+      "removeRole": "{role} rolunu sil",
+      "teams": "Komandalar",
+      "addToTeam": "Komandaya əlavə et",
+      "removeFromTeam": "{team} komandasından çıxar",
+      "you": "siz",
+      "empty": "Hələ iştirakçı yoxdur."
+    },
+    "roles": {
+      "owner": "Sahib",
+      "org_admin": "Təşkilat admini",
+      "department_admin": "Departament admini",
+      "department_supervisor": "Departament rəhbəri",
+      "team_lead": "Komanda rəhbəri",
+      "member": "İştirakçı",
+      "viewer": "İzləyici",
+      "guest": "Qonaq"
+    },
+    "auth": {
+      "title": "Giriş üsulları",
+      "subtitle": "İnsanların necə daxil olduğunu və kimin özü hesab yarada biləcəyini seçin.",
+      "kind_local": "E-poçt və şifrə",
+      "kind_email_otp": "E-poçt kodu",
+      "kind_google": "Google",
+      "enabled": "Aktivdir",
+      "selfRegistration": "Özünüqeydiyyata icazə ver",
+      "allowedDomains": "İcazəli e-poçt domenləri",
+      "allowedDomainsHint": "Vergüllə, məsələn company.com. Boş olarsa, istənilən domen.",
+      "defaultRole": "Yeni hesablar üçün rol",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "secretSet": "Saxlanılıb. Əvəz etmək üçün yeni dəyər daxil edin.",
+      "callbackUrl": "Google Cloud Console üçün Redirect URI",
+      "needsMail": "SMTP qurulmalıdır.",
+      "needsGoogle": "Client ID və secret lazımdır.",
+      "save": "Yadda saxla",
+      "saved": "Saxlanıldı"
+    },
+    "updates": {
+      "title": "Yeniləmələr",
+      "current": "Quraşdırılmış versiya",
+      "latest": "Son buraxılış",
+      "development": "inkişaf yığımı",
+      "unknown": "naməlum",
+      "checkedAt": "Son yoxlama",
+      "never": "olmayıb",
+      "checkNow": "İndi yoxla",
+      "disabled": "Yeniləmə yoxlanışı söndürülüb (UPDATE_CHECK=false).",
+      "upToDate": "Son versiya quraşdırılıb.",
+      "available": "{latest} versiyası mövcuddur.",
+      "releaseNotes": "Buraxılış qeydləri",
+      "lastError": "Son yoxlama alınmadı: {error}"
+    }
+  },
+  "invite": {
+    "title": "{company} komandasına qoşulun",
+    "subtitle": "Siz {email} kimi dəvət olunmusunuz. Adınızı və şifrənizi seçin.",
+    "name": "Adınız",
+    "password": "Şifrə",
+    "passwordConfirm": "Şifrəni təkrarlayın",
+    "submit": "Qoşul",
+    "invalid": "Bu dəvət linki etibarsızdır və ya vaxtı bitib. Administratordan yenisini istəyin."
   }
 }

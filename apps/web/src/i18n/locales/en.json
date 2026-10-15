@@ -18,7 +18,8 @@
     "issues": "Issues",
     "cycles": "Cycles",
     "currentCycle": "Current",
-    "upcomingCycle": "Upcoming"
+    "upcomingCycle": "Upcoming",
+    "admin": "Administration"
   },
   "settings": {
     "language": "Language"
@@ -75,7 +76,16 @@
     "password_too_short": "The password is too short.",
     "password_mismatch": "The passwords do not match.",
     "network": "Cannot reach the server. Check your connection.",
-    "unknown": "Something went wrong. Try again."
+    "unknown": "Something went wrong. Try again.",
+    "not_found": "It no longer exists. Refresh the page.",
+    "team_key_taken": "Another team already uses this key.",
+    "department_name_taken": "A department with this name already exists.",
+    "email_taken": "Someone with this email is already a member.",
+    "last_owner": "The organization must keep at least one active Owner.",
+    "cannot_change_self": "You cannot change your own status.",
+    "owner_only": "Only an Owner can grant or remove the Owner role.",
+    "invite_invalid": "This invite link is invalid or has expired.",
+    "archived": "This is archived and cannot be changed."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -89,5 +99,117 @@
     "compose": "2. Docker Compose: set the image tag to {latest}, then run",
     "helm": "Or, on Kubernetes, upgrade the Helm release",
     "dataSafety": "Your data stays in PostgreSQL. On start Ordler applies new migrations automatically; they only add to the schema and roll back completely if anything fails."
+  },
+  "admin": {
+    "title": "Administration",
+    "noAccess": "You don't have access to administration.",
+    "nav": {
+      "departments": "Departments and teams",
+      "members": "Members",
+      "authentication": "Sign-in",
+      "updates": "Updates"
+    },
+    "departments": {
+      "title": "Departments and teams",
+      "subtitle": "Departments own teams and service portals. Teams own issues.",
+      "newDepartment": "New department",
+      "name": "Name",
+      "create": "Create",
+      "addTeam": "Add team",
+      "teamName": "Team name",
+      "teamKey": "Key",
+      "teamKeyHint": "2–10 capital letters or digits, e.g. HELP. Prefixes issue numbers.",
+      "private": "Private",
+      "archive": "Archive",
+      "archived": "Archived",
+      "confirmArchive": "Archive {name}? It stays in history but can no longer be used.",
+      "empty": "No departments yet. Create the first one.",
+      "noTeams": "No teams yet.",
+      "memberCount": "{count, plural, one {# member} other {# members}}"
+    },
+    "members": {
+      "title": "Members",
+      "subtitle": "Invite people, manage their roles and teams.",
+      "invite": "Invite member",
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "noRole": "No role",
+      "scope": "Where",
+      "organization": "Whole organization",
+      "send": "Send invite",
+      "inviteLink": "Invite link for {email}",
+      "copy": "Copy",
+      "copied": "Copied",
+      "emailed": "An email with this link was sent.",
+      "notEmailed": "Mail is not configured, so share this link yourself. It works once and expires in 7 days.",
+      "statusInvited": "Invited",
+      "statusActive": "Active",
+      "statusDeactivated": "Deactivated",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "resend": "New invite link",
+      "addRole": "Add role",
+      "removeRole": "Remove role {role}",
+      "teams": "Teams",
+      "addToTeam": "Add to team",
+      "removeFromTeam": "Remove from {team}",
+      "you": "you",
+      "empty": "No members yet."
+    },
+    "roles": {
+      "owner": "Owner",
+      "org_admin": "Organization admin",
+      "department_admin": "Department admin",
+      "department_supervisor": "Department supervisor",
+      "team_lead": "Team lead",
+      "member": "Member",
+      "viewer": "Viewer",
+      "guest": "Guest"
+    },
+    "auth": {
+      "title": "Sign-in methods",
+      "subtitle": "Choose how people sign in and who may create an account.",
+      "kind_local": "Email and password",
+      "kind_email_otp": "Email code",
+      "kind_google": "Google",
+      "enabled": "Enabled",
+      "selfRegistration": "Allow self-registration",
+      "allowedDomains": "Allowed email domains",
+      "allowedDomainsHint": "Comma-separated, e.g. company.com. Empty allows any domain.",
+      "defaultRole": "Role for new accounts",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "secretSet": "Saved. Enter a new value to replace it.",
+      "callbackUrl": "Redirect URI for Google Cloud Console",
+      "needsMail": "Needs SMTP to be configured.",
+      "needsGoogle": "Needs a client ID and secret.",
+      "save": "Save",
+      "saved": "Saved"
+    },
+    "updates": {
+      "title": "Updates",
+      "current": "Installed version",
+      "latest": "Latest release",
+      "development": "development build",
+      "unknown": "unknown",
+      "checkedAt": "Last checked",
+      "never": "never",
+      "checkNow": "Check now",
+      "disabled": "Update checks are turned off (UPDATE_CHECK=false).",
+      "upToDate": "You are up to date.",
+      "available": "Version {latest} is available.",
+      "releaseNotes": "Release notes",
+      "lastError": "Last check failed: {error}"
+    }
+  },
+  "invite": {
+    "title": "Join {company}",
+    "subtitle": "You were invited as {email}. Choose your name and a password.",
+    "name": "Your name",
+    "password": "Password",
+    "passwordConfirm": "Repeat password",
+    "submit": "Join workspace",
+    "invalid": "This invite link is invalid or has expired. Ask your administrator for a new one."
   }
 }

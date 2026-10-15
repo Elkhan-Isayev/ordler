@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client.js';
 import { App } from '../App.js';
+import { navigate } from '../router.js';
+import { AcceptInvitePage } from './AcceptInvitePage.js';
 import { errorKey } from './errors.js';
 import { Card } from './form.js';
 import { SetupWizard } from './SetupWizard.js';
@@ -13,6 +15,7 @@ type GateState =
   | { kind: 'failed'; messageKey: string }
   | { kind: 'setup' }
   | { kind: 'signIn'; error?: string | undefined }
+  | { kind: 'invite'; token: string }
   | { kind: 'app'; me: MeResponse };
 
 /** Reads and strips `?auth_error=` left by the Google callback redirect. */
@@ -54,6 +57,11 @@ export function AuthGate({ browserLocale }: { browserLocale: Locale }) {
 
   useEffect(() => {
     let cancelled = false;
+    const inviteToken = /^\/invite\/([A-Za-z0-9_-]+)$/.exec(window.location.pathname)?.[1];
+    if (inviteToken) {
+      setState({ kind: 'invite', token: inviteToken });
+      return;
+    }
     const authError = takeAuthError(window.location);
     (async () => {
       try {
@@ -101,6 +109,16 @@ export function AuthGate({ browserLocale }: { browserLocale: Locale }) {
       return <SetupWizard initialLocale={browserLocale} onComplete={enterApp} />;
     case 'signIn':
       return <SignInPage initialError={state.error} onSignedIn={enterApp} />;
+    case 'invite':
+      return (
+        <AcceptInvitePage
+          token={state.token}
+          onAccepted={(me) => {
+            navigate('/');
+            enterApp(me);
+          }}
+        />
+      );
     case 'app':
       return <App me={state.me} onSignOut={signOut} />;
   }

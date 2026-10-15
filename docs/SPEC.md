@@ -670,6 +670,7 @@ auth_strategy(id, kind, enabled, position, display_name, config JSONB,
               secrets_encrypted, allow_self_registration, allowed_domains[],
               default_role_id, default_scope_type, default_scope_id)
 member_identity(id, member_id, strategy_id, provider_subject, created_at)
+member_invite(id, member_id, token_hash, expires_at, accepted_at, created_by, created_at)
 otp_challenge(id, email, code_hash, purpose, attempts, expires_at, consumed_at)
 mail_settings(id, sender_name, sender_email, host, port, security, verify_tls,
               username, password_encrypted, dkim JSONB)

@@ -1,7 +1,13 @@
 import type {
+  AdminDepartment,
+  AdminMember,
+  AdminRole,
   ApiErrorBody,
+  AssignRoleInput,
+  InviteResponse,
   MeResponse,
   PublicStrategy,
+  UpdateAuthStrategyInput,
   UpdateStatusResponse,
 } from '@ordler/shared';
 
@@ -20,7 +26,7 @@ export class ApiError extends Error {
 /** JSON over fetch with the session cookie; non-2xx responses become ApiError. */
 export async function apiRequest<T>(
   path: string,
-  options: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown } = {},
+  options: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown } = {},
 ): Promise<T> {
   let response: Response;
   try {
@@ -55,6 +61,67 @@ export const api = {
     apiRequest<MeResponse>('/api/auth/otp/verify', { method: 'POST', body: { email, code } }),
   signOut: () => apiRequest<void>('/api/auth/sign-out', { method: 'POST' }),
   updateStatus: () => apiRequest<UpdateStatusResponse>('/api/admin/updates'),
+  checkForUpdates: () =>
+    apiRequest<UpdateStatusResponse>('/api/admin/updates/check', { method: 'POST' }),
+  departments: () => apiRequest<AdminDepartment[]>('/api/admin/departments'),
+  createDepartment: (name: string) =>
+    apiRequest<{ id: string }>('/api/admin/departments', { method: 'POST', body: { name } }),
+  archiveDepartment: (id: string) =>
+    apiRequest<void>(`/api/admin/departments/${id}/archive`, { method: 'POST' }),
+  createTeam: (departmentId: string, body: { name: string; key: string; isPrivate: boolean }) =>
+    apiRequest<{ id: string }>(`/api/admin/departments/${departmentId}/teams`, {
+      method: 'POST',
+      body,
+    }),
+  archiveTeam: (id: string) =>
+    apiRequest<void>(`/api/admin/teams/${id}/archive`, { method: 'POST' }),
+  members: () => apiRequest<AdminMember[]>('/api/admin/members'),
+  roles: () => apiRequest<AdminRole[]>('/api/admin/roles'),
+  inviteMember: (body: unknown) =>
+    apiRequest<InviteResponse>('/api/admin/members', { method: 'POST', body }),
+  reinvite: (memberId: string) =>
+    apiRequest<{ inviteUrl: string; emailed: boolean }>(`/api/admin/members/${memberId}/invite`, {
+      method: 'POST',
+    }),
+  setMemberStatus: (memberId: string, status: 'active' | 'deactivated') =>
+    apiRequest<AdminMember>(`/api/admin/members/${memberId}`, {
+      method: 'PATCH',
+      body: { status },
+    }),
+  assignRole: (memberId: string, body: AssignRoleInput) =>
+    apiRequest<AdminMember>(`/api/admin/members/${memberId}/roles`, { method: 'POST', body }),
+  removeRole: (memberId: string, assignmentId: string) =>
+    apiRequest<AdminMember>(`/api/admin/members/${memberId}/roles/${assignmentId}`, {
+      method: 'DELETE',
+    }),
+  addToTeam: (teamId: string, memberId: string) =>
+    apiRequest<AdminMember>(`/api/admin/teams/${teamId}/members/${memberId}`, { method: 'PUT' }),
+  removeFromTeam: (teamId: string, memberId: string) =>
+    apiRequest<AdminMember>(`/api/admin/teams/${teamId}/members/${memberId}`, {
+      method: 'DELETE',
+    }),
+  authStrategies: () => apiRequest<AdminStrategy[]>('/api/admin/auth/strategies'),
+  updateAuthStrategy: (kind: string, body: UpdateAuthStrategyInput) =>
+    apiRequest<AdminStrategy>(`/api/admin/auth/strategies/${kind}`, { method: 'PATCH', body }),
+  peekInvite: (token: string) =>
+    apiRequest<{ email: string; companyName: string }>(`/api/invites/${encodeURIComponent(token)}`),
+  acceptInvite: (body: { token: string; name: string; password: string }) =>
+    apiRequest<MeResponse>('/api/invites/accept', { method: 'POST', body }),
 };
 
 export const GOOGLE_START_URL = '/api/auth/google/start';
+
+/** Admin view of a sign-in strategy; secrets are never included, only whether one is set. */
+export interface AdminStrategy {
+  kind: 'local' | 'email_otp' | 'google';
+  enabled: boolean;
+  usable: boolean;
+  position: number;
+  displayName: string | null;
+  allowSelfRegistration: boolean;
+  allowedDomains: string[];
+  defaultRoleId: string | null;
+  config: { clientId?: string; hostedDomain?: string | null };
+  hasClientSecret: boolean;
+  callbackUrl: string | null;
+}

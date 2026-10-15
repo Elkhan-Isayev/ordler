@@ -47,6 +47,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🧭  | **Setup wizard**: first run creates the workspace and the first Owner                                                                             |   ✅   |
 | 🔐  | **Sign-in your way**: email + password, email one-time codes, Google (OIDC); per-strategy self-registration and domain allow-lists, Wiki.js-style |   ✅   |
 | 🛡️  | **RBAC**: permission catalog, system and custom roles, grants at organization, department or team scope, deny-by-default API                      |   ✅   |
+| 🏢  | **Admin panel**: departments and teams, member invites with one-time links, roles per scope, team membership, sign-in methods, updates            |   ✅   |
 | 🌍  | **Four languages** from day one: English, Русский, Deutsch, Azərbaycanca                                                                          |   ✅   |
 | 🔔  | **Update notifications**: admins see new GitHub releases with step-by-step upgrade instructions                                                   |   ✅   |
 | 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection                                                     |   ✅   |
@@ -63,8 +64,12 @@ and a service desk for requests between departments. Ordler is both, in one plac
 
 <table>
   <tr>
+    <td align="center"><img src="docs/assets/screenshots/admin-departments.jpg" alt="Departments and teams" width="400" /><br/><sub>Admin: departments and teams</sub></td>
+    <td align="center"><img src="docs/assets/screenshots/admin-members.jpg" alt="Members and invites" width="400" /><br/><sub>Admin: invites with one-time links, roles per scope</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/assets/screenshots/admin-sign-in.jpg" alt="Sign-in methods" width="400" /><br/><sub>Admin: sign-in methods, Wiki.js-style</sub></td>
     <td align="center"><img src="docs/assets/screenshots/setup-wizard.jpg" alt="Setup wizard" width="400" /><br/><sub>First-run setup wizard</sub></td>
-    <td align="center"><img src="docs/assets/screenshots/sign-in.jpg" alt="Sign-in page" width="400" /><br/><sub>Sign-in with the strategies the admin enabled</sub></td>
   </tr>
 </table>
 
@@ -149,7 +154,8 @@ Start the web app (port 5173, `/api` is proxied to the API):
 pnpm --filter @ordler/web dev
 ```
 
-Open <http://localhost:5173>. A fresh database shows the setup wizard. Stop the database with
+Open <http://localhost:5173>. A fresh database shows the setup wizard; afterwards the Owner
+finds **Administration** in the sidebar. Stop the database with
 `scripts/dev-db.sh stop`.
 
 ### Configuration

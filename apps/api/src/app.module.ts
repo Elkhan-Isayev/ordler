@@ -6,7 +6,10 @@ import { AdminStrategiesController } from './auth/admin-strategies.controller.js
 import { AuthController } from './auth/auth.controller.js';
 import { HealthController, READINESS_CHECK } from './health/health.controller.js';
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
+import { AdminMembersController } from './members/admin-members.controller.js';
+import { InvitesController } from './members/invites.controller.js';
 import { MeController } from './members/me.controller.js';
+import { AdminOrgController } from './org/admin-org.controller.js';
 import { ACCESS_CONTEXT, PermissionGuard } from './rbac/permission.guard.js';
 import { SetupController } from './setup/setup.controller.js';
 import { UpdatesController } from './updates/updates.controller.js';
@@ -23,6 +26,9 @@ export class AppModule {
         MeController,
         AdminStrategiesController,
         UpdatesController,
+        AdminOrgController,
+        AdminMembersController,
+        InvitesController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },

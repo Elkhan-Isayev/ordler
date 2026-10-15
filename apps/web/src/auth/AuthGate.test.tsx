@@ -89,3 +89,17 @@ describe('AuthGate regressions', () => {
     expect(meCalls).toBe(1);
   });
 });
+
+describe('AuthGate invitations', () => {
+  it('opens the invite page for /invite/<token> without checking the session', async () => {
+    window.history.replaceState(null, '', '/invite/tok123');
+    const calls = mockApi({
+      'GET /api/invites/tok123': () => ({
+        json: { email: 'ann@push30.test', companyName: 'Push30' },
+      }),
+    });
+    await renderWithI18n(<AuthGate browserLocale="en" />);
+    expect(await screen.findByRole('heading', { name: 'Join Push30' })).toBeInTheDocument();
+    expect(calls.map((c) => c.path)).toEqual(['/api/invites/tok123']);
+  });
+});

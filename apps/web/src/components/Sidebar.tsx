@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from '../router.js';
 
 export interface SidebarTeam {
   id: string;
@@ -20,6 +21,9 @@ export interface SidebarProps {
   departments: SidebarDepartment[];
   /** Pinned to the bottom: the signed-in member and their actions. */
   footer?: ReactNode;
+  /** Shown to members holding any administration permission. */
+  showAdmin?: boolean;
+  currentPath?: string;
 }
 
 /** Badges cap like Linear's, so the sidebar width stays stable. */
@@ -35,6 +39,8 @@ export function Sidebar({
   pendingApprovals,
   departments,
   footer,
+  showAdmin = false,
+  currentPath,
 }: SidebarProps) {
   const { t } = useTranslation();
 
@@ -70,6 +76,11 @@ export function Sidebar({
         <NavItem href="/projects">{t('nav.projects')}</NavItem>
         <NavItem href="/views">{t('nav.views')}</NavItem>
         <NavItem href="/portals">{t('nav.servicePortals')}</NavItem>
+        {showAdmin && (
+          <NavItem href="/admin" active={currentPath?.startsWith('/admin') ?? false}>
+            {t('nav.admin')}
+          </NavItem>
+        )}
       </Section>
 
       {departments.length > 0 && (
@@ -176,18 +187,23 @@ function NavItem({
   href,
   badge,
   badgeLabel,
+  active = false,
   children,
 }: {
   href: string;
   badge?: string | undefined;
   badgeLabel?: string;
+  active?: boolean;
   children: ReactNode;
 }) {
   return (
     <li>
-      <a
+      <Link
         href={href}
-        className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-hover hover:text-ink"
+        aria-current={active ? 'page' : undefined}
+        className={`flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-hover hover:text-ink ${
+          active ? 'bg-hover text-ink' : ''
+        }`}
       >
         <span className="truncate">{children}</span>
         {badge && (
@@ -195,7 +211,7 @@ function NavItem({
             {badge}
           </span>
         )}
-      </a>
+      </Link>
     </li>
   );
 }

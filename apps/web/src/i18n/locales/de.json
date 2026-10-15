@@ -18,7 +18,8 @@
     "issues": "Aufgaben",
     "cycles": "Zyklen",
     "currentCycle": "Aktuell",
-    "upcomingCycle": "Anstehend"
+    "upcomingCycle": "Anstehend",
+    "admin": "Administration"
   },
   "settings": {
     "language": "Sprache"
@@ -75,7 +76,16 @@
     "password_too_short": "Das Passwort ist zu kurz.",
     "password_mismatch": "Die Passwörter stimmen nicht überein.",
     "network": "Der Server ist nicht erreichbar. Prüfe deine Verbindung.",
-    "unknown": "Etwas ist schiefgelaufen. Versuche es erneut."
+    "unknown": "Etwas ist schiefgelaufen. Versuche es erneut.",
+    "not_found": "Das existiert nicht mehr. Lade die Seite neu.",
+    "team_key_taken": "Dieser Schlüssel wird bereits von einem anderen Team verwendet.",
+    "department_name_taken": "Eine Abteilung mit diesem Namen existiert bereits.",
+    "email_taken": "Mit dieser E-Mail gibt es bereits ein Mitglied.",
+    "last_owner": "Die Organisation muss mindestens einen aktiven Inhaber behalten.",
+    "cannot_change_self": "Du kannst deinen eigenen Status nicht ändern.",
+    "owner_only": "Nur ein Inhaber kann die Inhaberrolle vergeben oder entziehen.",
+    "invite_invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
+    "archived": "Das ist archiviert und kann nicht geändert werden."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -89,5 +99,117 @@
     "compose": "2. Docker Compose: Setze das Image-Tag auf {latest} und führe aus",
     "helm": "Oder in Kubernetes das Helm-Release aktualisieren",
     "dataSafety": "Deine Daten bleiben in PostgreSQL. Beim Start wendet Ordler neue Migrationen automatisch an; sie erweitern das Schema nur und werden bei einem Fehler vollständig zurückgerollt."
+  },
+  "admin": {
+    "title": "Administration",
+    "noAccess": "Du hast keinen Zugriff auf die Administration.",
+    "nav": {
+      "departments": "Abteilungen und Teams",
+      "members": "Mitglieder",
+      "authentication": "Anmeldung",
+      "updates": "Updates"
+    },
+    "departments": {
+      "title": "Abteilungen und Teams",
+      "subtitle": "Abteilungen besitzen Teams und Serviceportale, Teams besitzen Aufgaben.",
+      "newDepartment": "Neue Abteilung",
+      "name": "Name",
+      "create": "Anlegen",
+      "addTeam": "Team hinzufügen",
+      "teamName": "Teamname",
+      "teamKey": "Schlüssel",
+      "teamKeyHint": "2–10 Großbuchstaben oder Ziffern, z. B. HELP. Präfix der Aufgabennummern.",
+      "private": "Privat",
+      "archive": "Archivieren",
+      "archived": "Archiviert",
+      "confirmArchive": "„{name}“ archivieren? Es bleibt in der Historie, kann aber nicht mehr verwendet werden.",
+      "empty": "Noch keine Abteilungen. Lege die erste an.",
+      "noTeams": "Noch keine Teams.",
+      "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}"
+    },
+    "members": {
+      "title": "Mitglieder",
+      "subtitle": "Lade Personen ein und verwalte ihre Rollen und Teams.",
+      "invite": "Mitglied einladen",
+      "email": "E-Mail",
+      "name": "Name",
+      "role": "Rolle",
+      "noRole": "Keine Rolle",
+      "scope": "Wo",
+      "organization": "Gesamte Organisation",
+      "send": "Einladung senden",
+      "inviteLink": "Einladungslink für {email}",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "emailed": "Eine E-Mail mit diesem Link wurde gesendet.",
+      "notEmailed": "E-Mail ist nicht eingerichtet, teile den Link selbst. Er funktioniert einmal und ist 7 Tage gültig.",
+      "statusInvited": "Eingeladen",
+      "statusActive": "Aktiv",
+      "statusDeactivated": "Deaktiviert",
+      "deactivate": "Deaktivieren",
+      "reactivate": "Reaktivieren",
+      "resend": "Neuer Einladungslink",
+      "addRole": "Rolle hinzufügen",
+      "removeRole": "Rolle {role} entfernen",
+      "teams": "Teams",
+      "addToTeam": "Zu Team hinzufügen",
+      "removeFromTeam": "Aus {team} entfernen",
+      "you": "du",
+      "empty": "Noch keine Mitglieder."
+    },
+    "roles": {
+      "owner": "Inhaber",
+      "org_admin": "Organisationsadmin",
+      "department_admin": "Abteilungsadmin",
+      "department_supervisor": "Abteilungsleitung",
+      "team_lead": "Teamleitung",
+      "member": "Mitglied",
+      "viewer": "Betrachter",
+      "guest": "Gast"
+    },
+    "auth": {
+      "title": "Anmeldemethoden",
+      "subtitle": "Lege fest, wie sich Personen anmelden und wer selbst ein Konto anlegen darf.",
+      "kind_local": "E-Mail und Passwort",
+      "kind_email_otp": "E-Mail-Code",
+      "kind_google": "Google",
+      "enabled": "Aktiviert",
+      "selfRegistration": "Selbstregistrierung erlauben",
+      "allowedDomains": "Erlaubte E-Mail-Domains",
+      "allowedDomainsHint": "Kommagetrennt, z. B. company.com. Leer erlaubt jede Domain.",
+      "defaultRole": "Rolle für neue Konten",
+      "clientId": "Client-ID",
+      "clientSecret": "Client-Secret",
+      "secretSet": "Gespeichert. Gib einen neuen Wert ein, um ihn zu ersetzen.",
+      "callbackUrl": "Redirect-URI für die Google Cloud Console",
+      "needsMail": "SMTP muss eingerichtet sein.",
+      "needsGoogle": "Client-ID und Secret erforderlich.",
+      "save": "Speichern",
+      "saved": "Gespeichert"
+    },
+    "updates": {
+      "title": "Updates",
+      "current": "Installierte Version",
+      "latest": "Neuestes Release",
+      "development": "Entwicklungsbuild",
+      "unknown": "unbekannt",
+      "checkedAt": "Zuletzt geprüft",
+      "never": "nie",
+      "checkNow": "Jetzt prüfen",
+      "disabled": "Update-Prüfung ist deaktiviert (UPDATE_CHECK=false).",
+      "upToDate": "Du bist auf dem neuesten Stand.",
+      "available": "Version {latest} ist verfügbar.",
+      "releaseNotes": "Release Notes",
+      "lastError": "Letzte Prüfung fehlgeschlagen: {error}"
+    }
+  },
+  "invite": {
+    "title": "{company} beitreten",
+    "subtitle": "Du wurdest als {email} eingeladen. Wähle deinen Namen und ein Passwort.",
+    "name": "Dein Name",
+    "password": "Passwort",
+    "passwordConfirm": "Passwort wiederholen",
+    "submit": "Beitreten",
+    "invalid": "Dieser Einladungslink ist ungültig oder abgelaufen. Bitte deinen Administrator um einen neuen."
   }
 }

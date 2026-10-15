@@ -1,6 +1,8 @@
-import type { AuthErrorCode } from '@ordler/shared';
+import type { AdminErrorCode, AuthErrorCode } from '@ordler/shared';
 
-const STATUS: Record<AuthErrorCode, number> = {
+export type DomainErrorCode = AuthErrorCode | AdminErrorCode;
+
+const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
   invalid_code: 401,
   strategy_disabled: 403,
@@ -14,6 +16,15 @@ const STATUS: Record<AuthErrorCode, number> = {
   oauth_failed: 401,
   email_not_verified: 403,
   validation_failed: 400,
+  not_found: 404,
+  team_key_taken: 409,
+  department_name_taken: 409,
+  email_taken: 409,
+  last_owner: 409,
+  cannot_change_self: 409,
+  owner_only: 403,
+  invite_invalid: 410,
+  archived: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */
@@ -21,7 +32,7 @@ export class DomainError extends Error {
   override name = 'DomainError';
 
   constructor(
-    readonly code: AuthErrorCode,
+    readonly code: DomainErrorCode,
     readonly status: number = STATUS[code],
   ) {
     super(code);

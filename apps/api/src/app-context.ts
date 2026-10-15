@@ -11,6 +11,8 @@ import { SecretBox } from './crypto/secret-box.js';
 import type { Db } from './db/client.js';
 import type { ReadinessCheck } from './health/health.controller.js';
 import type { Mailer } from './mail/mailer.js';
+import { AdminMembersService } from './members/admin-members.service.js';
+import { OrgService } from './org/org.service.js';
 import { DbAccessContext } from './rbac/db-access-context.js';
 import type { AccessContextSource } from './rbac/permission.guard.js';
 import { SetupService } from './setup/setup.service.js';
@@ -34,6 +36,8 @@ export interface AppContext {
   otp: OtpService;
   google: GoogleAuthService;
   updates: UpdateService;
+  org: OrgService;
+  members: AdminMembersService;
   limits: {
     signIn: RateLimiter;
     otpRequest: RateLimiter;
@@ -104,6 +108,14 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       currentVersion: deps.version,
       now,
       ...(deps.updatesFetch ? { fetch: deps.updatesFetch } : {}),
+    }),
+    org: new OrgService(deps.db),
+    members: new AdminMembersService({
+      db: deps.db,
+      baseUrl: deps.baseUrl,
+      mailer: deps.mailer,
+      now,
+      ...(deps.argon2 ? { argon2: deps.argon2 } : {}),
     }),
     limits: {
       signIn: new RateLimiter(10, FIFTEEN_MINUTES),

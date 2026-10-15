@@ -13,7 +13,11 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: { '/api': 'http://localhost:3000', '/mcp': 'http://localhost:3000' },
+    // ORDLER_API_URL lets a second dev setup run side by side (e.g. API on :3001).
+    proxy: {
+      '/api': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
+      '/mcp': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
+    },
   },
   test: {
     environment: 'jsdom',

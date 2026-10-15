@@ -260,3 +260,20 @@ export const updateStatus = pgTable('update_status', {
   checkedAt: timestamp('checked_at', { withTimezone: true }),
   lastError: text('last_error'),
 });
+
+/** One-time invitation links; only the SHA-256 of the token is stored (SPEC §8). */
+export const memberInvites = pgTable(
+  'member_invites',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('member_invites_token_hash_uq').on(t.tokenHash)],
+);

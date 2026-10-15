@@ -104,3 +104,16 @@ describe('formatBadge', () => {
     expect(formatBadge(count)).toBe(expected);
   });
 });
+
+describe('Sidebar administration link', () => {
+  it('is shown only to administrators and highlights the admin area', async () => {
+    const { unmount } = await renderSidebar('en', { showAdmin: false });
+    expect(screen.queryByRole('link', { name: 'Administration' })).not.toBeInTheDocument();
+    unmount();
+    await renderSidebar('en', { showAdmin: true, currentPath: '/admin/members' });
+    expect(screen.getByRole('link', { name: 'Administration' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+});

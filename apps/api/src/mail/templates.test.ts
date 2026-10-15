@@ -1,7 +1,7 @@
 import { parse, TYPE, type MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { SUPPORTED_LOCALES } from '@ordler/shared';
 import { describe, expect, it } from 'vitest';
-import { EMAIL_MESSAGES, renderOtpEmail } from './templates.js';
+import { EMAIL_MESSAGES, renderInviteEmail, renderOtpEmail } from './templates.js';
 
 const pluralOptions = (elements: MessageFormatElement[]) =>
   elements.flatMap((e) => (e.type === TYPE.plural ? [Object.keys(e.options)] : []));
@@ -34,5 +34,19 @@ describe('renderOtpEmail', () => {
   it('renders English', () => {
     const email = renderOtpEmail({ locale: 'en', code: '000001', company: 'Ordler', minutes: 1 });
     expect(email.text).toContain('It expires in 1 minute.');
+  });
+});
+
+describe('renderInviteEmail', () => {
+  it('includes the link and expiry in the recipient language', () => {
+    const email = renderInviteEmail({
+      locale: 'ru',
+      company: 'Push30',
+      url: 'https://ordler.test/invite/abc',
+      days: 7,
+    });
+    expect(email.subject).toBe('Приглашение в Push30 в Ordler');
+    expect(email.text).toContain('https://ordler.test/invite/abc');
+    expect(email.text).toContain('7 дней');
   });
 });
