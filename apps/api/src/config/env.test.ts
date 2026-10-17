@@ -61,6 +61,18 @@ describe('loadConfig', () => {
     expect(describeConfig(config).database).toBe('installer settings in /data');
   });
 
+  it('treats empty variables as unset', () => {
+    const config = loadConfig({
+      DATABASE_URL: '',
+      ENCRYPTION_KEY: '',
+      ORDLER_VERSION: '',
+      PORT: '',
+    });
+    expect(config.database).toBeUndefined();
+    expect(config.version).toBeUndefined();
+    expect(config.port).toBe(3000);
+  });
+
   it('accepts a fixed install token and web directory', () => {
     const config = loadConfig({
       ORDLER_INSTALL_TOKEN: 'abcd-efgh-ijkl',

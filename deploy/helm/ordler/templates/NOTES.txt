@@ -1,0 +1,20 @@
+Ordler is starting at {{ .Values.baseUrl }}
+
+{{- if include "ordler.installerMode" . }}
+
+No database is configured in values, so Ordler shows an install page on first visit.
+Get the install token from the log:
+
+  kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "ordler.fullname" . }} | grep -A2 "install token"
+
+Prepare an empty PostgreSQL 18+ database first:
+
+  CREATE USER ordler WITH PASSWORD '...';
+  CREATE DATABASE ordler OWNER ordler;
+{{- else }}
+
+Ordler connects to {{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}
+and creates its tables on start. Open the URL above to create the first administrator.
+{{- end }}
+
+Back up the database and the encryption key Secret ({{ include "ordler.keySecretName" . }}) together.

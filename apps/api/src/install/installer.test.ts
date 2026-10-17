@@ -62,7 +62,7 @@ describe('installer', () => {
       databaseRequired: true,
       databaseError: 'authentication_failed',
     });
-    expect((await app!.inject({ url: '/readyz' })).statusCode).toBe(503);
+    expect((await app!.inject({ url: '/readyz' })).json()).toEqual({ status: 'installing' });
     expect((await app!.inject({ url: '/healthz' })).statusCode).toBe(200);
     expect((await app!.inject({ url: '/api/me' })).json()).toEqual({ error: 'database_required' });
   });

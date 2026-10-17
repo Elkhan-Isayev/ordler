@@ -61,7 +61,8 @@ export async function buildInstaller(
   let configured = false;
 
   app.get('/healthz', async () => ({ status: 'ok' }));
-  app.get('/readyz', async (_request, reply) => reply.status(503).send({ status: 'not_ready' }));
+  // Ready to serve the installer page: Kubernetes must route traffic here to finish installing.
+  app.get('/readyz', async () => ({ status: 'installing' }));
 
   app.get('/api/setup/status', async (): Promise<SetupStatusResponse> => ({
     setupRequired: true,

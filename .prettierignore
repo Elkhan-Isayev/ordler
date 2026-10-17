@@ -3,3 +3,6 @@ coverage
 pnpm-lock.yaml
 LICENSE
 apps/api/drizzle
+
+# Go templates, not plain YAML
+deploy/helm/*/templates/

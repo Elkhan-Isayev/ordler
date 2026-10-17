@@ -1,0 +1,97 @@
+# Ordler needs only PostgreSQL 18+ with an empty database; it creates its tables itself.
+#
+# Two ways to give it the database:
+# 1. Set `database.host` below (recommended for Kubernetes, allows several replicas).
+# 2. Leave it empty: Ordler shows an install page asking for the connection and keeps it in
+#    a persistent volume. That mode runs a single replica.
+
+image:
+  repository: ghcr.io/elkhan-isayev/ordler
+  # Defaults to the chart appVersion.
+  tag: ''
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# Public URL people open, e.g. https://tasks.company.com.
+baseUrl: http://localhost:3000
+
+replicaCount: 1
+
+database:
+  # Empty: use the install page instead (single replica, needs persistence).
+  host: ''
+  port: 5432
+  name: ordler
+  user: ordler
+  # Password in plain values, or reference an existing Secret below.
+  password: ''
+  existingSecret: ''
+  existingSecretKey: password
+  # disable | require | verify-full (verify-full recommended for AWS RDS).
+  ssl: disable
+  # CA bundle (PEM) for verify-full, e.g. the AWS RDS global bundle.
+  sslCa: ''
+  schema: ordler
+  poolMax: 20
+
+# Key that encrypts stored secrets (SMTP, Google, database password). Generated once and kept
+# in a Secret when empty; set existingSecret to manage it yourself. Back it up.
+encryptionKey:
+  existingSecret: ''
+  existingSecretKey: encryption-key
+
+# Optional fixed token for the install page (otherwise printed in the pod log).
+installToken: ''
+
+# Holds install-page settings; required when database.host is empty.
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: ''
+  accessMode: ReadWriteOnce
+  existingClaim: ''
+
+# Daily anonymous check of GitHub releases for the admin update banner.
+updateCheck:
+  enabled: true
+
+# Extra environment variables, e.g. SMTP_* (mail can also be set in the admin panel).
+extraEnv: []
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ''
+  annotations: {}
+  host: tasks.company.com
+  tls: []
+  #  - secretName: ordler-tls
+  #    hosts: [tasks.company.com]
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 768Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

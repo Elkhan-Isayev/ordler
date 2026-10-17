@@ -26,3 +26,41 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ordler:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test the installer
+        run: |
+          docker run -d --name ordler -p 3000:3000 ordler:ci
+          for i in $(seq 1 30); do
+            curl -fs localhost:3000/api/setup/status && break
+            sleep 1
+          done
+          curl -fs localhost:3000/api/setup/status | grep -q '"databaseRequired":true'
+          curl -fs localhost:3000/ | grep -q '<div id="root">'
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: azure/setup-helm@v4
+      - run: helm lint deploy/helm/ordler
+      - run: helm lint deploy/helm/ordler --set database.host=db.example.com --set database.password=x --set replicaCount=3
+      - name: Render both modes
+        run: |
+          helm template t deploy/helm/ordler > /dev/null
+          helm template t deploy/helm/ordler --set database.host=db.example.com \
+            --set database.ssl=verify-full --set-string database.sslCa=CA --set replicaCount=3 > /dev/null
+          ! helm template t deploy/helm/ordler --set replicaCount=2 2>/dev/null

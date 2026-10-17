@@ -125,11 +125,14 @@ export class ConfigError extends Error {
 }
 
 export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): AppConfig {
-  const resolved: Env = { ...env };
+  // Compose and Helm templates often pass `VAR=` for unset values; treat them as unset.
+  const resolved: Env = Object.fromEntries(
+    Object.entries(env).filter(([, value]) => value !== undefined && value !== ''),
+  );
   for (const name of FILE_VARIABLES) {
-    const filePath = env[`${name}_FILE`];
+    const filePath = resolved[`${name}_FILE`];
     if (!filePath) continue;
-    if (env[name] !== undefined) {
+    if (resolved[name] !== undefined) {
       throw new ConfigError(`Set either ${name} or ${name}_FILE, not both`);
     }
     resolved[name] = readFile(filePath).trim();

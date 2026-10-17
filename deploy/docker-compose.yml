@@ -1,0 +1,51 @@
+# Ordler with Docker Compose (SPEC §16.1).
+#
+# Ordler needs only PostgreSQL 18+ with an empty database. Start it and open BASE_URL:
+#   docker compose up -d
+#   docker compose logs ordler        # shows the install token for the first-run page
+#
+# On the first visit Ordler asks for the database connection and creates all tables itself.
+# To skip that page, set DATABASE_URL (or DB_* variables) below.
+#
+# No PostgreSQL yet? Start the bundled one too and enter host "postgres" on the install page:
+#   POSTGRES_PASSWORD=<strong password> docker compose --profile with-postgres up -d
+
+name: ordler
+
+services:
+  ordler:
+    image: ${ORDLER_IMAGE:-ghcr.io/elkhan-isayev/ordler:latest}
+    restart: unless-stopped
+    ports:
+      - '${ORDLER_PORT:-3000}:3000'
+    environment:
+      # Public URL people open; used in emails and sign-in redirects.
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      # Optional: configure the database here instead of on the install page.
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_SSL: ${DB_SSL:-disable}
+      # Optional: a fixed install token instead of the random one in the log.
+      ORDLER_INSTALL_TOKEN: ${ORDLER_INSTALL_TOKEN:-}
+    volumes:
+      # Database settings from the install page and the generated encryption key.
+      # Back this volume up together with the database.
+      - ordler-data:/data
+
+  postgres:
+    image: postgres:18
+    profiles: [with-postgres]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ordler
+      POSTGRES_DB: ordler
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ordler -d ordler']
+      interval: 5s
+      retries: 10
+
+volumes:
+  ordler-data:
+  postgres-data:

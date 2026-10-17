@@ -1,0 +1,148 @@
+{{- $installer := include "ordler.installerMode" . -}}
+{{- if and $installer (gt (int .Values.replicaCount) 1) }}
+{{- fail "replicaCount > 1 needs database.host: the install page keeps settings in a single volume" }}
+{{- end }}
+{{- if and $installer (not .Values.persistence.enabled) }}
+{{- fail "Without database.host, enable persistence so install-page settings survive restarts" }}
+{{- end }}
+{{- $rwo := and .Values.persistence.enabled (eq .Values.persistence.accessMode "ReadWriteOnce") -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ordler.fullname" . }}
+  labels:
+    {{- include "ordler.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if $rwo }}
+  # A ReadWriteOnce volume can be attached to one pod at a time.
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ordler.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ordler.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ordler
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: BASE_URL
+              value: {{ .Values.baseUrl | quote }}
+            - name: UPDATE_CHECK
+              value: {{ .Values.updateCheck.enabled | quote }}
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ordler.keySecretName" . }}
+                  key: {{ .Values.encryptionKey.existingSecretKey }}
+            {{- if .Values.installToken }}
+            - name: ORDLER_INSTALL_TOKEN
+              value: {{ .Values.installToken | quote }}
+            {{- end }}
+            {{- if not $installer }}
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.database.port | quote }}
+            - name: DB_NAME
+              value: {{ .Values.database.name | quote }}
+            - name: DB_USER
+              value: {{ .Values.database.user | quote }}
+            - name: DB_SSL
+              value: {{ .Values.database.ssl | quote }}
+            - name: DB_SCHEMA
+              value: {{ .Values.database.schema | quote }}
+            - name: DB_POOL_MAX
+              value: {{ .Values.database.poolMax | quote }}
+            {{- if or .Values.database.existingSecret .Values.database.password }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ordler.dbSecretName" . }}
+                  key: {{ .Values.database.existingSecretKey }}
+            {{- end }}
+            {{- if .Values.database.sslCa }}
+            - name: DB_SSL_CA_FILE
+              value: /etc/ordler/db-ca/ca.pem
+            {{- end }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            # Read-only root filesystem: Node may still need a writable temp directory.
+            - name: tmp
+              mountPath: /tmp
+            {{- if and (not $installer) .Values.database.sslCa }}
+            - name: db-ca
+              mountPath: /etc/ordler/db-ca
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (printf "%s-data" (include "ordler.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        {{- if and (not $installer) .Values.database.sslCa }}
+        - name: db-ca
+          configMap:
+            name: {{ include "ordler.fullname" . }}-db-ca
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

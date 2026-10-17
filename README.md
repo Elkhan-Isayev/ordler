@@ -42,21 +42,21 @@ and a service desk for requests between departments. Ordler is both, in one plac
 
 ## Features
 
-|     | Feature                                                                                                                                           | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | :----: |
-| 🧭  | **Setup wizard**: first run creates the workspace and the first Owner                                                                             |   ✅   |
-| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google (OIDC); per-strategy self-registration and domain allow-lists, Wiki.js-style |   ✅   |
-| 🛡️  | **RBAC**: permission catalog, system and custom roles, grants at organization, department or team scope, deny-by-default API                      |   ✅   |
-| 🏢  | **Admin panel**: departments and teams, member invites with one-time links, roles per scope, team membership, sign-in methods, updates            |   ✅   |
-| 🌍  | **Four languages** from day one: English, Русский, Deutsch, Azərbaycanca                                                                          |   ✅   |
-| 🔔  | **Update notifications**: admins see new GitHub releases with step-by-step upgrade instructions                                                   |   ✅   |
-| 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection                                                     |   ✅   |
-| 🐳  | **Docker image, Compose and Helm chart**                                                                                                          |   🚧   |
-| ✅  | **Issues, workflows, triage, list and board views** (Linear-style)                                                                                |   🗓    |
-| 📨  | **Service portals and requests** between departments, including several departments at once                                                       |   🗓    |
-| ✍️  | **Approval chains**: sequential steps, any/all/quorum, approvers by role, department or manager                                                   |   🗓    |
-| 💬  | **Slack notifications** via webhook, later a full Slack app                                                                                       |   🗓    |
-| 🤖  | **MCP server** with personal access tokens, so AI agents work as you                                                                              |   🗓    |
+|     | Feature                                                                                                                                                       | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: |
+| 🧭  | **Setup wizard**: first run creates the workspace and the first Owner                                                                                         |   ✅   |
+| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google (OIDC); per-strategy self-registration and domain allow-lists, Wiki.js-style             |   ✅   |
+| 🛡️  | **RBAC**: permission catalog, system and custom roles, grants at organization, department or team scope, deny-by-default API                                  |   ✅   |
+| 🏢  | **Admin panel**: departments and teams, member invites with one-time links, roles per scope, team membership, sign-in methods, mail server, database, updates |   ✅   |
+| 🌍  | **Four languages** from day one: English, Русский, Deutsch, Azərbaycanca                                                                                      |   ✅   |
+| 🔔  | **Update notifications**: admins see new GitHub releases with step-by-step upgrade instructions                                                               |   ✅   |
+| 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection                                                                 |   ✅   |
+| 🐳  | **One Docker image, Compose and Helm chart**: needs only an empty PostgreSQL 18 database, the install page does the rest                                      |   ✅   |
+| ✅  | **Issues, workflows, triage, list and board views** (Linear-style)                                                                                            |   🗓    |
+| 📨  | **Service portals and requests** between departments, including several departments at once                                                                   |   🗓    |
+| ✍️  | **Approval chains**: sequential steps, any/all/quorum, approvers by role, department or manager                                                               |   🗓    |
+| 💬  | **Slack notifications** via webhook, later a full Slack app                                                                                                   |   🗓    |
+| 🤖  | **MCP server** with personal access tokens, so AI agents work as you                                                                                          |   🗓    |
 
 ✅ shipped · 🚧 in progress · 🗓 planned for Phase 1 — see the [roadmap](docs/SPEC.md#14-delivery-phases).
 
@@ -124,8 +124,19 @@ no Redis, no message broker. Details: [SPEC §12](docs/SPEC.md#12-architecture) 
 
 ## Getting started
 
-> Production images, Docker Compose and the Helm chart are in progress. Until then, run
-> Ordler from source.
+Ordler needs only **PostgreSQL 18+** with an empty database; it creates its tables itself.
+
+```bash
+curl -O https://raw.githubusercontent.com/Elkhan-Isayev/ordler/main/deploy/docker-compose.yml
+docker compose up -d
+docker compose logs ordler   # the install token
+```
+
+Open <http://localhost:3000>, enter the database connection and the install token, then
+create the workspace and the first administrator. Helm, RDS and backups:
+[docs/install.md](docs/install.md).
+
+### Development
 
 Requirements: **Node.js 24** (`.nvmrc`), **pnpm** via Corepack, **PostgreSQL 18+**.
 
@@ -160,16 +171,17 @@ finds **Administration** in the sidebar. Stop the database with
 
 ### Configuration
 
-| Variable                                                                | Default                 | Purpose                                                                   |
-| ----------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- |
-| `DATABASE_URL` or `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` | —                       | PostgreSQL connection; every secret also accepts `*_FILE`                 |
-| `DB_SSL`, `DB_SSL_CA`                                                   | `disable`               | `require` or `verify-full` (use `verify-full` with the RDS CA bundle)     |
-| `DB_SCHEMA`                                                             | `ordler`                | Schema Ordler owns; the database can be shared                            |
-| `ENCRYPTION_KEY`                                                        | —                       | 32-byte base64 key sealing stored secrets                                 |
-| `BASE_URL`                                                              | `http://localhost:3000` | Public URL used in emails, OAuth callbacks and the CSRF check             |
-| `SMTP_HOST`, `SMTP_FROM`, …                                             | —                       | Mail for sign-in codes and notifications                                  |
-| `ORDLER_MIGRATE`                                                        | `true`                  | Set `false` when a DBA applies migrations                                 |
-| `UPDATE_CHECK`                                                          | `true`                  | Daily anonymous check of GitHub releases; `false` for air-gapped installs |
+| Variable                                                                | Default                 | Purpose                                                                                       |
+| ----------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
+| `DATABASE_URL` or `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` | install page            | PostgreSQL connection; every secret also accepts `*_FILE`                                     |
+| `DB_SSL`, `DB_SSL_CA`                                                   | `disable`               | `require` or `verify-full` (use `verify-full` with the RDS CA bundle)                         |
+| `DB_SCHEMA`                                                             | `ordler`                | Schema Ordler owns; the database can be shared                                                |
+| `ENCRYPTION_KEY`                                                        | generated in `/data`    | 32-byte base64 key sealing stored secrets                                                     |
+| `ORDLER_DATA_DIR`                                                       | `/data`                 | Volume for install-page database settings and the generated key                               |
+| `BASE_URL`                                                              | `http://localhost:3000` | Public URL used in emails, OAuth callbacks and the CSRF check                                 |
+| `SMTP_HOST`, `SMTP_FROM`, …                                             | admin panel             | Mail for sign-in codes and notifications; can also be set in **Administration → Mail server** |
+| `ORDLER_MIGRATE`                                                        | `true`                  | Set `false` when a DBA applies migrations                                                     |
+| `UPDATE_CHECK`                                                          | `true`                  | Daily anonymous check of GitHub releases; `false` for air-gapped installs                     |
 
 Full reference: [SPEC §16.2](docs/SPEC.md#162-configuration-environment-variables).
 
