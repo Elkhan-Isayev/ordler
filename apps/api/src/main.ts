@@ -24,6 +24,8 @@ import { DatabaseReadiness } from './db/readiness.js';
 import * as schema from './db/schema.js';
 import { DEFAULT_WEB_DIR, registerWebAssets } from './http/web-assets.js';
 import { generateInstallToken, runInstaller } from './install/installer.js';
+import { ensureAllTeamWorkflows } from './issues/workflows.js';
+import { PgEventBus } from './realtime/event-bus.js';
 import { syncSystemRoles } from './setup/system-roles.js';
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL('../drizzle', import.meta.url));
@@ -78,7 +80,10 @@ async function startApplication(
   const pool = new pg.Pool(toPoolConfig(database));
   const db = drizzle(pool, { schema }) as unknown as Db;
   const readiness = new DatabaseReadiness(pool);
+  // The listener needs one dedicated connection with the same settings as the pool.
+  const events = new PgEventBus(pool, toPoolConfig(database), (message) => logger.warn(message));
   const ctx = createAppContext({
+    events,
     db,
     baseUrl: config.baseUrl,
     encryptionKey: storage.encryptionKey,
@@ -99,7 +104,7 @@ async function startApplication(
     AppModule.forRoot(ctx),
     new FastifyAdapter({ trustProxy: true }),
   );
-  configureApp(app, ctx);
+  await configureApp(app, ctx);
   if (await registerWebAssets(app.getHttpAdapter().getInstance(), storage.webDir)) {
     logger.log(`Serving the web app from ${storage.webDir}`);
   }
@@ -131,6 +136,8 @@ async function startApplication(
   logger.log('Database schema is up to date');
   await syncSystemRoles(db);
   await ctx.strategies.ensureDefaults();
+  await ensureAllTeamWorkflows(db);
+  await events.start();
   readiness.markMigrated();
   if (config.role !== 'web') ctx.updates.start();
   logger.log(`Listening on port ${config.port}`);

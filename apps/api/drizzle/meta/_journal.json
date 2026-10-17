@@ -36,6 +36,13 @@
       "when": 1792258436058,
       "tag": "0004_mail_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792264792413,
+      "tag": "0005_issues",
+      "breakpoints": true
     }
   ]
 }

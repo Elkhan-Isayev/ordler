@@ -61,7 +61,7 @@ export async function createTestApp(overrides: Partial<AppContextDeps> = {}): Pr
 
   const ref = await Test.createTestingModule({ imports: [AppModule.forRoot(ctx)] }).compile();
   const app = ref.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
-  configureApp(app, ctx);
+  await configureApp(app, ctx);
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
 

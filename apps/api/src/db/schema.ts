@@ -2,6 +2,8 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -75,6 +77,8 @@ export const teams = pgTable(
     key: text('key').notNull(),
     name: text('name').notNull(),
     isPrivate: boolean('is_private').notNull().default(false),
+    /** Last issue number handed out; incremented under a row lock so numbers never repeat. */
+    issueCounter: integer('issue_counter').notNull().default(0),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -295,3 +299,83 @@ export const mailSettings = pgTable('mail_settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   updatedBy: uuid('updated_by').references(() => members.id),
 });
+
+/** Status sets owned by a team (later also by request types), SPEC §5.2. */
+export const workflows = pgTable(
+  'workflows',
+  {
+    id: id(),
+    ownerType: text('owner_type', { enum: ['team'] }).notNull(),
+    ownerId: uuid('owner_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('workflows_owner_uq').on(t.ownerType, t.ownerId)],
+);
+
+export const workflowStatuses = pgTable(
+  'workflow_statuses',
+  {
+    id: id(),
+    workflowId: uuid('workflow_id')
+      .notNull()
+      .references(() => workflows.id),
+    /** Stable key of a default status, used for translation; null for custom statuses. */
+    key: text('key'),
+    name: text('name').notNull(),
+    category: text('category', {
+      enum: ['backlog', 'unstarted', 'started', 'completed', 'canceled'],
+    }).notNull(),
+    position: integer('position').notNull(),
+    isDefault: boolean('is_default').notNull().default(false),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+  },
+  (t) => [index('workflow_statuses_workflow_idx').on(t.workflowId)],
+);
+
+export const issues = pgTable(
+  'issues',
+  {
+    id: id(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    number: integer('number').notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    statusId: uuid('status_id')
+      .notNull()
+      .references(() => workflowStatuses.id),
+    priority: text('priority', { enum: ['none', 'urgent', 'high', 'medium', 'low'] })
+      .notNull()
+      .default('none'),
+    assigneeId: uuid('assignee_id').references(() => members.id),
+    dueDate: date('due_date'),
+    /** Position inside a board column; smaller comes first. */
+    sortOrder: doublePrecision('sort_order').notNull().default(0),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('issues_team_number_uq').on(t.teamId, t.number),
+    index('issues_team_status_idx').on(t.teamId, t.statusId),
+    index('issues_assignee_idx').on(t.assigneeId),
+  ],
+);
+
+/** Append-only issue history (SPEC §5.1 Activity); never updated or deleted. */
+export const issueEvents = pgTable(
+  'issue_events',
+  {
+    id: id(),
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id),
+    actorId: uuid('actor_id').references(() => members.id),
+    kind: text('kind', { enum: ['created', 'updated'] }).notNull(),
+    changes: jsonb('changes').notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [index('issue_events_issue_idx').on(t.issueId, t.createdAt)],
+);

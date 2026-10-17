@@ -4,6 +4,7 @@ import { writeAudit, type AuditActor } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
 import { departments, teamMemberships, teams } from '../db/schema.js';
+import { ensureTeamWorkflow } from '../issues/workflows.js';
 
 /** Departments and their teams (SPEC §3, admin panel §8). */
 export class OrgService {
@@ -108,6 +109,7 @@ export class OrgService {
       .insert(teams)
       .values({ departmentId, name: input.name, key: input.key, isPrivate: input.isPrivate })
       .returning();
+    await ensureTeamWorkflow(this.db, row!.id);
     await writeAudit(this.db, {
       actor,
       action: 'team.created',

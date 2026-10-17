@@ -1,6 +1,6 @@
-import type { AdminErrorCode, AuthErrorCode } from '@ordler/shared';
+import type { AdminErrorCode, AuthErrorCode, IssueErrorCode } from '@ordler/shared';
 
-export type DomainErrorCode = AuthErrorCode | AdminErrorCode;
+export type DomainErrorCode = AuthErrorCode | AdminErrorCode | IssueErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -27,6 +27,9 @@ const STATUS: Record<DomainErrorCode, number> = {
   archived: 409,
   mail_managed_by_env: 409,
   database_managed_by_env: 409,
+  forbidden: 403,
+  status_not_in_workflow: 400,
+  assignee_not_in_team: 400,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

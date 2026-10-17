@@ -14,7 +14,11 @@ import {
   DatabaseSettingsService,
   type DatabaseSettingsDeps,
 } from './install/database-settings.service.js';
+import { IssueService } from './issues/issue.service.js';
+import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
+import { LocalEventBus, type EventBus } from './realtime/event-bus.js';
+import { RealtimeHub } from './realtime/realtime.gateway.js';
 import { smtpTransport, type TransportFactory } from './mail/mailer.js';
 import { AdminMembersService } from './members/admin-members.service.js';
 import { OrgService } from './org/org.service.js';
@@ -45,6 +49,9 @@ export interface AppContext {
   members: AdminMembersService;
   mail: MailService;
   database: DatabaseSettingsService;
+  issues: IssueService;
+  events: EventBus;
+  realtime: RealtimeHub;
   limits: {
     signIn: RateLimiter;
     otpRequest: RateLimiter;
@@ -64,6 +71,10 @@ export interface AppContextDeps {
   mailTransport?: TransportFactory;
   /** The running connection and how to probe and save replacements (Admin → Database). */
   databaseSettings: Omit<DatabaseSettingsDeps, 'db'>;
+  /** Fans domain events out to every replica; PostgreSQL LISTEN/NOTIFY in production. */
+  events?: EventBus;
+  /** How often open sockets are pinged and their sessions re-checked. */
+  realtimeHeartbeatMs?: number;
   readiness: ReadinessCheck;
   now?: Clock;
   argon2?: Argon2Params;
@@ -86,7 +97,16 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     now,
   });
   const strategies = new StrategyService(deps.db, box, mail);
+  const events = deps.events ?? new LocalEventBus();
+  const access = new DbAccessContext(deps.db);
+  const issues = new IssueService({
+    db: deps.db,
+    access: new TeamAccess(deps.db, access),
+    events,
+    now,
+  });
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
+  const sessions = new SessionService(deps.db, sessionTtlMs, now);
 
   return {
     db: deps.db,
@@ -94,10 +114,10 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     secureCookies: deps.baseUrl.startsWith('https://'),
     sessionTtlMs,
     readiness: deps.readiness,
-    access: new DbAccessContext(deps.db),
+    access,
     setup: new SetupService(deps.db, deps.baseUrl, deps.argon2),
     strategies,
-    sessions: new SessionService(deps.db, sessionTtlMs, now),
+    sessions,
     passwordAuth: new PasswordAuthService(deps.db, strategies, deps.argon2),
     otp: new OtpService(deps.db, strategies, mail, deps.otpPolicy ?? DEFAULT_OTP_POLICY, now),
     google: new GoogleAuthService({
@@ -127,6 +147,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     }),
     mail,
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
+    issues,
+    events,
+    realtime: new RealtimeHub({
+      baseUrl: deps.baseUrl,
+      issues,
+      sessions,
+      events,
+      ...(deps.realtimeHeartbeatMs ? { heartbeatMs: deps.realtimeHeartbeatMs } : {}),
+    }),
     limits: {
       signIn: new RateLimiter(10, FIFTEEN_MINUTES),
       otpRequest: new RateLimiter(10, FIFTEEN_MINUTES),

@@ -7,6 +7,7 @@ import { AuthController } from './auth/auth.controller.js';
 import { HealthController, READINESS_CHECK } from './health/health.controller.js';
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
 import { AdminDatabaseController } from './install/admin-database.controller.js';
+import { IssuesController } from './issues/issues.controller.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
 import { InvitesController } from './members/invites.controller.js';
@@ -33,6 +34,7 @@ export class AppModule {
         InvitesController,
         AdminMailController,
         AdminDatabaseController,
+        IssuesController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
@@ -46,7 +48,9 @@ export class AppModule {
 }
 
 /** Shared by main.ts and tests so both serve the exact same HTTP surface. */
-export function configureApp(app: NestFastifyApplication, ctx: AppContext): void {
+export async function configureApp(app: NestFastifyApplication, ctx: AppContext): Promise<void> {
   app.setGlobalPrefix('api', { exclude: ['healthz', 'readyz'] });
-  registerRequestHooks(app.getHttpAdapter().getInstance(), ctx);
+  const instance = app.getHttpAdapter().getInstance();
+  registerRequestHooks(instance, ctx);
+  await ctx.realtime.register(instance);
 }
