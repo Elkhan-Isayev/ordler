@@ -19,7 +19,8 @@
     "cycles": "Cycles",
     "currentCycle": "Current",
     "upcomingCycle": "Upcoming",
-    "admin": "Administration"
+    "admin": "Administration",
+    "board": "Board"
   },
   "settings": {
     "language": "Language"
@@ -91,7 +92,10 @@
     "invalid_install_token": "The install token is wrong. Copy it from the Ordler log.",
     "database_required": "Ordler is waiting for a database connection.",
     "ssl_ca_required": "Paste the CA certificate to verify the server.",
-    "schema_invalid": "Use lowercase letters, digits and underscores for the schema."
+    "schema_invalid": "Use lowercase letters, digits and underscores for the schema.",
+    "forbidden": "You do not have permission to do this.",
+    "status_not_in_workflow": "This status does not belong to the team.",
+    "assignee_not_in_team": "The assignee must be a member of the team."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -281,6 +285,60 @@
       "tls_failed": "The SSL connection failed. Check the encryption mode and CA certificate.",
       "postgres_too_old": "Ordler needs PostgreSQL 18 or newer.",
       "insufficient_privileges": "The user may not create tables in this database. Ask the DBA to run:"
+    }
+  },
+  "issues": {
+    "title": "Issue title",
+    "description": "Description",
+    "descriptionPlaceholder": "Add a description…",
+    "newIssueIn": "New issue in {team}",
+    "status": {
+      "label": "Status",
+      "backlog": "Backlog",
+      "todo": "Todo",
+      "in_progress": "In Progress",
+      "in_review": "In Review",
+      "done": "Done",
+      "canceled": "Canceled"
+    },
+    "category": {
+      "backlog": "Backlog",
+      "unstarted": "Not started",
+      "started": "In progress",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "priority": {
+      "label": "Priority",
+      "none": "No priority",
+      "urgent": "Urgent",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "assignee": "Assignee",
+    "noAssignee": "No assignee",
+    "dueDate": "Due date",
+    "cancel": "Cancel",
+    "create": "Create issue",
+    "addTo": "New issue in {status}",
+    "empty": "No issues yet.",
+    "layout": "Layout",
+    "list": "List",
+    "board": "Board",
+    "activity": "Activity",
+    "properties": "Properties",
+    "someone": "Someone",
+    "event": {
+      "created": "{actor} created the issue",
+      "status": "status → {to}",
+      "priority": "priority → {to}",
+      "assigned": "assignee → {to}",
+      "unassigned": "assignee removed",
+      "title": "title → “{to}”",
+      "description": "description edited",
+      "dueDate": "due date → {to}",
+      "dueDateCleared": "due date removed"
     }
   }
 }

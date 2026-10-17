@@ -19,7 +19,8 @@
     "cycles": "Dövrlər",
     "currentCycle": "Cari",
     "upcomingCycle": "Növbəti",
-    "admin": "İdarəetmə"
+    "admin": "İdarəetmə",
+    "board": "Lövhə"
   },
   "settings": {
     "language": "Dil"
@@ -91,7 +92,10 @@
     "invalid_install_token": "Quraşdırma kodu yanlışdır. Onu Ordler jurnalından köçürün.",
     "database_required": "Ordler verilənlər bazası bağlantısını gözləyir.",
     "ssl_ca_required": "Serveri yoxlamaq üçün CA sertifikatını daxil edin.",
-    "schema_invalid": "Sxem adı üçün kiçik latın hərfləri, rəqəmlər və alt xətt istifadə edin."
+    "schema_invalid": "Sxem adı üçün kiçik latın hərfləri, rəqəmlər və alt xətt istifadə edin.",
+    "forbidden": "Bu əməliyyat üçün icazəniz yoxdur.",
+    "status_not_in_workflow": "Bu status komandaya aid deyil.",
+    "assignee_not_in_team": "İcraçı komandanın üzvü olmalıdır."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -281,6 +285,60 @@
       "tls_failed": "SSL bağlantısı alınmadı. Şifrələmə rejimini və CA sertifikatını yoxlayın.",
       "postgres_too_old": "Ordler üçün PostgreSQL 18 və ya daha yeni versiya lazımdır.",
       "insufficient_privileges": "İstifadəçinin bu bazada cədvəl yaratmaq hüququ yoxdur. Baza administratorundan bunu icra etməsini xahiş edin:"
+    }
+  },
+  "issues": {
+    "title": "Tapşırığın adı",
+    "description": "Təsvir",
+    "descriptionPlaceholder": "Təsvir əlavə edin…",
+    "newIssueIn": "{team} komandasında yeni tapşırıq",
+    "status": {
+      "label": "Status",
+      "backlog": "Backlog",
+      "todo": "İcra ediləcək",
+      "in_progress": "İcrada",
+      "in_review": "Yoxlamada",
+      "done": "Hazırdır",
+      "canceled": "Ləğv edilib"
+    },
+    "category": {
+      "backlog": "Backlog",
+      "unstarted": "Başlanmayıb",
+      "started": "İcrada",
+      "completed": "Tamamlanıb",
+      "canceled": "Ləğv edilib"
+    },
+    "priority": {
+      "label": "Prioritet",
+      "none": "Prioritetsiz",
+      "urgent": "Təcili",
+      "high": "Yüksək",
+      "medium": "Orta",
+      "low": "Aşağı"
+    },
+    "assignee": "İcraçı",
+    "noAssignee": "İcraçı yoxdur",
+    "dueDate": "Son tarix",
+    "cancel": "Ləğv et",
+    "create": "Tapşırıq yarat",
+    "addTo": "«{status}» sütununda yeni tapşırıq",
+    "empty": "Hələ tapşırıq yoxdur.",
+    "layout": "Görünüş",
+    "list": "Siyahı",
+    "board": "Lövhə",
+    "activity": "Tarixçə",
+    "properties": "Xüsusiyyətlər",
+    "someone": "Kimsə",
+    "event": {
+      "created": "{actor}: tapşırıq yaradıldı",
+      "status": "status → {to}",
+      "priority": "prioritet → {to}",
+      "assigned": "icraçı → {to}",
+      "unassigned": "icraçı götürüldü",
+      "title": "ad → «{to}»",
+      "description": "təsvir dəyişdirildi",
+      "dueDate": "son tarix → {to}",
+      "dueDateCleared": "son tarix götürüldü"
     }
   }
 }

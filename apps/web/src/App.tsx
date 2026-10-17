@@ -3,12 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { AdminPage, adminSections } from './admin/AdminPage.js';
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
+import { IssuePage } from './issues/IssuePage.js';
+import { MyIssuesPage } from './issues/MyIssuesPage.js';
+import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
 import { usePathname } from './router.js';
 
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
   const { t } = useTranslation();
   const path = usePathname();
   const adminSection = /^\/admin(?:\/([a-z]+))?\/?$/.exec(path);
+  const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
+  const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
 
   return (
@@ -37,6 +42,16 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
         <UpdateBanner isAdmin={me.organizationPermissions.includes('org.manage')} />
         {adminSection ? (
           <AdminPage me={me} section={adminSection[1]} />
+        ) : teamPage ? (
+          <TeamIssuesPage
+            key={teamPage[1]}
+            teamKey={teamPage[1]!.toUpperCase()}
+            view={teamPage[2] === 'board' ? 'board' : 'list'}
+          />
+        ) : issuePage ? (
+          <IssuePage key={issuePage[1]} identifier={issuePage[1]!.toUpperCase()} />
+        ) : path === '/my-issues' ? (
+          <MyIssuesPage />
         ) : (
           <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
             <h1 className="text-xl font-semibold">{t('home.title')}</h1>

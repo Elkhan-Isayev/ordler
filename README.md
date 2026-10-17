@@ -52,7 +52,9 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🔔  | **Update notifications**: admins see new GitHub releases with step-by-step upgrade instructions                                                               |   ✅   |
 | 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection                                                                 |   ✅   |
 | 🐳  | **One Docker image, Compose and Helm chart**: needs only an empty PostgreSQL 18 database, the install page does the rest                                      |   ✅   |
-| ✅  | **Issues, workflows, triage, list and board views** (Linear-style)                                                                                            |   🗓    |
+| ✅  | **Team issues** (Linear-style): per-team identifiers, default workflow, priority, assignee, due date, history, list and drag-and-drop board                   |   ✅   |
+| ⚡  | **Live updates**: changes appear in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                    |   ✅   |
+| 🗂   | **Triage, comments, labels, workflow editor, cycles**                                                                                                         |   🗓    |
 | 📨  | **Service portals and requests** between departments, including several departments at once                                                                   |   🗓    |
 | ✍️  | **Approval chains**: sequential steps, any/all/quorum, approvers by role, department or manager                                                               |   🗓    |
 | 💬  | **Slack notifications** via webhook, later a full Slack app                                                                                                   |   🗓    |

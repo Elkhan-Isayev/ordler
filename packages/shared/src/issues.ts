@@ -88,6 +88,7 @@ export interface IssueSummary {
   number: number;
   title: string;
   statusId: string;
+  status: Pick<WorkflowStatus, 'id' | 'key' | 'name' | 'category'>;
   priority: Priority;
   assignee: MemberRef | null;
   dueDate: string | null;

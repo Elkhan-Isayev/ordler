@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 
@@ -26,6 +26,8 @@ export interface SidebarProps {
   currentPath?: string;
 }
 
+const CurrentPath = createContext<string | undefined>(undefined);
+
 /** Badges cap like Linear's, so the sidebar width stays stable. */
 export function formatBadge(count: number): string | undefined {
   if (count <= 0) return undefined;
@@ -45,53 +47,59 @@ export function Sidebar({
   const { t } = useTranslation();
 
   return (
-    <nav
-      aria-label={workspaceName}
-      className="flex h-full w-64 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted"
-    >
-      <div className="flex items-center gap-2 px-2">
-        <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-white">
-          {workspaceName.slice(0, 2).toUpperCase()}
-        </span>
-        <span className="truncate font-semibold text-ink">{workspaceName}</span>
-      </div>
+    <CurrentPath.Provider value={currentPath}>
+      <nav
+        aria-label={workspaceName}
+        className="flex h-full w-64 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted"
+      >
+        <div className="flex items-center gap-2 px-2">
+          <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-white">
+            {workspaceName.slice(0, 2).toUpperCase()}
+          </span>
+          <span className="truncate font-semibold text-ink">{workspaceName}</span>
+        </div>
 
-      <ul className="flex flex-col gap-0.5">
-        <NavItem href="/inbox" badge={formatBadge(inboxCount)}>
-          {t('nav.inbox')}
-        </NavItem>
-        <NavItem href="/my-issues">{t('nav.myIssues')}</NavItem>
-        <NavItem href="/my-requests">{t('nav.myRequests')}</NavItem>
-        <NavItem
-          href="/approvals"
-          badge={formatBadge(pendingApprovals)}
-          badgeLabel={t('nav.pendingApprovals', { count: pendingApprovals })}
-        >
-          {t('nav.approvals')}
-        </NavItem>
-      </ul>
-
-      <Section title={t('nav.workspace')}>
-        <NavItem href="/initiatives">{t('nav.initiatives')}</NavItem>
-        <NavItem href="/projects">{t('nav.projects')}</NavItem>
-        <NavItem href="/views">{t('nav.views')}</NavItem>
-        <NavItem href="/portals">{t('nav.servicePortals')}</NavItem>
-        {showAdmin && (
-          <NavItem href="/admin" active={currentPath?.startsWith('/admin') ?? false}>
-            {t('nav.admin')}
+        <ul className="flex flex-col gap-0.5">
+          <NavItem href="/inbox" badge={formatBadge(inboxCount)}>
+            {t('nav.inbox')}
           </NavItem>
-        )}
-      </Section>
+          <NavItem href="/my-issues">{t('nav.myIssues')}</NavItem>
+          <NavItem href="/my-requests">{t('nav.myRequests')}</NavItem>
+          <NavItem
+            href="/approvals"
+            badge={formatBadge(pendingApprovals)}
+            badgeLabel={t('nav.pendingApprovals', { count: pendingApprovals })}
+          >
+            {t('nav.approvals')}
+          </NavItem>
+        </ul>
 
-      {departments.length > 0 && (
-        <Section title={t('nav.yourDepartments')}>
-          {departments.map((department, index) => (
-            <DepartmentNode key={department.id} department={department} defaultOpen={index === 0} />
-          ))}
+        <Section title={t('nav.workspace')}>
+          <NavItem href="/initiatives">{t('nav.initiatives')}</NavItem>
+          <NavItem href="/projects">{t('nav.projects')}</NavItem>
+          <NavItem href="/views">{t('nav.views')}</NavItem>
+          <NavItem href="/portals">{t('nav.servicePortals')}</NavItem>
+          {showAdmin && (
+            <NavItem href="/admin" active={currentPath?.startsWith('/admin') ?? false}>
+              {t('nav.admin')}
+            </NavItem>
+          )}
         </Section>
-      )}
-      {footer && <div className="mt-auto border-t border-line pt-3">{footer}</div>}
-    </nav>
+
+        {departments.length > 0 && (
+          <Section title={t('nav.yourDepartments')}>
+            {departments.map((department, index) => (
+              <DepartmentNode
+                key={department.id}
+                department={department}
+                defaultOpen={index === 0}
+              />
+            ))}
+          </Section>
+        )}
+        {footer && <div className="mt-auto border-t border-line pt-3">{footer}</div>}
+      </nav>
+    </CurrentPath.Provider>
   );
 }
 
@@ -124,8 +132,10 @@ function DepartmentNode({
 
 function TeamNode({ team }: { team: SidebarTeam }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const base = `/teams/${team.key}`;
+  const current = useContext(CurrentPath);
+  // The team the user is looking at starts expanded.
+  const [open, setOpen] = useState(() => current?.startsWith(`${base}/`) ?? false);
 
   return (
     <li>
@@ -136,6 +146,7 @@ function TeamNode({ team }: { team: SidebarTeam }) {
         <ul className="ml-3 flex flex-col gap-0.5 border-l border-line pl-2">
           <NavItem href={`${base}/triage`}>{t('nav.triage')}</NavItem>
           <NavItem href={`${base}/issues`}>{t('nav.issues')}</NavItem>
+          <NavItem href={`${base}/board`}>{t('nav.board')}</NavItem>
           <NavItem href={`${base}/cycles/current`}>
             {t('nav.cycles')} · {t('nav.currentCycle')}
           </NavItem>
@@ -187,7 +198,7 @@ function NavItem({
   href,
   badge,
   badgeLabel,
-  active = false,
+  active,
   children,
 }: {
   href: string;
@@ -196,6 +207,8 @@ function NavItem({
   active?: boolean;
   children: ReactNode;
 }) {
+  const current = useContext(CurrentPath);
+  active ??= current === href;
   return (
     <li>
       <Link

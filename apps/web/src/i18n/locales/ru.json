@@ -19,7 +19,8 @@
     "cycles": "Циклы",
     "currentCycle": "Текущий",
     "upcomingCycle": "Следующие",
-    "admin": "Администрирование"
+    "admin": "Администрирование",
+    "board": "Доска"
   },
   "settings": {
     "language": "Язык"
@@ -91,7 +92,10 @@
     "invalid_install_token": "Неверный код установки. Скопируйте его из журнала Ordler.",
     "database_required": "Ordler ждёт подключения к базе данных.",
     "ssl_ca_required": "Вставьте CA-сертификат для проверки сервера.",
-    "schema_invalid": "В имени схемы используйте строчные латинские буквы, цифры и подчёркивание."
+    "schema_invalid": "В имени схемы используйте строчные латинские буквы, цифры и подчёркивание.",
+    "forbidden": "У вас нет прав на это действие.",
+    "status_not_in_workflow": "Этот статус не относится к команде.",
+    "assignee_not_in_team": "Исполнитель должен состоять в команде."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -281,6 +285,60 @@
       "tls_failed": "Не удалось установить SSL-соединение. Проверьте режим шифрования и CA-сертификат.",
       "postgres_too_old": "Ordler нужен PostgreSQL 18 или новее.",
       "insufficient_privileges": "У пользователя нет права создавать таблицы в этой базе. Попросите администратора БД выполнить:"
+    }
+  },
+  "issues": {
+    "title": "Название задачи",
+    "description": "Описание",
+    "descriptionPlaceholder": "Добавьте описание…",
+    "newIssueIn": "Новая задача в {team}",
+    "status": {
+      "label": "Статус",
+      "backlog": "Бэклог",
+      "todo": "К выполнению",
+      "in_progress": "В работе",
+      "in_review": "На проверке",
+      "done": "Готово",
+      "canceled": "Отменено"
+    },
+    "category": {
+      "backlog": "Бэклог",
+      "unstarted": "Не начаты",
+      "started": "В работе",
+      "completed": "Завершены",
+      "canceled": "Отменены"
+    },
+    "priority": {
+      "label": "Приоритет",
+      "none": "Без приоритета",
+      "urgent": "Срочный",
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий"
+    },
+    "assignee": "Исполнитель",
+    "noAssignee": "Без исполнителя",
+    "dueDate": "Срок",
+    "cancel": "Отмена",
+    "create": "Создать задачу",
+    "addTo": "Новая задача в «{status}»",
+    "empty": "Задач пока нет.",
+    "layout": "Вид",
+    "list": "Список",
+    "board": "Доска",
+    "activity": "История",
+    "properties": "Свойства",
+    "someone": "Кто-то",
+    "event": {
+      "created": "{actor}: задача создана",
+      "status": "статус → {to}",
+      "priority": "приоритет → {to}",
+      "assigned": "исполнитель → {to}",
+      "unassigned": "исполнитель снят",
+      "title": "название → «{to}»",
+      "description": "описание изменено",
+      "dueDate": "срок → {to}",
+      "dueDateCleared": "срок снят"
     }
   }
 }

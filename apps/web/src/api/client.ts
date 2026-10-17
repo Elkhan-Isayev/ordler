@@ -10,6 +10,11 @@ import type {
   DatabaseUpdateResult,
   InstallDatabaseInput,
   InviteResponse,
+  CreateIssueInput,
+  IssueDetail,
+  IssueSummary,
+  TeamView,
+  UpdateIssueInput,
   MailSettingsView,
   MeResponse,
   PublicStrategy,
@@ -124,6 +129,22 @@ export const api = {
     apiRequest<MailSettingsView>('/api/admin/mail', { method: 'PUT', body }),
   sendTestMail: (to: string) =>
     apiRequest<TestMailResult>('/api/admin/mail/test', { method: 'POST', body: { to } }),
+  team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
+  teamIssues: (key: string) =>
+    apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
+  createIssue: (key: string, body: Partial<CreateIssueInput> & { title: string }) =>
+    apiRequest<IssueDetail>(`/api/teams/${encodeURIComponent(key)}/issues`, {
+      method: 'POST',
+      body,
+    }),
+  issue: (identifier: string) =>
+    apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}`),
+  updateIssue: (identifier: string, body: UpdateIssueInput) =>
+    apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}`, {
+      method: 'PATCH',
+      body,
+    }),
+  myIssues: () => apiRequest<IssueSummary[]>('/api/me/issues'),
   peekInvite: (token: string) =>
     apiRequest<{ email: string; companyName: string }>(`/api/invites/${encodeURIComponent(token)}`),
   acceptInvite: (body: { token: string; name: string; password: string }) =>

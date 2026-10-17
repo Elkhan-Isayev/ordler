@@ -1,0 +1,256 @@
+import {
+  PRIORITIES,
+  teamTopic,
+  type IssueDetail,
+  type IssueEvent,
+  type IssueField,
+  type Priority,
+  type TeamView,
+  type UpdateIssueInput,
+} from '@ordler/shared';
+import type { TFunction } from 'i18next';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { api } from '../api/client.js';
+import { inputClass } from '../admin/common.js';
+import { errorKey } from '../auth/errors.js';
+import { FormError } from '../auth/form.js';
+import { useRealtime } from '../realtime/client.js';
+import { Link } from '../router.js';
+import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
+
+/** One issue (/issue/HELP-12): editable fields, properties and history, kept live. */
+export function IssuePage({ identifier }: { identifier: string }) {
+  const { t, i18n } = useTranslation();
+  const [issue, setIssue] = useState<IssueDetail>();
+  const [team, setTeam] = useState<TeamView>();
+  const [error, setError] = useState<string>();
+
+  const reload = useCallback(async () => {
+    try {
+      const detail = await api.issue(identifier);
+      setIssue(detail);
+      setTeam(await api.team(detail.teamKey));
+      setError(undefined);
+    } catch (failure) {
+      setError(errorKey(failure));
+    }
+  }, [identifier]);
+
+  useEffect(() => {
+    setIssue(undefined);
+    void reload();
+  }, [reload]);
+
+  useRealtime(
+    team ? teamTopic(team.id) : undefined,
+    (message) => {
+      // Someone else changed this issue: refetch for the new history and description.
+      if (message.type === 'issue.changed' && message.issue.id === issue?.id) void reload();
+    },
+    () => void reload(),
+  );
+
+  async function save(patch: UpdateIssueInput) {
+    if (!issue) return;
+    try {
+      setIssue(await api.updateIssue(issue.identifier, patch));
+      setError(undefined);
+    } catch (failure) {
+      setError(errorKey(failure));
+      void reload();
+    }
+  }
+
+  if (!issue || !team) {
+    return (
+      <div className="p-8">
+        {error ? (
+          <FormError message={t(error)} />
+        ) : (
+          <p className="text-sm text-ink-muted">{t('auth.loading')}</p>
+        )}
+      </div>
+    );
+  }
+
+  const canEdit = team.can.update;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
+        <Link href={`/teams/${team.key}/board`} className="hover:text-ink">
+          {team.name}
+        </Link>
+        <span>/</span>
+        <span className="text-ink">{issue.identifier}</span>
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
+          <FormError message={error ? t(error) : undefined} />
+          <input
+            key={`title-${issue.updatedAt}`}
+            defaultValue={issue.title}
+            readOnly={!canEdit}
+            aria-label={t('issues.title')}
+            maxLength={255}
+            className="bg-transparent text-xl font-semibold text-ink outline-none"
+            onBlur={(event) => {
+              const title = event.currentTarget.value.trim();
+              if (title && title !== issue.title) void save({ title });
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') event.currentTarget.blur();
+            }}
+          />
+          <textarea
+            key={`description-${issue.updatedAt}`}
+            defaultValue={issue.description}
+            readOnly={!canEdit}
+            rows={8}
+            aria-label={t('issues.description')}
+            placeholder={t('issues.descriptionPlaceholder')}
+            className={`${inputClass} resize-y`}
+            onBlur={(event) => {
+              const description = event.currentTarget.value;
+              if (description !== issue.description) void save({ description });
+            }}
+          />
+          <section aria-label={t('issues.activity')} className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
+            <ol className="flex flex-col gap-2 text-sm text-ink-muted">
+              {issue.events.map((event) => (
+                <li key={event.id} className="flex items-start gap-2">
+                  <Avatar member={event.actor} />
+                  <span>
+                    {describeEvent(t, event, team)}
+                    <span className="text-ink-faint">
+                      {' '}
+                      · {formatWhen(event.createdAt, i18n.language)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </main>
+        <aside
+          aria-label={t('issues.properties')}
+          className="flex w-full shrink-0 flex-col gap-3 border-line p-6 text-sm md:w-72 md:border-l"
+        >
+          <Property label={t('issues.status.label')}>
+            <StatusIcon category={issue.status.category} />
+            <select
+              value={issue.statusId}
+              disabled={!canEdit}
+              aria-label={t('issues.status.label')}
+              className={selectClass}
+              onChange={(event) => void save({ statusId: event.target.value })}
+            >
+              {team.statuses.map((status) => (
+                <option key={status.id} value={status.id}>
+                  {statusLabel(t, status)}
+                </option>
+              ))}
+            </select>
+          </Property>
+          <Property label={t('issues.priority.label')}>
+            <PriorityIcon priority={issue.priority} />
+            <select
+              value={issue.priority}
+              disabled={!canEdit}
+              aria-label={t('issues.priority.label')}
+              className={selectClass}
+              onChange={(event) => void save({ priority: event.target.value as Priority })}
+            >
+              {PRIORITIES.map((priority) => (
+                <option key={priority} value={priority}>
+                  {t(`issues.priority.${priority}`)}
+                </option>
+              ))}
+            </select>
+          </Property>
+          <Property label={t('issues.assignee')}>
+            <Avatar member={issue.assignee} />
+            <select
+              value={issue.assignee?.id ?? ''}
+              disabled={!team.can.assign}
+              aria-label={t('issues.assignee')}
+              className={selectClass}
+              onChange={(event) => void save({ assigneeId: event.target.value || null })}
+            >
+              <option value="">{t('issues.noAssignee')}</option>
+              {team.members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </Property>
+          <Property label={t('issues.dueDate')}>
+            <input
+              type="date"
+              value={issue.dueDate ?? ''}
+              disabled={!canEdit}
+              aria-label={t('issues.dueDate')}
+              className={selectClass}
+              onChange={(event) => void save({ dueDate: event.target.value || null })}
+            />
+          </Property>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function Property({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs text-ink-faint">{label}</span>
+      <div className="flex items-center gap-2">{children}</div>
+    </div>
+  );
+}
+
+/** Human-readable history line, resolving status and member ids against the team. */
+export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): string {
+  const actor = event.actor?.name ?? t('issues.someone');
+  if (event.kind === 'created') return t('issues.event.created', { actor });
+  const parts = (
+    Object.entries(event.changes) as Array<[IssueField, { from: unknown; to: unknown }]>
+  ).map(([field, change]) => {
+    switch (field) {
+      case 'statusId':
+        return t('issues.event.status', { to: statusName(t, team, change.to) });
+      case 'priority':
+        return t('issues.event.priority', { to: t(`issues.priority.${String(change.to)}`) });
+      case 'assigneeId':
+        return change.to
+          ? t('issues.event.assigned', { to: memberName(t, team, change.to) })
+          : t('issues.event.unassigned');
+      case 'title':
+        return t('issues.event.title', { to: String(change.to) });
+      case 'description':
+        return t('issues.event.description');
+      case 'dueDate':
+        return change.to
+          ? t('issues.event.dueDate', { to: String(change.to) })
+          : t('issues.event.dueDateCleared');
+    }
+  });
+  return `${actor}: ${parts.join(', ')}`;
+}
+
+function statusName(t: TFunction, team: TeamView, id: unknown): string {
+  const status = team.statuses.find((s) => s.id === id);
+  return status ? statusLabel(t, status) : '—';
+}
+
+function memberName(t: TFunction, team: TeamView, id: unknown): string {
+  return team.members.find((m) => m.id === id)?.name ?? t('issues.someone');
+}
+
+function formatWhen(iso: string, language: string): string {
+  return new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(iso),
+  );
+}

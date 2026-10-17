@@ -19,7 +19,8 @@
     "cycles": "Zyklen",
     "currentCycle": "Aktuell",
     "upcomingCycle": "Anstehend",
-    "admin": "Administration"
+    "admin": "Administration",
+    "board": "Board"
   },
   "settings": {
     "language": "Sprache"
@@ -91,7 +92,10 @@
     "invalid_install_token": "Der Installationscode ist falsch. Kopiere ihn aus dem Ordler-Log.",
     "database_required": "Ordler wartet auf eine Datenbankverbindung.",
     "ssl_ca_required": "Füge das CA-Zertifikat ein, um den Server zu prüfen.",
-    "schema_invalid": "Verwende für das Schema Kleinbuchstaben, Ziffern und Unterstriche."
+    "schema_invalid": "Verwende für das Schema Kleinbuchstaben, Ziffern und Unterstriche.",
+    "forbidden": "Dafür fehlt dir die Berechtigung.",
+    "status_not_in_workflow": "Dieser Status gehört nicht zum Team.",
+    "assignee_not_in_team": "Die zuständige Person muss zum Team gehören."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -281,6 +285,60 @@
       "tls_failed": "Die SSL-Verbindung ist fehlgeschlagen. Prüfe Verschlüsselungsmodus und CA-Zertifikat.",
       "postgres_too_old": "Ordler benötigt PostgreSQL 18 oder neuer.",
       "insufficient_privileges": "Der Benutzer darf in dieser Datenbank keine Tabellen anlegen. Bitte den DBA, Folgendes auszuführen:"
+    }
+  },
+  "issues": {
+    "title": "Titel der Aufgabe",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibung hinzufügen…",
+    "newIssueIn": "Neue Aufgabe in {team}",
+    "status": {
+      "label": "Status",
+      "backlog": "Backlog",
+      "todo": "Zu erledigen",
+      "in_progress": "In Arbeit",
+      "in_review": "In Prüfung",
+      "done": "Erledigt",
+      "canceled": "Abgebrochen"
+    },
+    "category": {
+      "backlog": "Backlog",
+      "unstarted": "Nicht begonnen",
+      "started": "In Arbeit",
+      "completed": "Abgeschlossen",
+      "canceled": "Abgebrochen"
+    },
+    "priority": {
+      "label": "Priorität",
+      "none": "Keine Priorität",
+      "urgent": "Dringend",
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig"
+    },
+    "assignee": "Zuständig",
+    "noAssignee": "Niemand zuständig",
+    "dueDate": "Fällig am",
+    "cancel": "Abbrechen",
+    "create": "Aufgabe anlegen",
+    "addTo": "Neue Aufgabe in „{status}“",
+    "empty": "Noch keine Aufgaben.",
+    "layout": "Ansicht",
+    "list": "Liste",
+    "board": "Board",
+    "activity": "Verlauf",
+    "properties": "Eigenschaften",
+    "someone": "Jemand",
+    "event": {
+      "created": "{actor}: Aufgabe angelegt",
+      "status": "Status → {to}",
+      "priority": "Priorität → {to}",
+      "assigned": "Zuständig → {to}",
+      "unassigned": "Zuständigkeit entfernt",
+      "title": "Titel → „{to}“",
+      "description": "Beschreibung bearbeitet",
+      "dueDate": "Fällig am → {to}",
+      "dueDateCleared": "Fälligkeit entfernt"
     }
   }
 }

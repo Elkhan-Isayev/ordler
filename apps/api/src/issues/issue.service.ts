@@ -12,7 +12,15 @@ import {
 import { aliasedTable, and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
-import { departments, issueEvents, issues, members, teamMemberships, teams } from '../db/schema.js';
+import {
+  departments,
+  issueEvents,
+  issues,
+  members,
+  teamMemberships,
+  teams,
+  workflowStatuses,
+} from '../db/schema.js';
 import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess, TeamPermissions } from './team-access.js';
 import { teamStatuses } from './workflows.js';
@@ -264,13 +272,20 @@ export class IssueService {
         issue: issues,
         teamKey: teams.key,
         assigneeName: assignee.name,
+        status: {
+          id: workflowStatuses.id,
+          key: workflowStatuses.key,
+          name: workflowStatuses.name,
+          category: workflowStatuses.category,
+        },
       })
       .from(issues)
       .innerJoin(teams, eq(teams.id, issues.teamId))
+      .innerJoin(workflowStatuses, eq(workflowStatuses.id, issues.statusId))
       .leftJoin(assignee, eq(assignee.id, issues.assigneeId))
       .where(where)
       .orderBy(asc(issues.sortOrder), desc(issues.number));
-    return rows.map(({ issue, teamKey, assigneeName }) => ({
+    return rows.map(({ issue, teamKey, assigneeName, status }) => ({
       id: issue.id,
       identifier: formatIssueIdentifier(teamKey, issue.number),
       teamId: issue.teamId,
@@ -278,6 +293,7 @@ export class IssueService {
       number: issue.number,
       title: issue.title,
       statusId: issue.statusId,
+      status,
       priority: issue.priority,
       assignee: issue.assigneeId ? { id: issue.assigneeId, name: assigneeName ?? '' } : null,
       dueDate: issue.dueDate,

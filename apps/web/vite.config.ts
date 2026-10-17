@@ -15,7 +15,8 @@ export default defineConfig({
   server: {
     // ORDLER_API_URL lets a second dev setup run side by side (e.g. API on :3001).
     proxy: {
-      '/api': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
+      // ws: the realtime channel (/api/realtime) is a WebSocket.
+      '/api': { target: process.env.ORDLER_API_URL ?? 'http://localhost:3000', ws: true },
       '/mcp': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
     },
   },
