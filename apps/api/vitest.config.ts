@@ -17,5 +17,7 @@ export default defineConfig({
     // Database tests boot PostgreSQL (PGlite/WASM); shared CI runners can be several times slower.
     testTimeout: 30_000,
     hookTimeout: 60_000,
+    // Every worker holds its own in-memory PostgreSQL; too many at once exhaust memory and stall.
+    maxWorkers: 4,
   },
 });

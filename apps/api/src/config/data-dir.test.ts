@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -61,7 +61,10 @@ describe('DataDir', () => {
   });
 
   it('reports an unwritable volume clearly', () => {
-    const blocked = new DataDir('/proc/ordler-cannot-write-here');
+    // A path below a regular file fails with ENOTDIR on every OS, even for root.
+    const file = join(path, '..', 'not-a-directory');
+    writeFileSync(file, '');
+    const blocked = new DataDir(join(file, 'data'));
     expect(() => blocked.encryptionKey()).toThrow(/Mount a writable volume/);
   });
 });
