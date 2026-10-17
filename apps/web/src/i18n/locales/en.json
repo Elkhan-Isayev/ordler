@@ -95,7 +95,9 @@
     "schema_invalid": "Use lowercase letters, digits and underscores for the schema.",
     "forbidden": "You do not have permission to do this.",
     "status_not_in_workflow": "This status does not belong to the team.",
-    "assignee_not_in_team": "The assignee must be a member of the team."
+    "assignee_not_in_team": "The assignee must be a member of the team.",
+    "file_too_large": "The file is too large.",
+    "file_missing": "Choose a file to upload."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -340,5 +342,20 @@
       "dueDate": "due date → {to}",
       "dueDateCleared": "due date removed"
     }
+  },
+  "editor": {
+    "toolbar": "Formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "heading": "Heading",
+    "bulletList": "Bulleted list",
+    "orderedList": "Numbered list",
+    "quote": "Quote",
+    "code": "Code block",
+    "insertDiagram": "Insert diagram (Mermaid)",
+    "attach": "Attach files",
+    "uploading": "Uploading…",
+    "diagram": "Diagram",
+    "diagramError": "The diagram has a syntax error."
   }
 }

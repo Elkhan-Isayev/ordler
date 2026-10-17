@@ -95,7 +95,9 @@
     "schema_invalid": "Sxem adı üçün kiçik latın hərfləri, rəqəmlər və alt xətt istifadə edin.",
     "forbidden": "Bu əməliyyat üçün icazəniz yoxdur.",
     "status_not_in_workflow": "Bu status komandaya aid deyil.",
-    "assignee_not_in_team": "İcraçı komandanın üzvü olmalıdır."
+    "assignee_not_in_team": "İcraçı komandanın üzvü olmalıdır.",
+    "file_too_large": "Fayl çox böyükdür.",
+    "file_missing": "Yükləmək üçün fayl seçin."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -340,5 +342,20 @@
       "dueDate": "son tarix → {to}",
       "dueDateCleared": "son tarix götürüldü"
     }
+  },
+  "editor": {
+    "toolbar": "Formatlama",
+    "bold": "Qalın",
+    "italic": "Kursiv",
+    "heading": "Başlıq",
+    "bulletList": "Markerli siyahı",
+    "orderedList": "Nömrəli siyahı",
+    "quote": "Sitat",
+    "code": "Kod bloku",
+    "insertDiagram": "Diaqram əlavə et (Mermaid)",
+    "attach": "Fayl əlavə et",
+    "uploading": "Yüklənir…",
+    "diagram": "Diaqram",
+    "diagramError": "Diaqramda sintaksis xətası var."
   }
 }

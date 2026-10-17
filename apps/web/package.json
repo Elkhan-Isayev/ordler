@@ -12,8 +12,17 @@
   },
   "dependencies": {
     "@ordler/shared": "workspace:*",
+    "@tiptap/core": "3.31.4",
+    "@tiptap/extension-code-block": "3.31.4",
+    "@tiptap/extension-image": "3.31.4",
+    "@tiptap/extension-placeholder": "3.31.4",
+    "@tiptap/markdown": "3.31.4",
+    "@tiptap/pm": "3.31.4",
+    "@tiptap/react": "3.31.4",
+    "@tiptap/starter-kit": "3.31.4",
     "i18next": "25.10.10",
     "intl-messageformat": "10.7.18",
+    "mermaid": "12.1.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-i18next": "15.7.4"

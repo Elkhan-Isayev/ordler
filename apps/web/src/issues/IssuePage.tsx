@@ -12,9 +12,9 @@ import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
-import { inputClass } from '../admin/common.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
+import { RichEditor } from '../editor/RichEditor.js';
 import { useRealtime } from '../realtime/client.js';
 import { Link } from '../router.js';
 import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
@@ -102,18 +102,14 @@ export function IssuePage({ identifier }: { identifier: string }) {
               if (event.key === 'Enter') event.currentTarget.blur();
             }}
           />
-          <textarea
-            key={`description-${issue.updatedAt}`}
-            defaultValue={issue.description}
-            readOnly={!canEdit}
-            rows={8}
-            aria-label={t('issues.description')}
+          <RichEditor
+            value={issue.description}
+            editable={canEdit}
+            label={t('issues.description')}
             placeholder={t('issues.descriptionPlaceholder')}
-            className={`${inputClass} resize-y`}
-            onBlur={(event) => {
-              const description = event.currentTarget.value;
-              if (description !== issue.description) void save({ description });
-            }}
+            onCommit={(description) => void save({ description })}
+            onUpload={(file) => api.uploadAttachment(team.key, file)}
+            onUploadError={(failure) => setError(errorKey(failure))}
           />
           <section aria-label={t('issues.activity')} className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>

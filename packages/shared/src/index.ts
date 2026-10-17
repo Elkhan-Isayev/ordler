@@ -10,3 +10,4 @@ export * from './admin.js';
 export * from './mail.js';
 export * from './database.js';
 export * from './issues.js';
+export * from './attachments.js';

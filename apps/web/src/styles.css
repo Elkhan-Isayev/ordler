@@ -30,3 +30,82 @@ body {
   color: var(--color-ink);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Rich text (issues, comments): compact, Linear-like typography. */
+.ordler-prose .ProseMirror {
+  outline: none;
+  min-height: 6rem;
+  line-height: 1.6;
+}
+.ordler-prose h1,
+.ordler-prose h2,
+.ordler-prose h3 {
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+}
+.ordler-prose h1 {
+  font-size: 1.25rem;
+}
+.ordler-prose h2 {
+  font-size: 1.1rem;
+}
+.ordler-prose p {
+  margin: 0.3em 0;
+}
+.ordler-prose ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.ordler-prose ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.ordler-prose blockquote {
+  border-left: 3px solid var(--color-line);
+  padding-left: 0.8em;
+  color: var(--color-ink-muted);
+}
+.ordler-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.ordler-prose code {
+  background: var(--color-hover);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+  font-size: 0.9em;
+}
+.ordler-prose pre {
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 0.6em 0.8em;
+  overflow-x: auto;
+}
+.ordler-prose pre code {
+  background: none;
+  padding: 0;
+}
+.ordler-prose img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 0.4em 0;
+}
+.ordler-prose img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-accent);
+}
+.ordler-prose .ordler-diagram {
+  margin: 0.4em 0;
+  overflow-x: auto;
+}
+.ordler-prose .ordler-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+.ordler-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-ink-faint);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

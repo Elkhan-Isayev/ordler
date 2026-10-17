@@ -89,6 +89,7 @@ async function startApplication(
     encryptionKey: storage.encryptionKey,
     sessionTtlDays: config.sessionTtlDays,
     smtp: config.smtp,
+    attachmentMaxBytes: config.attachmentMaxBytes,
     readiness,
     version: config.version,
     updateCheck: config.updateCheck,

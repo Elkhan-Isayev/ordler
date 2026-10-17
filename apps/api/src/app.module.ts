@@ -2,6 +2,8 @@ import { Module, type DynamicModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { AppContext } from './app-context.js';
+import fastifyMultipart from '@fastify/multipart';
+import { AttachmentsController } from './attachments/attachments.controller.js';
 import { AdminStrategiesController } from './auth/admin-strategies.controller.js';
 import { AuthController } from './auth/auth.controller.js';
 import { HealthController, READINESS_CHECK } from './health/health.controller.js';
@@ -35,6 +37,7 @@ export class AppModule {
         AdminMailController,
         AdminDatabaseController,
         IssuesController,
+        AttachmentsController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
@@ -52,5 +55,6 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   app.setGlobalPrefix('api', { exclude: ['healthz', 'readyz'] });
   const instance = app.getHttpAdapter().getInstance();
   registerRequestHooks(instance, ctx);
+  await instance.register(fastifyMultipart);
   await ctx.realtime.register(instance);
 }

@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  customType,
   date,
   doublePrecision,
   index,
@@ -379,3 +380,38 @@ export const issueEvents = pgTable(
   },
   (t) => [index('issue_events_issue_idx').on(t.issueId, t.createdAt)],
 );
+
+/** Raw bytes; node-postgres and PGlite both hand them over as Buffer/Uint8Array. */
+const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
+  dataType: () => 'bytea',
+  fromDriver: (value) => (Buffer.isBuffer(value) ? value : Buffer.from(value)),
+});
+
+/**
+ * Files and images attached to issues (later comments and requests). Stored in PostgreSQL so
+ * a restarted container loses nothing and one database backup covers everything (ADR 0008).
+ */
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: id(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    uploadedBy: uuid('uploaded_by').references(() => members.id),
+    filename: text('filename').notNull(),
+    contentType: text('content_type').notNull(),
+    size: integer('size').notNull(),
+    sha256: text('sha256').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('attachments_team_idx').on(t.teamId)],
+);
+
+/** Content kept apart from metadata, so listing attachments never reads the bytes. */
+export const attachmentContents = pgTable('attachment_contents', {
+  attachmentId: uuid('attachment_id')
+    .primaryKey()
+    .references(() => attachments.id),
+  data: bytea('data').notNull(),
+});

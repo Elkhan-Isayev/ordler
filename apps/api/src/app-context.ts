@@ -1,3 +1,4 @@
+import { DEFAULT_ATTACHMENT_MAX_MB } from '@ordler/shared';
 import type { JWTVerifyGetKey } from 'jose';
 import { GoogleAuthService, type FetchFn } from './auth/google.js';
 import { DEFAULT_OTP_POLICY, OtpService, type OtpPolicy } from './auth/otp.js';
@@ -14,6 +15,7 @@ import {
   DatabaseSettingsService,
   type DatabaseSettingsDeps,
 } from './install/database-settings.service.js';
+import { AttachmentService } from './attachments/attachment.service.js';
 import { IssueService } from './issues/issue.service.js';
 import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
@@ -50,6 +52,7 @@ export interface AppContext {
   mail: MailService;
   database: DatabaseSettingsService;
   issues: IssueService;
+  attachments: AttachmentService;
   events: EventBus;
   realtime: RealtimeHub;
   limits: {
@@ -73,6 +76,8 @@ export interface AppContextDeps {
   databaseSettings: Omit<DatabaseSettingsDeps, 'db'>;
   /** Fans domain events out to every replica; PostgreSQL LISTEN/NOTIFY in production. */
   events?: EventBus;
+  /** Upload limit per attachment in bytes (ATTACHMENT_MAX_MB). */
+  attachmentMaxBytes?: number;
   /** How often open sockets are pinged and their sessions re-checked. */
   realtimeHeartbeatMs?: number;
   readiness: ReadinessCheck;
@@ -99,9 +104,10 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const strategies = new StrategyService(deps.db, box, mail);
   const events = deps.events ?? new LocalEventBus();
   const access = new DbAccessContext(deps.db);
+  const teamAccess = new TeamAccess(deps.db, access);
   const issues = new IssueService({
     db: deps.db,
-    access: new TeamAccess(deps.db, access),
+    access: teamAccess,
     events,
     now,
   });
@@ -148,6 +154,11 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     mail,
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     issues,
+    attachments: new AttachmentService(
+      deps.db,
+      teamAccess,
+      deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024,
+    ),
     events,
     realtime: new RealtimeHub({
       baseUrl: deps.baseUrl,

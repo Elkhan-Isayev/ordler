@@ -1,7 +1,11 @@
 import { PRIORITIES, type CreateIssueInput, type Priority, type TeamView } from '@ordler/shared';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { buttonClass, ghostButtonClass, inputClass } from '../admin/common.js';
+import { api } from '../api/client.js';
+import { buttonClass, ghostButtonClass } from '../admin/common.js';
+import { errorKey } from '../auth/errors.js';
+import { FormError } from '../auth/form.js';
+import { RichEditor } from '../editor/RichEditor.js';
 import { selectClass, statusLabel } from './ui.js';
 
 /** "New issue" form for one team; the status defaults to the column it was opened from. */
@@ -18,6 +22,8 @@ export function NewIssueDialog({
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const description = useRef('');
   const defaultStatus =
     initialStatusId ?? team.statuses.find((s) => s.isDefault)?.id ?? team.statuses[0]?.id;
 
@@ -36,7 +42,7 @@ export function NewIssueDialog({
     setBusy(true);
     const created = await onCreate({
       title: String(form.get('title')).trim(),
-      description: String(form.get('description') ?? ''),
+      description: description.current,
       statusId: String(form.get('statusId')),
       priority: String(form.get('priority')) as Priority,
       ...(assigneeId ? { assigneeId } : {}),
@@ -69,13 +75,17 @@ export function NewIssueDialog({
           placeholder={t('issues.title')}
           className="bg-transparent text-lg font-medium text-ink outline-none placeholder:text-ink-faint"
         />
-        <textarea
-          name="description"
-          rows={4}
-          aria-label={t('issues.description')}
+        <RichEditor
+          value=""
+          label={t('issues.description')}
           placeholder={t('issues.descriptionPlaceholder')}
-          className={`${inputClass} resize-y`}
+          onChange={(markdown) => {
+            description.current = markdown;
+          }}
+          onUpload={(file) => api.uploadAttachment(team.key, file)}
+          onUploadError={(failure) => setError(t(errorKey(failure)))}
         />
+        <FormError message={error} />
         <div className="flex flex-wrap gap-2">
           <select
             name="statusId"

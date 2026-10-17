@@ -1,6 +1,11 @@
-import type { AdminErrorCode, AuthErrorCode, IssueErrorCode } from '@ordler/shared';
+import type {
+  AdminErrorCode,
+  AttachmentErrorCode,
+  AuthErrorCode,
+  IssueErrorCode,
+} from '@ordler/shared';
 
-export type DomainErrorCode = AuthErrorCode | AdminErrorCode | IssueErrorCode;
+export type DomainErrorCode = AuthErrorCode | AdminErrorCode | IssueErrorCode | AttachmentErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -30,6 +35,8 @@ const STATUS: Record<DomainErrorCode, number> = {
   forbidden: 403,
   status_not_in_workflow: 400,
   assignee_not_in_team: 400,
+  file_too_large: 413,
+  file_missing: 400,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

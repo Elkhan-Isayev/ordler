@@ -4,6 +4,7 @@ import type {
   AdminRole,
   ApiErrorBody,
   AssignRoleInput,
+  AttachmentView,
   DatabaseProbeResult,
   DatabaseSettingsInput,
   DatabaseSettingsView,
@@ -58,6 +59,24 @@ export async function apiRequest<T>(
   if (!response.ok) {
     const body = data as Partial<ApiErrorBody>;
     throw new ApiError(response.status, body.error ?? 'unknown', body.issues ?? []);
+  }
+  return data as T;
+}
+
+/** Multipart upload of one file; the browser sets the boundary header itself. */
+export async function uploadFile<T>(path: string, file: File): Promise<T> {
+  const body = new FormData();
+  body.append('file', file, file.name);
+  let response: Response;
+  try {
+    response = await fetch(path, { method: 'POST', credentials: 'same-origin', body });
+  } catch {
+    throw new ApiError(0, 'network');
+  }
+  const data = (await response.json().catch(() => ({}))) as unknown;
+  if (!response.ok) {
+    const error = data as Partial<ApiErrorBody>;
+    throw new ApiError(response.status, error.error ?? 'unknown', error.issues ?? []);
   }
   return data as T;
 }
@@ -145,6 +164,8 @@ export const api = {
       body,
     }),
   myIssues: () => apiRequest<IssueSummary[]>('/api/me/issues'),
+  uploadAttachment: (teamKey: string, file: File) =>
+    uploadFile<AttachmentView>(`/api/teams/${encodeURIComponent(teamKey)}/attachments`, file),
   peekInvite: (token: string) =>
     apiRequest<{ email: string; companyName: string }>(`/api/invites/${encodeURIComponent(token)}`),
   acceptInvite: (body: { token: string; name: string; password: string }) =>

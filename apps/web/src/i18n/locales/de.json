@@ -95,7 +95,9 @@
     "schema_invalid": "Verwende für das Schema Kleinbuchstaben, Ziffern und Unterstriche.",
     "forbidden": "Dafür fehlt dir die Berechtigung.",
     "status_not_in_workflow": "Dieser Status gehört nicht zum Team.",
-    "assignee_not_in_team": "Die zuständige Person muss zum Team gehören."
+    "assignee_not_in_team": "Die zuständige Person muss zum Team gehören.",
+    "file_too_large": "Die Datei ist zu groß.",
+    "file_missing": "Wähle eine Datei zum Hochladen."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -340,5 +342,20 @@
       "dueDate": "Fällig am → {to}",
       "dueDateCleared": "Fälligkeit entfernt"
     }
+  },
+  "editor": {
+    "toolbar": "Formatierung",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "heading": "Überschrift",
+    "bulletList": "Aufzählung",
+    "orderedList": "Nummerierte Liste",
+    "quote": "Zitat",
+    "code": "Codeblock",
+    "insertDiagram": "Diagramm einfügen (Mermaid)",
+    "attach": "Dateien anhängen",
+    "uploading": "Wird hochgeladen…",
+    "diagram": "Diagramm",
+    "diagramError": "Das Diagramm enthält einen Syntaxfehler."
   }
 }

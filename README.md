@@ -54,6 +54,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🐳  | **One Docker image, Compose and Helm chart**: needs only an empty PostgreSQL 18 database, the install page does the rest                                      |   ✅   |
 | ✅  | **Team issues** (Linear-style): per-team identifiers, default workflow, priority, assignee, due date, history, list and drag-and-drop board                   |   ✅   |
 | ⚡  | **Live updates**: changes appear in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                    |   ✅   |
+| 🖼   | **Rich text** in issues: formatting, pasted screenshots and files, Mermaid diagrams; files stored in PostgreSQL, so restarts lose nothing                     |   ✅   |
 | 🗂   | **Triage, comments, labels, workflow editor, cycles**                                                                                                         |   🗓    |
 | 📨  | **Service portals and requests** between departments, including several departments at once                                                                   |   🗓    |
 | ✍️  | **Approval chains**: sequential steps, any/all/quorum, approvers by role, department or manager                                                               |   🗓    |

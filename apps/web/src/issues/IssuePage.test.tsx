@@ -25,7 +25,9 @@ describe('IssuePage', () => {
     });
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     expect(await screen.findByDisplayValue('Issue 7')).toBeInTheDocument();
-    expect(screen.getByLabelText('Description')).toHaveValue('Screen flickers');
+    expect(await screen.findByRole('textbox', { name: 'Description' })).toHaveTextContent(
+      'Screen flickers',
+    );
     expect(screen.getByLabelText('Status')).toHaveValue('s-todo');
     expect(screen.getByText(/Ann Lee created the issue/)).toBeInTheDocument();
   });

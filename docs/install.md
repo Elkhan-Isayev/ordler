@@ -85,7 +85,9 @@ restart.
 
 Back up two things together:
 
-1. The PostgreSQL database (RDS snapshots or `pg_dump`).
+1. The PostgreSQL database (RDS snapshots or `pg_dump`). It holds everything, including
+   attached files and pasted screenshots, so plan storage for them (25 MB per file at most,
+   `ATTACHMENT_MAX_MB`).
 2. The `/data` volume, or the `ENCRYPTION_KEY` if you set one. It encrypts stored secrets:
    the database password from the install page, SMTP and Google credentials.
 

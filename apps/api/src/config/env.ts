@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { SUPPORTED_LOCALES } from '@ordler/shared';
+import { DEFAULT_ATTACHMENT_MAX_MB, SUPPORTED_LOCALES } from '@ordler/shared';
 import { z } from 'zod';
 
 export type Env = Record<string, string | undefined>;
@@ -56,6 +56,8 @@ export interface AppConfig {
   installToken?: string;
   /** Built web app served by the API; absent in development, where Vite serves it. */
   webDir?: string;
+  /** Upload limit per attachment, in bytes. */
+  attachmentMaxBytes: number;
   sessionTtlDays: number;
   /** Absent until SMTP is configured; email OTP stays unavailable meanwhile. */
   smtp?: SmtpConfig;
@@ -95,6 +97,7 @@ const envSchema = z.object({
   ORDLER_DATA_DIR: z.string().min(1).default('/data'),
   ORDLER_INSTALL_TOKEN: z.string().trim().min(8).max(100).optional(),
   ORDLER_WEB_DIR: z.string().min(1).optional(),
+  ATTACHMENT_MAX_MB: z.coerce.number().int().min(1).max(1024).default(DEFAULT_ATTACHMENT_MAX_MB),
   SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
@@ -184,6 +187,7 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
     dataDir: e.ORDLER_DATA_DIR,
     ...(e.ORDLER_INSTALL_TOKEN ? { installToken: e.ORDLER_INSTALL_TOKEN } : {}),
     ...(e.ORDLER_WEB_DIR ? { webDir: e.ORDLER_WEB_DIR } : {}),
+    attachmentMaxBytes: e.ATTACHMENT_MAX_MB * 1024 * 1024,
     sessionTtlDays: e.SESSION_TTL_DAYS,
     version: e.ORDLER_VERSION,
     updateCheck: { enabled: e.UPDATE_CHECK, repository: e.UPDATE_CHECK_REPOSITORY },
