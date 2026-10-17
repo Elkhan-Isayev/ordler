@@ -25,7 +25,7 @@ import {
   teamMemberships,
   teams,
 } from '../db/schema.js';
-import type { Mailer } from '../mail/mailer.js';
+import type { MailService } from '../mail/mail.service.js';
 import { renderInviteEmail } from '../mail/templates.js';
 import { getInstance } from '../setup/setup.service.js';
 import { findMemberByEmail } from './members.js';
@@ -37,7 +37,7 @@ type Actor = AuditActor & { type: 'member'; id: string };
 export interface AdminMembersDeps {
   db: Db;
   baseUrl: string;
-  mailer: Mailer | undefined;
+  mail: Pick<MailService, 'isConfigured' | 'send'>;
   argon2?: Argon2Params;
   now?: Clock;
 }
@@ -441,11 +441,11 @@ export class AdminMembersService {
   }
 
   private async sendInvite(email: string, url: string): Promise<boolean> {
-    if (!this.deps.mailer) return false;
+    if (!(await this.deps.mail.isConfigured())) return false;
     const instance = await getInstance(this.db);
     const locale = instance && isLocale(instance.defaultLocale) ? instance.defaultLocale : 'en';
     try {
-      await this.deps.mailer.send({
+      await this.deps.mail.send({
         to: email,
         ...renderInviteEmail({ locale, company: instance?.companyName ?? 'Ordler', url, days: 7 }),
       });

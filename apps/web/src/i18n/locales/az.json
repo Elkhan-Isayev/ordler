@@ -85,7 +85,8 @@
     "cannot_change_self": "Öz statusunuzu dəyişə bilməzsiniz.",
     "owner_only": "Sahib rolunu yalnız sahib verə və ya geri ala bilər.",
     "invite_invalid": "Bu dəvət linki etibarsızdır və ya vaxtı bitib.",
-    "archived": "Bu arxivdədir və dəyişdirilə bilməz."
+    "archived": "Bu arxivdədir və dəyişdirilə bilməz.",
+    "mail_managed_by_env": "Poçt ayarları mühit dəyişənlərindən gəlir və burada dəyişdirilə bilməz."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -107,6 +108,7 @@
       "departments": "Departamentlər və komandalar",
       "members": "İştirakçılar",
       "authentication": "Giriş",
+      "mail": "Poçt serveri",
       "updates": "Yeniləmələr"
     },
     "departments": {
@@ -201,6 +203,28 @@
       "available": "{latest} versiyası mövcuddur.",
       "releaseNotes": "Buraxılış qeydləri",
       "lastError": "Son yoxlama alınmadı: {error}"
+    },
+    "mail": {
+      "title": "Poçt serveri",
+      "subtitle": "Giriş kodları, dəvətlər və bildirişlər üçün SMTP.",
+      "fromEnv": "SMTP_* mühit dəyişənləri ilə təyin olunub. Onları yerləşdirmə konfiqurasiyasında dəyişin.",
+      "notConfigured": "Poçt hələ qurulmayıb: e-poçtla giriş kodları əlçatan deyil, dəvətlər link kimi paylaşılır.",
+      "host": "SMTP serveri",
+      "port": "Port",
+      "security": "Şifrələmə",
+      "security_none": "Yoxdur",
+      "security_starttls": "STARTTLS",
+      "security_tls": "SSL/TLS",
+      "verifyTls": "TLS sertifikatını yoxla",
+      "username": "İstifadəçi adı",
+      "password": "Şifrə",
+      "fromName": "Göndərənin adı",
+      "fromEmail": "Göndərənin ünvanı",
+      "test": "Test məktubu göndər",
+      "testRecipient": "Alıcı",
+      "sendTest": "Göndər",
+      "testSent": "Göndərildi. Poçt qutusunu yoxlayın.",
+      "testFailed": "Poçt serveri məktubu rədd etdi:"
     }
   },
   "invite": {

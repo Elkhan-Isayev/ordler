@@ -43,11 +43,16 @@ const DEFAULTS: Record<AuthStrategyKind, { enabled: boolean; position: number }>
 
 type Row = typeof authStrategies.$inferSelect;
 
+/** Whether outgoing mail works right now; email OTP depends on it. */
+export interface MailStatus {
+  isConfigured(): Promise<boolean>;
+}
+
 export class StrategyService {
   constructor(
     private readonly db: Db,
     private readonly box: SecretBox,
-    private readonly mailConfigured: boolean,
+    private readonly mail: MailStatus,
   ) {}
 
   /** Creates the three Phase 1 strategies once; local sign-in starts enabled for the first Owner. */
@@ -70,18 +75,20 @@ export class StrategyService {
 
   /** Enabled and actually usable right now; this is what the sign-in page renders. */
   async usable(): Promise<AuthStrategy[]> {
-    return (await this.list()).filter((strategy) => this.isUsable(strategy));
+    const strategies = await this.list();
+    const usable = await Promise.all(strategies.map((strategy) => this.isUsable(strategy)));
+    return strategies.filter((_, index) => usable[index]);
   }
 
   async requireUsable(kind: AuthStrategyKind): Promise<AuthStrategy> {
     const strategy = await this.get(kind);
-    if (!strategy || !this.isUsable(strategy)) throw new DomainError('strategy_disabled');
+    if (!strategy || !(await this.isUsable(strategy))) throw new DomainError('strategy_disabled');
     return strategy;
   }
 
-  isUsable(strategy: AuthStrategy): boolean {
+  async isUsable(strategy: AuthStrategy): Promise<boolean> {
     if (!strategy.enabled) return false;
-    if (strategy.kind === 'email_otp') return this.mailConfigured;
+    if (strategy.kind === 'email_otp') return this.mail.isConfigured();
     if (strategy.kind === 'google')
       return Boolean(strategy.config.clientId && strategy.hasClientSecret);
     return true;
@@ -126,7 +133,7 @@ export class StrategyService {
     if (next.defaultRoleId && !(await roleExists(this.db, next.defaultRoleId))) {
       throw new DomainError('validation_failed');
     }
-    if (next.enabled && !this.isUsable(next)) {
+    if (next.enabled && !(await this.isUsable(next))) {
       throw new DomainError(
         kind === 'email_otp' ? 'mail_not_configured' : 'strategy_disabled',
         409,

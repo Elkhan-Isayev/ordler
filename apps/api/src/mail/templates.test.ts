@@ -1,7 +1,7 @@
 import { parse, TYPE, type MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { SUPPORTED_LOCALES } from '@ordler/shared';
 import { describe, expect, it } from 'vitest';
-import { EMAIL_MESSAGES, renderInviteEmail, renderOtpEmail } from './templates.js';
+import { EMAIL_MESSAGES, renderInviteEmail, renderOtpEmail, renderTestEmail } from './templates.js';
 
 const pluralOptions = (elements: MessageFormatElement[]) =>
   elements.flatMap((e) => (e.type === TYPE.plural ? [Object.keys(e.options)] : []));
@@ -48,5 +48,13 @@ describe('renderInviteEmail', () => {
     expect(email.subject).toBe('Приглашение в Push30 в Ordler');
     expect(email.text).toContain('https://ordler.test/invite/abc');
     expect(email.text).toContain('7 дней');
+  });
+});
+
+describe('renderTestEmail', () => {
+  it('names the company in the recipient language', () => {
+    const email = renderTestEmail({ locale: 'de', company: 'Push30' });
+    expect(email.subject).toBe('Test-E-Mail von Push30 in Ordler');
+    expect(email.text).toContain('Mailserver-Einstellungen');
   });
 });

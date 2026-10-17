@@ -28,7 +28,15 @@ export async function createTestApp(overrides: Partial<AppContextDeps> = {}): Pr
     baseUrl: TEST_BASE_URL,
     encryptionKey: randomBytes(32),
     sessionTtlDays: 30,
-    mailer,
+    // Mail counts as configured, and every message lands in `mailer`.
+    smtp: {
+      host: 'smtp.ordler.test',
+      port: 587,
+      security: 'starttls',
+      verifyTls: true,
+      from: 'Ordler <no-reply@ordler.test>',
+    },
+    mailTransport: () => mailer,
     readiness: { isReady: async () => true },
     argon2: FAST_ARGON2,
     ...overrides,

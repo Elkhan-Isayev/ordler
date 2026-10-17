@@ -7,3 +7,4 @@ export * from './schemas.js';
 export * from './auth.js';
 export * from './api-types.js';
 export * from './admin.js';
+export * from './mail.js';

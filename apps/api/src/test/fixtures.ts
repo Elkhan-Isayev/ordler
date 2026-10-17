@@ -32,7 +32,8 @@ export async function strategiesFor(
   db: Db,
   options: { mail?: boolean; box?: SecretBox } = {},
 ): Promise<StrategyService> {
-  const service = new StrategyService(db, options.box ?? testBox(), options.mail ?? true);
+  const mail = { isConfigured: async () => options.mail ?? true };
+  const service = new StrategyService(db, options.box ?? testBox(), mail);
   await service.ensureDefaults();
   return service;
 }

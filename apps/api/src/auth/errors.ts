@@ -25,6 +25,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   owner_only: 403,
   invite_invalid: 410,
   archived: 409,
+  mail_managed_by_env: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

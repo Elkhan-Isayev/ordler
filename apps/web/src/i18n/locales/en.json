@@ -85,7 +85,8 @@
     "cannot_change_self": "You cannot change your own status.",
     "owner_only": "Only an Owner can grant or remove the Owner role.",
     "invite_invalid": "This invite link is invalid or has expired.",
-    "archived": "This is archived and cannot be changed."
+    "archived": "This is archived and cannot be changed.",
+    "mail_managed_by_env": "Mail settings come from environment variables and cannot be changed here."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -107,6 +108,7 @@
       "departments": "Departments and teams",
       "members": "Members",
       "authentication": "Sign-in",
+      "mail": "Mail server",
       "updates": "Updates"
     },
     "departments": {
@@ -201,6 +203,28 @@
       "available": "Version {latest} is available.",
       "releaseNotes": "Release notes",
       "lastError": "Last check failed: {error}"
+    },
+    "mail": {
+      "title": "Mail server",
+      "subtitle": "SMTP for sign-in codes, invitations and notifications.",
+      "fromEnv": "Set by SMTP_* environment variables. Change them in the deployment configuration.",
+      "notConfigured": "Mail is not configured yet: email sign-in codes are unavailable and invitations are shared as links.",
+      "host": "SMTP host",
+      "port": "Port",
+      "security": "Security",
+      "security_none": "None",
+      "security_starttls": "STARTTLS",
+      "security_tls": "SSL/TLS",
+      "verifyTls": "Verify TLS certificate",
+      "username": "Username",
+      "password": "Password",
+      "fromName": "Sender name",
+      "fromEmail": "Sender email",
+      "test": "Send a test email",
+      "testRecipient": "Recipient",
+      "sendTest": "Send",
+      "testSent": "Sent. Check the inbox.",
+      "testFailed": "The mail server refused the message:"
     }
   },
   "invite": {

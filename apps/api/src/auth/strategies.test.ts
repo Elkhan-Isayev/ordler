@@ -73,7 +73,11 @@ describe('StrategyService', () => {
     expect(await strategies.clientSecret('google')).toBe('super-secret-value');
 
     // A different key cannot read it (e.g. after ENCRYPTION_KEY is rotated without migration).
-    expect(await new StrategyService(db, testBox(), true).clientSecret('google')).toBeUndefined();
+    expect(
+      await new StrategyService(db, testBox(), { isConfigured: async () => true }).clientSecret(
+        'google',
+      ),
+    ).toBeUndefined();
 
     const audit = await db
       .select()

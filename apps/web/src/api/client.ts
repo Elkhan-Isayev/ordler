@@ -5,9 +5,12 @@ import type {
   ApiErrorBody,
   AssignRoleInput,
   InviteResponse,
+  MailSettingsView,
   MeResponse,
   PublicStrategy,
+  TestMailResult,
   UpdateAuthStrategyInput,
+  UpdateMailSettingsInput,
   UpdateStatusResponse,
 } from '@ordler/shared';
 
@@ -103,6 +106,11 @@ export const api = {
   authStrategies: () => apiRequest<AdminStrategy[]>('/api/admin/auth/strategies'),
   updateAuthStrategy: (kind: string, body: UpdateAuthStrategyInput) =>
     apiRequest<AdminStrategy>(`/api/admin/auth/strategies/${kind}`, { method: 'PATCH', body }),
+  mailSettings: () => apiRequest<MailSettingsView>('/api/admin/mail'),
+  updateMailSettings: (body: UpdateMailSettingsInput) =>
+    apiRequest<MailSettingsView>('/api/admin/mail', { method: 'PUT', body }),
+  sendTestMail: (to: string) =>
+    apiRequest<TestMailResult>('/api/admin/mail/test', { method: 'POST', body: { to } }),
   peekInvite: (token: string) =>
     apiRequest<{ email: string; companyName: string }>(`/api/invites/${encodeURIComponent(token)}`),
   acceptInvite: (body: { token: string; name: string; password: string }) =>

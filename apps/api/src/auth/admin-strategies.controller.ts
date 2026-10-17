@@ -26,11 +26,13 @@ export class AdminStrategiesController {
   @Get()
   async list() {
     const strategies = await this.ctx.strategies.list();
-    return strategies.map((strategy) => ({
-      ...strategy,
-      usable: this.ctx.strategies.isUsable(strategy),
-      callbackUrl: strategy.kind === 'google' ? this.ctx.google.redirectUri : null,
-    }));
+    return Promise.all(
+      strategies.map(async (strategy) => ({
+        ...strategy,
+        usable: await this.ctx.strategies.isUsable(strategy),
+        callbackUrl: strategy.kind === 'google' ? this.ctx.google.redirectUri : null,
+      })),
+    );
   }
 
   @RequirePermission('auth.manage')

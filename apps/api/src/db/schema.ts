@@ -277,3 +277,21 @@ export const memberInvites = pgTable(
   },
   (t) => [uniqueIndex('member_invites_token_hash_uq').on(t.tokenHash)],
 );
+
+/**
+ * SMTP settings entered in Admin → Mail server (SPEC §8.2); a single row. The password is
+ * sealed with ENCRYPTION_KEY. SMTP_* environment variables take precedence over this row.
+ */
+export const mailSettings = pgTable('mail_settings', {
+  id: integer('id').primaryKey().default(1),
+  host: text('host').notNull(),
+  port: integer('port').notNull(),
+  security: text('security', { enum: ['none', 'starttls', 'tls'] }).notNull(),
+  verifyTls: boolean('verify_tls').notNull().default(true),
+  username: text('username'),
+  passwordEncrypted: text('password_encrypted'),
+  fromName: text('from_name'),
+  fromEmail: text('from_email').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid('updated_by').references(() => members.id),
+});

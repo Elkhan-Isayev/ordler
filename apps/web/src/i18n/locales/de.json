@@ -85,7 +85,8 @@
     "cannot_change_self": "Du kannst deinen eigenen Status nicht ändern.",
     "owner_only": "Nur ein Inhaber kann die Inhaberrolle vergeben oder entziehen.",
     "invite_invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
-    "archived": "Das ist archiviert und kann nicht geändert werden."
+    "archived": "Das ist archiviert und kann nicht geändert werden.",
+    "mail_managed_by_env": "Die Mail-Einstellungen stammen aus Umgebungsvariablen und können hier nicht geändert werden."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -107,6 +108,7 @@
       "departments": "Abteilungen und Teams",
       "members": "Mitglieder",
       "authentication": "Anmeldung",
+      "mail": "Mailserver",
       "updates": "Updates"
     },
     "departments": {
@@ -201,6 +203,28 @@
       "available": "Version {latest} ist verfügbar.",
       "releaseNotes": "Release Notes",
       "lastError": "Letzte Prüfung fehlgeschlagen: {error}"
+    },
+    "mail": {
+      "title": "Mailserver",
+      "subtitle": "SMTP für Anmeldecodes, Einladungen und Benachrichtigungen.",
+      "fromEnv": "Über SMTP_*-Umgebungsvariablen gesetzt. Ändere sie in der Deployment-Konfiguration.",
+      "notConfigured": "Mail ist noch nicht eingerichtet: Anmeldecodes per E-Mail sind nicht verfügbar, Einladungen werden als Link geteilt.",
+      "host": "SMTP-Host",
+      "port": "Port",
+      "security": "Verschlüsselung",
+      "security_none": "Keine",
+      "security_starttls": "STARTTLS",
+      "security_tls": "SSL/TLS",
+      "verifyTls": "TLS-Zertifikat prüfen",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "fromName": "Absendername",
+      "fromEmail": "Absenderadresse",
+      "test": "Test-E-Mail senden",
+      "testRecipient": "Empfänger",
+      "sendTest": "Senden",
+      "testSent": "Gesendet. Prüfe das Postfach.",
+      "testFailed": "Der Mailserver hat die Nachricht abgelehnt:"
     }
   },
   "invite": {

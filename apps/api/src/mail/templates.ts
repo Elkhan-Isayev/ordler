@@ -10,6 +10,9 @@ export const EMAIL_MESSAGES = {
     inviteSubject: 'You are invited to {company} on Ordler',
     inviteBody:
       'You have been invited to join {company} on Ordler.\n\nOpen this link to set your name and password:\n{url}\n\nThe link works once and expires in {days, plural, one {# day} other {# days}}.',
+    testSubject: 'Test email from {company} on Ordler',
+    testBody:
+      'This is a test email from {company} on Ordler.\n\nIf you can read it, the mail server settings work.',
   },
   ru: {
     otpSubject: '{code} — ваш код входа в {company}',
@@ -18,6 +21,9 @@ export const EMAIL_MESSAGES = {
     inviteSubject: 'Приглашение в {company} в Ordler',
     inviteBody:
       'Вас пригласили в {company} в Ordler.\n\nОткройте ссылку, чтобы указать имя и пароль:\n{url}\n\nСсылка одноразовая и действует {days, plural, one {# день} few {# дня} many {# дней} other {# дня}}.',
+    testSubject: 'Тестовое письмо от {company} в Ordler',
+    testBody:
+      'Это тестовое письмо от {company} в Ordler.\n\nЕсли вы его читаете, настройки почтового сервера работают.',
   },
   de: {
     otpSubject: '{code} ist dein Anmeldecode für {company}',
@@ -26,6 +32,9 @@ export const EMAIL_MESSAGES = {
     inviteSubject: 'Einladung zu {company} in Ordler',
     inviteBody:
       'Du wurdest zu {company} in Ordler eingeladen.\n\nÖffne diesen Link, um deinen Namen und dein Passwort festzulegen:\n{url}\n\nDer Link funktioniert einmal und ist {days, plural, one {# Tag} other {# Tage}} gültig.',
+    testSubject: 'Test-E-Mail von {company} in Ordler',
+    testBody:
+      'Dies ist eine Test-E-Mail von {company} in Ordler.\n\nWenn du sie lesen kannst, funktionieren die Mailserver-Einstellungen.',
   },
   az: {
     otpSubject: '{code} — {company} üçün giriş kodunuz',
@@ -34,6 +43,9 @@ export const EMAIL_MESSAGES = {
     inviteSubject: 'Ordler-də {company} komandasına dəvət',
     inviteBody:
       'Sizi Ordler-də {company} komandasına dəvət etdilər.\n\nAdınızı və şifrənizi təyin etmək üçün bu linki açın:\n{url}\n\nLink birdəfəlikdir və {days, plural, one {# gün} other {# gün}} ərzində etibarlıdır.',
+    testSubject: 'Ordler-də {company} tərəfindən test məktubu',
+    testBody:
+      'Bu, Ordler-də {company} tərəfindən göndərilən test məktubudur.\n\nOnu oxuya bilirsinizsə, poçt serverinin ayarları işləyir.',
   },
 } satisfies Record<Locale, Record<string, string>>;
 
@@ -70,5 +82,16 @@ export function renderInviteEmail(input: {
   return {
     subject: formatEmailMessage(input.locale, 'inviteSubject', values),
     text: formatEmailMessage(input.locale, 'inviteBody', values),
+  };
+}
+
+export function renderTestEmail(input: { locale: Locale; company: string }): {
+  subject: string;
+  text: string;
+} {
+  const values = { company: input.company };
+  return {
+    subject: formatEmailMessage(input.locale, 'testSubject', values),
+    text: formatEmailMessage(input.locale, 'testBody', values),
   };
 }

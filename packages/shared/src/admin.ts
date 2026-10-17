@@ -59,6 +59,7 @@ export const ADMIN_ERROR_CODES = [
   'owner_only',
   'invite_invalid',
   'archived',
+  'mail_managed_by_env',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 

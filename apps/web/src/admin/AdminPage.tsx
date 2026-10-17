@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { AuthSection } from './AuthSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
+import { MailSection } from './MailSection.js';
 import { MembersSection } from './MembersSection.js';
 import { UpdatesSection } from './UpdatesSection.js';
 
@@ -10,6 +11,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'departments', permission: 'org.manage' },
   { id: 'members', permission: 'org.manage' },
   { id: 'authentication', permission: 'auth.manage' },
+  { id: 'mail', permission: 'mail.manage' },
   { id: 'updates', permission: 'org.manage' },
 ];
 
@@ -47,6 +49,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'departments' && <DepartmentsSection />}
         {active === 'members' && <MembersSection currentMemberId={me.member.id} />}
         {active === 'authentication' && <AuthSection />}
+        {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
         {active === 'updates' && <UpdatesSection />}
       </div>
     </div>

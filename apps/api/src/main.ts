@@ -19,7 +19,6 @@ import {
 import { toPoolConfig } from './db/pool-config.js';
 import { DatabaseReadiness } from './db/readiness.js';
 import * as schema from './db/schema.js';
-import { SmtpMailer } from './mail/mailer.js';
 import { syncSystemRoles } from './setup/system-roles.js';
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL('../drizzle', import.meta.url));
@@ -37,7 +36,7 @@ async function bootstrap(): Promise<void> {
     baseUrl: config.baseUrl,
     encryptionKey: config.encryptionKey,
     sessionTtlDays: config.sessionTtlDays,
-    mailer: config.smtp ? new SmtpMailer(config.smtp) : undefined,
+    smtp: config.smtp,
     readiness,
     version: config.version,
     updateCheck: config.updateCheck,
