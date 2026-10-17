@@ -3,6 +3,8 @@
  * adding a permission means adding it here, updating system roles and their tests.
  */
 export const PERMISSIONS = [
+  // Installation settings such as the database connection; Owner only.
+  'instance.manage',
   'org.manage',
   'org.audit.read',
   'auth.manage',

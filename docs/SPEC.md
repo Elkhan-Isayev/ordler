@@ -141,7 +141,7 @@ Rules:
 ### 4.3 Permission catalog (v1)
 
 ```
-org.manage                 org.audit.read
+instance.manage            org.manage                  org.audit.read
 auth.manage                mail.manage
 member.invite              member.deactivate           member.role.assign
 department.create          department.update           department.archive
@@ -168,6 +168,7 @@ updates system roles + tests.
 
 | Permission                     | Owner | Org Admin | Dept Admin | Dept Supervisor | Team Lead | Member | Viewer | Guest |
 | ------------------------------ | :---: | :-------: | :--------: | :-------------: | :-------: | :----: | :----: | :---: |
+| instance.manage                |   ✓   |           |            |                 |           |        |        |       |
 | org.manage                     |   ✓   |     ✓     |            |                 |           |        |        |       |
 | auth.manage, mail.manage       |   ✓   |     ✓     |            |                 |           |        |        |       |
 | member.invite                  |   ✓   |     ✓     |     ✓¹     |                 |           |        |        |       |
@@ -445,24 +446,25 @@ installation, since every company runs its own Ordler.
 
 Accessible to members with any `*.manage` permission; each section is gated by its permission.
 
-| Section                         | Capabilities                                                                                                                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Overview                        | Seats, active users, request volume, SLA compliance; current version and update availability (§16.5).                                                                                            |
-| Members                         | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only).                                    |
-| Departments                     | Create / rename / archive, head, supervisors, business hours calendar.                                                                                                                           |
-| Teams                           | Create inside department, key, privacy, members, team lead, move team between departments.                                                                                                       |
-| Roles & permissions             | List system roles (read-only), create custom roles from the permission catalog, assign roles at scope, "effective permissions" inspector for any member.                                         |
-| Workflows                       | Team workflows and request workflows editor.                                                                                                                                                     |
-| Service portals & request types | Form builder, routing rules, SLA, approval policies with a step editor and a "simulate approvers" preview for a sample requester.                                                                |
-| SLA policies & calendars        | Targets, business hours, holidays.                                                                                                                                                               |
-| Labels & custom fields          | Org-level labels and custom fields.                                                                                                                                                              |
-| Authentication & registration   | Sign-in strategies, self-registration rules, default roles for new accounts (§8.1).                                                                                                              |
-| Mail server                     | SMTP configuration used for OTP codes, invites and notifications (§8.2).                                                                                                                         |
-| Security                        | Session lifetime, 2FA enforcement, password policy, IP allowlist (Phase 3).                                                                                                                      |
-| API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2). |
-| Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                  |
-| Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                           |
-| Data                            | Export all data (JSON), import from Linear/Jira CSV (Phase 2).                                                                                                                                   |
+| Section                         | Capabilities                                                                                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview                        | Seats, active users, request volume, SLA compliance; current version and update availability (§16.5).                                                                                             |
+| Members                         | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only).                                     |
+| Departments                     | Create / rename / archive, head, supervisors, business hours calendar.                                                                                                                            |
+| Teams                           | Create inside department, key, privacy, members, team lead, move team between departments.                                                                                                        |
+| Roles & permissions             | List system roles (read-only), create custom roles from the permission catalog, assign roles at scope, "effective permissions" inspector for any member.                                          |
+| Workflows                       | Team workflows and request workflows editor.                                                                                                                                                      |
+| Service portals & request types | Form builder, routing rules, SLA, approval policies with a step editor and a "simulate approvers" preview for a sample requester.                                                                 |
+| SLA policies & calendars        | Targets, business hours, holidays.                                                                                                                                                                |
+| Labels & custom fields          | Org-level labels and custom fields.                                                                                                                                                               |
+| Authentication & registration   | Sign-in strategies, self-registration rules, default roles for new accounts (§8.1).                                                                                                               |
+| Mail server                     | SMTP configuration used for OTP codes, invites and notifications (§8.2).                                                                                                                          |
+| Database                        | Current PostgreSQL connection and server version, without secrets. Owners can change installer-saved settings (applied after restart); settings from environment variables are read-only (§16.4). |
+| Security                        | Session lifetime, 2FA enforcement, password policy, IP allowlist (Phase 3).                                                                                                                       |
+| API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
+| Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
+| Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
+| Data                            | Export all data (JSON), import from Linear/Jira CSV (Phase 2).                                                                                                                                    |
 
 ### 8.1 Authentication strategies and registration
 
@@ -849,22 +851,24 @@ with PostgreSQL as the only mandatory external service.
 
 ### 16.2 Configuration (environment variables)
 
-| Variable                                                                                                                          | Example                                                       | Notes                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                                                                                                                    | `postgres://ordler:***@db.xxxx.rds.amazonaws.com:5432/ordler` | Alternative to the `DB_*` set below.                                                                            |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` / `DB_PASS_FILE`                                                            |                                                               | `*_FILE` variants read secrets from mounted files (K8s secrets).                                                |
-| `DB_SSL`                                                                                                                          | `disable` / `require` / `verify-full`                         | `verify-full` recommended for RDS.                                                                              |
-| `DB_SSL_CA` / `DB_SSL_CA_FILE`                                                                                                    | RDS global CA bundle                                          |                                                                                                                 |
-| `DB_SCHEMA`                                                                                                                       | `ordler`                                                      | Allows sharing a database with other apps.                                                                      |
-| `DB_POOL_MAX`                                                                                                                     | `20`                                                          | Per replica; size against RDS `max_connections` (or use RDS Proxy / PgBouncer in transaction mode).             |
-| `BASE_URL`                                                                                                                        | `https://tasks.company.com`                                   | Used in emails and OAuth callbacks.                                                                             |
-| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE`                                                                                          | 32-byte key                                                   | Encrypts stored secrets (OAuth, SMTP). Losing it = re-entering secrets.                                         |
-| `SESSION_TTL_DAYS`                                                                                                                | `30`                                                          | Session lifetime. Sessions are opaque random tokens; only their SHA-256 is stored, so no signing secret exists. |
-| `STORAGE_DRIVER`                                                                                                                  | `local` / `s3`                                                | `s3` needs `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (MinIO), credentials or IAM role (IRSA).                     |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_VERIFY_TLS`, `SMTP_USER`, `SMTP_PASS` / `SMTP_PASS_FILE`, `SMTP_FROM` (optional) | `smtp.company.com`, `587`, `starttls`                         | Mail delivery for OTP codes and notifications (§8.2). Without it email OTP stays unavailable.                   |
-| `LOG_LEVEL`, `LOG_FORMAT`                                                                                                         | `info`, `json`                                                |                                                                                                                 |
-| `ORDLER_ROLE`                                                                                                                     | `all`                                                         |                                                                                                                 |
-| `TRUST_PROXY`                                                                                                                     | `true`                                                        | Behind ingress / load balancer.                                                                                 |
+| Variable                                                                                                                          | Example                                                       | Notes                                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                                                                                    | `postgres://ordler:***@db.xxxx.rds.amazonaws.com:5432/ordler` | Alternative to the `DB_*` set below. Without either, the first-run installer asks for the connection (§16.4).                                 |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` / `DB_PASS_FILE`                                                            |                                                               | `*_FILE` variants read secrets from mounted files (K8s secrets).                                                                              |
+| `DB_SSL`                                                                                                                          | `disable` / `require` / `verify-full`                         | `verify-full` recommended for RDS.                                                                                                            |
+| `DB_SSL_CA` / `DB_SSL_CA_FILE`                                                                                                    | RDS global CA bundle                                          |                                                                                                                                               |
+| `DB_SCHEMA`                                                                                                                       | `ordler`                                                      | Allows sharing a database with other apps.                                                                                                    |
+| `DB_POOL_MAX`                                                                                                                     | `20`                                                          | Per replica; size against RDS `max_connections` (or use RDS Proxy / PgBouncer in transaction mode).                                           |
+| `BASE_URL`                                                                                                                        | `https://tasks.company.com`                                   | Used in emails and OAuth callbacks.                                                                                                           |
+| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE`                                                                                          | 32-byte key                                                   | Encrypts stored secrets (OAuth, SMTP, database password). Optional: generated in the data volume when unset. Losing it = re-entering secrets. |
+| `ORDLER_DATA_DIR`                                                                                                                 | `/data`                                                       | Persistent volume for installer-saved database settings and the generated encryption key.                                                     |
+| `ORDLER_INSTALL_TOKEN`                                                                                                            | `K7QX-2M9P-WD4T`                                              | Fixed installer token for automated installs; otherwise a random one is logged.                                                               |
+| `SESSION_TTL_DAYS`                                                                                                                | `30`                                                          | Session lifetime. Sessions are opaque random tokens; only their SHA-256 is stored, so no signing secret exists.                               |
+| `STORAGE_DRIVER`                                                                                                                  | `local` / `s3`                                                | `s3` needs `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (MinIO), credentials or IAM role (IRSA).                                                   |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_VERIFY_TLS`, `SMTP_USER`, `SMTP_PASS` / `SMTP_PASS_FILE`, `SMTP_FROM` (optional) | `smtp.company.com`, `587`, `starttls`                         | Mail delivery for OTP codes and notifications (§8.2). Without it email OTP stays unavailable.                                                 |
+| `LOG_LEVEL`, `LOG_FORMAT`                                                                                                         | `info`, `json`                                                |                                                                                                                                               |
+| `ORDLER_ROLE`                                                                                                                     | `all`                                                         |                                                                                                                                               |
+| `TRUST_PROXY`                                                                                                                     | `true`                                                        | Behind ingress / load balancer.                                                                                                               |
 
 ### 16.3 External PostgreSQL / AWS RDS
 
@@ -891,6 +895,13 @@ with PostgreSQL as the only mandatory external service.
 
 - Health endpoints: `/healthz` (liveness), `/readyz` (DB reachable, migrations done),
   `/metrics` (Prometheus, optional auth).
+- **First-run installer** (ADR 0006): without `DATABASE_URL` / `DB_*`, Ordler serves an
+  installer page that asks for the PostgreSQL connection and the one-time install token
+  printed in the log (`ORDLER_INSTALL_TOKEN` presets it). It checks reachability, credentials,
+  PostgreSQL 18+ and the CREATE privilege, saves the settings to the data volume
+  (`ORDLER_DATA_DIR`, password encrypted) and starts Ordler, which creates its tables. Saved
+  settings that stop working bring the installer back with the reason. The only prerequisite
+  is an empty database and a user that owns it.
 - **Setup wizard** on first visit to an empty database: create the first Owner (email +
   password), company name, base URL, default language. Can be pre-seeded via env
   (`ADMIN_EMAIL`, `ADMIN_PASSWORD_FILE`) for automated installs.

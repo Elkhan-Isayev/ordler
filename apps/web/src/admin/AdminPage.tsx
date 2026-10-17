@@ -2,6 +2,7 @@ import type { MeResponse, Permission } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { AuthSection } from './AuthSection.js';
+import { DatabaseSection } from './DatabaseSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
 import { MailSection } from './MailSection.js';
 import { MembersSection } from './MembersSection.js';
@@ -12,6 +13,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'members', permission: 'org.manage' },
   { id: 'authentication', permission: 'auth.manage' },
   { id: 'mail', permission: 'mail.manage' },
+  { id: 'database', permission: 'org.manage' },
   { id: 'updates', permission: 'org.manage' },
 ];
 
@@ -50,6 +52,9 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'members' && <MembersSection currentMemberId={me.member.id} />}
         {active === 'authentication' && <AuthSection />}
         {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
+        {active === 'database' && (
+          <DatabaseSection canEdit={me.organizationPermissions.includes('instance.manage')} />
+        )}
         {active === 'updates' && <UpdatesSection />}
       </div>
     </div>

@@ -14,9 +14,17 @@ describe('permission catalog', () => {
 });
 
 describe('system roles', () => {
-  it('owner and org admin hold the full catalog', () => {
+  it('owner holds the full catalog; org admin everything but instance settings', () => {
     expect(new Set(SYSTEM_ROLES.owner.permissions)).toEqual(new Set(PERMISSIONS));
-    expect(new Set(SYSTEM_ROLES.org_admin.permissions)).toEqual(new Set(PERMISSIONS));
+    expect(new Set(SYSTEM_ROLES.org_admin.permissions)).toEqual(
+      new Set(PERMISSIONS.filter((p) => p !== 'instance.manage')),
+    );
+  });
+
+  it('only owners change installation settings', () => {
+    for (const role of Object.values(SYSTEM_ROLES)) {
+      expect(role.permissions.includes('instance.manage'), role.key).toBe(role.key === 'owner');
+    }
   });
 
   it('every role permission exists in the catalog', () => {

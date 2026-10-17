@@ -10,6 +10,10 @@ import { DEFAULT_RELEASE_REPOSITORY, type SmtpConfig } from './config/env.js';
 import { SecretBox } from './crypto/secret-box.js';
 import type { Db } from './db/client.js';
 import type { ReadinessCheck } from './health/health.controller.js';
+import {
+  DatabaseSettingsService,
+  type DatabaseSettingsDeps,
+} from './install/database-settings.service.js';
 import { MailService } from './mail/mail.service.js';
 import { smtpTransport, type TransportFactory } from './mail/mailer.js';
 import { AdminMembersService } from './members/admin-members.service.js';
@@ -40,6 +44,7 @@ export interface AppContext {
   org: OrgService;
   members: AdminMembersService;
   mail: MailService;
+  database: DatabaseSettingsService;
   limits: {
     signIn: RateLimiter;
     otpRequest: RateLimiter;
@@ -57,6 +62,8 @@ export interface AppContextDeps {
   /** SMTP_* variables; otherwise mail settings come from Admin → Mail server. */
   smtp?: SmtpConfig | undefined;
   mailTransport?: TransportFactory;
+  /** The running connection and how to probe and save replacements (Admin → Database). */
+  databaseSettings: Omit<DatabaseSettingsDeps, 'db'>;
   readiness: ReadinessCheck;
   now?: Clock;
   argon2?: Argon2Params;
@@ -119,6 +126,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       ...(deps.argon2 ? { argon2: deps.argon2 } : {}),
     }),
     mail,
+    database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     limits: {
       signIn: new RateLimiter(10, FIFTEEN_MINUTES),
       otpRequest: new RateLimiter(10, FIFTEEN_MINUTES),

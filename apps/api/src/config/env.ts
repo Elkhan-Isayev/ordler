@@ -38,9 +38,24 @@ export interface AppConfig {
   migrateOnStart: boolean;
   defaultLocale: (typeof SUPPORTED_LOCALES)[number];
   logLevel: 'debug' | 'info' | 'warn' | 'error';
-  database: DatabaseConfig;
-  /** 32-byte key sealing stored secrets (OAuth, SMTP) and OAuth state cookies. */
-  encryptionKey: Buffer;
+  /**
+   * From DATABASE_URL or DB_* variables. Absent on installations configured through the
+   * first-run installer, whose settings live in the data directory instead.
+   */
+  database?: DatabaseConfig;
+  /** DB_POOL_MAX, also applied to installer-saved settings. */
+  dbPoolMax: number;
+  /**
+   * 32-byte key sealing stored secrets (OAuth, SMTP, database password) and OAuth state
+   * cookies. When unset, a key is generated once in the data directory.
+   */
+  encryptionKey?: Buffer;
+  /** Persistent volume for installer settings and the generated key (ORDLER_DATA_DIR). */
+  dataDir: string;
+  /** Fixed installer token for automated installs; otherwise a random one is logged. */
+  installToken?: string;
+  /** Built web app served by the API; absent in development, where Vite serves it. */
+  webDir?: string;
   sessionTtlDays: number;
   /** Absent until SMTP is configured; email OTP stays unavailable meanwhile. */
   smtp?: SmtpConfig;
@@ -76,7 +91,10 @@ const envSchema = z.object({
   DB_SSL: z.enum(['disable', 'require', 'verify-full']).default('disable'),
   DB_SSL_CA: z.string().optional(),
   DB_POOL_MAX: z.coerce.number().int().min(1).max(500).default(20),
-  ENCRYPTION_KEY: z.string().min(1, 'ENCRYPTION_KEY is required'),
+  ENCRYPTION_KEY: z.string().min(1).optional(),
+  ORDLER_DATA_DIR: z.string().min(1).default('/data'),
+  ORDLER_INSTALL_TOKEN: z.string().trim().min(8).max(100).optional(),
+  ORDLER_WEB_DIR: z.string().min(1).optional(),
   SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
@@ -129,18 +147,10 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
   if (e.DATABASE_URL && e.DB_HOST) {
     throw new ConfigError('Set either DATABASE_URL or DB_HOST, not both');
   }
-  if (!e.DATABASE_URL && !e.DB_HOST) {
-    throw new ConfigError('Database is not configured: set DATABASE_URL or DB_HOST');
-  }
   if (e.DB_SSL === 'verify-full' && !e.DB_SSL_CA) {
     throw new ConfigError('DB_SSL=verify-full requires DB_SSL_CA or DB_SSL_CA_FILE');
   }
-  const encryptionKey = Buffer.from(e.ENCRYPTION_KEY, 'base64');
-  if (encryptionKey.length !== 32) {
-    throw new ConfigError(
-      'ENCRYPTION_KEY must be 32 bytes, base64-encoded (openssl rand -base64 32)',
-    );
-  }
+  const encryptionKey = e.ENCRYPTION_KEY ? parseEncryptionKey(e.ENCRYPTION_KEY) : undefined;
   if (e.SMTP_HOST && !e.SMTP_FROM) {
     throw new ConfigError('SMTP_FROM is required when SMTP_HOST is set');
   }
@@ -152,17 +162,25 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
     migrateOnStart: e.ORDLER_MIGRATE,
     defaultLocale: e.DEFAULT_LOCALE,
     logLevel: e.LOG_LEVEL,
-    database: {
-      ...(e.DATABASE_URL
-        ? { connectionString: e.DATABASE_URL }
-        : { host: e.DB_HOST, database: e.DB_NAME, user: e.DB_USER, password: e.DB_PASS }),
-      port: e.DB_PORT,
-      schema: e.DB_SCHEMA,
-      ssl: e.DB_SSL,
-      ...(e.DB_SSL_CA ? { sslCa: e.DB_SSL_CA } : {}),
-      poolMax: e.DB_POOL_MAX,
-    },
-    encryptionKey,
+    ...(e.DATABASE_URL || e.DB_HOST
+      ? {
+          database: {
+            ...(e.DATABASE_URL
+              ? { connectionString: e.DATABASE_URL }
+              : { host: e.DB_HOST, database: e.DB_NAME, user: e.DB_USER, password: e.DB_PASS }),
+            port: e.DB_PORT,
+            schema: e.DB_SCHEMA,
+            ssl: e.DB_SSL,
+            ...(e.DB_SSL_CA ? { sslCa: e.DB_SSL_CA } : {}),
+            poolMax: e.DB_POOL_MAX,
+          },
+        }
+      : {}),
+    dbPoolMax: e.DB_POOL_MAX,
+    ...(encryptionKey ? { encryptionKey } : {}),
+    dataDir: e.ORDLER_DATA_DIR,
+    ...(e.ORDLER_INSTALL_TOKEN ? { installToken: e.ORDLER_INSTALL_TOKEN } : {}),
+    ...(e.ORDLER_WEB_DIR ? { webDir: e.ORDLER_WEB_DIR } : {}),
     sessionTtlDays: e.SESSION_TTL_DAYS,
     version: e.ORDLER_VERSION,
     updateCheck: { enabled: e.UPDATE_CHECK, repository: e.UPDATE_CHECK_REPOSITORY },
@@ -182,6 +200,17 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
   };
 }
 
+/** Decodes a base64 32-byte key, from ENCRYPTION_KEY or the generated key file. */
+export function parseEncryptionKey(value: string): Buffer {
+  const key = Buffer.from(value.trim(), 'base64');
+  if (key.length !== 32) {
+    throw new ConfigError(
+      'ENCRYPTION_KEY must be 32 bytes, base64-encoded (openssl rand -base64 32)',
+    );
+  }
+  return key;
+}
+
 function defaultReadFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
@@ -194,12 +223,14 @@ export function describeConfig(config: AppConfig): Record<string, unknown> {
     baseUrl: config.baseUrl,
     role: config.role,
     migrateOnStart: config.migrateOnStart,
-    database: {
-      target: database.connectionString ? 'DATABASE_URL' : `${database.host}:${database.port}`,
-      schema: database.schema,
-      ssl: database.ssl,
-      poolMax: database.poolMax,
-    },
+    database: database
+      ? {
+          target: database.connectionString ? 'DATABASE_URL' : `${database.host}:${database.port}`,
+          schema: database.schema,
+          ssl: database.ssl,
+          poolMax: database.poolMax,
+        }
+      : `installer settings in ${config.dataDir}`,
     smtp: config.smtp ? `${config.smtp.host}:${config.smtp.port}` : 'not configured',
     version: config.version ?? 'development',
     updateCheck: config.updateCheck.enabled ? config.updateCheck.repository : 'disabled',

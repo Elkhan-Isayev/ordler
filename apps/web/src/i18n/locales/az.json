@@ -86,7 +86,12 @@
     "owner_only": "Sahib rolunu yalnız sahib verə və ya geri ala bilər.",
     "invite_invalid": "Bu dəvət linki etibarsızdır və ya vaxtı bitib.",
     "archived": "Bu arxivdədir və dəyişdirilə bilməz.",
-    "mail_managed_by_env": "Poçt ayarları mühit dəyişənlərindən gəlir və burada dəyişdirilə bilməz."
+    "mail_managed_by_env": "Poçt ayarları mühit dəyişənlərindən gəlir və burada dəyişdirilə bilməz.",
+    "database_managed_by_env": "Baza mühit dəyişənləri ilə təyin olunub və burada dəyişdirilə bilməz.",
+    "invalid_install_token": "Quraşdırma kodu yanlışdır. Onu Ordler jurnalından köçürün.",
+    "database_required": "Ordler verilənlər bazası bağlantısını gözləyir.",
+    "ssl_ca_required": "Serveri yoxlamaq üçün CA sertifikatını daxil edin.",
+    "schema_invalid": "Sxem adı üçün kiçik latın hərfləri, rəqəmlər və alt xətt istifadə edin."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -109,6 +114,7 @@
       "members": "İştirakçılar",
       "authentication": "Giriş",
       "mail": "Poçt serveri",
+      "database": "Verilənlər bazası",
       "updates": "Yeniləmələr"
     },
     "departments": {
@@ -224,7 +230,16 @@
       "testRecipient": "Alıcı",
       "sendTest": "Göndər",
       "testSent": "Göndərildi. Poçt qutusunu yoxlayın.",
-      "testFailed": "Poçt serveri məktubu rədd etdi:"
+      "testFailed": "Test məktubunu göndərmək mümkün olmadı:"
+    },
+    "database": {
+      "title": "Verilənlər bazası",
+      "subtitle": "Ordler-in bütün məlumatları saxladığı PostgreSQL bazası.",
+      "fromEnv": "DATABASE_URL və ya DB_* mühit dəyişənləri ilə təyin olunub. Onları yerləşdirmə konfiqurasiyasında dəyişin.",
+      "fromInstaller": "Quraşdırıcı tərəfindən məlumat həcmində saxlanılıb.",
+      "change": "Bağlantını dəyiş",
+      "changeWarning": "Ordler məlumatları bazalar arasında köçürmür. Artıq Ordler məlumatları olan bazanı (məsələn, ehtiyat nüsxədən bərpa edilmiş) və ya yenidən başlamaq üçün boş bazanı göstərin. Bunu yalnız sahiblər dəyişə bilər.",
+      "restartRequired": "Saxlanıldı. Yeni bağlantıdan istifadə etmək üçün Ordler-i yenidən başladın, məsələn docker compose restart ordler."
     }
   },
   "invite": {
@@ -235,5 +250,37 @@
     "passwordConfirm": "Şifrəni təkrarlayın",
     "submit": "Qoşul",
     "invalid": "Bu dəvət linki etibarsızdır və ya vaxtı bitib. Administratordan yenisini istəyin."
+  },
+  "database": {
+    "setupTitle": "Verilənlər bazasını qoşun",
+    "setupSubtitle": "Ordler hər şeyi PostgreSQL 18 və ya daha yeni versiyada saxlayır. Boş baza və onun sahibi olan istifadəçi yaradın; cədvəlləri Ordler özü yaradacaq.",
+    "host": "Host",
+    "port": "Port",
+    "name": "Baza",
+    "schema": "Sxem",
+    "user": "İstifadəçi",
+    "password": "Şifrə",
+    "ssl": "Şifrələmə (SSL)",
+    "ssl_disable": "Söndürülüb",
+    "ssl_require": "Məcburi",
+    "ssl_verify_full": "Məcburi, sertifikat yoxlanışı ilə (RDS üçün tövsiyə olunur)",
+    "sslCa": "CA sertifikatı (PEM), məsələn RDS dəsti",
+    "serverVersion": "Server versiyası",
+    "installToken": "Quraşdırma kodu",
+    "installTokenHint": "Başlayanda Ordler jurnalında göstərilir, məsələn docker compose logs ordler.",
+    "test": "Bağlantını yoxla",
+    "saveAndContinue": "Saxla və davam et",
+    "connected": "PostgreSQL {version} ilə qoşuldu.",
+    "starting": "Cədvəllər yaradılır və Ordler başladılır…",
+    "startingHint": "Bu bir neçə saniyə çəkir. Səhifə özü davam edəcək.",
+    "savedFailed": "Saxlanmış baza ayarları artıq işləmir: {reason} Onları yenidən daxil edin.",
+    "errors": {
+      "connection_failed": "Baza serverinə qoşulmaq mümkün deyil. Host, port və firewall-u yoxlayın.",
+      "authentication_failed": "İstifadəçi adı və ya şifrə yanlışdır.",
+      "database_not_found": "Belə baza yoxdur. Əvvəlcə onu yaradın.",
+      "tls_failed": "SSL bağlantısı alınmadı. Şifrələmə rejimini və CA sertifikatını yoxlayın.",
+      "postgres_too_old": "Ordler üçün PostgreSQL 18 və ya daha yeni versiya lazımdır.",
+      "insufficient_privileges": "İstifadəçinin bu bazada cədvəl yaratmaq hüququ yoxdur. Baza administratorundan bunu icra etməsini xahiş edin:"
+    }
   }
 }

@@ -26,6 +26,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   invite_invalid: 410,
   archived: 409,
   mail_managed_by_env: 409,
+  database_managed_by_env: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

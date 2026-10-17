@@ -86,7 +86,12 @@
     "owner_only": "Nur ein Inhaber kann die Inhaberrolle vergeben oder entziehen.",
     "invite_invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
     "archived": "Das ist archiviert und kann nicht geändert werden.",
-    "mail_managed_by_env": "Die Mail-Einstellungen stammen aus Umgebungsvariablen und können hier nicht geändert werden."
+    "mail_managed_by_env": "Die Mail-Einstellungen stammen aus Umgebungsvariablen und können hier nicht geändert werden.",
+    "database_managed_by_env": "Die Datenbank wird über Umgebungsvariablen gesetzt und kann hier nicht geändert werden.",
+    "invalid_install_token": "Der Installationscode ist falsch. Kopiere ihn aus dem Ordler-Log.",
+    "database_required": "Ordler wartet auf eine Datenbankverbindung.",
+    "ssl_ca_required": "Füge das CA-Zertifikat ein, um den Server zu prüfen.",
+    "schema_invalid": "Verwende für das Schema Kleinbuchstaben, Ziffern und Unterstriche."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -109,6 +114,7 @@
       "members": "Mitglieder",
       "authentication": "Anmeldung",
       "mail": "Mailserver",
+      "database": "Datenbank",
       "updates": "Updates"
     },
     "departments": {
@@ -224,7 +230,16 @@
       "testRecipient": "Empfänger",
       "sendTest": "Senden",
       "testSent": "Gesendet. Prüfe das Postfach.",
-      "testFailed": "Der Mailserver hat die Nachricht abgelehnt:"
+      "testFailed": "Die Test-E-Mail konnte nicht gesendet werden:"
+    },
+    "database": {
+      "title": "Datenbank",
+      "subtitle": "Die PostgreSQL-Datenbank, in der Ordler alle Daten speichert.",
+      "fromEnv": "Über DATABASE_URL oder DB_*-Umgebungsvariablen gesetzt. Ändere sie in der Deployment-Konfiguration.",
+      "fromInstaller": "Vom Installer im Datenvolume gespeichert.",
+      "change": "Verbindung ändern",
+      "changeWarning": "Ordler kopiert keine Daten zwischen Datenbanken. Gib eine Datenbank an, die bereits Ordler-Daten enthält (z. B. aus einem Backup wiederhergestellt), oder eine leere, um neu zu beginnen. Nur Owner können das ändern.",
+      "restartRequired": "Gespeichert. Starte Ordler neu, um die neue Verbindung zu nutzen, z. B. docker compose restart ordler."
     }
   },
   "invite": {
@@ -235,5 +250,37 @@
     "passwordConfirm": "Passwort wiederholen",
     "submit": "Beitreten",
     "invalid": "Dieser Einladungslink ist ungültig oder abgelaufen. Bitte deinen Administrator um einen neuen."
+  },
+  "database": {
+    "setupTitle": "Datenbank verbinden",
+    "setupSubtitle": "Ordler speichert alles in PostgreSQL 18 oder neuer. Lege eine leere Datenbank und einen Benutzer als Eigentümer an; die Tabellen erstellt Ordler selbst.",
+    "host": "Host",
+    "port": "Port",
+    "name": "Datenbank",
+    "schema": "Schema",
+    "user": "Benutzer",
+    "password": "Passwort",
+    "ssl": "Verschlüsselung (SSL)",
+    "ssl_disable": "Aus",
+    "ssl_require": "Erforderlich",
+    "ssl_verify_full": "Erforderlich, Zertifikat prüfen (empfohlen für RDS)",
+    "sslCa": "CA-Zertifikat (PEM), z. B. das RDS-Bundle",
+    "serverVersion": "Serverversion",
+    "installToken": "Installationscode",
+    "installTokenHint": "Steht beim Start im Ordler-Log, z. B. docker compose logs ordler.",
+    "test": "Verbindung testen",
+    "saveAndContinue": "Speichern und weiter",
+    "connected": "Mit PostgreSQL {version} verbunden.",
+    "starting": "Tabellen werden angelegt, Ordler startet…",
+    "startingHint": "Das dauert ein paar Sekunden. Die Seite geht von selbst weiter.",
+    "savedFailed": "Die gespeicherten Datenbank-Einstellungen funktionieren nicht mehr: {reason} Gib sie erneut ein.",
+    "errors": {
+      "connection_failed": "Der Datenbankserver ist nicht erreichbar. Prüfe Host, Port und Firewall.",
+      "authentication_failed": "Benutzername oder Passwort ist falsch.",
+      "database_not_found": "Diese Datenbank existiert nicht. Lege sie zuerst an.",
+      "tls_failed": "Die SSL-Verbindung ist fehlgeschlagen. Prüfe Verschlüsselungsmodus und CA-Zertifikat.",
+      "postgres_too_old": "Ordler benötigt PostgreSQL 18 oder neuer.",
+      "insufficient_privileges": "Der Benutzer darf in dieser Datenbank keine Tabellen anlegen. Bitte den DBA, Folgendes auszuführen:"
+    }
   }
 }

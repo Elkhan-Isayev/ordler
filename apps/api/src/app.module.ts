@@ -6,6 +6,7 @@ import { AdminStrategiesController } from './auth/admin-strategies.controller.js
 import { AuthController } from './auth/auth.controller.js';
 import { HealthController, READINESS_CHECK } from './health/health.controller.js';
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
+import { AdminDatabaseController } from './install/admin-database.controller.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
 import { InvitesController } from './members/invites.controller.js';
@@ -31,6 +32,7 @@ export class AppModule {
         AdminMembersController,
         InvitesController,
         AdminMailController,
+        AdminDatabaseController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },

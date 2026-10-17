@@ -17,6 +17,7 @@ describe('adminSections', () => {
       'departments',
       'members',
       'authentication',
+      'database',
       'updates',
     ]);
     expect(adminSections(['auth.manage'])).toEqual(['authentication']);

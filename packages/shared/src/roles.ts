@@ -60,7 +60,8 @@ const DEPARTMENT_ADMIN: readonly Permission[] = [
   'view.create_shared',
 ];
 
-const ORG_ADMIN: readonly Permission[] = PERMISSIONS;
+// Everything except installation settings, which stay with Owners (SPEC §4.2).
+const ORG_ADMIN: readonly Permission[] = PERMISSIONS.filter((p) => p !== 'instance.manage');
 
 /** System roles are seeded at setup and cannot be edited (SPEC §4.2). */
 export const SYSTEM_ROLES: Readonly<Record<SystemRoleKey, SystemRole>> = {

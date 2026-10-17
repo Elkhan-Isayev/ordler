@@ -1,8 +1,14 @@
-import { resolveLocale, type Locale, type MeResponse } from '@ordler/shared';
+import {
+  resolveLocale,
+  type DatabaseProbeError,
+  type Locale,
+  type MeResponse,
+} from '@ordler/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client.js';
 import { App } from '../App.js';
+import { DatabaseSetupPage } from '../database/DatabaseSetupPage.js';
 import { navigate } from '../router.js';
 import { AcceptInvitePage } from './AcceptInvitePage.js';
 import { errorKey } from './errors.js';
@@ -13,6 +19,7 @@ import { SignInPage } from './SignInPage.js';
 type GateState =
   | { kind: 'loading' }
   | { kind: 'failed'; messageKey: string }
+  | { kind: 'database'; savedError?: DatabaseProbeError | undefined }
   | { kind: 'setup' }
   | { kind: 'signIn'; error?: string | undefined }
   | { kind: 'invite'; token: string }
@@ -36,8 +43,19 @@ export function takeAuthError(
   return code;
 }
 
-/** Decides what to show: setup wizard, sign-in, or the app for a signed-in member. */
-export function AuthGate({ browserLocale }: { browserLocale: Locale }) {
+const reloadPage = () => window.location.reload();
+
+/**
+ * Decides what to show: the database installer, setup wizard, sign-in, or the app for a
+ * signed-in member. `reload` restarts the flow once the installer hands over.
+ */
+export function AuthGate({
+  browserLocale,
+  reload = reloadPage,
+}: {
+  browserLocale: Locale;
+  reload?: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const [state, setState] = useState<GateState>({ kind: 'loading' });
 
@@ -65,9 +83,12 @@ export function AuthGate({ browserLocale }: { browserLocale: Locale }) {
     const authError = takeAuthError(window.location);
     (async () => {
       try {
-        const { setupRequired } = await api.setupStatus();
+        const status = await api.setupStatus();
         if (cancelled) return;
-        if (setupRequired) return setState({ kind: 'setup' });
+        if (status.databaseRequired) {
+          return setState({ kind: 'database', savedError: status.databaseError });
+        }
+        if (status.setupRequired) return setState({ kind: 'setup' });
         try {
           const me = await api.me();
           if (!cancelled) enterApp(me);
@@ -105,6 +126,8 @@ export function AuthGate({ browserLocale }: { browserLocale: Locale }) {
           {null}
         </Card>
       );
+    case 'database':
+      return <DatabaseSetupPage savedError={state.savedError} onReady={reload} />;
     case 'setup':
       return <SetupWizard initialLocale={browserLocale} onComplete={enterApp} />;
     case 'signIn':

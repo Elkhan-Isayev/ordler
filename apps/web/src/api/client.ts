@@ -4,10 +4,16 @@ import type {
   AdminRole,
   ApiErrorBody,
   AssignRoleInput,
+  DatabaseProbeResult,
+  DatabaseSettingsInput,
+  DatabaseSettingsView,
+  DatabaseUpdateResult,
+  InstallDatabaseInput,
   InviteResponse,
   MailSettingsView,
   MeResponse,
   PublicStrategy,
+  SetupStatusResponse,
   TestMailResult,
   UpdateAuthStrategyInput,
   UpdateMailSettingsInput,
@@ -52,7 +58,14 @@ export async function apiRequest<T>(
 }
 
 export const api = {
-  setupStatus: () => apiRequest<{ setupRequired: boolean }>('/api/setup/status'),
+  setupStatus: () => apiRequest<SetupStatusResponse>('/api/setup/status'),
+  testInstallDatabase: (body: InstallDatabaseInput) =>
+    apiRequest<DatabaseProbeResult>('/api/install/database/test', { method: 'POST', body }),
+  installDatabase: (body: InstallDatabaseInput) =>
+    apiRequest<DatabaseProbeResult>('/api/install/database', { method: 'POST', body }),
+  databaseSettings: () => apiRequest<DatabaseSettingsView>('/api/admin/database'),
+  updateDatabaseSettings: (body: DatabaseSettingsInput) =>
+    apiRequest<DatabaseUpdateResult>('/api/admin/database', { method: 'PUT', body }),
   completeSetup: (body: unknown) => apiRequest<MeResponse>('/api/setup', { method: 'POST', body }),
   me: () => apiRequest<MeResponse>('/api/me'),
   strategies: () => apiRequest<PublicStrategy[]>('/api/auth/strategies'),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ConfigError, describeConfig, loadConfig } from './env.js';
+import { describeConfig, loadConfig } from './env.js';
 
 const KEY = Buffer.alloc(32, 7).toString('base64');
 const RDS_CA = '-----BEGIN CERTIFICATE-----\nMIIfake\n-----END CERTIFICATE-----';
@@ -53,8 +53,20 @@ describe('loadConfig', () => {
     expect(config.baseUrl).toBe('https://tasks.example.com');
   });
 
-  it('rejects a missing database', () => {
-    expect(() => loadConfig({ ENCRYPTION_KEY: KEY })).toThrow(ConfigError);
+  it('leaves the database to the installer when no variables are set', () => {
+    const config = loadConfig({});
+    expect(config.database).toBeUndefined();
+    expect(config.encryptionKey).toBeUndefined();
+    expect(config.dataDir).toBe('/data');
+    expect(describeConfig(config).database).toBe('installer settings in /data');
+  });
+
+  it('accepts a fixed install token and web directory', () => {
+    const config = loadConfig({
+      ORDLER_INSTALL_TOKEN: 'abcd-efgh-ijkl',
+      ORDLER_WEB_DIR: '/app/web',
+    });
+    expect(config).toMatchObject({ installToken: 'abcd-efgh-ijkl', webDir: '/app/web' });
   });
 
   it('rejects both DATABASE_URL and DB_HOST', () => {
@@ -94,8 +106,8 @@ describe('loadConfig', () => {
 describe('secrets and mail', () => {
   const base = { DB_HOST: 'db', ENCRYPTION_KEY: KEY };
 
-  it('requires a 32-byte encryption key', () => {
-    expect(() => loadConfig({ DB_HOST: 'db' })).toThrow(/ENCRYPTION_KEY/);
+  it('requires a 32-byte encryption key when one is given', () => {
+    expect(loadConfig({ DB_HOST: 'db' }).encryptionKey).toBeUndefined();
     expect(() =>
       loadConfig({ DB_HOST: 'db', ENCRYPTION_KEY: Buffer.alloc(16).toString('base64') }),
     ).toThrow(/32 bytes/);
@@ -104,7 +116,7 @@ describe('secrets and mail', () => {
 
   it('reads the encryption key from a file', () => {
     const config = loadConfig({ DB_HOST: 'db', ENCRYPTION_KEY_FILE: '/k' }, () => `${KEY}\n`);
-    expect(config.encryptionKey.length).toBe(32);
+    expect(config.encryptionKey?.length).toBe(32);
   });
 
   it('leaves SMTP unconfigured by default', () => {

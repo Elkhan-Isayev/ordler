@@ -48,6 +48,8 @@ describe('MailSection', () => {
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByRole('status')).toHaveTextContent('Saved');
+    // The typed password does not linger in the form after saving.
+    expect(within(form).getByLabelText('Password')).toHaveValue('');
     expect(calls.find((c) => c.method === 'PUT')!.body).toEqual({
       host: 'smtp.push30.test',
       port: 587,

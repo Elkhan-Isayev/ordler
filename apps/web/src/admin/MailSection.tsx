@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
-import { buttonClass, inputClass, Panel, SectionHeader } from './common.js';
+import { buttonClass, clearSecretField, inputClass, Panel, SectionHeader } from './common.js';
 
 const labelClass = 'flex flex-col gap-1 text-xs text-ink-muted';
 
@@ -29,7 +29,8 @@ export function MailSection({ defaultTestRecipient }: { defaultTestRecipient: st
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const element = event.currentTarget;
+    const form = new FormData(element);
     const text = (name: string) => String(form.get(name) ?? '').trim();
     const password = String(form.get('password') ?? '');
     setError(undefined);
@@ -48,6 +49,7 @@ export function MailSection({ defaultTestRecipient }: { defaultTestRecipient: st
           fromEmail: text('fromEmail'),
         }),
       );
+      clearSecretField(element, 'password');
       setSaved(true);
     } catch (failure) {
       setError(t(errorKey(failure)));

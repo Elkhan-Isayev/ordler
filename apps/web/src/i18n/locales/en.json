@@ -86,7 +86,12 @@
     "owner_only": "Only an Owner can grant or remove the Owner role.",
     "invite_invalid": "This invite link is invalid or has expired.",
     "archived": "This is archived and cannot be changed.",
-    "mail_managed_by_env": "Mail settings come from environment variables and cannot be changed here."
+    "mail_managed_by_env": "Mail settings come from environment variables and cannot be changed here.",
+    "database_managed_by_env": "The database is set by environment variables and cannot be changed here.",
+    "invalid_install_token": "The install token is wrong. Copy it from the Ordler log.",
+    "database_required": "Ordler is waiting for a database connection.",
+    "ssl_ca_required": "Paste the CA certificate to verify the server.",
+    "schema_invalid": "Use lowercase letters, digits and underscores for the schema."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -109,6 +114,7 @@
       "members": "Members",
       "authentication": "Sign-in",
       "mail": "Mail server",
+      "database": "Database",
       "updates": "Updates"
     },
     "departments": {
@@ -224,7 +230,16 @@
       "testRecipient": "Recipient",
       "sendTest": "Send",
       "testSent": "Sent. Check the inbox.",
-      "testFailed": "The mail server refused the message:"
+      "testFailed": "Could not send the test email:"
+    },
+    "database": {
+      "title": "Database",
+      "subtitle": "The PostgreSQL database where Ordler stores all data.",
+      "fromEnv": "Set by DATABASE_URL or DB_* environment variables. Change them in the deployment configuration.",
+      "fromInstaller": "Saved by the installer in the data volume.",
+      "change": "Change connection",
+      "changeWarning": "Ordler does not copy data between databases. Point it at a database that already holds Ordler data (for example, restored from a backup), or at an empty one to start over. Only Owners can change this.",
+      "restartRequired": "Saved. Restart Ordler to use the new connection, e.g. docker compose restart ordler."
     }
   },
   "invite": {
@@ -235,5 +250,37 @@
     "passwordConfirm": "Repeat password",
     "submit": "Join workspace",
     "invalid": "This invite link is invalid or has expired. Ask your administrator for a new one."
+  },
+  "database": {
+    "setupTitle": "Connect a database",
+    "setupSubtitle": "Ordler stores everything in PostgreSQL 18 or newer. Create an empty database and a user that owns it; Ordler creates its tables itself.",
+    "host": "Host",
+    "port": "Port",
+    "name": "Database",
+    "schema": "Schema",
+    "user": "User",
+    "password": "Password",
+    "ssl": "Encryption (SSL)",
+    "ssl_disable": "Off",
+    "ssl_require": "Required",
+    "ssl_verify_full": "Required, verify certificate (recommended for RDS)",
+    "sslCa": "CA certificate (PEM), e.g. the RDS bundle",
+    "serverVersion": "Server version",
+    "installToken": "Install token",
+    "installTokenHint": "Printed in the Ordler log on start, e.g. docker compose logs ordler.",
+    "test": "Test connection",
+    "saveAndContinue": "Save and continue",
+    "connected": "Connected to PostgreSQL {version}.",
+    "starting": "Creating tables and starting Ordler…",
+    "startingHint": "This takes a few seconds. The page continues on its own.",
+    "savedFailed": "Saved database settings no longer work: {reason} Enter them again.",
+    "errors": {
+      "connection_failed": "Cannot reach the database server. Check the host, port and firewall.",
+      "authentication_failed": "The user name or password is wrong.",
+      "database_not_found": "This database does not exist. Create it first.",
+      "tls_failed": "The SSL connection failed. Check the encryption mode and CA certificate.",
+      "postgres_too_old": "Ordler needs PostgreSQL 18 or newer.",
+      "insufficient_privileges": "The user may not create tables in this database. Ask the DBA to run:"
+    }
   }
 }

@@ -53,15 +53,19 @@ export function FormError({ message }: { message: string | undefined }) {
 export function Card({
   title,
   subtitle,
+  wide = false,
   children,
 }: {
   title: string;
   subtitle?: string;
+  wide?: boolean;
   children: ReactNode;
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-sidebar p-4">
-      <section className="flex w-full max-w-sm flex-col gap-5 rounded-xl border border-line bg-surface p-6 shadow-sm">
+      <section
+        className={`flex w-full ${wide ? 'max-w-xl' : 'max-w-sm'} flex-col gap-5 rounded-xl border border-line bg-surface p-6 shadow-sm`}
+      >
         <header className="flex flex-col gap-1">
           <h1 className="text-lg font-semibold text-ink">{title}</h1>
           {subtitle && <p className="text-sm text-ink-muted">{subtitle}</p>}

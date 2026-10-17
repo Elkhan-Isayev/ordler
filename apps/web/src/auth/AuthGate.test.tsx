@@ -17,6 +17,21 @@ describe('AuthGate', () => {
     expect(await screen.findByRole('heading', { name: 'Set up Ordler' })).toBeInTheDocument();
   });
 
+  it('asks for the database while Ordler runs the installer', async () => {
+    mockApi({
+      'GET /api/setup/status': () => ({
+        json: {
+          setupRequired: true,
+          databaseRequired: true,
+          databaseError: 'authentication_failed',
+        },
+      }),
+    });
+    await renderWithI18n(<AuthGate browserLocale="en" />);
+    expect(await screen.findByRole('heading', { name: 'Connect a database' })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('The user name or password is wrong.');
+  });
+
   it('shows sign-in when there is no session', async () => {
     mockApi({
       'GET /api/setup/status': () => ({ json: { setupRequired: false } }),
