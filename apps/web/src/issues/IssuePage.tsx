@@ -1,6 +1,7 @@
 import {
   PRIORITIES,
   teamTopic,
+  type CommentView,
   type IssueDetail,
   type IssueEvent,
   type IssueField,
@@ -17,7 +18,24 @@ import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { useRealtime } from '../realtime/client.js';
 import { Link } from '../router.js';
+import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
+
+type TimelineEntry =
+  | { kind: 'event'; at: string; event: IssueEvent }
+  | { kind: 'comment'; at: string; comment: CommentView };
+
+/** History and comments in one chronological stream, like Linear's activity. */
+export function timeline(issue: IssueDetail): TimelineEntry[] {
+  return [
+    ...issue.events.map((event) => ({ kind: 'event' as const, at: event.createdAt, event })),
+    ...issue.comments.map((comment) => ({
+      kind: 'comment' as const,
+      at: comment.createdAt,
+      comment,
+    })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+}
 
 /** One issue (/issue/HELP-12): editable fields, properties and history, kept live. */
 export function IssuePage({ identifier }: { identifier: string }) {
@@ -59,6 +77,20 @@ export function IssuePage({ identifier }: { identifier: string }) {
     } catch (failure) {
       setError(errorKey(failure));
       void reload();
+    }
+  }
+
+  const upload = team ? (file: File) => api.uploadAttachment(team.key, file) : undefined;
+
+  /** Runs a comment action; the server answers with the fresh issue. */
+  async function run(action: () => Promise<IssueDetail>): Promise<boolean> {
+    try {
+      setIssue(await action());
+      setError(undefined);
+      return true;
+    } catch (failure) {
+      setError(errorKey(failure));
+      return false;
     }
   }
 
@@ -108,25 +140,45 @@ export function IssuePage({ identifier }: { identifier: string }) {
             label={t('issues.description')}
             placeholder={t('issues.descriptionPlaceholder')}
             onCommit={(description) => void save({ description })}
-            onUpload={(file) => api.uploadAttachment(team.key, file)}
+            onUpload={upload}
             onUploadError={(failure) => setError(errorKey(failure))}
           />
-          <section aria-label={t('issues.activity')} className="flex flex-col gap-2">
+          <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
-            <ol className="flex flex-col gap-2 text-sm text-ink-muted">
-              {issue.events.map((event) => (
-                <li key={event.id} className="flex items-start gap-2">
-                  <Avatar member={event.actor} />
-                  <span>
-                    {describeEvent(t, event, team)}
-                    <span className="text-ink-faint">
-                      {' '}
-                      · {formatWhen(event.createdAt, i18n.language)}
+            <ol className="flex flex-col gap-3 text-sm text-ink-muted">
+              {timeline(issue).map((entry) =>
+                entry.kind === 'event' ? (
+                  <li key={entry.event.id} className="flex items-start gap-2">
+                    <Avatar member={entry.event.actor} />
+                    <span>
+                      {describeEvent(t, entry.event, team)}
+                      <span className="text-ink-faint">
+                        {' '}
+                        · {formatWhen(entry.event.createdAt, i18n.language)}
+                      </span>
                     </span>
-                  </span>
-                </li>
-              ))}
+                  </li>
+                ) : (
+                  <li key={entry.comment.id}>
+                    <CommentItem
+                      comment={entry.comment}
+                      onUpload={upload}
+                      onEdit={(body) => run(() => api.editComment(entry.comment.id, body))}
+                      onDelete={async () => {
+                        await run(() => api.deleteComment(entry.comment.id));
+                      }}
+                    />
+                  </li>
+                ),
+              )}
             </ol>
+            {team.can.comment && (
+              <CommentComposer
+                onUpload={upload}
+                onUploadError={(failure) => setError(errorKey(failure))}
+                onSend={(body) => run(() => api.addComment(issue.identifier, body))}
+              />
+            )}
           </section>
         </main>
         <aside
@@ -243,10 +295,4 @@ function statusName(t: TFunction, team: TeamView, id: unknown): string {
 
 function memberName(t: TFunction, team: TeamView, id: unknown): string {
   return team.members.find((m) => m.id === id)?.name ?? t('issues.someone');
-}
-
-function formatWhen(iso: string, language: string): string {
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short' }).format(
-    new Date(iso),
-  );
 }

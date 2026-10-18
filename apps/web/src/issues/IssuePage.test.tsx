@@ -58,7 +58,7 @@ describe('IssuePage', () => {
     mockApi({
       'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
       'GET /api/teams/HELP': () => ({
-        json: { ...TEAM, can: { create: false, update: false, assign: false } },
+        json: { ...TEAM, can: { create: false, update: false, assign: false, comment: false } },
       }),
     });
     await renderWithI18n(<IssuePage identifier="HELP-7" />);

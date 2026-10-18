@@ -77,7 +77,7 @@ export interface TeamView {
   statuses: WorkflowStatus[];
   members: MemberRef[];
   /** What the viewer may do; the server checks every request again. */
-  can: { create: boolean; update: boolean; assign: boolean };
+  can: { create: boolean; update: boolean; assign: boolean; comment: boolean };
 }
 
 export interface IssueSummary {
@@ -109,10 +109,27 @@ export interface IssueEvent {
   createdAt: string;
 }
 
+export const commentBodySchema = z.object({ body: z.string().trim().min(1).max(100_000) });
+
+export interface CommentView {
+  id: string;
+  author: MemberRef | null;
+  /** Markdown; null once deleted, the entry stays so the thread keeps its shape. */
+  body: string | null;
+  createdAt: string;
+  updatedAt: string;
+  edited: boolean;
+  deleted: boolean;
+  /** For the viewer: own comments can be edited; own or any with comment.delete_any deleted. */
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
 export interface IssueDetail extends IssueSummary {
   description: string;
   createdBy: MemberRef | null;
   events: IssueEvent[];
+  comments: CommentView[];
 }
 
 /** Server → browser messages on /api/realtime (SPEC §5.4, ADR 0007). */

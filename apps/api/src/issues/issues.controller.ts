@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Req } from '@nestjs/common';
-import { createIssueSchema, updateIssueSchema } from '@ordler/shared';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Req } from '@nestjs/common';
+import { commentBodySchema, createIssueSchema, updateIssueSchema } from '@ordler/shared';
 import type { AppContext } from '../app-context.js';
 import { APP_CONTEXT, parseBody, type OrdlerRequest } from '../http/http.js';
 import { Authenticated } from '../rbac/permission.guard.js';
@@ -44,6 +44,27 @@ export class IssuesController {
       identifier,
       parseBody(updateIssueSchema, body),
     );
+  }
+
+  @Post('issues/:identifier/comments')
+  comment(
+    @Param('identifier') identifier: string,
+    @Body() body: unknown,
+    @Req() request: OrdlerRequest,
+  ) {
+    const { body: text } = parseBody(commentBodySchema, body);
+    return this.ctx.issues.addComment(request.member!.id, identifier, text);
+  }
+
+  @Patch('comments/:id')
+  editComment(@Param('id') id: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    const { body: text } = parseBody(commentBodySchema, body);
+    return this.ctx.issues.editComment(request.member!.id, id, text);
+  }
+
+  @Delete('comments/:id')
+  deleteComment(@Param('id') id: string, @Req() request: OrdlerRequest) {
+    return this.ctx.issues.deleteComment(request.member!.id, id);
   }
 
   @Get('me/issues')

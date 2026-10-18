@@ -17,7 +17,7 @@ let events: DomainEvent[];
 let departmentId: string;
 let helpdeskId: string;
 
-type Method = 'GET' | 'POST' | 'PATCH' | 'PUT';
+type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 function call(method: Method, url: string, cookie?: string, payload?: object) {
   return t.app.inject({
@@ -99,7 +99,7 @@ describe('team issues', () => {
       ['done', 'completed'],
       ['canceled', 'canceled'],
     ]);
-    expect(team.can).toEqual({ create: true, update: true, assign: true });
+    expect(team.can).toEqual({ create: true, update: true, assign: true, comment: true });
   });
 
   it('numbers issues per team, starts them in the default status and records history', async () => {
@@ -215,6 +215,7 @@ describe('issue permissions', () => {
       create: false,
       update: false,
       assign: false,
+      comment: false,
     });
     expect((await call('GET', '/api/issues/HELP-1', viewer.cookie)).statusCode).toBe(200);
     expect(
@@ -249,5 +250,97 @@ describe('issue permissions', () => {
   it('requires a session', async () => {
     expect((await call('GET', '/api/teams/HELP')).statusCode).toBe(401);
     expect((await call('GET', '/api/me/issues')).statusCode).toBe(401);
+  });
+});
+
+describe('comments', () => {
+  it('adds, edits and deletes own comments, publishing each change', async () => {
+    const ann = await person('ann@push30.test', {
+      role: 'member',
+      scope: { type: 'team', id: helpdeskId },
+      teams: [helpdeskId],
+    });
+    await call('POST', '/api/teams/HELP/issues', owner, { title: 'Printer jam' });
+    events.length = 0;
+
+    const added = await call('POST', '/api/issues/HELP-1/comments', ann.cookie, {
+      body: 'Tried **power cycling**',
+    });
+    expect(added.statusCode).toBe(201);
+    const comment = added.json<IssueDetail>().comments[0]!;
+    expect(comment).toMatchObject({
+      author: { id: ann.id },
+      body: 'Tried **power cycling**',
+      edited: false,
+      canEdit: true,
+      canDelete: true,
+    });
+    expect(events).toHaveLength(1);
+
+    const edited = (
+      await call('PATCH', `/api/comments/${comment.id}`, ann.cookie, { body: 'Fixed it' })
+    ).json<IssueDetail>();
+    expect(edited.comments[0]).toMatchObject({ body: 'Fixed it' });
+
+    const deleted = (
+      await call('DELETE', `/api/comments/${comment.id}`, ann.cookie)
+    ).json<IssueDetail>();
+    expect(deleted.comments[0]).toMatchObject({ deleted: true, body: null, canEdit: false });
+    expect(events).toHaveLength(3);
+  });
+
+  it("never lets anyone edit another person's comment", async () => {
+    await call('POST', '/api/teams/HELP/issues', owner, { title: 'Monitor' });
+    const ann = await person('ann@push30.test', {
+      role: 'member',
+      scope: { type: 'team', id: helpdeskId },
+      teams: [helpdeskId],
+    });
+    const comment = (
+      await call('POST', '/api/issues/HELP-1/comments', ann.cookie, { body: 'Mine' })
+    ).json<IssueDetail>().comments[0]!;
+
+    // The owner holds comment.delete_any but still cannot put words in Ann's mouth.
+    const asOwner = (await call('GET', '/api/issues/HELP-1', owner)).json<IssueDetail>()
+      .comments[0]!;
+    expect(asOwner).toMatchObject({ canEdit: false, canDelete: true });
+    expect(
+      (await call('PATCH', `/api/comments/${comment.id}`, owner, { body: 'x' })).statusCode,
+    ).toBe(403);
+    expect((await call('DELETE', `/api/comments/${comment.id}`, owner)).statusCode).toBe(200);
+  });
+
+  it('lets members delete only their own comments', async () => {
+    await call('POST', '/api/teams/HELP/issues', owner, { title: 'Desk' });
+    const comment = (
+      await call('POST', '/api/issues/HELP-1/comments', owner, { body: 'Owner note' })
+    ).json<IssueDetail>().comments[0]!;
+    const ann = await person('ann@push30.test', {
+      role: 'member',
+      scope: { type: 'team', id: helpdeskId },
+      teams: [helpdeskId],
+    });
+    expect((await call('DELETE', `/api/comments/${comment.id}`, ann.cookie)).statusCode).toBe(403);
+  });
+
+  it('keeps viewers and strangers out', async () => {
+    await call('POST', '/api/teams/HELP/issues', owner, { title: 'Phone' });
+    const comment = (
+      await call('POST', '/api/issues/HELP-1/comments', owner, { body: 'Hello' })
+    ).json<IssueDetail>().comments[0]!;
+    const viewer = await person('vic@push30.test', {
+      role: 'viewer',
+      scope: { type: 'team', id: helpdeskId },
+    });
+    const stranger = await person('sam@push30.test');
+    expect(
+      (await call('POST', '/api/issues/HELP-1/comments', viewer.cookie, { body: 'x' })).statusCode,
+    ).toBe(403);
+    expect((await call('DELETE', `/api/comments/${comment.id}`, stranger.cookie)).statusCode).toBe(
+      404,
+    );
+    expect(
+      (await call('POST', '/api/issues/HELP-1/comments', owner, { body: '  ' })).statusCode,
+    ).toBe(400);
   });
 });

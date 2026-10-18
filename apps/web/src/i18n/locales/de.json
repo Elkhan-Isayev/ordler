@@ -357,5 +357,17 @@
     "uploading": "Wird hochgeladen…",
     "diagram": "Diagramm",
     "diagramError": "Das Diagramm enthält einen Syntaxfehler."
+  },
+  "comments": {
+    "by": "Kommentar von {author}",
+    "edited": "bearbeitet",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirmDelete": "Diesen Kommentar löschen?",
+    "deleted": "Kommentar gelöscht",
+    "save": "Speichern",
+    "new": "Neuer Kommentar",
+    "placeholder": "Kommentar schreiben… Screenshots einfügen oder Dateien hineinziehen.",
+    "send": "Kommentieren"
   }
 }

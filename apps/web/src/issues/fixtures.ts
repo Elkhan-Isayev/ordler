@@ -33,7 +33,7 @@ export const TEAM: TeamView = {
     { id: 'm-ann', name: 'Ann Lee' },
     { id: 'm-bob', name: 'Bob Stone' },
   ],
-  can: { create: true, update: true, assign: true },
+  can: { create: true, update: true, assign: true, comment: true },
 };
 
 export function issue(number: number, overrides: Partial<IssueSummary> = {}): IssueSummary {
@@ -63,6 +63,7 @@ export function detail(number: number, overrides: Partial<IssueDetail> = {}): Is
     ...issue(number),
     description: 'Screen flickers',
     createdBy: { id: 'm-ann', name: 'Ann Lee' },
+    comments: [],
     events: [
       {
         id: 'e1',

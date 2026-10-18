@@ -1,6 +1,7 @@
 import {
   formatIssueIdentifier,
   parseIssueIdentifier,
+  type CommentView,
   type CreateIssueInput,
   type IssueDetail,
   type IssueEvent,
@@ -13,6 +14,7 @@ import { aliasedTable, and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
 import {
+  comments,
   departments,
   issueEvents,
   issues,
@@ -76,7 +78,7 @@ export class IssueService {
       department: department!,
       statuses: await teamStatuses(this.db, team.id),
       members: people,
-      can: { create: can.create, update: can.update, assign: can.assign },
+      can: { create: can.create, update: can.update, assign: can.assign, comment: can.comment },
     };
   }
 
@@ -153,12 +155,12 @@ export class IssueService {
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
-    return this.detailById(issueId);
+    return this.detailById(issueId, memberId);
   }
 
   async get(memberId: string, identifier: string): Promise<IssueDetail> {
     const { issueId } = await this.readableIssue(memberId, identifier);
-    return this.detailById(issueId);
+    return this.detailById(issueId, memberId);
   }
 
   async update(
@@ -204,7 +206,7 @@ export class IssueService {
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
-    return this.detailById(issueId);
+    return this.detailById(issueId, memberId);
   }
 
   /** The issue as a team subscriber sees it; used to fan out realtime updates. */
@@ -217,7 +219,14 @@ export class IssueService {
   async permissionsForTeamId(memberId: string, teamId: string): Promise<TeamPermissions> {
     const [team] = await this.db.select().from(teams).where(eq(teams.id, teamId));
     if (!team || team.archivedAt)
-      return { read: false, create: false, update: false, assign: false };
+      return {
+        read: false,
+        create: false,
+        update: false,
+        assign: false,
+        comment: false,
+        deleteAnyComment: false,
+      };
     return this.deps.access.forTeam(memberId, team);
   }
 
@@ -303,7 +312,64 @@ export class IssueService {
     }));
   }
 
-  private async detailById(issueId: string): Promise<IssueDetail> {
+  async addComment(memberId: string, identifier: string, body: string): Promise<IssueDetail> {
+    const { issueId, team, can } = await this.readableIssue(memberId, identifier);
+    if (!can.comment) throw new DomainError('forbidden');
+    const now = this.now();
+    await this.db.transaction(async (tx) => {
+      await tx.insert(comments).values({
+        subjectType: 'issue',
+        subjectId: issueId,
+        authorId: memberId,
+        body,
+        createdAt: now,
+        updatedAt: now,
+      });
+      // Comments count as activity: boards sort and refresh by updatedAt.
+      await tx.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
+    });
+    await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    return this.detailById(issueId, memberId);
+  }
+
+  async editComment(memberId: string, commentId: string, body: string): Promise<IssueDetail> {
+    const { comment, issueId, team } = await this.readableComment(memberId, commentId);
+    // Only the author may change their words; nobody can rewrite someone else's comment.
+    if (comment.authorId !== memberId || comment.deletedAt) throw new DomainError('forbidden');
+    const now = this.now();
+    await this.db.update(comments).set({ body, updatedAt: now }).where(eq(comments.id, commentId));
+    await this.db.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
+    await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    return this.detailById(issueId, memberId);
+  }
+
+  async deleteComment(memberId: string, commentId: string): Promise<IssueDetail> {
+    const { comment, issueId, team, can } = await this.readableComment(memberId, commentId);
+    if (comment.authorId !== memberId && !can.deleteAnyComment) throw new DomainError('forbidden');
+    if (!comment.deletedAt) {
+      const now = this.now();
+      await this.db.update(comments).set({ deletedAt: now }).where(eq(comments.id, commentId));
+      await this.db.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
+      await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    }
+    return this.detailById(issueId, memberId);
+  }
+
+  private async readableComment(memberId: string, commentId: string) {
+    if (!/^[0-9a-f-]{36}$/.test(commentId)) throw new DomainError('not_found');
+    const [row] = await this.db
+      .select({ comment: comments, team: teams })
+      .from(comments)
+      .innerJoin(issues, eq(issues.id, comments.subjectId))
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(and(eq(comments.id, commentId), eq(comments.subjectType, 'issue')));
+    if (!row || row.team.archivedAt) throw new DomainError('not_found');
+    const can = await this.deps.access.forTeam(memberId, row.team);
+    if (!can.read) throw new DomainError('not_found');
+    return { comment: row.comment, issueId: row.comment.subjectId, team: row.team, can };
+  }
+
+  private async detailById(issueId: string, viewerId: string): Promise<IssueDetail> {
     const summary = (await this.summary(issueId))!;
     const [row] = await this.db
       .select({
@@ -320,8 +386,31 @@ export class IssueService {
       .leftJoin(members, eq(members.id, issueEvents.actorId))
       .where(eq(issueEvents.issueId, issueId))
       .orderBy(asc(issueEvents.createdAt), asc(issueEvents.id));
+    const [issueTeam] = await this.db.select().from(teams).where(eq(teams.id, summary.teamId));
+    const can = await this.deps.access.forTeam(viewerId, issueTeam!);
+    const thread = await this.db
+      .select({ comment: comments, authorName: members.name })
+      .from(comments)
+      .leftJoin(members, eq(members.id, comments.authorId))
+      .where(and(eq(comments.subjectType, 'issue'), eq(comments.subjectId, issueId)))
+      .orderBy(asc(comments.createdAt), asc(comments.id));
     return {
       ...summary,
+      comments: thread.map(({ comment, authorName }): CommentView => {
+        const own = comment.authorId === viewerId;
+        const deleted = comment.deletedAt !== null;
+        return {
+          id: comment.id,
+          author: comment.authorId ? { id: comment.authorId, name: authorName ?? '' } : null,
+          body: deleted ? null : comment.body,
+          createdAt: comment.createdAt.toISOString(),
+          updatedAt: comment.updatedAt.toISOString(),
+          edited: comment.updatedAt.getTime() !== comment.createdAt.getTime(),
+          deleted,
+          canEdit: own && !deleted,
+          canDelete: !deleted && (own || can.deleteAnyComment),
+        };
+      }),
       description: row!.description,
       createdBy: row!.createdBy ? { id: row!.createdBy, name: row!.creatorName ?? '' } : null,
       events: events.map(({ event, actorName }) => ({

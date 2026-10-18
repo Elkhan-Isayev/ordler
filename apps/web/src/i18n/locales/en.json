@@ -357,5 +357,17 @@
     "uploading": "Uploading…",
     "diagram": "Diagram",
     "diagramError": "The diagram has a syntax error."
+  },
+  "comments": {
+    "by": "Comment by {author}",
+    "edited": "edited",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this comment?",
+    "deleted": "Comment deleted",
+    "save": "Save",
+    "new": "New comment",
+    "placeholder": "Leave a comment… Paste screenshots or drop files.",
+    "send": "Comment"
   }
 }

@@ -357,5 +357,17 @@
     "uploading": "Yüklənir…",
     "diagram": "Diaqram",
     "diagramError": "Diaqramda sintaksis xətası var."
+  },
+  "comments": {
+    "by": "Şərh: {author}",
+    "edited": "redaktə edilib",
+    "edit": "Redaktə et",
+    "delete": "Sil",
+    "confirmDelete": "Bu şərh silinsin?",
+    "deleted": "Şərh silinib",
+    "save": "Saxla",
+    "new": "Yeni şərh",
+    "placeholder": "Şərh yazın… Ekran şəklini yapışdırın və ya faylları sürükləyin.",
+    "send": "Göndər"
   }
 }

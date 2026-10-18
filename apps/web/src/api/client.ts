@@ -164,6 +164,15 @@ export const api = {
       body,
     }),
   myIssues: () => apiRequest<IssueSummary[]>('/api/me/issues'),
+  addComment: (identifier: string, body: string) =>
+    apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}/comments`, {
+      method: 'POST',
+      body: { body },
+    }),
+  editComment: (id: string, body: string) =>
+    apiRequest<IssueDetail>(`/api/comments/${id}`, { method: 'PATCH', body: { body } }),
+  deleteComment: (id: string) =>
+    apiRequest<IssueDetail>(`/api/comments/${id}`, { method: 'DELETE' }),
   uploadAttachment: (teamKey: string, file: File) =>
     uploadFile<AttachmentView>(`/api/teams/${encodeURIComponent(teamKey)}/attachments`, file),
   peekInvite: (token: string) =>

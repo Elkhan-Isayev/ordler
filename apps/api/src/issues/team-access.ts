@@ -9,6 +9,8 @@ export interface TeamPermissions {
   create: boolean;
   update: boolean;
   assign: boolean;
+  comment: boolean;
+  deleteAnyComment: boolean;
 }
 
 /**
@@ -39,6 +41,8 @@ export class TeamAccess {
       create: read && has('issue.create'),
       update: read && has('issue.update'),
       assign: read && has('issue.assign'),
+      comment: read && has('comment.create'),
+      deleteAnyComment: read && has('comment.delete_any'),
     };
   }
 

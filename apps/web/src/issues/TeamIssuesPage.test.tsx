@@ -131,7 +131,7 @@ describe('TeamIssuesPage', () => {
     mockApi({
       ...base(),
       'GET /api/teams/HELP': () => ({
-        json: { ...TEAM, can: { create: false, update: false, assign: false } },
+        json: { ...TEAM, can: { create: false, update: false, assign: false, comment: false } },
       }),
     });
     await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);

@@ -415,3 +415,25 @@ export const attachmentContents = pgTable('attachment_contents', {
     .references(() => attachments.id),
   data: bytea('data').notNull(),
 });
+
+/**
+ * Comments on issues (later requests). `internal` matters for requests: requesters never see
+ * internal comments (SPEC §6.2). Deleting keeps the row for history and clears nothing else.
+ */
+export const comments = pgTable(
+  'comments',
+  {
+    id: id(),
+    subjectType: text('subject_type', { enum: ['issue'] }).notNull(),
+    subjectId: uuid('subject_id').notNull(),
+    authorId: uuid('author_id').references(() => members.id),
+    body: text('body').notNull(),
+    visibility: text('visibility', { enum: ['public', 'internal'] })
+      .notNull()
+      .default('public'),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [index('comments_subject_idx').on(t.subjectType, t.subjectId, t.createdAt)],
+);
