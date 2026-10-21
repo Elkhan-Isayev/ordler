@@ -97,7 +97,8 @@
     "status_not_in_workflow": "Dieser Status gehört nicht zum Team.",
     "assignee_not_in_team": "Die zuständige Person muss zum Team gehören.",
     "file_too_large": "Die Datei ist zu groß.",
-    "file_missing": "Wähle eine Datei zum Hochladen."
+    "file_missing": "Wähle eine Datei zum Hochladen.",
+    "not_in_triage": "Diese Aufgabe wurde bereits gesichtet."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -340,7 +341,9 @@
       "title": "Titel → „{to}“",
       "description": "Beschreibung bearbeitet",
       "dueDate": "Fällig am → {to}",
-      "dueDateCleared": "Fälligkeit entfernt"
+      "dueDateCleared": "Fälligkeit entfernt",
+      "accepted": "aus der Sichtung angenommen",
+      "declined": "bei der Sichtung abgelehnt"
     }
   },
   "editor": {
@@ -369,5 +372,11 @@
     "new": "Neuer Kommentar",
     "placeholder": "Kommentar schreiben… Screenshots einfügen oder Dateien hineinziehen.",
     "send": "Kommentieren"
+  },
+  "triage": {
+    "empty": "Nichts zu sichten.",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "reason": "Warum wird abgelehnt?"
   }
 }

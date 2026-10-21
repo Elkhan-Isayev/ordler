@@ -6,6 +6,7 @@ import { UpdateBanner } from './components/UpdateBanner.js';
 import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
+import { TriagePage } from './issues/TriagePage.js';
 import { usePathname } from './router.js';
 
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
@@ -13,6 +14,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const path = usePathname();
   const adminSection = /^\/admin(?:\/([a-z]+))?\/?$/.exec(path);
   const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
+  const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
 
@@ -48,6 +50,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
             teamKey={teamPage[1]!.toUpperCase()}
             view={teamPage[2] === 'board' ? 'board' : 'list'}
           />
+        ) : triagePage ? (
+          <TriagePage key={triagePage[1]} teamKey={triagePage[1]!.toUpperCase()} />
         ) : issuePage ? (
           <IssuePage key={issuePage[1]} identifier={issuePage[1]!.toUpperCase()} />
         ) : path === '/my-issues' ? (

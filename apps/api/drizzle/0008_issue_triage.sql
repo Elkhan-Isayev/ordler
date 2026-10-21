@@ -1,0 +1,1 @@
+ALTER TABLE "issues" ADD COLUMN "in_triage" boolean DEFAULT false NOT NULL;

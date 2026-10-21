@@ -1,6 +1,7 @@
 import type { AdminDepartment } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from '../router.js';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
@@ -138,7 +139,13 @@ function DepartmentCard({
                 <span className="rounded bg-hover px-1.5 py-0.5 font-mono text-xs text-ink-muted">
                   {team.key}
                 </span>
-                <span className="text-ink">{team.name}</span>
+                {team.archivedAt ? (
+                  <span className="text-ink">{team.name}</span>
+                ) : (
+                  <Link href={`/teams/${team.key}/board`} className="text-ink hover:underline">
+                    {team.name}
+                  </Link>
+                )}
                 {team.isPrivate && (
                   <span className="text-xs text-ink-faint">{t('admin.departments.private')}</span>
                 )}

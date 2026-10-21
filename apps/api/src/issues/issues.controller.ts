@@ -1,5 +1,21 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Req } from '@nestjs/common';
-import { commentBodySchema, createIssueSchema, updateIssueSchema } from '@ordler/shared';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
+import {
+  commentBodySchema,
+  createIssueSchema,
+  triageActionSchema,
+  updateIssueSchema,
+} from '@ordler/shared';
 import type { AppContext } from '../app-context.js';
 import { APP_CONTEXT, parseBody, type OrdlerRequest } from '../http/http.js';
 import { Authenticated } from '../rbac/permission.guard.js';
@@ -65,6 +81,25 @@ export class IssuesController {
   @Delete('comments/:id')
   deleteComment(@Param('id') id: string, @Req() request: OrdlerRequest) {
     return this.ctx.issues.deleteComment(request.member!.id, id);
+  }
+
+  @Get('teams/:key/triage')
+  triage(@Param('key') key: string, @Req() request: OrdlerRequest) {
+    return this.ctx.issues.triage(request.member!.id, key);
+  }
+
+  @Post('issues/:identifier/triage')
+  @HttpCode(200)
+  decideTriage(
+    @Param('identifier') identifier: string,
+    @Body() body: unknown,
+    @Req() request: OrdlerRequest,
+  ) {
+    return this.ctx.issues.decideTriage(
+      request.member!.id,
+      identifier,
+      parseBody(triageActionSchema, body),
+    );
   }
 
   @Get('me/issues')

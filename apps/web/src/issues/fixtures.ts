@@ -52,6 +52,7 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     assignee: null,
     dueDate: null,
     sortOrder: -number,
+    inTriage: false,
     createdAt: '2026-10-18T09:00:00.000Z',
     updatedAt: '2026-10-18T09:00:00.000Z',
     ...overrides,

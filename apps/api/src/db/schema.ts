@@ -353,6 +353,8 @@ export const issues = pgTable(
     dueDate: date('due_date'),
     /** Position inside a board column; smaller comes first. */
     sortOrder: doublePrecision('sort_order').notNull().default(0),
+    /** Created by someone outside the team: waits in Triage until accepted (SPEC §5.2). */
+    inTriage: boolean('in_triage').notNull().default(false),
     createdBy: uuid('created_by').references(() => members.id),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

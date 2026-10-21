@@ -344,3 +344,97 @@ describe('comments', () => {
     ).toBe(400);
   });
 });
+
+describe('triage', () => {
+  async function outsider() {
+    // Department-wide Member role: may file issues in Helpdesk without belonging to it.
+    return person('dee@push30.test', {
+      role: 'member',
+      scope: { type: 'department', id: departmentId },
+    });
+  }
+
+  it('makes the team creator a member, so their issues skip triage', async () => {
+    const issue = (
+      await call('POST', '/api/teams/HELP/issues', owner, { title: 'Own work' })
+    ).json<IssueDetail>();
+    expect(issue.inTriage).toBe(false);
+  });
+
+  it('puts issues from outside the team into triage, off the board', async () => {
+    const dee = await outsider();
+    const filed = (
+      await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Need a monitor' })
+    ).json<IssueDetail>();
+    expect(filed.inTriage).toBe(true);
+    expect((await call('GET', '/api/teams/HELP/issues', owner)).json<IssueSummary[]>()).toEqual([]);
+    const triage = (await call('GET', '/api/teams/HELP/triage', owner)).json<IssueSummary[]>();
+    expect(triage.map((i) => i.identifier)).toEqual(['HELP-1']);
+  });
+
+  it('accepts into a status with an assignee and records the decision', async () => {
+    const dee = await outsider();
+    await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Need a monitor' });
+    const me = (await call('GET', '/api/me', owner)).json<{ member: { id: string } }>().member.id;
+    const team = (await call('GET', '/api/teams/HELP', owner)).json<TeamView>();
+    const progress = team.statuses.find((s) => s.key === 'in_progress')!.id;
+    events.length = 0;
+
+    const accepted = await call('POST', '/api/issues/HELP-1/triage', owner, {
+      action: 'accept',
+      statusId: progress,
+      assigneeId: me,
+    });
+    expect(accepted.statusCode).toBe(200);
+    const issue = accepted.json<IssueDetail>();
+    expect(issue).toMatchObject({ inTriage: false, statusId: progress, assignee: { id: me } });
+    expect(issue.events.at(-1)!.changes).toMatchObject({
+      triage: { to: 'accepted' },
+      statusId: { to: progress },
+      assigneeId: { to: me },
+    });
+    expect(events).toHaveLength(1);
+    expect(
+      (await call('GET', '/api/teams/HELP/issues', owner)).json<IssueSummary[]>(),
+    ).toHaveLength(1);
+    // A decided issue cannot be decided again.
+    expect(
+      (await call('POST', '/api/issues/HELP-1/triage', owner, { action: 'accept' })).json(),
+    ).toEqual({
+      error: 'not_in_triage',
+    });
+  });
+
+  it('declines with a reason the filer can read', async () => {
+    const dee = await outsider();
+    await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Buy me a yacht' });
+    const declined = (
+      await call('POST', '/api/issues/HELP-1/triage', owner, {
+        action: 'decline',
+        reason: 'Out of scope',
+      })
+    ).json<IssueDetail>();
+    expect(declined.status.category).toBe('canceled');
+    expect(declined.inTriage).toBe(false);
+    expect(declined.comments.at(-1)).toMatchObject({ body: 'Out of scope' });
+    const seenByDee = (await call('GET', '/api/issues/HELP-1', dee.cookie)).json<IssueDetail>();
+    expect(seenByDee.comments.at(-1)!.body).toBe('Out of scope');
+  });
+
+  it('lets only members who may update issues decide', async () => {
+    const dee = await outsider();
+    await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Chair' });
+    const viewer = await person('vic@push30.test', {
+      role: 'viewer',
+      scope: { type: 'team', id: helpdeskId },
+    });
+    expect(
+      (await call('POST', '/api/issues/HELP-1/triage', viewer.cookie, { action: 'accept' }))
+        .statusCode,
+    ).toBe(403);
+    expect(
+      (await call('POST', '/api/issues/HELP-1/triage', owner, { action: 'decline', reason: ' ' }))
+        .statusCode,
+    ).toBe(400);
+  });
+});

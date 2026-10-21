@@ -45,10 +45,22 @@ export const updateIssueSchema = z
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
 export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;
 
+/** Triage decisions (SPEC §5.2): accept into the workflow, or decline with a reason. */
+export const triageActionSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('accept'),
+    statusId: z.uuid().optional(),
+    assigneeId: z.uuid().nullable().optional(),
+  }),
+  z.object({ action: z.literal('decline'), reason: z.string().trim().min(1).max(2000) }),
+]);
+export type TriageAction = z.infer<typeof triageActionSchema>;
+
 export const ISSUE_ERROR_CODES = [
   'forbidden',
   'status_not_in_workflow',
   'assignee_not_in_team',
+  'not_in_triage',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -93,12 +105,14 @@ export interface IssueSummary {
   assignee: MemberRef | null;
   dueDate: string | null;
   sortOrder: number;
+  /** Waiting in the team's Triage; hidden from the board and list until accepted. */
+  inTriage: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export type IssueField =
-  'title' | 'description' | 'statusId' | 'priority' | 'assigneeId' | 'dueDate';
+  'title' | 'description' | 'statusId' | 'priority' | 'assigneeId' | 'dueDate' | 'triage';
 
 /** One entry of an issue's append-only history. */
 export interface IssueEvent {

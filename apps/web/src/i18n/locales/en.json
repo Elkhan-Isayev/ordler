@@ -97,7 +97,8 @@
     "status_not_in_workflow": "This status does not belong to the team.",
     "assignee_not_in_team": "The assignee must be a member of the team.",
     "file_too_large": "The file is too large.",
-    "file_missing": "Choose a file to upload."
+    "file_missing": "Choose a file to upload.",
+    "not_in_triage": "This issue was already triaged."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -340,7 +341,9 @@
       "title": "title → “{to}”",
       "description": "description edited",
       "dueDate": "due date → {to}",
-      "dueDateCleared": "due date removed"
+      "dueDateCleared": "due date removed",
+      "accepted": "accepted from triage",
+      "declined": "declined in triage"
     }
   },
   "editor": {
@@ -369,5 +372,11 @@
     "new": "New comment",
     "placeholder": "Leave a comment… Paste screenshots or drop files.",
     "send": "Comment"
+  },
+  "triage": {
+    "empty": "Nothing to triage.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "reason": "Why is it declined?"
   }
 }

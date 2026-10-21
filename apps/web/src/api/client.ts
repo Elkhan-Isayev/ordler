@@ -15,6 +15,7 @@ import type {
   IssueDetail,
   IssueSummary,
   TeamView,
+  TriageAction,
   UpdateIssueInput,
   MailSettingsView,
   MeResponse,
@@ -164,6 +165,13 @@ export const api = {
       body,
     }),
   myIssues: () => apiRequest<IssueSummary[]>('/api/me/issues'),
+  teamTriage: (key: string) =>
+    apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/triage`),
+  decideTriage: (identifier: string, body: TriageAction) =>
+    apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}/triage`, {
+      method: 'POST',
+      body,
+    }),
   addComment: (identifier: string, body: string) =>
     apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}/comments`, {
       method: 'POST',

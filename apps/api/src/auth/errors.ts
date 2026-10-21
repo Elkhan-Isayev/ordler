@@ -35,6 +35,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   forbidden: 403,
   status_not_in_workflow: 400,
   assignee_not_in_team: 400,
+  not_in_triage: 409,
   file_too_large: 413,
   file_missing: 400,
 };

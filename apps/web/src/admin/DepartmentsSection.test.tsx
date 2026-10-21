@@ -15,6 +15,10 @@ describe('DepartmentsSection', () => {
     expect(await screen.findByRole('heading', { name: 'IT' })).toBeInTheDocument();
     expect(screen.getByText('HELP')).toBeInTheDocument();
     expect(screen.getByText('2 members')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Helpdesk' })).toHaveAttribute(
+      'href',
+      '/teams/HELP/board',
+    );
   });
 
   it('creates a department and a team with an upper-cased key', async () => {

@@ -75,7 +75,8 @@ describe('departments and teams', () => {
       expect.objectContaining({
         name: 'IT Ops',
         archivedAt: null,
-        teams: [expect.objectContaining({ key: 'HELP', name: 'Helpdesk', memberCount: 0 })],
+        // The creator joins the team they create.
+        teams: [expect.objectContaining({ key: 'HELP', name: 'Helpdesk', memberCount: 1 })],
       }),
     ]);
 

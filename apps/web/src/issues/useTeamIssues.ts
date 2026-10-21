@@ -136,5 +136,6 @@ export function useTeamIssues(key: string): TeamIssues {
     [key],
   );
 
-  return { team, issues, error, update, create };
+  // Triage issues live on their own page until a member accepts them.
+  return { team, issues: issues.filter((issue) => !issue.inTriage), error, update, create };
 }

@@ -110,6 +110,13 @@ export class OrgService {
       .values({ departmentId, name: input.name, key: input.key, isPrivate: input.isPrivate })
       .returning();
     await ensureTeamWorkflow(this.db, row!.id);
+    // Like Linear, whoever creates a team joins it, so it shows up in their sidebar.
+    if (actor.type === 'member' && actor.id) {
+      await this.db
+        .insert(teamMemberships)
+        .values({ teamId: row!.id, memberId: actor.id })
+        .onConflictDoNothing();
+    }
     await writeAudit(this.db, {
       actor,
       action: 'team.created',

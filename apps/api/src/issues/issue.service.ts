@@ -8,6 +8,7 @@ import {
   type IssueField,
   type IssueSummary,
   type TeamView,
+  type TriageAction,
   type UpdateIssueInput,
 } from '@ordler/shared';
 import { aliasedTable, and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
@@ -31,7 +32,8 @@ type TeamRow = typeof teams.$inferSelect;
 
 const assignee = aliasedTable(members, 'assignee');
 
-const TRACKED: IssueField[] = [
+// Triage is recorded by its own action, not by field updates.
+const TRACKED: Array<Exclude<IssueField, 'triage'>> = [
   'title',
   'description',
   'statusId',
@@ -84,7 +86,78 @@ export class IssueService {
 
   async list(memberId: string, key: string): Promise<IssueSummary[]> {
     const { team } = await this.readableTeam(memberId, key);
-    return this.summaries(and(eq(issues.teamId, team.id), isNull(issues.archivedAt)));
+    return this.summaries(
+      and(eq(issues.teamId, team.id), isNull(issues.archivedAt), eq(issues.inTriage, false)),
+    );
+  }
+
+  /** Issues from outside the team waiting for a decision (SPEC §5.2). */
+  async triage(memberId: string, key: string): Promise<IssueSummary[]> {
+    const { team } = await this.readableTeam(memberId, key);
+    return this.summaries(
+      and(eq(issues.teamId, team.id), isNull(issues.archivedAt), eq(issues.inTriage, true)),
+    );
+  }
+
+  async decideTriage(
+    memberId: string,
+    identifier: string,
+    decision: TriageAction,
+  ): Promise<IssueDetail> {
+    const { issueId, team, can } = await this.readableIssue(memberId, identifier);
+    if (!can.update) throw new DomainError('forbidden');
+    const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
+    if (!before!.inTriage) throw new DomainError('not_in_triage');
+
+    const statuses = await teamStatuses(this.db, team.id);
+    const changes: IssueEvent['changes'] = {};
+    const patch: Partial<typeof issues.$inferInsert> = { inTriage: false };
+    if (decision.action === 'accept') {
+      changes.triage = { from: 'pending', to: 'accepted' };
+      if (decision.statusId !== undefined) {
+        if (!statuses.some((s) => s.id === decision.statusId))
+          throw new DomainError('status_not_in_workflow');
+        patch.statusId = decision.statusId;
+      }
+      if (decision.assigneeId !== undefined) {
+        if (!can.assign) throw new DomainError('forbidden');
+        if (decision.assigneeId) await this.assertTeamMember(team.id, decision.assigneeId);
+        patch.assigneeId = decision.assigneeId;
+      }
+    } else {
+      changes.triage = { from: 'pending', to: 'declined' };
+      patch.statusId = statuses.find((s) => s.category === 'canceled')!.id;
+    }
+    if (patch.statusId && patch.statusId !== before!.statusId) {
+      changes.statusId = { from: before!.statusId, to: patch.statusId };
+    }
+    if (patch.assigneeId !== undefined && patch.assigneeId !== before!.assigneeId) {
+      changes.assigneeId = { from: before!.assigneeId, to: patch.assigneeId };
+    }
+
+    const now = this.now();
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(issues)
+        .set({ ...patch, updatedAt: now })
+        .where(eq(issues.id, issueId));
+      await tx
+        .insert(issueEvents)
+        .values({ issueId, actorId: memberId, kind: 'updated', changes, createdAt: now });
+      if (decision.action === 'decline') {
+        // The reason stays with the issue, so whoever filed it can read why.
+        await tx.insert(comments).values({
+          subjectType: 'issue',
+          subjectId: issueId,
+          authorId: memberId,
+          body: decision.reason,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    });
+    await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    return this.detailById(issueId, memberId);
   }
 
   /** My issues: assigned to me, across every team I can still read. */
@@ -115,6 +188,8 @@ export class IssueService {
     if (input.assigneeId) await this.assertTeamMember(team.id, input.assigneeId);
 
     const now = this.now();
+    // Issues from outside the team wait in Triage until a member accepts them.
+    const inTriage = !(await this.isTeamMember(team.id, memberId));
     const issueId = await this.db.transaction(async (tx) => {
       // The row lock on the team serialises numbering: identifiers never repeat or skip.
       const [counter] = await tx
@@ -139,6 +214,7 @@ export class IssueService {
           dueDate: input.dueDate,
           // New issues go to the top of their column.
           sortOrder: (top?.min ?? 1) - 1,
+          inTriage,
           createdBy: memberId,
           createdAt: now,
           updatedAt: now,
@@ -260,6 +336,14 @@ export class IssueService {
     return { issueId: row.id, team, can };
   }
 
+  private async isTeamMember(teamId: string, memberId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: teamMemberships.memberId })
+      .from(teamMemberships)
+      .where(and(eq(teamMemberships.teamId, teamId), eq(teamMemberships.memberId, memberId)));
+    return row !== undefined;
+  }
+
   private async assertTeamMember(teamId: string, memberId: string): Promise<void> {
     const [row] = await this.db
       .select({ id: members.id })
@@ -307,6 +391,7 @@ export class IssueService {
       assignee: issue.assigneeId ? { id: issue.assigneeId, name: assigneeName ?? '' } : null,
       dueDate: issue.dueDate,
       sortOrder: issue.sortOrder,
+      inTriage: issue.inTriage,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
