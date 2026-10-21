@@ -355,6 +355,8 @@ export const issues = pgTable(
     sortOrder: doublePrecision('sort_order').notNull().default(0),
     /** Created by someone outside the team: waits in Triage until accepted (SPEC §5.2). */
     inTriage: boolean('in_triage').notNull().default(false),
+    /** The request this issue was spawned from or linked to (SPEC §6.2). */
+    sourceRequestId: uuid('source_request_id'),
     createdBy: uuid('created_by').references(() => members.id),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -426,7 +428,7 @@ export const comments = pgTable(
   'comments',
   {
     id: id(),
-    subjectType: text('subject_type', { enum: ['issue'] }).notNull(),
+    subjectType: text('subject_type', { enum: ['issue', 'request'] }).notNull(),
     subjectId: uuid('subject_id').notNull(),
     authorId: uuid('author_id').references(() => members.id),
     body: text('body').notNull(),
@@ -438,4 +440,164 @@ export const comments = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [index('comments_subject_idx').on(t.subjectType, t.subjectId, t.createdAt)],
+);
+
+/** Named counters for instance-wide numbers (REQ-57, REQ-G-12); bumped under a row lock. */
+export const counters = pgTable('counters', {
+  name: text('name').primaryKey(),
+  value: integer('value').notNull().default(0),
+});
+
+/** What a department offers in its service portal (SPEC §6.1). */
+export const requestTypes = pgTable(
+  'request_types',
+  {
+    id: id(),
+    departmentId: uuid('department_id')
+      .notNull()
+      .references(() => departments.id),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    category: text('category'),
+    fields: jsonb('fields').notNull().default([]),
+    targetTeamId: uuid('target_team_id')
+      .notNull()
+      .references(() => teams.id),
+    /** Mandatory approval steps, in order: [{ selector, rule }]. */
+    approvalSteps: jsonb('approval_steps').notNull().default([]),
+    allowRequesterApprovals: boolean('allow_requester_approvals').notNull().default(false),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('request_types_department_idx').on(t.departmentId)],
+);
+
+/** One request to several departments; each department gets a child request (SPEC §6.4). */
+export const requestGroups = pgTable('request_groups', {
+  id: id(),
+  number: integer('number').notNull().unique(),
+  requesterId: uuid('requester_id').references(() => members.id),
+  title: text('title').notNull(),
+  createdAt: createdAt(),
+});
+
+export const requests = pgTable(
+  'requests',
+  {
+    id: id(),
+    number: integer('number').notNull().unique(),
+    groupId: uuid('group_id').references(() => requestGroups.id),
+    requestTypeId: uuid('request_type_id')
+      .notNull()
+      .references(() => requestTypes.id),
+    requesterId: uuid('requester_id').references(() => members.id),
+    requesterDepartmentId: uuid('requester_department_id').references(() => departments.id),
+    targetDepartmentId: uuid('target_department_id')
+      .notNull()
+      .references(() => departments.id),
+    targetTeamId: uuid('target_team_id')
+      .notNull()
+      .references(() => teams.id),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    formData: jsonb('form_data').notNull().default({}),
+    status: text('status', {
+      enum: [
+        'pending_approval',
+        'changes_requested',
+        'rejected',
+        'open',
+        'in_progress',
+        'waiting_for_requester',
+        'resolved',
+        'closed',
+        'declined',
+      ],
+    }).notNull(),
+    priority: text('priority', { enum: ['none', 'urgent', 'high', 'medium', 'low'] })
+      .notNull()
+      .default('none'),
+    assigneeId: uuid('assignee_id').references(() => members.id),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('requests_requester_idx').on(t.requesterId),
+    index('requests_target_team_idx').on(t.targetTeamId, t.status),
+    index('requests_group_idx').on(t.groupId),
+  ],
+);
+
+/**
+ * Approval steps of a request, or of a request group (run before any child is released).
+ * The resolved approver list is frozen at activation (SPEC §6.3).
+ */
+export const approvalSteps = pgTable(
+  'approval_steps',
+  {
+    id: id(),
+    requestId: uuid('request_id').references(() => requests.id),
+    groupId: uuid('group_id').references(() => requestGroups.id),
+    position: integer('position').notNull(),
+    origin: text('origin', { enum: ['mandatory', 'requester_added'] }).notNull(),
+    selector: jsonb('selector').notNull(),
+    rule: text('rule', { enum: ['any', 'all'] })
+      .notNull()
+      .default('any'),
+    status: text('status', {
+      enum: ['waiting', 'active', 'approved', 'rejected', 'changes_requested'],
+    })
+      .notNull()
+      .default('waiting'),
+    resolvedApproverIds: uuid('resolved_approver_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('approval_steps_request_idx').on(t.requestId),
+    index('approval_steps_group_idx').on(t.groupId),
+    check('approval_steps_owner', sql`(${t.requestId} is null) <> (${t.groupId} is null)`),
+  ],
+);
+
+/** Every approval decision, append-only: never updated or deleted (SPEC §6.3). */
+export const approvalDecisions = pgTable(
+  'approval_decisions',
+  {
+    id: id(),
+    stepId: uuid('step_id')
+      .notNull()
+      .references(() => approvalSteps.id),
+    approverId: uuid('approver_id')
+      .notNull()
+      .references(() => members.id),
+    decision: text('decision', { enum: ['approve', 'reject', 'request_changes'] }).notNull(),
+    comment: text('comment'),
+    /** SHA-256 of the request content the approver saw. */
+    snapshotHash: text('snapshot_hash').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('approval_decisions_step_idx').on(t.stepId)],
+);
+
+/** Append-only request history: submissions, approvals, status changes. */
+export const requestEvents = pgTable(
+  'request_events',
+  {
+    id: id(),
+    requestId: uuid('request_id')
+      .notNull()
+      .references(() => requests.id),
+    actorId: uuid('actor_id').references(() => members.id),
+    kind: text('kind').notNull(),
+    data: jsonb('data').notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [index('request_events_request_idx').on(t.requestId, t.createdAt)],
 );

@@ -17,6 +17,9 @@ import {
 } from './install/database-settings.service.js';
 import { AttachmentService } from './attachments/attachment.service.js';
 import { IssueService } from './issues/issue.service.js';
+import { RequestService } from './requests/request.service.js';
+import { RequestTypeService } from './requests/request-types.service.js';
+import { silentNotifier, type Notifier } from './notifications/notifier.js';
 import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
 import { LocalEventBus, type EventBus } from './realtime/event-bus.js';
@@ -53,6 +56,8 @@ export interface AppContext {
   database: DatabaseSettingsService;
   issues: IssueService;
   attachments: AttachmentService;
+  requestTypes: RequestTypeService;
+  requests: RequestService;
   events: EventBus;
   realtime: RealtimeHub;
   limits: {
@@ -76,6 +81,8 @@ export interface AppContextDeps {
   databaseSettings: Omit<DatabaseSettingsDeps, 'db'>;
   /** Fans domain events out to every replica; PostgreSQL LISTEN/NOTIFY in production. */
   events?: EventBus;
+  /** Who hears about approvals, assignments and comments; Inbox, email and Slack in production. */
+  notifier?: Notifier;
   /** Upload limit per attachment in bytes (ATTACHMENT_MAX_MB). */
   attachmentMaxBytes?: number;
   /** How often open sockets are pinged and their sessions re-checked. */
@@ -154,6 +161,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     mail,
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     issues,
+    requestTypes: new RequestTypeService(deps.db, access),
+    requests: new RequestService({
+      db: deps.db,
+      access,
+      teamAccess,
+      issues,
+      notifier: deps.notifier ?? silentNotifier,
+      now,
+    }),
     attachments: new AttachmentService(
       deps.db,
       teamAccess,

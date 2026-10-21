@@ -4,7 +4,13 @@ import { teamKeySchema } from './schemas.js';
 
 const nameSchema = z.string().trim().min(1).max(120);
 
-export const updateDepartmentSchema = z.object({ name: nameSchema }).partial();
+export const updateDepartmentSchema = z
+  .object({
+    name: nameSchema,
+    /** Department head; the `department_head` approver selector resolves to them. */
+    headMemberId: z.uuid().nullable(),
+  })
+  .partial();
 
 /** Team creation under `/departments/:departmentId/teams`; the department comes from the URL. */
 export const createTeamBodySchema = z.object({
@@ -68,6 +74,7 @@ export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 export interface AdminDepartment {
   id: string;
   name: string;
+  headMemberId: string | null;
   archivedAt: string | null;
   teams: Array<{
     id: string;

@@ -26,6 +26,8 @@ export const REQUIRED_PERMISSION = 'ordler:required-permission';
 /** The authenticated member, attached to the request by the session hook. */
 export interface RequestMember {
   id: string;
+  /** Set when a personal access token authenticated the call; null for browser sessions. */
+  tokenName?: string;
   /** How the current session was established; used by lock-out protection. */
   strategyKind?: AuthStrategyKind;
 }

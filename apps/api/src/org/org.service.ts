@@ -3,7 +3,7 @@ import { asc, count, eq, isNull, sql } from 'drizzle-orm';
 import { writeAudit, type AuditActor } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
-import { departments, teamMemberships, teams } from '../db/schema.js';
+import { departments, members, teamMemberships, teams } from '../db/schema.js';
 import { ensureTeamWorkflow } from '../issues/workflows.js';
 
 /** Departments and their teams (SPEC §3, admin panel §8). */
@@ -30,6 +30,7 @@ export class OrgService {
     return deptRows.map((dept) => ({
       id: dept.id,
       name: dept.name,
+      headMemberId: dept.headMemberId,
       archivedAt: dept.archivedAt?.toISOString() ?? null,
       teams: teamRows
         .filter((team) => team.departmentId === dept.id)
@@ -57,18 +58,35 @@ export class OrgService {
     return row!.id;
   }
 
-  async updateDepartment(id: string, input: { name?: string | undefined }, actor: AuditActor) {
+  async updateDepartment(
+    id: string,
+    input: { name?: string | undefined; headMemberId?: string | null | undefined },
+    actor: AuditActor,
+  ) {
     const before = await this.department(id);
     if (input.name !== undefined && input.name !== before.name) {
       await this.assertDepartmentNameFree(input.name);
       await this.db.update(departments).set({ name: input.name }).where(eq(departments.id, id));
+    }
+    if (input.headMemberId !== undefined) {
+      if (input.headMemberId) {
+        const [member] = await this.db
+          .select({ id: members.id })
+          .from(members)
+          .where(eq(members.id, input.headMemberId));
+        if (!member) throw new DomainError('validation_failed');
+      }
+      await this.db
+        .update(departments)
+        .set({ headMemberId: input.headMemberId })
+        .where(eq(departments.id, id));
     }
     await writeAudit(this.db, {
       actor,
       action: 'department.updated',
       targetType: 'department',
       targetId: id,
-      before: { name: before.name },
+      before: { name: before.name, headMemberId: before.headMemberId },
       after: input,
     });
   }

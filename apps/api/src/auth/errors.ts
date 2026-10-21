@@ -3,9 +3,11 @@ import type {
   AttachmentErrorCode,
   AuthErrorCode,
   IssueErrorCode,
+  RequestErrorCode,
 } from '@ordler/shared';
 
-export type DomainErrorCode = AuthErrorCode | AdminErrorCode | IssueErrorCode | AttachmentErrorCode;
+export type DomainErrorCode =
+  AuthErrorCode | AdminErrorCode | IssueErrorCode | AttachmentErrorCode | RequestErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -38,6 +40,14 @@ const STATUS: Record<DomainErrorCode, number> = {
   not_in_triage: 409,
   file_too_large: 413,
   file_missing: 400,
+  form_invalid: 400,
+  approvals_not_allowed: 400,
+  not_an_approver: 403,
+  already_decided: 409,
+  step_not_active: 409,
+  invalid_transition: 409,
+  session_required: 403,
+  request_type_archived: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

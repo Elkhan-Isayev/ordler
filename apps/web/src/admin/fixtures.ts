@@ -7,6 +7,7 @@ export const DEPARTMENTS: AdminDepartment[] = [
   {
     id: DEPT_ID,
     name: 'IT',
+    headMemberId: null,
     archivedAt: null,
     teams: [
       {
