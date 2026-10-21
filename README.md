@@ -13,7 +13,7 @@ self-hosted on your own infrastructure.
 ![Node.js 24](https://img.shields.io/badge/node-24_LTS-5fa04e)
 ![PostgreSQL 18+](https://img.shields.io/badge/postgresql-18%2B-336791)
 ![Languages](https://img.shields.io/badge/i18n-en_·_ru_·_de_·_az-8b3fbf)
-![Status](https://img.shields.io/badge/status-phase_1_in_progress-orange)
+![Status](https://img.shields.io/badge/status-MVP_feature--complete-green)
 
 [Specification](docs/SPEC.md) ·
 [Architecture decisions](docs/adr/) ·
@@ -42,26 +42,29 @@ and a service desk for requests between departments. Ordler is both, in one plac
 
 ## Features
 
-|     | Feature                                                                                                                                                       | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: |
-| 🧭  | **Setup wizard**: first run creates the workspace and the first Owner                                                                                         |   ✅   |
-| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google (OIDC); per-strategy self-registration and domain allow-lists, Wiki.js-style             |   ✅   |
-| 🛡️  | **RBAC**: permission catalog, system and custom roles, grants at organization, department or team scope, deny-by-default API                                  |   ✅   |
-| 🏢  | **Admin panel**: departments and teams, member invites with one-time links, roles per scope, team membership, sign-in methods, mail server, database, updates |   ✅   |
-| 🌍  | **Four languages** from day one: English, Русский, Deutsch, Azərbaycanca                                                                                      |   ✅   |
-| 🔔  | **Update notifications**: admins see new GitHub releases with step-by-step upgrade instructions                                                               |   ✅   |
-| 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection                                                                 |   ✅   |
-| 🐳  | **One Docker image, Compose and Helm chart**: needs only an empty PostgreSQL 18 database, the install page does the rest                                      |   ✅   |
-| ✅  | **Team issues** (Linear-style): per-team identifiers, default workflow, priority, assignee, due date, history, list and drag-and-drop board                   |   ✅   |
-| ⚡  | **Live updates**: changes appear in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                    |   ✅   |
-| 🖼   | **Rich text** in issues: formatting, pasted screenshots and files, Mermaid diagrams; files stored in PostgreSQL, so restarts lose nothing                     |   ✅   |
-| 🗂   | **Triage, comments, labels, workflow editor, cycles**                                                                                                         |   🗓    |
-| 📨  | **Service portals and requests** between departments, including several departments at once                                                                   |   🗓    |
-| ✍️  | **Approval chains**: sequential steps, any/all/quorum, approvers by role, department or manager                                                               |   🗓    |
-| 💬  | **Slack notifications** via webhook, later a full Slack app                                                                                                   |   🗓    |
-| 🤖  | **MCP server** with personal access tokens, so AI agents work as you                                                                                          |   🗓    |
+|     | Feature                                                                                                                                                                                 |  Status   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------: |
+| 🧭  | **Setup wizard**: first run creates the workspace and the first Owner                                                                                                                   |    ✅     |
+| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google (OIDC); per-strategy self-registration and domain allow-lists, Wiki.js-style                                       |    ✅     |
+| 🛡️  | **RBAC**: permission catalog, system and custom roles, grants at organization, department or team scope, deny-by-default API                                                            |    ✅     |
+| 🏢  | **Admin panel**: departments and teams, invites, roles, sign-in methods, mail server, database, updates, access tokens, read-only audit log                                             |    ✅     |
+| 🌍  | **Four languages** from day one: English, Русский, Deutsch, Azərbaycanca                                                                                                                |    ✅     |
+| ✅  | **Team issues** (Linear-style): per-team identifiers, priority, assignee, due date, labels, sub-issues, history, list and drag-and-drop board, filters kept in the URL                  |    ✅     |
+| 🗂   | **Team settings**: workflow editor (add, rename, reorder, default status), labels, Slack channels                                                                                       |    ✅     |
+| 📥  | **Triage**: issues from outside the team wait for accept, decline or duplicate                                                                                                          |    ✅     |
+| 🖼   | **Rich text**: formatting, pasted screenshots and files, Mermaid diagrams, comments; files stored in PostgreSQL, so restarts lose nothing                                               |    ✅     |
+| 🔎  | **Search** with Ctrl/Cmd+K across issues and requests you may open                                                                                                                      |    ✅     |
+| 📨  | **Service portals and requests** between departments, including one request to several departments                                                                                      |    ✅     |
+| ✍️  | **Approval chains**: sequential steps, any/all rules, approvers by person, role in a department, department head or the requester's supervisor; requester-added steps; no self-approval |    ✅     |
+| ⚡  | **Live updates**: boards, requests and badges change in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                          |    ✅     |
+| 🔔  | **Inbox and email notifications**: assignments, approvals, replies, with deep links                                                                                                     |    ✅     |
+| 💬  | **Slack channel notifications** via incoming webhooks, per team                                                                                                                         |    ✅     |
+| 🤖  | **MCP server** with personal access tokens, so AI agents work as you (and never approve for you)                                                                                        |    ✅     |
+| 🧱  | **Data-safe upgrades**: transactional migrations, destructive-SQL guard, downgrade protection; in-app release notifications                                                             |    ✅     |
+| 🐳  | **One Docker image, Compose and Helm chart**: needs only an empty PostgreSQL 18 database, the install page does the rest                                                                |    ✅     |
+| ⏱   | **SLA, cycles, projects, saved views, Slack app, public REST API**                                                                                                                      | 🗓 Phase 2 |
 
-✅ shipped · 🚧 in progress · 🗓 planned for Phase 1 — see the [roadmap](docs/SPEC.md#14-delivery-phases).
+✅ shipped · 🗓 planned — see the [roadmap](docs/SPEC.md#14-delivery-phases).
 
 ## Screenshots
 
@@ -102,28 +105,27 @@ the requester can never approve their own request.
 ```mermaid
 flowchart LR
     browser([Browser · React SPA]) --> ingress[Ingress / TLS]
-    agent([AI agent · MCP]) --> ingress
-    ingress --> web[Ordler web role<br/>REST · MCP · WebSocket]
-    worker[Ordler worker role<br/>notifications · SLA · webhooks] --> pg
-    web --> pg[(PostgreSQL 18+<br/>data · jobs · LISTEN/NOTIFY)]
-    web --> files[(Volume or S3)]
-    worker --> smtp[SMTP]
-    worker --> slack[Slack]
-    web --> idp[Google / OIDC]
+    agent([AI agent · MCP client]) --> ingress
+    ingress --> app[Ordler replicas<br/>REST · /mcp · WebSocket]
+    app --> pg[(PostgreSQL 18+<br/>data · files · LISTEN/NOTIFY)]
+    app --> smtp[SMTP]
+    app --> slack[Slack webhooks]
+    app --> idp[Google / OIDC]
 ```
 
 One container image, stateless replicas, and **PostgreSQL as the only required service** —
-no Redis, no message broker. Details: [SPEC §12](docs/SPEC.md#12-architecture) and
-[ADR 0001](docs/adr/0001-tech-stack.md).
+no Redis, no message broker, no object storage. Details: [SPEC §12](docs/SPEC.md#12-architecture),
+[ADR 0001](docs/adr/0001-tech-stack.md), [ADR 0007](docs/adr/0007-realtime-updates.md),
+[ADR 0009](docs/adr/0009-personal-tokens-and-mcp.md).
 
-| Layer    | Technology                                                   |
-| -------- | ------------------------------------------------------------ |
-| Web      | React 19, Vite, Tailwind CSS, i18next with ICU MessageFormat |
-| API      | NestJS 11 on Fastify, Zod validation, Drizzle ORM            |
-| Database | PostgreSQL 18 (`uuidv7()` keys), pg-boss jobs, LISTEN/NOTIFY |
-| Auth     | Argon2id (Node built-in), opaque sessions, OIDC via `jose`   |
-| Tests    | Vitest, Testing Library, PGlite (real PostgreSQL 18 in WASM) |
-| Tooling  | TypeScript strict, pnpm + Turborepo, ESLint, Prettier        |
+| Layer    | Technology                                                       |
+| -------- | ---------------------------------------------------------------- |
+| Web      | React 19, Vite, Tailwind CSS, Tiptap, Mermaid, i18next (ICU)     |
+| API      | NestJS 11 on Fastify, Zod validation, Drizzle ORM                |
+| Database | PostgreSQL 18 (`uuidv7()` keys), LISTEN/NOTIFY, files as `bytea` |
+| Auth     | Argon2id (Node built-in), opaque sessions, OIDC via `jose`       |
+| Tests    | Vitest, Testing Library, PGlite (real PostgreSQL 18 in WASM)     |
+| Tooling  | TypeScript strict, pnpm + Turborepo, ESLint, Prettier            |
 
 ## Getting started
 
@@ -210,8 +212,10 @@ Take a database snapshot first; it is the one step Ordler cannot do for you.
 
 - Server-side authorization on every request, from a single permission catalog
 - Argon2id passwords, opaque `HttpOnly` sessions, SameSite cookies plus an Origin check
-- OAuth client secrets and SMTP passwords encrypted at rest (AES-256-GCM), never returned by
-  the API, redacted from logs and the audit log
+- OAuth client secrets, SMTP passwords and Slack webhook URLs encrypted at rest (AES-256-GCM),
+  never returned by the API, redacted from logs and the audit log
+- Personal access tokens stored only as hashes, scoped, expiring and revocable; they work only
+  on `/mcp` and can never decide approvals
 - Rate limits on sign-in; one-time codes expire after 10 minutes and lock after 5 attempts
 - Nothing leaves your installation except the optional release check, SMTP and the identity
   providers you configure
@@ -222,8 +226,9 @@ Found a vulnerability? Please report it privately through GitHub security adviso
 
 ```
 apps/
-  api/        NestJS API: auth, RBAC, setup, updates, migrations (drizzle/)
-  web/        React SPA: setup wizard, sign-in, workspace shell
+  api/        NestJS API: auth, RBAC, issues, requests, approvals, notifications, MCP,
+              realtime, migrations (drizzle/)
+  web/        React SPA: setup, sign-in, issues, portals, approvals, inbox, admin
 packages/
   shared/     Permission catalog, roles, RBAC resolution, schemas, API types
 docs/

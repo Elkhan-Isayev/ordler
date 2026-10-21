@@ -2,8 +2,8 @@ apiVersion: v2
 name: ordler
 description: Task management inside and between departments, with cross-department approvals.
 type: application
-version: 0.1.0
-appVersion: '0.1.0'
+version: 0.2.0
+appVersion: '0.2.0'
 license: AGPL-3.0-only
 home: https://github.com/Elkhan-Isayev/ordler
 sources:
