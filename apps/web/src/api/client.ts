@@ -3,6 +3,8 @@ import type {
   AdminMember,
   AdminRole,
   ApiErrorBody,
+  AuditPage,
+  RoleInput,
   ChatSubscriptionInput,
   CreatedToken,
   CreateTokenInput,
@@ -253,6 +255,17 @@ export const api = {
     apiRequest<TokenSettings>('/api/admin/tokens/settings', { method: 'PUT', body }),
   adminRevokeToken: (id: string) =>
     apiRequest<void>(`/api/admin/tokens/${id}`, { method: 'DELETE' }),
+  createRole: (body: RoleInput) =>
+    apiRequest<AdminRole>('/api/admin/roles', { method: 'POST', body }),
+  updateRole: (id: string, body: RoleInput) =>
+    apiRequest<AdminRole>(`/api/admin/roles/${id}`, { method: 'PUT', body }),
+  deleteRole: (id: string) => apiRequest<void>(`/api/admin/roles/${id}`, { method: 'DELETE' }),
+  audit: (filters: Record<string, string | undefined>) => {
+    const query = new URLSearchParams(
+      Object.entries(filters).filter((entry): entry is [string, string] => Boolean(entry[1])),
+    ).toString();
+    return apiRequest<AuditPage>(`/api/admin/audit${query ? `?${query}` : ''}`);
+  },
   myRequests: () => apiRequest<RequestSummary[]>('/api/me/requests'),
   myApprovals: () => apiRequest<PendingApproval[]>('/api/me/approvals'),
   teamRequests: (key: string) =>

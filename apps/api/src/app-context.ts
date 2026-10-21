@@ -21,6 +21,8 @@ import { RequestService } from './requests/request.service.js';
 import { RequestTypeService } from './requests/request-types.service.js';
 import { NotificationService } from './notifications/notification.service.js';
 import { TokenService } from './tokens/token.service.js';
+import { AuditService } from './audit/audit.service.js';
+import { RolesService } from './members/roles.service.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -64,6 +66,8 @@ export interface AppContext {
   notifications: NotificationService;
   slack: SlackService;
   tokens: TokenService;
+  roles: RolesService;
+  audit: AuditService;
   version: string | undefined;
   events: EventBus;
   realtime: RealtimeHub;
@@ -204,6 +208,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     notifications,
     slack,
     tokens: new TokenService(deps.db, access, now),
+    roles: new RolesService(deps.db, access),
+    audit: new AuditService(deps.db),
     version: deps.version,
     attachments: new AttachmentService(
       deps.db,

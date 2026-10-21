@@ -1,6 +1,7 @@
 import type { MeResponse, Permission } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
+import { AuditSection } from './AuditSection.js';
 import { AuthSection } from './AuthSection.js';
 import { DatabaseSection } from './DatabaseSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
@@ -8,12 +9,14 @@ import { IntegrationsSection } from './IntegrationsSection.js';
 import { MailSection } from './MailSection.js';
 import { TokensSection } from './TokensSection.js';
 import { RequestTypesSection } from './RequestTypesSection.js';
+import { RolesSection } from './RolesSection.js';
 import { MembersSection } from './MembersSection.js';
 import { UpdatesSection } from './UpdatesSection.js';
 
 const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'departments', permission: 'org.manage' },
   { id: 'members', permission: 'org.manage' },
+  { id: 'roles', permission: 'role.create' },
   { id: 'requestTypes', permission: 'request_type.manage' },
   { id: 'authentication', permission: 'auth.manage' },
   { id: 'mail', permission: 'mail.manage' },
@@ -21,6 +24,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'tokens', permission: 'org.manage' },
   { id: 'database', permission: 'org.manage' },
   { id: 'updates', permission: 'org.manage' },
+  { id: 'audit', permission: 'org.audit.read' },
 ];
 
 /** Sections the member may open; the server enforces the same permissions on every call. */
@@ -65,6 +69,8 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
           <DatabaseSection canEdit={me.organizationPermissions.includes('instance.manage')} />
         )}
         {active === 'updates' && <UpdatesSection />}
+        {active === 'roles' && <RolesSection />}
+        {active === 'audit' && <AuditSection />}
       </div>
     </div>
   );

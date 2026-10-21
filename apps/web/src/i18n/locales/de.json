@@ -108,7 +108,10 @@
     "invalid_transition": "Im aktuellen Status nicht möglich.",
     "session_required": "Genehmigungen sind nur angemeldet möglich.",
     "request_type_archived": "Dieser Anfragetyp wird nicht mehr angeboten.",
-    "token_expiry_too_long": "Diese Gültigkeit ist länger als von Ihrer Administration erlaubt."
+    "token_expiry_too_long": "Diese Gültigkeit ist länger als von Ihrer Administration erlaubt.",
+    "system_role": "Systemrollen können nicht geändert oder gelöscht werden.",
+    "role_in_use": "Mitglieder haben diese Rolle noch. Entfernen Sie sie zuerst.",
+    "role_name_taken": "Eine Rolle mit diesem Namen existiert bereits."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -135,7 +138,9 @@
       "database": "Datenbank",
       "updates": "Updates",
       "integrations": "Integrationen",
-      "tokens": "Zugriffstoken und MCP"
+      "tokens": "Zugriffstoken und MCP",
+      "roles": "Rollen",
+      "audit": "Audit-Log"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -330,6 +335,38 @@
       "save": "Speichern",
       "saved": "Gespeichert",
       "all": "Alle Token"
+    },
+    "customRoles": {
+      "title": "Rollen",
+      "subtitle": "Systemrollen sind fest. Eigene Rollen kombinieren Berechtigungen aus dem Katalog; Sie können nur vergeben, was Sie selbst haben.",
+      "system": "Systemrolle",
+      "custom": "Eigene Rolle",
+      "count": "{count, plural, one {# Berechtigung} other {# Berechtigungen}}",
+      "new": "Neue Rolle",
+      "name": "Name",
+      "permissions": "Berechtigungen",
+      "create": "Rolle erstellen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "edit": "Bearbeiten",
+      "editNamed": "{name} bearbeiten",
+      "delete": "Löschen",
+      "deleteNamed": "{name} löschen"
+    },
+    "audit": {
+      "title": "Audit-Log",
+      "subtitle": "Wer hat was geändert: Anmeldungen, Mitglieder, Rollen, Einstellungen, Genehmigungen. Einträge können nicht geändert oder gelöscht werden.",
+      "filters": "Filter",
+      "action": "Aktion",
+      "target": "Zieltyp",
+      "apply": "Anwenden",
+      "empty": "Keine Einträge.",
+      "system": "System",
+      "unknown": "Unbekannt",
+      "viaToken": "{name} über Token",
+      "before": "Vorher",
+      "after": "Nachher",
+      "more": "Ältere laden"
     }
   },
   "invite": {

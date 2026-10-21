@@ -108,7 +108,10 @@
     "invalid_transition": "Cari statusda bu əməliyyat mümkün deyil.",
     "session_required": "Təsdiqləri yalnız sistemə daxil olduqdan sonra vermək olar.",
     "request_type_archived": "Bu müraciət növü artıq təklif olunmur.",
-    "token_expiry_too_long": "Bu müddət administratorun icazə verdiyindən uzundur."
+    "token_expiry_too_long": "Bu müddət administratorun icazə verdiyindən uzundur.",
+    "system_role": "Sistem rolları dəyişdirilə və silinə bilməz.",
+    "role_in_use": "Bu rol hələ üzvlərdədir. Əvvəlcə onlardan götürün.",
+    "role_name_taken": "Bu adda rol artıq var."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -135,7 +138,9 @@
       "database": "Verilənlər bazası",
       "updates": "Yeniləmələr",
       "integrations": "İnteqrasiyalar",
-      "tokens": "Tokenlər və MCP"
+      "tokens": "Tokenlər və MCP",
+      "roles": "Rollar",
+      "audit": "Audit jurnalı"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -330,6 +335,38 @@
       "save": "Yadda saxla",
       "saved": "Yadda saxlanıldı",
       "all": "Bütün tokenlər"
+    },
+    "customRoles": {
+      "title": "Rollar",
+      "subtitle": "Sistem rolları dəyişməzdir. Xüsusi rollar kataloqdakı icazələrdən yığılır; yalnız özünüzdə olanı verə bilərsiniz.",
+      "system": "Sistem rolu",
+      "custom": "Xüsusi rol",
+      "count": "{count, plural, one {# icazə} other {# icazə}}",
+      "new": "Yeni rol",
+      "name": "Ad",
+      "permissions": "İcazələr",
+      "create": "Rol yarat",
+      "save": "Yadda saxla",
+      "cancel": "Ləğv et",
+      "edit": "Redaktə et",
+      "editNamed": "{name} redaktə et",
+      "delete": "Sil",
+      "deleteNamed": "{name} sil"
+    },
+    "audit": {
+      "title": "Audit jurnalı",
+      "subtitle": "Kim nəyi dəyişib: girişlər, üzvlər, rollar, parametrlər, təsdiqlər. Qeydlər dəyişdirilə və silinə bilməz.",
+      "filters": "Filtrlər",
+      "action": "Əməliyyat",
+      "target": "Obyekt növü",
+      "apply": "Tətbiq et",
+      "empty": "Qeyd yoxdur.",
+      "system": "Sistem",
+      "unknown": "Naməlum",
+      "viaToken": "{name} token ilə",
+      "before": "Əvvəl",
+      "after": "Sonra",
+      "more": "Köhnələri göstər"
     }
   },
   "invite": {

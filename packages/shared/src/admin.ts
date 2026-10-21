@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { emailSchema, passwordSchema } from './auth.js';
+import { PERMISSIONS } from './permissions.js';
 import { teamKeySchema } from './schemas.js';
 
 const nameSchema = z.string().trim().min(1).max(120);
@@ -67,6 +68,9 @@ export const ADMIN_ERROR_CODES = [
   'archived',
   'mail_managed_by_env',
   'database_managed_by_env',
+  'system_role',
+  'role_in_use',
+  'role_name_taken',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 
@@ -117,4 +121,45 @@ export interface InviteResponse {
   /** Shown once to the admin to share; only its hash is stored. */
   inviteUrl: string;
   emailed: boolean;
+}
+
+/** Custom roles (SPEC §4.1): any catalog permission except installation settings. */
+export const CUSTOM_ROLE_PERMISSIONS = PERMISSIONS.filter((p) => p !== 'instance.manage');
+
+export const roleInputSchema = z.object({
+  name: nameSchema,
+  permissions: z
+    .array(z.enum(CUSTOM_ROLE_PERMISSIONS as unknown as [string, ...string[]]))
+    .max(PERMISSIONS.length)
+    .transform((list) => [...new Set(list)].sort()),
+});
+export type RoleInput = z.input<typeof roleInputSchema>;
+
+/** Filters of GET /api/admin/audit; newest first, `before` is the last id of the previous page. */
+export const auditQuerySchema = z.object({
+  action: z.string().trim().max(100).optional(),
+  targetType: z.string().trim().max(60).optional(),
+  actorId: z.uuid().optional(),
+  before: z.uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+export type AuditQuery = z.input<typeof auditQuerySchema>;
+
+/** One audit log row (SPEC §9); secrets were redacted when it was written. */
+export interface AuditEntryView {
+  id: string;
+  actor: { type: 'member' | 'token' | 'system'; id: string | null; name: string | null };
+  action: string;
+  targetType: string;
+  targetId: string | null;
+  before: unknown;
+  after: unknown;
+  ip: string | null;
+  createdAt: string;
+}
+
+export interface AuditPage {
+  entries: AuditEntryView[];
+  /** Pass as `before` to load older entries; null at the end. */
+  next: string | null;
 }

@@ -108,7 +108,10 @@
     "invalid_transition": "This action is not possible in the current status.",
     "session_required": "Approvals can only be decided when signed in.",
     "request_type_archived": "This request type is no longer offered.",
-    "token_expiry_too_long": "This expiry is longer than your administrator allows."
+    "token_expiry_too_long": "This expiry is longer than your administrator allows.",
+    "system_role": "System roles cannot be changed or deleted.",
+    "role_in_use": "Members still hold this role. Remove it from them first.",
+    "role_name_taken": "A role with this name already exists."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -135,7 +138,9 @@
       "database": "Database",
       "updates": "Updates",
       "integrations": "Integrations",
-      "tokens": "Access tokens and MCP"
+      "tokens": "Access tokens and MCP",
+      "roles": "Roles",
+      "audit": "Audit log"
     },
     "departments": {
       "title": "Departments and teams",
@@ -330,6 +335,38 @@
       "save": "Save",
       "saved": "Saved",
       "all": "All tokens"
+    },
+    "customRoles": {
+      "title": "Roles",
+      "subtitle": "System roles are fixed. Custom roles combine permissions from the catalog; you can only grant what you hold yourself.",
+      "system": "System role",
+      "custom": "Custom role",
+      "count": "{count, plural, one {# permission} other {# permissions}}",
+      "new": "New role",
+      "name": "Name",
+      "permissions": "Permissions",
+      "create": "Create role",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "editNamed": "Edit {name}",
+      "delete": "Delete",
+      "deleteNamed": "Delete {name}"
+    },
+    "audit": {
+      "title": "Audit log",
+      "subtitle": "Who changed what: sign-ins, members, roles, settings, approvals. Entries cannot be changed or deleted.",
+      "filters": "Filters",
+      "action": "Action",
+      "target": "Target type",
+      "apply": "Apply",
+      "empty": "No entries.",
+      "system": "System",
+      "unknown": "Unknown",
+      "viaToken": "{name} via token",
+      "before": "Before",
+      "after": "After",
+      "more": "Load older"
     }
   },
   "invite": {
