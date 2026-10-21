@@ -20,6 +20,7 @@ import { IssueService } from './issues/issue.service.js';
 import { RequestService } from './requests/request.service.js';
 import { RequestTypeService } from './requests/request-types.service.js';
 import { NotificationService } from './notifications/notification.service.js';
+import { TokenService } from './tokens/token.service.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -62,6 +63,8 @@ export interface AppContext {
   requests: RequestService;
   notifications: NotificationService;
   slack: SlackService;
+  tokens: TokenService;
+  version: string | undefined;
   events: EventBus;
   realtime: RealtimeHub;
   limits: {
@@ -71,6 +74,7 @@ export interface AppContext {
     updateCheck: RateLimiter;
     testMail: RateLimiter;
     slackTest: RateLimiter;
+    mcp: RateLimiter;
   };
 }
 
@@ -199,6 +203,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     }),
     notifications,
     slack,
+    tokens: new TokenService(deps.db, access, now),
+    version: deps.version,
     attachments: new AttachmentService(
       deps.db,
       teamAccess,
@@ -220,6 +226,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       updateCheck: new RateLimiter(1, 60_000),
       testMail: new RateLimiter(10, FIFTEEN_MINUTES),
       slackTest: new RateLimiter(10, FIFTEEN_MINUTES),
+      // SPEC §10.1: 120 MCP requests per minute per token.
+      mcp: new RateLimiter(120, 60_000),
     },
   };
 }

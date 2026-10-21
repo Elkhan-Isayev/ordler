@@ -107,7 +107,8 @@
     "step_not_active": "Dieser Schritt wartet nicht auf eine Entscheidung.",
     "invalid_transition": "Im aktuellen Status nicht möglich.",
     "session_required": "Genehmigungen sind nur angemeldet möglich.",
-    "request_type_archived": "Dieser Anfragetyp wird nicht mehr angeboten."
+    "request_type_archived": "Dieser Anfragetyp wird nicht mehr angeboten.",
+    "token_expiry_too_long": "Diese Gültigkeit ist länger als von Ihrer Administration erlaubt."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -133,7 +134,8 @@
       "mail": "Mailserver",
       "database": "Datenbank",
       "updates": "Updates",
-      "integrations": "Integrationen"
+      "integrations": "Integrationen",
+      "tokens": "Zugriffstoken und MCP"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -317,6 +319,17 @@
         "approval_decided": "Entschiedene Genehmigungen",
         "request_resolved": "Erledigte Anfragen"
       }
+    },
+    "tokens": {
+      "title": "Zugriffstoken und MCP",
+      "subtitle": "Mitglieder erstellen persönliche Token für KI-Agenten; der MCP-Server läuft unter /mcp.",
+      "settings": "Token-Einstellungen",
+      "mcpEnabled": "MCP-Server aktivieren",
+      "maxExpiryDays": "Längste erlaubte Gültigkeit in Tagen",
+      "allowNoExpiry": "Token ohne Ablauf erlauben",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "all": "Alle Token"
     }
   },
   "invite": {
@@ -414,7 +427,8 @@
       "dueDateCleared": "Fälligkeit entfernt",
       "accepted": "aus der Sichtung angenommen",
       "declined": "bei der Sichtung abgelehnt"
-    }
+    },
+    "viaToken": "{actor} über Token „{token}“"
   },
   "editor": {
     "toolbar": "Formatierung",
@@ -594,5 +608,45 @@
       "request_status_changed": "{actor} hat {item} aktualisiert",
       "request_commented": "{actor} hat {item} kommentiert"
     }
+  },
+  "tokens": {
+    "title": "Zugriffstoken",
+    "subtitle": "KI-Agenten und MCP-Clients arbeiten in Ordler in Ihrem Namen. Ein Token kann nie mehr als Sie.",
+    "mcpDisabled": "MCP wurde von Ihrer Administration deaktiviert; Token funktionieren erst nach der Aktivierung.",
+    "created": "Kopieren Sie Ihr Token jetzt. Es wird nicht erneut angezeigt.",
+    "copy": "Kopieren",
+    "done": "Fertig",
+    "connect": "MCP-Client verbinden",
+    "connectHint": "Verwenden Sie diese Adresse mit Ihrem Token im Header „Authorization: Bearer“.",
+    "yours": "Ihre Token",
+    "empty": "Noch keine Token.",
+    "new": "Neues Token",
+    "name": "Name",
+    "expiry": "Läuft ab",
+    "days": "{count, plural, one {# Tag} other {# Tage}}",
+    "noExpiry": "Kein Ablauf",
+    "scopesLabel": "Berechtigungen",
+    "scopes": {
+      "read": "Lesen",
+      "issuesWrite": "Issues schreiben",
+      "requestsWrite": "Anfragen stellen"
+    },
+    "scopeHints": {
+      "read": "Issues, Anfragen und Kommentare, die Sie sehen können.",
+      "issuesWrite": "Issues erstellen und ändern, kommentieren.",
+      "requestsWrite": "Anfragen über Serviceportale stellen."
+    },
+    "approvalsNote": "Genehmigungen können nie per Token entschieden werden: Nur Sie können angemeldet genehmigen oder ablehnen.",
+    "create": "Token erstellen",
+    "revoke": "Widerrufen",
+    "revokeNamed": "{name} widerrufen",
+    "state": {
+      "active": "Aktiv",
+      "expired": "Abgelaufen",
+      "revoked": "Widerrufen"
+    },
+    "expires": "läuft ab am {date}",
+    "lastUsed": "zuletzt verwendet {date} von {ip}",
+    "neverUsed": "nie verwendet"
   }
 }

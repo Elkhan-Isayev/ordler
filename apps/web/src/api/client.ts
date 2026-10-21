@@ -4,6 +4,10 @@ import type {
   AdminRole,
   ApiErrorBody,
   ChatSubscriptionInput,
+  CreatedToken,
+  CreateTokenInput,
+  PersonalTokenView,
+  TokenSettings,
   ChatSubscriptionView,
   InboxCounts,
   NotificationView,
@@ -238,6 +242,17 @@ export const api = {
     apiRequest<{ sent: boolean; status: number }>(`/api/integrations/slack/${id}/test`, {
       method: 'POST',
     }),
+  myTokens: () =>
+    apiRequest<{ tokens: PersonalTokenView[]; settings: TokenSettings }>('/api/me/tokens'),
+  createToken: (body: CreateTokenInput) =>
+    apiRequest<CreatedToken>('/api/me/tokens', { method: 'POST', body }),
+  revokeToken: (id: string) => apiRequest<void>(`/api/me/tokens/${id}`, { method: 'DELETE' }),
+  allTokens: () =>
+    apiRequest<{ tokens: PersonalTokenView[]; settings: TokenSettings }>('/api/admin/tokens'),
+  updateTokenSettings: (body: TokenSettings) =>
+    apiRequest<TokenSettings>('/api/admin/tokens/settings', { method: 'PUT', body }),
+  adminRevokeToken: (id: string) =>
+    apiRequest<void>(`/api/admin/tokens/${id}`, { method: 'DELETE' }),
   myRequests: () => apiRequest<RequestSummary[]>('/api/me/requests'),
   myApprovals: () => apiRequest<PendingApproval[]>('/api/me/approvals'),
   teamRequests: (key: string) =>

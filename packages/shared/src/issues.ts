@@ -120,6 +120,8 @@ export interface IssueEvent {
   kind: 'created' | 'updated';
   actor: MemberRef | null;
   changes: Partial<Record<IssueField, { from: unknown; to: unknown }>>;
+  /** Personal token name when an agent acted for the member (SPEC §10.1). */
+  viaToken: string | null;
   createdAt: string;
 }
 

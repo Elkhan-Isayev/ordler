@@ -13,6 +13,7 @@ import {
   type UpdateIssueInput,
 } from '@ordler/shared';
 import { aliasedTable, and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { writeAudit } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
 import {
@@ -187,7 +188,13 @@ export class IssueService {
     return result;
   }
 
-  async create(memberId: string, key: string, input: CreateIssueInput): Promise<IssueDetail> {
+  /** `via`: the personal token an agent used; recorded in history and the audit log. */
+  async create(
+    memberId: string,
+    key: string,
+    input: CreateIssueInput,
+    via?: string,
+  ): Promise<IssueDetail> {
     const { team, can } = await this.readableTeam(memberId, key);
     if (!can.create) throw new DomainError('forbidden');
     if (input.assigneeId && !can.assign) throw new DomainError('forbidden');
@@ -235,6 +242,7 @@ export class IssueService {
         actorId: memberId,
         kind: 'created',
         changes: {},
+        viaToken: via ?? null,
         createdAt: now,
       });
       return row!.id;
@@ -242,6 +250,9 @@ export class IssueService {
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
     const created = await this.detailById(issueId, memberId);
+    await this.auditVia(via, memberId, 'issue.created', issueId, {
+      identifier: created.identifier,
+    });
     this.toChannels(team.id, 'issue_created', created);
     if (input.assigneeId) {
       await this.deps.notifier?.notify({
@@ -263,6 +274,7 @@ export class IssueService {
     memberId: string,
     identifier: string,
     input: UpdateIssueInput,
+    via?: string,
   ): Promise<IssueDetail> {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
     const touchesAssignee = input.assigneeId !== undefined;
@@ -295,14 +307,23 @@ export class IssueService {
         .set({ ...input, updatedAt: now })
         .where(eq(issues.id, issueId));
       if (Object.keys(changes).length > 0) {
-        await tx
-          .insert(issueEvents)
-          .values({ issueId, actorId: memberId, kind: 'updated', changes, createdAt: now });
+        await tx.insert(issueEvents).values({
+          issueId,
+          actorId: memberId,
+          kind: 'updated',
+          changes,
+          viaToken: via ?? null,
+          createdAt: now,
+        });
       }
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
     const updated = await this.detailById(issueId, memberId);
+    await this.auditVia(via, memberId, 'issue.updated', issueId, {
+      identifier: updated.identifier,
+      fields: Object.keys(changes),
+    });
     if (changes.assigneeId && input.assigneeId) {
       this.toChannels(team.id, 'issue_assigned', updated);
       await this.deps.notifier?.notify({
@@ -457,7 +478,12 @@ export class IssueService {
     }));
   }
 
-  async addComment(memberId: string, identifier: string, body: string): Promise<IssueDetail> {
+  async addComment(
+    memberId: string,
+    identifier: string,
+    body: string,
+    via?: string,
+  ): Promise<IssueDetail> {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
     if (!can.comment) throw new DomainError('forbidden');
     const now = this.now();
@@ -475,6 +501,9 @@ export class IssueService {
     });
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
     const detail = await this.detailById(issueId, memberId);
+    await this.auditVia(via, memberId, 'issue.commented', issueId, {
+      identifier: detail.identifier,
+    });
     this.toChannels(team.id, 'issue_commented', detail, body);
     // Watchers: whoever filed, owns or discussed the issue (SPEC §5.1).
     const [row] = await this.db
@@ -580,9 +609,28 @@ export class IssueService {
         kind: event.kind,
         actor: event.actorId ? { id: event.actorId, name: actorName ?? '' } : null,
         changes: event.changes as IssueEvent['changes'],
+        viaToken: event.viaToken,
         createdAt: event.createdAt.toISOString(),
       })),
     };
+  }
+
+  /** Agent writes are audited as the member via that token; UI writes stay in history only. */
+  private async auditVia(
+    via: string | undefined,
+    memberId: string,
+    action: string,
+    issueId: string,
+    after: Record<string, unknown>,
+  ): Promise<void> {
+    if (via === undefined) return;
+    await writeAudit(this.db, {
+      actor: { type: 'token', id: memberId },
+      action,
+      targetType: 'issue',
+      targetId: issueId,
+      after: { ...after, via },
+    });
   }
 
   private now(): Date {

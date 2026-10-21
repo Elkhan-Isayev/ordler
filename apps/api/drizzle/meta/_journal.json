@@ -78,6 +78,13 @@
       "when": 1792608309882,
       "tag": "0010_notifications_and_slack",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792609399616,
+      "tag": "0011_personal_tokens_and_mcp",
+      "breakpoints": true
     }
   ]
 }

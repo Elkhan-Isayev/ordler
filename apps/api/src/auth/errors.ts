@@ -4,10 +4,16 @@ import type {
   AuthErrorCode,
   IssueErrorCode,
   RequestErrorCode,
+  TokenErrorCode,
 } from '@ordler/shared';
 
 export type DomainErrorCode =
-  AuthErrorCode | AdminErrorCode | IssueErrorCode | AttachmentErrorCode | RequestErrorCode;
+  | AuthErrorCode
+  | AdminErrorCode
+  | IssueErrorCode
+  | AttachmentErrorCode
+  | RequestErrorCode
+  | TokenErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -35,6 +41,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   mail_managed_by_env: 409,
   database_managed_by_env: 409,
   forbidden: 403,
+  token_expiry_too_long: 400,
   status_not_in_workflow: 400,
   assignee_not_in_team: 400,
   not_in_triage: 409,

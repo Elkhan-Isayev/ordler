@@ -760,7 +760,7 @@ export class RequestService {
       requestId: row!.id,
       actorId: actor.memberId,
       kind: 'submitted',
-      data: actor.tokenName ? { viaToken: actor.tokenName } : {},
+      data: actor.tokenName ? { via: actor.tokenName } : {},
       createdAt: now,
     });
     await writeAudit(tx as unknown as Db, {
@@ -771,7 +771,7 @@ export class RequestService {
       after: {
         number,
         requestTypeId: input.type.id,
-        ...(actor.tokenName ? { viaToken: actor.tokenName } : {}),
+        ...(actor.tokenName ? { via: actor.tokenName } : {}),
       },
     });
     return row!.id;

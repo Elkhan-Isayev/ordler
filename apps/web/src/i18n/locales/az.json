@@ -107,7 +107,8 @@
     "step_not_active": "Bu addım qərar gözləmir.",
     "invalid_transition": "Cari statusda bu əməliyyat mümkün deyil.",
     "session_required": "Təsdiqləri yalnız sistemə daxil olduqdan sonra vermək olar.",
-    "request_type_archived": "Bu müraciət növü artıq təklif olunmur."
+    "request_type_archived": "Bu müraciət növü artıq təklif olunmur.",
+    "token_expiry_too_long": "Bu müddət administratorun icazə verdiyindən uzundur."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -133,7 +134,8 @@
       "mail": "Poçt serveri",
       "database": "Verilənlər bazası",
       "updates": "Yeniləmələr",
-      "integrations": "İnteqrasiyalar"
+      "integrations": "İnteqrasiyalar",
+      "tokens": "Tokenlər və MCP"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -317,6 +319,17 @@
         "approval_decided": "Təsdiq qərarları",
         "request_resolved": "Həll olunmuş sorğular"
       }
+    },
+    "tokens": {
+      "title": "Giriş tokenləri və MCP",
+      "subtitle": "Üzvlər süni intellekt agentləri üçün şəxsi tokenlər yaradır; MCP serveri /mcp ünvanında işləyir.",
+      "settings": "Token parametrləri",
+      "mcpEnabled": "MCP serverini aktiv et",
+      "maxExpiryDays": "Ən uzun icazəli müddət, gün",
+      "allowNoExpiry": "Müddətsiz tokenlərə icazə ver",
+      "save": "Yadda saxla",
+      "saved": "Yadda saxlanıldı",
+      "all": "Bütün tokenlər"
     }
   },
   "invite": {
@@ -414,7 +427,8 @@
       "dueDateCleared": "son tarix götürüldü",
       "accepted": "baxışdan qəbul edildi",
       "declined": "baxışda rədd edildi"
-    }
+    },
+    "viaToken": "{actor} “{token}” tokeni ilə"
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -594,5 +608,45 @@
       "request_status_changed": "{actor} {item} sorğusunu yenilədi",
       "request_commented": "{actor} {item} üzrə şərh yazdı"
     }
+  },
+  "tokens": {
+    "title": "Giriş tokenləri",
+    "subtitle": "Süni intellekt agentləri və MCP klientləri Ordler-də sizin adınızdan işləsin. Token heç vaxt sizdən artıq edə bilməz.",
+    "mcpDisabled": "MCP administrator tərəfindən söndürülüb; aktiv edilənə qədər tokenlər işləməyəcək.",
+    "created": "Tokeni indi kopyalayın. Bir daha göstərilməyəcək.",
+    "copy": "Kopyala",
+    "done": "Hazır",
+    "connect": "MCP klientini qoşun",
+    "connectHint": "Bu ünvanı tokeninizlə birlikdə “Authorization: Bearer” başlığında istifadə edin.",
+    "yours": "Tokenləriniz",
+    "empty": "Hələ token yoxdur.",
+    "new": "Yeni token",
+    "name": "Ad",
+    "expiry": "Bitmə müddəti",
+    "days": "{count, plural, one {# gün} other {# gün}}",
+    "noExpiry": "Müddətsiz",
+    "scopesLabel": "İcazələr",
+    "scopes": {
+      "read": "Oxumaq",
+      "issuesWrite": "Tapşırıqları dəyişmək",
+      "requestsWrite": "Sorğu göndərmək"
+    },
+    "scopeHints": {
+      "read": "Gördüyünüz tapşırıqlar, sorğular və şərhlər.",
+      "issuesWrite": "Tapşırıq yaratmaq, dəyişmək, şərh yazmaq.",
+      "requestsWrite": "Xidmət portallarından sorğu göndərmək."
+    },
+    "approvalsNote": "Təsdiqlər heç vaxt tokenlə qərarlaşdırıla bilməz: yalnız siz daxil olaraq təsdiq və ya rədd edə bilərsiniz.",
+    "create": "Token yarat",
+    "revoke": "Ləğv et",
+    "revokeNamed": "{name} ləğv et",
+    "state": {
+      "active": "Aktiv",
+      "expired": "Müddəti bitib",
+      "revoked": "Ləğv edilib"
+    },
+    "expires": "{date} bitir",
+    "lastUsed": "son istifadə {date}, {ip}",
+    "neverUsed": "istifadə olunmayıb"
   }
 }

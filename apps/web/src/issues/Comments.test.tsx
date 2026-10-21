@@ -53,6 +53,7 @@ describe('issue comments', () => {
             kind: 'created',
             actor: null,
             changes: {},
+            viaToken: null,
             createdAt: '2026-10-18T09:00:00.000Z',
           },
           {
@@ -60,6 +61,7 @@ describe('issue comments', () => {
             kind: 'updated',
             actor: null,
             changes: { priority: { from: 'none', to: 'high' } },
+            viaToken: null,
             createdAt: '2026-10-18T10:00:00.000Z',
           },
         ],

@@ -31,6 +31,10 @@ export const instanceSettings = pgTable('instance_settings', {
   defaultLocale: text('default_locale').notNull().default('en'),
   branding: jsonb('branding').notNull().default({}),
   setupCompletedAt: timestamp('setup_completed_at', { withTimezone: true }),
+  /** Admin → Access tokens and MCP (SPEC §10.1). */
+  mcpEnabled: boolean('mcp_enabled').notNull().default(true),
+  tokenMaxExpiryDays: integer('token_max_expiry_days').notNull().default(365),
+  tokenAllowNoExpiry: boolean('token_allow_no_expiry').notNull().default(false),
 });
 
 export const departments = pgTable(
@@ -380,6 +384,8 @@ export const issueEvents = pgTable(
     actorId: uuid('actor_id').references(() => members.id),
     kind: text('kind', { enum: ['created', 'updated'] }).notNull(),
     changes: jsonb('changes').notNull().default({}),
+    /** Name of the personal token when an agent made the change (SPEC §10.1). */
+    viaToken: text('via_token'),
     createdAt: createdAt(),
   },
   (t) => [index('issue_events_issue_idx').on(t.issueId, t.createdAt)],
@@ -642,4 +648,29 @@ export const chatSubscriptions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('chat_subscriptions_team_idx').on(t.teamId)],
+);
+
+/** Personal access tokens (SPEC §10.1): only a SHA-256 of the secret is stored. */
+export const personalTokens = pgTable(
+  'personal_tokens',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id),
+    name: text('name').notNull(),
+    prefix: text('prefix').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    scopes: text('scopes').array().notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    lastUsedIp: text('last_used_ip'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    revokedBy: uuid('revoked_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('personal_tokens_hash_uq').on(t.tokenHash),
+    index('personal_tokens_member_idx').on(t.memberId, t.createdAt),
+  ],
 );

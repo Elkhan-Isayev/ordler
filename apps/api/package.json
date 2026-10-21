@@ -36,6 +36,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "0.5.10",
     "@formatjs/icu-messageformat-parser": "2.11.4",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "@nestjs/testing": "11.2.7",
     "@swc/core": "1.16.18",
     "@types/node": "24.19.2",

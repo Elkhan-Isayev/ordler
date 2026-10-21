@@ -19,7 +19,8 @@ import {
   TeamRequestsPage,
 } from './requests/RequestLists.js';
 import { RequestPage } from './requests/RequestPage.js';
-import { usePathname } from './router.js';
+import { TokensPage } from './settings/TokensPage.js';
+import { Link, usePathname } from './router.js';
 
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
   const { t } = useTranslation();
@@ -54,7 +55,13 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
         currentPath={path}
         footer={
           <div className="flex items-center justify-between gap-2 px-2">
-            <span className="truncate text-ink">{me.member.name}</span>
+            <Link
+              href="/settings/tokens"
+              title={t('tokens.title')}
+              className="truncate text-ink hover:underline"
+            >
+              {me.member.name}
+            </Link>
             <button
               type="button"
               onClick={onSignOut}
@@ -98,6 +105,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <RequestPage key={requestPage[1]} identifier={requestPage[1]!.toUpperCase()} />
         ) : groupPage ? (
           <RequestGroupPage key={groupPage[1]} identifier={groupPage[1]!.toUpperCase()} />
+        ) : path === '/settings/tokens' ? (
+          <TokensPage />
         ) : path === '/inbox' ? (
           <InboxPage memberId={me.member.id} />
         ) : path === '/my-requests' ? (

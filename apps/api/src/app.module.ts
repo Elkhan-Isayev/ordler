@@ -10,6 +10,8 @@ import { HealthController, READINESS_CHECK } from './health/health.controller.js
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
 import { AdminDatabaseController } from './install/admin-database.controller.js';
 import { IssuesController } from './issues/issues.controller.js';
+import { McpServer } from './mcp/mcp.server.js';
+import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { RequestsController } from './requests/requests.controller.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
@@ -42,6 +44,7 @@ export class AppModule {
         AttachmentsController,
         RequestsController,
         NotificationsController,
+        TokensController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },
@@ -61,4 +64,5 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   registerRequestHooks(instance, ctx);
   await instance.register(fastifyMultipart);
   await ctx.realtime.register(instance);
+  new McpServer(ctx, ctx.version).register(instance);
 }

@@ -102,10 +102,26 @@ describe('describeEvent', () => {
           priority: { from: 'none', to: 'high' },
           assigneeId: { from: null, to: 'm-bob' },
         },
+        viaToken: null,
         createdAt: '2026-10-18T09:00:00.000Z',
       },
       TEAM,
     );
     expect(line).toBe('Ann Lee: статус → Готово, приоритет → Высокий, исполнитель → Bob Stone');
+  });
+
+  it('says when an agent acted through a personal token', async () => {
+    const i18n = await createI18n('en');
+    const event = {
+      id: 'e',
+      kind: 'created' as const,
+      actor: { id: 'm-ann', name: 'Ann Lee' },
+      changes: {},
+      viaToken: 'Claude',
+      createdAt: '2026-10-18T09:00:00.000Z',
+    };
+    expect(describeEvent(i18n.t, event, TEAM)).toBe(
+      i18n.t('issues.event.created', { actor: 'Ann Lee via token “Claude”' }),
+    );
   });
 });

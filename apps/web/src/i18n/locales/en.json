@@ -107,7 +107,8 @@
     "step_not_active": "This step is not waiting for a decision.",
     "invalid_transition": "This action is not possible in the current status.",
     "session_required": "Approvals can only be decided when signed in.",
-    "request_type_archived": "This request type is no longer offered."
+    "request_type_archived": "This request type is no longer offered.",
+    "token_expiry_too_long": "This expiry is longer than your administrator allows."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -133,7 +134,8 @@
       "mail": "Mail server",
       "database": "Database",
       "updates": "Updates",
-      "integrations": "Integrations"
+      "integrations": "Integrations",
+      "tokens": "Access tokens and MCP"
     },
     "departments": {
       "title": "Departments and teams",
@@ -317,6 +319,17 @@
         "approval_decided": "Approvals decided",
         "request_resolved": "Requests resolved"
       }
+    },
+    "tokens": {
+      "title": "Access tokens and MCP",
+      "subtitle": "Members create personal tokens for AI agents; the MCP server runs at /mcp.",
+      "settings": "Token settings",
+      "mcpEnabled": "Enable the MCP server",
+      "maxExpiryDays": "Longest allowed expiry, in days",
+      "allowNoExpiry": "Allow tokens without expiry",
+      "save": "Save",
+      "saved": "Saved",
+      "all": "All tokens"
     }
   },
   "invite": {
@@ -414,7 +427,8 @@
       "dueDateCleared": "due date removed",
       "accepted": "accepted from triage",
       "declined": "declined in triage"
-    }
+    },
+    "viaToken": "{actor} via token “{token}”"
   },
   "editor": {
     "toolbar": "Formatting",
@@ -594,5 +608,45 @@
       "request_status_changed": "{actor} updated {item}",
       "request_commented": "{actor} commented on {item}"
     }
+  },
+  "tokens": {
+    "title": "Access tokens",
+    "subtitle": "Let AI agents and MCP clients work in Ordler as you. A token can never do more than you can.",
+    "mcpDisabled": "MCP is turned off by your administrator; tokens will not work until it is enabled.",
+    "created": "Copy your token now. It will not be shown again.",
+    "copy": "Copy",
+    "done": "Done",
+    "connect": "Connect an MCP client",
+    "connectHint": "Use this address with your token in the \"Authorization: Bearer\" header.",
+    "yours": "Your tokens",
+    "empty": "No tokens yet.",
+    "new": "New token",
+    "name": "Name",
+    "expiry": "Expires",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "noExpiry": "No expiry",
+    "scopesLabel": "Scopes",
+    "scopes": {
+      "read": "Read",
+      "issuesWrite": "Write issues",
+      "requestsWrite": "Submit requests"
+    },
+    "scopeHints": {
+      "read": "Issues, requests and comments you can see.",
+      "issuesWrite": "Create and update issues, comment.",
+      "requestsWrite": "Submit requests from service portals."
+    },
+    "approvalsNote": "Approvals can never be decided with a token: only you, signed in, can approve or reject.",
+    "create": "Create token",
+    "revoke": "Revoke",
+    "revokeNamed": "Revoke {name}",
+    "state": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "expires": "expires {date}",
+    "lastUsed": "last used {date} from {ip}",
+    "neverUsed": "never used"
   }
 }

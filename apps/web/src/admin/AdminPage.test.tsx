@@ -17,10 +17,12 @@ describe('adminSections', () => {
       'departments',
       'members',
       'authentication',
+      'tokens',
       'database',
       'updates',
     ]);
     expect(adminSections(['auth.manage'])).toEqual(['authentication']);
+    expect(adminSections(['team.update'])).toEqual(['integrations']);
     expect(adminSections(['mail.manage'])).toEqual(['mail']);
     expect(adminSections(['issue.read'])).toEqual([]);
   });

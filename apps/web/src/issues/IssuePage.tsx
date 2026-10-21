@@ -261,7 +261,11 @@ function Property({ label, children }: { label: string; children: React.ReactNod
 
 /** Human-readable history line, resolving status and member ids against the team. */
 export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): string {
-  const actor = event.actor?.name ?? t('issues.someone');
+  const name = event.actor?.name ?? t('issues.someone');
+  // Agents act as the member; history says which token did it (SPEC §10.1).
+  const actor = event.viaToken
+    ? t('issues.viaToken', { actor: name, token: event.viaToken })
+    : name;
   if (event.kind === 'created') return t('issues.event.created', { actor });
   const parts = (
     Object.entries(event.changes) as Array<[IssueField, { from: unknown; to: unknown }]>
