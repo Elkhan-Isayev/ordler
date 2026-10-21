@@ -62,3 +62,18 @@ describe('IntegrationsSection', () => {
     expect(calls.some((c) => c.method === 'DELETE')).toBe(true);
   });
 });
+
+describe('IntegrationsSection for one team', () => {
+  it('lets a team lead connect only their team without loading the organization', async () => {
+    const other = { ...SUB, id: 's2', team: { id: 't9', key: 'ACC', name: 'Accounting' } };
+    const calls = mockApi({
+      'GET /api/integrations/slack': () => ({ json: [SUB, other] }),
+      'POST /api/integrations/slack': () => ({ status: 201, json: SUB }),
+    });
+    await renderWithI18n(<IntegrationsSection team={{ id: 't1', name: 'Helpdesk' }} />);
+    expect(await screen.findByText('#helpdesk')).toBeInTheDocument();
+    expect(screen.queryByText(/Accounting/)).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Team' })).toHaveValue('t1');
+    expect(calls.some((c) => c.path === '/api/admin/departments')).toBe(false);
+  });
+});

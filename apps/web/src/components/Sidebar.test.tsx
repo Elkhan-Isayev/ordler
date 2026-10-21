@@ -69,6 +69,28 @@ describe('Sidebar', () => {
     );
   });
 
+  it('shows team integrations only to those who manage the team', async () => {
+    const departments = [
+      {
+        id: 'it',
+        name: 'IT',
+        teams: [
+          { id: 't1', key: 'HELP', name: 'Helpdesk', manage: true },
+          { id: 't2', key: 'INFRA', name: 'Infrastructure' },
+        ],
+      },
+    ];
+    await renderSidebar('en', { departments });
+    await userEvent.click(screen.getByRole('button', { name: /Helpdesk/ }));
+    expect(screen.getByRole('link', { name: 'Integrations' })).toHaveAttribute(
+      'href',
+      '/teams/HELP/integrations',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Helpdesk/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Infrastructure/ }));
+    expect(screen.queryByRole('link', { name: 'Integrations' })).not.toBeInTheDocument();
+  });
+
   it('collapses a department', async () => {
     await renderSidebar();
     await userEvent.click(screen.getByRole('button', { name: /IT/ }));

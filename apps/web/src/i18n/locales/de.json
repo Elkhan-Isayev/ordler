@@ -20,7 +20,8 @@
     "currentCycle": "Aktuell",
     "upcomingCycle": "Anstehend",
     "admin": "Administration",
-    "board": "Board"
+    "board": "Board",
+    "integrations": "Integrationen"
   },
   "settings": {
     "language": "Sprache"

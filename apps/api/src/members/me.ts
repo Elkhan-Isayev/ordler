@@ -1,4 +1,4 @@
-import { effectivePermissions, ORGANIZATION_SCOPE, type MeResponse } from '@ordler/shared';
+import { can, effectivePermissions, ORGANIZATION_SCOPE, type MeResponse } from '@ordler/shared';
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { departments, teamMemberships, teams } from '../db/schema.js';
@@ -34,6 +34,7 @@ export async function loadMe(db: Db, memberId: string): Promise<MeView | undefin
     )
     .orderBy(asc(departments.name), asc(teams.name));
 
+  const access = await new DbAccessContext(db).load(memberId);
   const byDepartment = new Map<string, MeView['departments'][number]>();
   for (const row of rows) {
     const department = byDepartment.get(row.departmentId) ?? {
@@ -41,11 +42,22 @@ export async function loadMe(db: Db, memberId: string): Promise<MeView | undefin
       name: row.departmentName,
       teams: [],
     };
-    department.teams.push({ id: row.teamId, key: row.teamKey, name: row.teamName });
+    const manage = can(
+      access.assignments,
+      access.rolePermissions,
+      'team.update',
+      { type: 'team', id: row.teamId },
+      access.directory,
+    );
+    department.teams.push({
+      id: row.teamId,
+      key: row.teamKey,
+      name: row.teamName,
+      ...(manage ? { manage } : {}),
+    });
     byDepartment.set(row.departmentId, department);
   }
 
-  const access = await new DbAccessContext(db).load(memberId);
   const organizationPermissions = [
     ...effectivePermissions(
       access.assignments,

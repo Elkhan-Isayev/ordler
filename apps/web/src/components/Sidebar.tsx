@@ -6,6 +6,8 @@ export interface SidebarTeam {
   id: string;
   key: string;
   name: string;
+  /** Team leads and admins see the team's settings. */
+  manage?: boolean;
 }
 
 export interface SidebarDepartment {
@@ -156,6 +158,7 @@ function TeamNode({ team }: { team: SidebarTeam }) {
           </NavItem>
           <NavItem href={`${base}/projects`}>{t('nav.projects')}</NavItem>
           <NavItem href={`${base}/views`}>{t('nav.views')}</NavItem>
+          {team.manage && <NavItem href={`${base}/integrations`}>{t('nav.integrations')}</NavItem>}
         </ul>
       )}
     </li>

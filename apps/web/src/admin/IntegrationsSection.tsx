@@ -25,7 +25,7 @@ const DEFAULT_EVENTS: SlackEvent[] = ['issue_created', 'request_received', 'appr
  * Admin → Integrations (SPEC §7.1): Slack channels per team through incoming webhooks.
  * The webhook URL is write-only; only its host is shown afterwards.
  */
-export function IntegrationsSection() {
+export function IntegrationsSection({ team: only }: { team?: { id: string; name: string } } = {}) {
   const { t } = useTranslation();
   const [subscriptions, setSubscriptions] = useState<ChatSubscriptionView[]>();
   const [departments, setDepartments] = useState<AdminDepartment[]>([]);
@@ -34,13 +34,17 @@ export function IntegrationsSection() {
 
   const reload = useCallback(async () => {
     try {
-      const [subs, depts] = await Promise.all([api.slackSubscriptions(), api.departments()]);
-      setSubscriptions(subs);
+      // Team leads open this for one team and cannot list the whole organization.
+      const [subs, depts] = await Promise.all([
+        api.slackSubscriptions(),
+        only ? Promise.resolve([]) : api.departments(),
+      ]);
+      setSubscriptions(only ? subs.filter((sub) => sub.team.id === only.id) : subs);
       setDepartments(depts);
     } catch (failure) {
       setError(t(errorKey(failure)));
     }
-  }, [t]);
+  }, [t, only]);
 
   useEffect(() => {
     void reload();
@@ -89,16 +93,22 @@ export function IntegrationsSection() {
     }
   }
 
-  const teams = departments
-    .filter((d) => !d.archivedAt)
-    .flatMap((d) =>
-      d.teams.filter((team) => !team.archivedAt).map((team) => ({ ...team, department: d.name })),
-    );
+  const teams = only
+    ? [{ ...only, department: '' }]
+    : departments
+        .filter((d) => !d.archivedAt)
+        .flatMap((d) =>
+          d.teams
+            .filter((team) => !team.archivedAt)
+            .map((team) => ({ ...team, department: d.name })),
+        );
 
   return (
     <div className="flex flex-col gap-4">
       <SectionHeader
-        title={t('admin.integrations.title')}
+        title={
+          only ? `${only.name} · ${t('admin.integrations.title')}` : t('admin.integrations.title')
+        }
         subtitle={t('admin.integrations.subtitle')}
       />
       {error && <FormError message={error} />}
@@ -156,7 +166,7 @@ export function IntegrationsSection() {
               <select name="teamId" required className={inputClass}>
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
-                    {team.department} / {team.name}
+                    {team.department ? `${team.department} / ${team.name}` : team.name}
                   </option>
                 ))}
               </select>

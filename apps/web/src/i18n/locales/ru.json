@@ -20,7 +20,8 @@
     "currentCycle": "Текущий",
     "upcomingCycle": "Следующие",
     "admin": "Администрирование",
-    "board": "Доска"
+    "board": "Доска",
+    "integrations": "Интеграции"
   },
   "settings": {
     "language": "Язык"

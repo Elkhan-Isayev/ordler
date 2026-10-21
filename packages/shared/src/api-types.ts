@@ -10,7 +10,8 @@ export interface MeResponse {
   departments: Array<{
     id: string;
     name: string;
-    teams: Array<{ id: string; key: string; name: string }>;
+    /** `manage`: the member may change team settings such as Slack channels (team.update). */
+    teams: Array<{ id: string; key: string; name: string; manage?: boolean }>;
   }>;
 }
 

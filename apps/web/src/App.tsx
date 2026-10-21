@@ -1,6 +1,7 @@
 import type { MeResponse } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { AdminPage, adminSections } from './admin/AdminPage.js';
+import { IntegrationsSection } from './admin/IntegrationsSection.js';
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
 import { IssuePage } from './issues/IssuePage.js';
@@ -27,6 +28,12 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
   const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
   const teamRequests = /^\/teams\/([A-Za-z0-9]+)\/requests\/?$/.exec(path);
+  const teamIntegrations = /^\/teams\/([A-Za-z0-9]+)\/integrations\/?$/.exec(path);
+  const managedTeam = teamIntegrations
+    ? me.departments
+        .flatMap((d) => d.teams)
+        .find((team) => team.manage && team.key === teamIntegrations[1]!.toUpperCase())
+    : undefined;
   const departmentRequests = /^\/departments\/([0-9a-f-]{36})\/requests\/?$/.exec(path);
   const newRequest = /^\/portals\/new\/([0-9a-f-]{36})\/?$/.exec(path);
   const newGroup = /^\/portals\/group\/([0-9a-f,-]+)\/?$/.exec(path);
@@ -72,6 +79,10 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <TriagePage key={triagePage[1]} teamKey={triagePage[1]!.toUpperCase()} />
         ) : teamRequests ? (
           <TeamRequestsPage key={teamRequests[1]} teamKey={teamRequests[1]!.toUpperCase()} />
+        ) : managedTeam ? (
+          <div className="p-6">
+            <IntegrationsSection key={managedTeam.id} team={managedTeam} />
+          </div>
         ) : departmentRequests ? (
           <DepartmentRequestsPage
             key={departmentRequests[1]}

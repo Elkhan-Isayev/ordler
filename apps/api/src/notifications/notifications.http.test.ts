@@ -221,6 +221,31 @@ describe('Slack channels (SPEC §7.1, MVP criterion 14)', () => {
     expect(audit.some((row) => row.action === 'chat_subscription.created')).toBe(true);
   });
 
+  it('lets a Team Lead connect their own team (criterion 14)', async () => {
+    const roles = (await call('GET', '/api/admin/roles', owner)).json<AdminRole[]>();
+    const lead = await invite(
+      'lead',
+      roles.find((r) => r.key === 'team_lead')!.id,
+      { type: 'team', id: team.id },
+      [team.id],
+    );
+    const me = (await call('GET', '/api/me', lead.cookie)).json<{
+      departments: Array<{ teams: Array<{ key: string; manage?: boolean }> }>;
+    }>();
+    expect(me.departments[0]!.teams).toEqual([
+      expect.objectContaining({ key: 'HELP', manage: true }),
+    ]);
+    const devMe = (await call('GET', '/api/me', dev.cookie)).json<typeof me>();
+    expect(devMe.departments[0]!.teams[0]!.manage).toBeUndefined();
+
+    expect(
+      (await subscribe(lead.cookie, ['issue_created', 'issue_status_changed'])).statusCode,
+    ).toBe(201);
+    await call('POST', '/api/teams/HELP/issues', dev.cookie, { title: 'Wi-Fi is slow' });
+    await t.ctx.slack.flush();
+    expect(posted).toHaveLength(1);
+  });
+
   it('lets only people who manage the team configure channels', async () => {
     expect((await subscribe(dev.cookie)).statusCode).toBe(403);
     const id = (await subscribe()).json<ChatSubscriptionView>().id;

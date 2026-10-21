@@ -44,3 +44,6 @@ channels through incoming webhooks; issue and request events post Block Kit mess
 ## Notes
 
 Slack interactive bot (level 2) and personal DMs are out of MVP scope.
+
+Team Leads open Slack settings from their team in the sidebar (`/teams/KEY/integrations`);
+`GET /api/me` marks teams the member manages (`manage: true`, from `team.update`).
