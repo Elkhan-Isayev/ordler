@@ -111,7 +111,10 @@
     "token_expiry_too_long": "Diese Gültigkeit ist länger als von Ihrer Administration erlaubt.",
     "system_role": "Systemrollen können nicht geändert oder gelöscht werden.",
     "role_in_use": "Mitglieder haben diese Rolle noch. Entfernen Sie sie zuerst.",
-    "role_name_taken": "Eine Rolle mit diesem Namen existiert bereits."
+    "role_name_taken": "Eine Rolle mit diesem Namen existiert bereits.",
+    "label_not_in_team": "Dieses Label gehört zu einem anderen Team.",
+    "label_name_taken": "Ein Label mit diesem Namen existiert bereits.",
+    "invalid_parent": "Dieses Issue kann nicht übergeordnet sein: Es muss im selben Team und darf kein eigenes Unter-Issue sein."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -463,9 +466,34 @@
       "dueDate": "Fällig am → {to}",
       "dueDateCleared": "Fälligkeit entfernt",
       "accepted": "aus der Sichtung angenommen",
-      "declined": "bei der Sichtung abgelehnt"
+      "declined": "bei der Sichtung abgelehnt",
+      "labels": "Labels → {to}",
+      "parent": "unter ein anderes Issue verschoben",
+      "parentRemoved": "vom übergeordneten Issue gelöst"
     },
-    "viaToken": "{actor} über Token „{token}“"
+    "viaToken": "{actor} über Token „{token}“",
+    "filters": {
+      "label": "Filter",
+      "anyStatus": "Jeder Status",
+      "anyAssignee": "Jede Zuweisung",
+      "anyPriority": "Jede Priorität",
+      "anyLabel": "Jedes Label",
+      "clear": "Filter zurücksetzen"
+    },
+    "labels": {
+      "label": "Labels",
+      "edit": "Labels bearbeiten",
+      "new": "Neues Label",
+      "newPlaceholder": "Neues Label, Enter drücken",
+      "deleted": "gelöschtes Label"
+    },
+    "subIssues": {
+      "title": "Unter-Issues",
+      "parent": "Unter-Issue von",
+      "detach": "Lösen",
+      "add": "Unter-Issue hinzufügen",
+      "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken"
+    }
   },
   "editor": {
     "toolbar": "Formatierung",
@@ -685,5 +713,11 @@
     "expires": "läuft ab am {date}",
     "lastUsed": "zuletzt verwendet {date} von {ip}",
     "neverUsed": "nie verwendet"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Issues und Anfragen suchen…",
+    "results": "Ergebnisse",
+    "empty": "Nichts gefunden."
   }
 }

@@ -3,16 +3,18 @@ import {
   parseIssueIdentifier,
   type CommentView,
   type SlackEvent,
-  type CreateIssueInput,
+  type CreateIssueData,
   type IssueDetail,
   type IssueEvent,
   type IssueField,
   type IssueSummary,
+  type LabelRef,
+  type LabelView,
   type TeamView,
   type TriageAction,
   type UpdateIssueInput,
 } from '@ordler/shared';
-import { aliasedTable, and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { aliasedTable, and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { writeAudit } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
@@ -20,7 +22,9 @@ import {
   comments,
   departments,
   issueEvents,
+  issueLabels,
   issues,
+  labels,
   members,
   teamMemberships,
   teams,
@@ -36,14 +40,20 @@ type TeamRow = typeof teams.$inferSelect;
 
 const assignee = aliasedTable(members, 'assignee');
 
+/** Search text is literal: % and _ match themselves. */
+export function likeEscape(text: string): string {
+  return text.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
 // Triage is recorded by its own action, not by field updates.
-const TRACKED: Array<Exclude<IssueField, 'triage'>> = [
+const TRACKED: Array<Exclude<IssueField, 'triage' | 'labelIds'>> = [
   'title',
   'description',
   'statusId',
   'priority',
   'assigneeId',
   'dueDate',
+  'parentId',
 ];
 
 /** Slack channels of a team (SPEC §7.1); optional so tests can leave it out. */
@@ -91,6 +101,7 @@ export class IssueService {
       department: department!,
       statuses: await teamStatuses(this.db, team.id),
       members: people,
+      labels: await this.teamLabels(team.id),
       can: { create: can.create, update: can.update, assign: can.assign, comment: can.comment },
     };
   }
@@ -100,6 +111,48 @@ export class IssueService {
     return this.summaries(
       and(eq(issues.teamId, team.id), isNull(issues.archivedAt), eq(issues.inTriage, false)),
     );
+  }
+
+  /**
+   * Search over titles, descriptions, comments and identifiers of issues in teams the member
+   * can read (SPEC §5.4); permission-filtered before anything is matched.
+   */
+  async search(memberId: string, query: string, limit = 20): Promise<IssueSummary[]> {
+    const all = await this.db.select().from(teams).where(isNull(teams.archivedAt));
+    const readable: string[] = [];
+    for (const team of all) {
+      if ((await this.deps.access.forTeam(memberId, team)).read) readable.push(team.id);
+    }
+    if (readable.length === 0) return [];
+    const pattern = `%${likeEscape(query)}%`;
+    const parsed = parseIssueIdentifier(query.toUpperCase());
+    const byIdentifier = parsed
+      ? sql`(${teams.key} = ${parsed.teamKey} and ${issues.number} = ${parsed.number})`
+      : sql`false`;
+    const matches = await this.db
+      .select({ id: issues.id })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(
+        and(
+          inArray(issues.teamId, readable),
+          isNull(issues.archivedAt),
+          sql`(${byIdentifier} or ${issues.title} ilike ${pattern} or ${issues.description} ilike ${pattern}
+            or exists (select 1 from ${comments} c where c.subject_type = 'issue' and c.subject_id = ${issues.id}
+              and c.deleted_at is null and c.body ilike ${pattern}))`,
+        ),
+      )
+      .orderBy(desc(issues.updatedAt))
+      .limit(limit);
+    if (matches.length === 0) return [];
+    const found = await this.summaries(
+      inArray(
+        issues.id,
+        matches.map((m) => m.id),
+      ),
+    );
+    const order = new Map(matches.map((m, index) => [m.id, index]));
+    return found.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
   }
 
   /** Issues from outside the team waiting for a decision (SPEC §5.2). */
@@ -192,7 +245,7 @@ export class IssueService {
   async create(
     memberId: string,
     key: string,
-    input: CreateIssueInput,
+    input: CreateIssueData,
     via?: string,
   ): Promise<IssueDetail> {
     const { team, can } = await this.readableTeam(memberId, key);
@@ -203,6 +256,8 @@ export class IssueService {
     const statusId = input.statusId ?? (statuses.find((s) => s.isDefault) ?? statuses[0])!.id;
     if (!statuses.some((s) => s.id === statusId)) throw new DomainError('status_not_in_workflow');
     if (input.assigneeId) await this.assertTeamMember(team.id, input.assigneeId);
+    await this.assertLabels(team.id, input.labelIds);
+    if (input.parentId) await this.assertParent(team.id, input.parentId);
 
     const now = this.now();
     // Issues from outside the team wait in Triage until a member accepts them.
@@ -232,11 +287,17 @@ export class IssueService {
           // New issues go to the top of their column.
           sortOrder: (top?.min ?? 1) - 1,
           inTriage,
+          parentId: input.parentId,
           createdBy: memberId,
           createdAt: now,
           updatedAt: now,
         })
         .returning({ id: issues.id });
+      if (input.labelIds.length > 0) {
+        await tx
+          .insert(issueLabels)
+          .values(input.labelIds.map((labelId) => ({ issueId: row!.id, labelId })));
+      }
       await tx.insert(issueEvents).values({
         issueId: row!.id,
         actorId: memberId,
@@ -289,9 +350,18 @@ export class IssueService {
       }
     }
     if (input.assigneeId) await this.assertTeamMember(team.id, input.assigneeId);
+    if (input.labelIds) await this.assertLabels(team.id, input.labelIds);
+    if (input.parentId) await this.assertParent(team.id, input.parentId, issueId);
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
     const changes: IssueEvent['changes'] = {};
+    const { labelIds, ...fields } = input;
+    if (labelIds) {
+      const current = (await this.labelsOf([issueId])).get(issueId) ?? [];
+      const from = current.map((l) => l.id).sort();
+      const to = [...labelIds].sort();
+      if (from.join() !== to.join()) changes.labelIds = { from, to };
+    }
     for (const field of TRACKED) {
       const next = input[field];
       if (next === undefined || next === before![field]) continue;
@@ -304,8 +374,14 @@ export class IssueService {
     await this.db.transaction(async (tx) => {
       await tx
         .update(issues)
-        .set({ ...input, updatedAt: now })
+        .set({ ...fields, updatedAt: now })
         .where(eq(issues.id, issueId));
+      if (changes.labelIds) {
+        await tx.delete(issueLabels).where(eq(issueLabels.issueId, issueId));
+        if (labelIds!.length > 0) {
+          await tx.insert(issueLabels).values(labelIds!.map((labelId) => ({ issueId, labelId })));
+        }
+      }
       if (Object.keys(changes).length > 0) {
         await tx.insert(issueEvents).values({
           issueId,
@@ -383,6 +459,7 @@ export class IssueService {
         assign: false,
         comment: false,
         deleteAnyComment: false,
+        manage: false,
       };
     return this.deps.access.forTeam(memberId, team);
   }
@@ -459,6 +536,7 @@ export class IssueService {
       .leftJoin(assignee, eq(assignee.id, issues.assigneeId))
       .where(where)
       .orderBy(asc(issues.sortOrder), desc(issues.number));
+    const labelMap = await this.labelsOf(rows.map((r) => r.issue.id));
     return rows.map(({ issue, teamKey, assigneeName, status }) => ({
       id: issue.id,
       identifier: formatIssueIdentifier(teamKey, issue.number),
@@ -473,9 +551,68 @@ export class IssueService {
       dueDate: issue.dueDate,
       sortOrder: issue.sortOrder,
       inTriage: issue.inTriage,
+      labels: labelMap.get(issue.id) ?? [],
+      parentId: issue.parentId,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
+  }
+
+  /** Labels per issue, sorted by name. */
+  private async labelsOf(issueIds: string[]): Promise<Map<string, LabelRef[]>> {
+    const map = new Map<string, LabelRef[]>();
+    if (issueIds.length === 0) return map;
+    const rows = await this.db
+      .select({
+        issueId: issueLabels.issueId,
+        id: labels.id,
+        name: labels.name,
+        color: labels.color,
+      })
+      .from(issueLabels)
+      .innerJoin(labels, eq(labels.id, issueLabels.labelId))
+      .where(inArray(issueLabels.issueId, issueIds))
+      .orderBy(asc(labels.name));
+    for (const { issueId, ...label } of rows)
+      map.set(issueId, [...(map.get(issueId) ?? []), label]);
+    return map;
+  }
+
+  async teamLabels(teamId: string): Promise<LabelView[]> {
+    const rows = await this.db
+      .select()
+      .from(labels)
+      .where(or(eq(labels.teamId, teamId), isNull(labels.teamId)))
+      .orderBy(asc(labels.name));
+    return rows.map((l) => ({
+      id: l.id,
+      name: l.name,
+      color: l.color,
+      scope: l.teamId ? 'team' : 'organization',
+    }));
+  }
+
+  /** Labels must be the team's own or organization-wide. */
+  private async assertLabels(teamId: string, ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    const allowed = new Set((await this.teamLabels(teamId)).map((l) => l.id));
+    if (ids.some((id) => !allowed.has(id))) throw new DomainError('label_not_in_team');
+  }
+
+  /** Same team, and never an ancestor loop (an issue cannot sit under its own sub-issue). */
+  private async assertParent(teamId: string, parentId: string, issueId?: string): Promise<void> {
+    let current: string | null = parentId;
+    for (let depth = 0; current; depth += 1) {
+      if (current === issueId || depth > 100) throw new DomainError('invalid_parent');
+      const [row] = await this.db
+        .select({ teamId: issues.teamId, parentId: issues.parentId, archivedAt: issues.archivedAt })
+        .from(issues)
+        .where(eq(issues.id, current));
+      if (!row || row.teamId !== teamId || (depth === 0 && row.archivedAt)) {
+        throw new DomainError('invalid_parent');
+      }
+      current = row.parentId;
+    }
   }
 
   async addComment(
@@ -585,8 +722,11 @@ export class IssueService {
       .leftJoin(members, eq(members.id, comments.authorId))
       .where(and(eq(comments.subjectType, 'issue'), eq(comments.subjectId, issueId)))
       .orderBy(asc(comments.createdAt), asc(comments.id));
+    const parent = summary.parentId ? await this.summary(summary.parentId) : undefined;
     return {
       ...summary,
+      parent: parent ? { id: parent.id, identifier: parent.identifier, title: parent.title } : null,
+      children: await this.summaries(and(eq(issues.parentId, issueId), isNull(issues.archivedAt))),
       comments: thread.map(({ comment, authorName }): CommentView => {
         const own = comment.authorId === viewerId;
         const deleted = comment.deletedAt !== null;

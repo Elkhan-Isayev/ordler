@@ -111,7 +111,10 @@
     "token_expiry_too_long": "Bu müddət administratorun icazə verdiyindən uzundur.",
     "system_role": "Sistem rolları dəyişdirilə və silinə bilməz.",
     "role_in_use": "Bu rol hələ üzvlərdədir. Əvvəlcə onlardan götürün.",
-    "role_name_taken": "Bu adda rol artıq var."
+    "role_name_taken": "Bu adda rol artıq var.",
+    "label_not_in_team": "Bu etiket başqa komandaya aiddir.",
+    "label_name_taken": "Bu adda etiket artıq var.",
+    "invalid_parent": "Bu tapşırıq ana ola bilməz: eyni komandada olmalı və onun alt tapşırığı olmamalıdır."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -463,9 +466,34 @@
       "dueDate": "son tarix → {to}",
       "dueDateCleared": "son tarix götürüldü",
       "accepted": "baxışdan qəbul edildi",
-      "declined": "baxışda rədd edildi"
+      "declined": "baxışda rədd edildi",
+      "labels": "etiketlər → {to}",
+      "parent": "başqa tapşırığın altına köçürüldü",
+      "parentRemoved": "ana tapşırıqdan ayrıldı"
     },
-    "viaToken": "{actor} “{token}” tokeni ilə"
+    "viaToken": "{actor} “{token}” tokeni ilə",
+    "filters": {
+      "label": "Filtrlər",
+      "anyStatus": "İstənilən status",
+      "anyAssignee": "İstənilən icraçı",
+      "anyPriority": "İstənilən prioritet",
+      "anyLabel": "İstənilən etiket",
+      "clear": "Filtrləri sıfırla"
+    },
+    "labels": {
+      "label": "Etiketlər",
+      "edit": "Etiketləri dəyiş",
+      "new": "Yeni etiket",
+      "newPlaceholder": "Yeni etiket, Enter basın",
+      "deleted": "silinmiş etiket"
+    },
+    "subIssues": {
+      "title": "Alt tapşırıqlar",
+      "parent": "Alt tapşırığıdır:",
+      "detach": "Ayır",
+      "add": "Alt tapşırıq əlavə et",
+      "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın"
+    }
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -685,5 +713,11 @@
     "expires": "{date} bitir",
     "lastUsed": "son istifadə {date}, {ip}",
     "neverUsed": "istifadə olunmayıb"
+  },
+  "search": {
+    "title": "Axtarış",
+    "placeholder": "Tapşırıq və sorğuları axtarın…",
+    "results": "Nəticələr",
+    "empty": "Heç nə tapılmadı."
   }
 }

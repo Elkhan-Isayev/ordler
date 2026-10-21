@@ -19,6 +19,10 @@ export const DEFAULT_TEAM_STATUSES = [
 const titleSchema = z.string().trim().min(1).max(255);
 const descriptionSchema = z.string().max(100_000);
 const dueDateSchema = z.iso.date().nullable();
+const labelIdsSchema = z
+  .array(z.uuid())
+  .max(20)
+  .transform((ids) => [...new Set(ids)]);
 
 export const createIssueSchema = z.object({
   title: titleSchema,
@@ -27,8 +31,13 @@ export const createIssueSchema = z.object({
   priority: z.enum(PRIORITIES).default('none'),
   assigneeId: z.uuid().nullable().default(null),
   dueDate: dueDateSchema.default(null),
+  labelIds: labelIdsSchema.default([]),
+  /** Parent issue in the same team; makes this a sub-issue. */
+  parentId: z.uuid().nullable().default(null),
 });
-export type CreateIssueInput = z.infer<typeof createIssueSchema>;
+/** What clients send; defaults fill the rest. */
+export type CreateIssueInput = z.input<typeof createIssueSchema>;
+export type CreateIssueData = z.output<typeof createIssueSchema>;
 
 /** Partial update; `sortOrder` positions the issue inside its board column. */
 export const updateIssueSchema = z
@@ -40,6 +49,8 @@ export const updateIssueSchema = z
     assigneeId: z.uuid().nullable(),
     dueDate: dueDateSchema,
     sortOrder: z.number().finite(),
+    labelIds: labelIdsSchema,
+    parentId: z.uuid().nullable(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
@@ -61,6 +72,9 @@ export const ISSUE_ERROR_CODES = [
   'status_not_in_workflow',
   'assignee_not_in_team',
   'not_in_triage',
+  'label_not_in_team',
+  'label_name_taken',
+  'invalid_parent',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -79,6 +93,28 @@ export interface MemberRef {
   name: string;
 }
 
+/** Hex colors only, so labels render the same everywhere. */
+export const labelInputSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+});
+export type LabelInput = z.infer<typeof labelInputSchema>;
+export const createLabelSchema = labelInputSchema.extend({
+  /** null: an organization label usable by every team. */
+  teamId: z.uuid().nullable(),
+});
+export type CreateLabelInput = z.infer<typeof createLabelSchema>;
+
+export interface LabelRef {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface LabelView extends LabelRef {
+  scope: 'team' | 'organization';
+}
+
 /** Response of GET /api/teams/:key: what the board and the issue form need. */
 export interface TeamView {
   id: string;
@@ -88,6 +124,8 @@ export interface TeamView {
   department: { id: string; name: string };
   statuses: WorkflowStatus[];
   members: MemberRef[];
+  /** Team labels and organization labels, by name. */
+  labels: LabelView[];
   /** What the viewer may do; the server checks every request again. */
   can: { create: boolean; update: boolean; assign: boolean; comment: boolean };
 }
@@ -107,12 +145,22 @@ export interface IssueSummary {
   sortOrder: number;
   /** Waiting in the team's Triage; hidden from the board and list until accepted. */
   inTriage: boolean;
+  labels: LabelRef[];
+  parentId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export type IssueField =
-  'title' | 'description' | 'statusId' | 'priority' | 'assigneeId' | 'dueDate' | 'triage';
+  | 'title'
+  | 'description'
+  | 'statusId'
+  | 'priority'
+  | 'assigneeId'
+  | 'dueDate'
+  | 'labelIds'
+  | 'parentId'
+  | 'triage';
 
 /** One entry of an issue's append-only history. */
 export interface IssueEvent {
@@ -143,6 +191,9 @@ export interface CommentView {
 
 export interface IssueDetail extends IssueSummary {
   description: string;
+  parent: { id: string; identifier: string; title: string } | null;
+  /** Direct sub-issues; the UI shows two levels (SPEC §5.1). */
+  children: IssueSummary[];
   createdBy: MemberRef | null;
   events: IssueEvent[];
   comments: CommentView[];
@@ -174,3 +225,9 @@ export function teamTopic(teamId: string): string {
 export function memberTopic(memberId: string): string {
   return `member:${memberId}`;
 }
+
+/** GET /api/search */
+export const searchQuerySchema = z.object({
+  q: z.string().trim().min(1).max(200),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});

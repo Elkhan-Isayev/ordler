@@ -11,6 +11,8 @@ export interface TeamPermissions {
   assign: boolean;
   comment: boolean;
   deleteAnyComment: boolean;
+  /** Team settings: labels, workflow (team.update). */
+  manage: boolean;
 }
 
 /**
@@ -43,6 +45,7 @@ export class TeamAccess {
       assign: read && has('issue.assign'),
       comment: read && has('comment.create'),
       deleteAnyComment: read && has('comment.delete_any'),
+      manage: read && has('team.update'),
     };
   }
 

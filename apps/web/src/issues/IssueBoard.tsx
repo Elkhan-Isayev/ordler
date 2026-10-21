@@ -3,7 +3,7 @@ import { useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { positionBetween } from './position.js';
-import { Avatar, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
+import { Avatar, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
 
 const DRAG_TYPE = 'application/x-ordler-issue';
 
@@ -129,6 +129,9 @@ function Card({ issue }: { issue: IssueSummary }) {
       <div className="flex items-center gap-2 text-xs text-ink-faint">
         <PriorityIcon priority={issue.priority} />
         {issue.dueDate && <span>{issue.dueDate}</span>}
+        {issue.labels.map((label) => (
+          <LabelChip key={label.id} label={label} />
+        ))}
       </div>
     </Link>
   );

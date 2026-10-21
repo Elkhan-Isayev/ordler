@@ -33,6 +33,10 @@ export const TEAM: TeamView = {
     { id: 'm-ann', name: 'Ann Lee' },
     { id: 'm-bob', name: 'Bob Stone' },
   ],
+  labels: [
+    { id: 'l-bug', name: 'Bug', color: '#e5484d', scope: 'team' },
+    { id: 'l-sec', name: 'Security', color: '#3e63dd', scope: 'organization' },
+  ],
   can: { create: true, update: true, assign: true, comment: true },
 };
 
@@ -53,6 +57,8 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     dueDate: null,
     sortOrder: -number,
     inTriage: false,
+    labels: [],
+    parentId: null,
     createdAt: '2026-10-18T09:00:00.000Z',
     updatedAt: '2026-10-18T09:00:00.000Z',
     ...overrides,
@@ -63,6 +69,8 @@ export function detail(number: number, overrides: Partial<IssueDetail> = {}): Is
   return {
     ...issue(number),
     description: 'Screen flickers',
+    parent: null,
+    children: [],
     createdBy: { id: 'm-ann', name: 'Ann Lee' },
     comments: [],
     events: [

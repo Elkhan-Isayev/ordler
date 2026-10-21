@@ -124,4 +124,25 @@ describe('describeEvent', () => {
       i18n.t('issues.event.created', { actor: 'Ann Lee via token “Claude”' }),
     );
   });
+
+  it('names labels, including deleted ones, and parent changes', async () => {
+    const i18n = await createI18n('en');
+    const base = {
+      id: 'e',
+      kind: 'updated' as const,
+      actor: null,
+      viaToken: null,
+      createdAt: '2026-10-18T09:00:00.000Z',
+    };
+    expect(
+      describeEvent(
+        i18n.t,
+        { ...base, changes: { labelIds: { from: [], to: ['l-bug', 'l-gone'] } } },
+        TEAM,
+      ),
+    ).toBe('Someone: labels → Bug, deleted label');
+    expect(
+      describeEvent(i18n.t, { ...base, changes: { parentId: { from: 'i1', to: null } } }, TEAM),
+    ).toBe('Someone: detached from its parent');
+  });
 });

@@ -6,7 +6,7 @@ import {
 } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
-import { Avatar, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
+import { Avatar, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
 
 interface Group {
   id: string;
@@ -69,6 +69,11 @@ export function IssueList({
                   <span className="w-20 shrink-0 text-ink-faint">{issue.identifier}</span>
                   <StatusIcon category={issue.status.category} />
                   <span className="min-w-0 flex-1 truncate text-ink">{issue.title}</span>
+                  <span className="hidden gap-1 md:flex">
+                    {issue.labels.map((label) => (
+                      <LabelChip key={label.id} label={label} />
+                    ))}
+                  </span>
                   {showTeam && <span className="text-xs text-ink-faint">{issue.teamKey}</span>}
                   {issue.dueDate && <span className="text-xs text-ink-faint">{issue.dueDate}</span>}
                   <Avatar member={issue.assignee} />

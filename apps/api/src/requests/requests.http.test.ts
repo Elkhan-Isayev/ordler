@@ -727,3 +727,22 @@ describe('live updates, counters and channels', () => {
     expect(slackPosts.join()).not.toContain('Headset');
   });
 });
+
+describe('request search', () => {
+  it('finds requests only for people who may open them', async () => {
+    await submitHeadsets((await hardwareType()).id, []);
+    const find = async (cookie: string, q: string) =>
+      (await call('GET', `/api/search?q=${encodeURIComponent(q)}`, cookie)).json<{
+        requests: Array<{ identifier: string }>;
+      }>().requests;
+    expect((await find(people.agent!.cookie, 'headsets')).map((r) => r.identifier)).toEqual([
+      'REQ-1',
+    ]);
+    expect((await find(people.agent!.cookie, 'req-1')).map((r) => r.identifier)).toEqual(['REQ-1']);
+    // The approver sees it; an unrelated Finance member does not.
+    expect((await find(people.csboss!.cookie, 'headsets')).map((r) => r.identifier)).toEqual([
+      'REQ-1',
+    ]);
+    expect(await find(people.accountant!.cookie, 'headsets')).toEqual([]);
+  });
+});

@@ -19,6 +19,7 @@ import { RichEditor } from '../editor/RichEditor.js';
 import { useRealtime } from '../realtime/client.js';
 import { Link } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
+import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
 
 type TimelineEntry =
@@ -143,6 +144,12 @@ export function IssuePage({ identifier }: { identifier: string }) {
             onUpload={upload}
             onUploadError={(failure) => setError(errorKey(failure))}
           />
+          <IssueRelations
+            issue={issue}
+            team={team}
+            onChanged={() => void reload()}
+            onError={(code) => setError(code)}
+          />
           <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
             <ol className="flex flex-col gap-3 text-sm text-ink-muted">
@@ -234,6 +241,16 @@ export function IssuePage({ identifier }: { identifier: string }) {
               ))}
             </select>
           </Property>
+          <Property label={t('issues.labels.label')}>
+            <LabelPicker
+              issue={issue}
+              team={team}
+              editable={canEdit}
+              onSave={(labelIds) => save({ labelIds })}
+              onTeamChanged={() => void reload()}
+              onError={(code) => setError(code)}
+            />
+          </Property>
           <Property label={t('issues.dueDate')}>
             <input
               type="date"
@@ -289,6 +306,12 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
           : t('issues.event.dueDateCleared');
       case 'triage':
         return change.to === 'accepted' ? t('issues.event.accepted') : t('issues.event.declined');
+      case 'labelIds':
+        return t('issues.event.labels', {
+          to: (change.to as string[]).map((id) => labelName(t, team, id)).join(', ') || '—',
+        });
+      case 'parentId':
+        return change.to ? t('issues.event.parent') : t('issues.event.parentRemoved');
     }
   });
   return `${actor}: ${parts.join(', ')}`;
@@ -297,6 +320,10 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
 function statusName(t: TFunction, team: TeamView, id: unknown): string {
   const status = team.statuses.find((s) => s.id === id);
   return status ? statusLabel(t, status) : '—';
+}
+
+function labelName(t: TFunction, team: TeamView, id: string): string {
+  return team.labels.find((l) => l.id === id)?.name ?? t('issues.labels.deleted');
 }
 
 function memberName(t: TFunction, team: TeamView, id: unknown): string {

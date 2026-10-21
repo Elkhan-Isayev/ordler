@@ -361,6 +361,8 @@ export const issues = pgTable(
     inTriage: boolean('in_triage').notNull().default(false),
     /** The request this issue was spawned from or linked to (SPEC §6.2). */
     sourceRequestId: uuid('source_request_id'),
+    /** Parent issue in the same team (SPEC §5.1 sub-issues); any depth. */
+    parentId: uuid('parent_id'),
     createdBy: uuid('created_by').references(() => members.id),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -370,6 +372,7 @@ export const issues = pgTable(
     uniqueIndex('issues_team_number_uq').on(t.teamId, t.number),
     index('issues_team_status_idx').on(t.teamId, t.statusId),
     index('issues_assignee_idx').on(t.assigneeId),
+    index('issues_parent_idx').on(t.parentId),
   ],
 );
 
@@ -672,5 +675,41 @@ export const personalTokens = pgTable(
   (t) => [
     uniqueIndex('personal_tokens_hash_uq').on(t.tokenHash),
     index('personal_tokens_member_idx').on(t.memberId, t.createdAt),
+  ],
+);
+
+/** Labels (SPEC §5.1): team labels, or organization labels when `team_id` is null. */
+export const labels = pgTable(
+  'labels',
+  {
+    id: id(),
+    teamId: uuid('team_id').references(() => teams.id),
+    name: text('name').notNull(),
+    color: text('color').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('labels_team_name_uq')
+      .on(t.teamId, sql`lower(${t.name})`)
+      .where(sql`${t.teamId} is not null`),
+    uniqueIndex('labels_org_name_uq')
+      .on(sql`lower(${t.name})`)
+      .where(sql`${t.teamId} is null`),
+  ],
+);
+
+export const issueLabels = pgTable(
+  'issue_labels',
+  {
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id),
+    labelId: uuid('label_id')
+      .notNull()
+      .references(() => labels.id),
+  },
+  (t) => [
+    primaryKey({ columns: [t.issueId, t.labelId] }),
+    index('issue_labels_label_idx').on(t.labelId),
   ],
 );

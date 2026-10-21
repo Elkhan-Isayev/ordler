@@ -111,7 +111,10 @@
     "token_expiry_too_long": "This expiry is longer than your administrator allows.",
     "system_role": "System roles cannot be changed or deleted.",
     "role_in_use": "Members still hold this role. Remove it from them first.",
-    "role_name_taken": "A role with this name already exists."
+    "role_name_taken": "A role with this name already exists.",
+    "label_not_in_team": "This label belongs to another team.",
+    "label_name_taken": "A label with this name already exists.",
+    "invalid_parent": "This issue cannot be the parent: it must be in the same team and not one of its sub-issues."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -463,9 +466,34 @@
       "dueDate": "due date → {to}",
       "dueDateCleared": "due date removed",
       "accepted": "accepted from triage",
-      "declined": "declined in triage"
+      "declined": "declined in triage",
+      "labels": "labels → {to}",
+      "parent": "moved under another issue",
+      "parentRemoved": "detached from its parent"
     },
-    "viaToken": "{actor} via token “{token}”"
+    "viaToken": "{actor} via token “{token}”",
+    "filters": {
+      "label": "Filters",
+      "anyStatus": "Any status",
+      "anyAssignee": "Any assignee",
+      "anyPriority": "Any priority",
+      "anyLabel": "Any label",
+      "clear": "Clear filters"
+    },
+    "labels": {
+      "label": "Labels",
+      "edit": "Edit labels",
+      "new": "New label",
+      "newPlaceholder": "New label, press Enter",
+      "deleted": "deleted label"
+    },
+    "subIssues": {
+      "title": "Sub-issues",
+      "parent": "Sub-issue of",
+      "detach": "Detach",
+      "add": "Add sub-issue",
+      "addPlaceholder": "Add a sub-issue, press Enter"
+    }
   },
   "editor": {
     "toolbar": "Formatting",
@@ -685,5 +713,11 @@
     "expires": "expires {date}",
     "lastUsed": "last used {date} from {ip}",
     "neverUsed": "never used"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search issues and requests…",
+    "results": "Results",
+    "empty": "Nothing found."
   }
 }

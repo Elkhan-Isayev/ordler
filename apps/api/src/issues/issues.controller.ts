@@ -8,11 +8,15 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
   commentBodySchema,
+  searchQuerySchema,
   createIssueSchema,
+  createLabelSchema,
+  labelInputSchema,
   triageActionSchema,
   updateIssueSchema,
 } from '@ordler/shared';
@@ -105,5 +109,32 @@ export class IssuesController {
   @Get('me/issues')
   mine(@Req() request: OrdlerRequest) {
     return this.ctx.issues.assignedTo(request.member!.id);
+  }
+
+  @Post('labels')
+  createLabel(@Body() body: unknown, @Req() request: OrdlerRequest) {
+    return this.ctx.labels.create(request.member!.id, parseBody(createLabelSchema, body));
+  }
+
+  @Patch('labels/:id')
+  updateLabel(@Param('id') id: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    return this.ctx.labels.update(request.member!.id, id, parseBody(labelInputSchema, body));
+  }
+
+  @Delete('labels/:id')
+  @HttpCode(204)
+  removeLabel(@Param('id') id: string, @Req() request: OrdlerRequest) {
+    return this.ctx.labels.remove(request.member!.id, id);
+  }
+
+  /** Cmd+K search (SPEC §5.4): issues and requests the member can open. */
+  @Get('search')
+  async search(@Query() query: unknown, @Req() request: OrdlerRequest) {
+    const { q, limit } = parseBody(searchQuerySchema, query);
+    const [issues, requests] = await Promise.all([
+      this.ctx.issues.search(request.member!.id, q, limit),
+      this.ctx.requests.search(request.member!.id, q, limit),
+    ]);
+    return { issues, requests };
   }
 }

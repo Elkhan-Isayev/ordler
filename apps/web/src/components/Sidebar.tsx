@@ -26,6 +26,8 @@ export interface SidebarProps {
   /** Shown to members holding any administration permission. */
   showAdmin?: boolean;
   currentPath?: string;
+  /** Opens the command palette (Cmd/Ctrl+K). */
+  onSearch?: () => void;
 }
 
 const CurrentPath = createContext<string | undefined>(undefined);
@@ -45,6 +47,7 @@ export function Sidebar({
   footer,
   showAdmin = false,
   currentPath,
+  onSearch,
 }: SidebarProps) {
   const { t } = useTranslation();
 
@@ -59,6 +62,16 @@ export function Sidebar({
             {workspaceName.slice(0, 2).toUpperCase()}
           </span>
           <span className="truncate font-semibold text-ink">{workspaceName}</span>
+          {onSearch && (
+            <button
+              type="button"
+              onClick={onSearch}
+              title="Ctrl+K"
+              className="ml-auto rounded-md px-2 py-1 text-xs hover:bg-hover hover:text-ink"
+            >
+              {t('nav.search')}
+            </button>
+          )}
         </div>
 
         <ul className="flex flex-col gap-0.5">

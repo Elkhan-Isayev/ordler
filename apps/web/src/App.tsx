@@ -2,6 +2,7 @@ import type { MeResponse } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { AdminPage, adminSections } from './admin/AdminPage.js';
 import { IntegrationsSection } from './admin/IntegrationsSection.js';
+import { CommandPalette, useCommandPalette } from './components/CommandPalette.js';
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
 import { IssuePage } from './issues/IssuePage.js';
@@ -43,13 +44,16 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
   const counts = useInboxCounts(me.member.id);
+  const [searching, setSearching] = useCommandPalette();
 
   return (
     <div className="flex h-screen">
+      {searching && <CommandPalette onClose={() => setSearching(false)} />}
       <Sidebar
         workspaceName={me.workspace.companyName}
         inboxCount={counts.unread}
         pendingApprovals={counts.approvals}
+        onSearch={() => setSearching(true)}
         departments={me.departments}
         showAdmin={canAdminister}
         currentPath={path}

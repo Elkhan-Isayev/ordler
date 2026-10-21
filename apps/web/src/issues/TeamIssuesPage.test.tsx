@@ -14,6 +14,7 @@ beforeEach(() => {
 afterEach(() => {
   realtime.reset();
   vi.unstubAllGlobals();
+  window.history.replaceState(null, '', '/');
 });
 
 const base = (issues = [issue(2), issue(1, { statusId: 's-progress' })]) => ({
@@ -158,5 +159,29 @@ describe('TeamIssuesPage', () => {
     });
     await renderWithI18n(<TeamIssuesPage teamKey="NOPE" view="board" />);
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('filters by label and priority and keeps filters in the URL', async () => {
+    const bug = { id: 'l-bug', name: 'Bug', color: '#e5484d' };
+    mockApi(
+      base([
+        issue(1, { title: 'Crash', labels: [bug], priority: 'high' }),
+        issue(2, { title: 'Typo', priority: 'high' }),
+        issue(3, { title: 'Slow', labels: [bug] }),
+      ]),
+    );
+    window.history.replaceState(null, '', '/teams/HELP/issues?priority=high');
+    await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="list" />);
+    expect(await screen.findByText('Crash')).toBeInTheDocument();
+    expect(screen.getByText('Typo')).toBeInTheDocument();
+    expect(screen.queryByText('Slow')).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Labels' }), 'l-bug');
+    expect(screen.queryByText('Typo')).not.toBeInTheDocument();
+    expect(window.location.search).toBe('?priority=high&label=l-bug');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(screen.getByText('Slow')).toBeInTheDocument();
+    expect(window.location.search).toBe('');
   });
 });

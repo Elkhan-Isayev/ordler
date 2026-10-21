@@ -44,6 +44,7 @@ export function issueBrief(ctx: AppContext, issue: IssueSummary) {
     status: issue.status.name,
     priority: issue.priority,
     assignee: issue.assignee?.name ?? null,
+    labels: issue.labels.map((l) => l.name),
     dueDate: issue.dueDate,
     inTriage: issue.inTriage,
     updatedAt: issue.updatedAt,
@@ -55,6 +56,12 @@ export function issueFull(ctx: AppContext, issue: IssueDetail) {
   return {
     ...issueBrief(ctx, issue),
     description: issue.description,
+    parent: issue.parent?.identifier ?? null,
+    subIssues: issue.children.map((c) => ({
+      identifier: c.identifier,
+      title: c.title,
+      status: c.status.name,
+    })),
     createdBy: issue.createdBy?.name ?? null,
     createdAt: issue.createdAt,
     // Long threads are cut to the latest comments to keep agent context small.
@@ -129,6 +136,15 @@ function assigneeId(team: TeamView, caller: McpCaller, value: string | null): st
   return member.id;
 }
 
+/** Label names as written by an agent; unknown names are refused. */
+function labelIds(team: TeamView, names: string[]): string[] {
+  return names.map((name) => {
+    const label = team.labels.find((l) => l.name.toLowerCase() === name.trim().toLowerCase());
+    if (!label) throw new DomainError('label_not_in_team');
+    return label.id;
+  });
+}
+
 function teamKeyOf(identifier: string): string {
   return identifier.split('-')[0]!.toUpperCase();
 }
@@ -187,26 +203,18 @@ const tools: ToolDefinition[] = [
   {
     name: 'search',
     description:
-      'Find issues in the member’s teams and requests they submitted by words in the title or identifier.',
+      'Search issues (titles, descriptions, comments, identifiers) and requests the member can open.',
     scope: 'read',
     input: z.object({ query: z.string().trim().min(1).max(200), limit: limitSchema }),
     async run(ctx, caller, args: { query: string; limit: number }) {
-      const q = args.query.toLowerCase();
-      const matches = (identifier: string, title: string) =>
-        identifier.toLowerCase().includes(q) || title.toLowerCase().includes(q);
-      const issues = (
-        await Promise.all(
-          (await myTeams(ctx, caller.memberId)).map((t) => ctx.issues.list(caller.memberId, t.key)),
-        )
-      )
-        .flat()
-        .filter((i) => matches(i.identifier, i.title));
-      const requests = (await ctx.requests.mine(caller.memberId)).filter((r) =>
-        matches(r.identifier, r.title),
-      );
+      const limit = Math.min(args.limit, 50);
+      const [issues, requests] = await Promise.all([
+        ctx.issues.search(caller.memberId, args.query, limit),
+        ctx.requests.search(caller.memberId, args.query, limit),
+      ]);
       return {
-        issues: issues.slice(0, args.limit).map((i) => issueBrief(ctx, i)),
-        requests: requests.slice(0, args.limit).map((r) => requestBrief(ctx, r)),
+        issues: issues.map((i) => issueBrief(ctx, i)),
+        requests: requests.map((r) => requestBrief(ctx, r)),
       };
     },
   },
@@ -232,25 +240,30 @@ const tools: ToolDefinition[] = [
   {
     name: 'list_team_issues',
     description:
-      'Issues of a team by key (e.g. HELP); filter by status name and assignee name or "me".',
+      'Issues of a team by key (e.g. HELP); filter by status name, assignee name or "me", and label.',
     scope: 'read',
     input: z.object({
       team: z.string().trim().min(1).max(10),
       status: z.string().max(100).optional(),
       assignee: z.string().max(200).optional(),
+      label: z.string().max(60).optional(),
       limit: limitSchema,
     }),
     async run(
       ctx,
       caller,
-      args: { team: string; status?: string; assignee?: string; limit: number },
+      args: { team: string; status?: string; assignee?: string; label?: string; limit: number },
     ) {
       const key = args.team.toUpperCase();
       const team = await ctx.issues.team(caller.memberId, key);
       const status = args.status ? statusId(team, args.status) : undefined;
       const assignee = args.assignee ? assigneeId(team, caller, args.assignee) : undefined;
+      const label = args.label ? labelIds(team, [args.label])[0] : undefined;
       const issues = (await ctx.issues.list(caller.memberId, key)).filter(
-        (i) => (!status || i.statusId === status) && (!assignee || i.assignee?.id === assignee),
+        (i) =>
+          (!status || i.statusId === status) &&
+          (!assignee || i.assignee?.id === assignee) &&
+          (!label || i.labels.some((l) => l.id === label)),
       );
       return issues.slice(0, args.limit).map((i) => issueBrief(ctx, i));
     },
@@ -267,6 +280,8 @@ const tools: ToolDefinition[] = [
       priority: z.enum(PRIORITIES).optional(),
       status: z.string().max(100).optional(),
       assignee: z.string().max(200).optional().describe('Member name, or "me"'),
+      labels: z.array(z.string().max(60)).max(20).optional().describe('Label names'),
+      parent: identifierSchema.optional().describe('Parent issue identifier, for a sub-issue'),
     }),
     async run(
       ctx,
@@ -278,6 +293,8 @@ const tools: ToolDefinition[] = [
         priority?: (typeof PRIORITIES)[number];
         status?: string;
         assignee?: string;
+        labels?: string[];
+        parent?: string;
       },
     ) {
       const key = args.team.toUpperCase();
@@ -291,6 +308,8 @@ const tools: ToolDefinition[] = [
           priority: args.priority ?? 'none',
           assigneeId: args.assignee ? assigneeId(team, caller, args.assignee) : null,
           dueDate: null,
+          labelIds: labelIds(team, args.labels ?? []),
+          parentId: args.parent ? (await ctx.issues.get(caller.memberId, args.parent)).id : null,
           ...(args.status ? { statusId: statusId(team, args.status) } : {}),
         },
         caller.tokenName,
@@ -310,6 +329,7 @@ const tools: ToolDefinition[] = [
       status: z.string().max(100).optional(),
       priority: z.enum(PRIORITIES).optional(),
       assignee: z.string().max(200).nullable().optional(),
+      labels: z.array(z.string().max(60)).max(20).optional().describe('Replaces all labels'),
     }),
     async run(
       ctx,
@@ -321,6 +341,7 @@ const tools: ToolDefinition[] = [
         status?: string;
         priority?: (typeof PRIORITIES)[number];
         assignee?: string | null;
+        labels?: string[];
       },
     ) {
       const team = await ctx.issues.team(caller.memberId, teamKeyOf(args.identifier));

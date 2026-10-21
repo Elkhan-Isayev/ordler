@@ -48,7 +48,7 @@ import {
   teams,
   workflowStatuses,
 } from '../db/schema.js';
-import type { IssueService, TeamChannels } from '../issues/issue.service.js';
+import { likeEscape, type IssueService, type TeamChannels } from '../issues/issue.service.js';
 import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess } from '../issues/team-access.js';
 import type { Notifier } from '../notifications/notifier.js';
@@ -558,6 +558,8 @@ export class RequestService {
       priority: row.priority,
       assigneeId: null,
       dueDate: null,
+      labelIds: [],
+      parentId: null,
     });
     await this.db.update(issues).set({ sourceRequestId: row.id }).where(eq(issues.id, created.id));
     await this.event(row.id, actor.memberId, 'issue_spawned', { identifier: created.identifier });
@@ -598,6 +600,33 @@ export class RequestService {
       .where(eq(requestGroups.number, number));
     if (!group) throw new DomainError('not_found');
     return this.groupView(memberId, group.id);
+  }
+
+  /**
+   * Requests the member may open whose title, description or identifier matches; comments are
+   * not searched so internal notes can never surface to requesters.
+   */
+  async search(memberId: string, query: string, limit = 20): Promise<RequestSummary[]> {
+    const pattern = `%${likeEscape(query)}%`;
+    const number = parseRequestIdentifier(query);
+    const candidates = await this.db
+      .select()
+      .from(requests)
+      .where(
+        sql`(${number ? sql`${requests.number} = ${number}` : sql`false`}
+          or ${requests.title} ilike ${pattern} or ${requests.description} ilike ${pattern})`,
+      )
+      .orderBy(desc(requests.updatedAt))
+      .limit(200);
+    const visible: string[] = [];
+    for (const row of candidates) {
+      if (visible.length >= limit) break;
+      if (await this.canSee(memberId, row)) visible.push(row.id);
+    }
+    if (visible.length === 0) return [];
+    const found = await this.summaries(inArray(requests.id, visible), true);
+    const order = new Map(visible.map((id, index) => [id, index]));
+    return found.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
   }
 
   async mine(memberId: string): Promise<RequestSummary[]> {

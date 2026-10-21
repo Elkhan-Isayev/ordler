@@ -36,6 +36,8 @@ import type {
   InstallDatabaseInput,
   InviteResponse,
   CreateIssueInput,
+  CreateLabelInput,
+  LabelView,
   IssueDetail,
   IssueSummary,
   TeamView,
@@ -176,6 +178,12 @@ export const api = {
   team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
+  createLabel: (body: CreateLabelInput) =>
+    apiRequest<LabelView>('/api/labels', { method: 'POST', body }),
+  search: (q: string) =>
+    apiRequest<{ issues: IssueSummary[]; requests: RequestSummary[] }>(
+      `/api/search?q=${encodeURIComponent(q)}`,
+    ),
   createIssue: (key: string, body: Partial<CreateIssueInput> & { title: string }) =>
     apiRequest<IssueDetail>(`/api/teams/${encodeURIComponent(key)}/issues`, {
       method: 'POST',

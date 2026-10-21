@@ -93,3 +93,13 @@ export function Avatar({ member }: { member: MemberRef | null }) {
 
 export const selectClass =
   'rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink outline-none focus:border-accent disabled:opacity-60';
+
+/** A label as a small pill with its color dot. */
+export function LabelChip({ label }: { label: { name: string; color: string } }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-line px-1.5 py-0.5 text-[11px] text-ink-muted">
+      <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: label.color }} />
+      {label.name}
+    </span>
+  );
+}
