@@ -98,7 +98,15 @@
     "assignee_not_in_team": "Die zuständige Person muss zum Team gehören.",
     "file_too_large": "Die Datei ist zu groß.",
     "file_missing": "Wähle eine Datei zum Hochladen.",
-    "not_in_triage": "Diese Aufgabe wurde bereits gesichtet."
+    "not_in_triage": "Diese Aufgabe wurde bereits gesichtet.",
+    "form_invalid": "Prüfe die markierten Felder.",
+    "approvals_not_allowed": "Dieser Anfragetyp erlaubt keine zusätzlichen Genehmigungen.",
+    "not_an_approver": "Du genehmigst diesen Schritt nicht.",
+    "already_decided": "Du hast bereits entschieden.",
+    "step_not_active": "Dieser Schritt wartet nicht auf eine Entscheidung.",
+    "invalid_transition": "Im aktuellen Status nicht möglich.",
+    "session_required": "Genehmigungen sind nur angemeldet möglich.",
+    "request_type_archived": "Dieser Anfragetyp wird nicht mehr angeboten."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -119,6 +127,7 @@
     "nav": {
       "departments": "Abteilungen und Teams",
       "members": "Mitglieder",
+      "requestTypes": "Anfragetypen",
       "authentication": "Anmeldung",
       "mail": "Mailserver",
       "database": "Datenbank",
@@ -140,7 +149,8 @@
       "confirmArchive": "„{name}“ archivieren? Es bleibt in der Historie, kann aber nicht mehr verwendet werden.",
       "empty": "Noch keine Abteilungen. Lege die erste an.",
       "noTeams": "Noch keine Teams.",
-      "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}"
+      "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+      "head": "Leitung"
     },
     "members": {
       "title": "Mitglieder",
@@ -247,6 +257,37 @@
       "change": "Verbindung ändern",
       "changeWarning": "Ordler kopiert keine Daten zwischen Datenbanken. Gib eine Datenbank an, die bereits Ordler-Daten enthält (z. B. aus einem Backup wiederhergestellt), oder eine leere, um neu zu beginnen. Nur Owner können das ändern.",
       "restartRequired": "Gespeichert. Starte Ordler neu, um die neue Verbindung zu nutzen, z. B. docker compose restart ordler."
+    },
+    "requestTypes": {
+      "title": "Anfragetypen",
+      "subtitle": "Was jede Abteilung in ihrem Serviceportal anbietet, mit Formularen und Genehmigungen.",
+      "new": "Neuer Anfragetyp",
+      "needsTeam": "Lege zuerst ein Team an: Anfragen gehen an ein Team.",
+      "editor": "Anfragetyp",
+      "name": "Name",
+      "description": "Beschreibung",
+      "targetTeam": "Anfragen gehen an Team",
+      "fields": "Formularfelder",
+      "fieldN": "Feld {n}",
+      "fieldLabel": "Feldname",
+      "fieldType": "Feldtyp",
+      "options": "Optionen, durch Komma getrennt",
+      "required": "Pflicht",
+      "removeField": "Feld {n} entfernen",
+      "addField": "Feld hinzufügen",
+      "mandatoryApprovals": "Pflichtgenehmigungen in Reihenfolge",
+      "allowRequesterApprovals": "Antragsteller dürfen Genehmigungen hinzufügen (z. B. Finance)",
+      "empty": "Noch keine Anfragetypen.",
+      "summary": "{fields, plural, =0 {Keine Felder} one {# Feld} other {# Felder}}",
+      "type": {
+        "text": "Text",
+        "long_text": "Langer Text",
+        "number": "Zahl",
+        "date": "Datum",
+        "select": "Auswahl",
+        "multi_select": "Mehrfachauswahl",
+        "checkbox": "Kontrollkästchen"
+      }
     }
   },
   "invite": {
@@ -378,5 +419,132 @@
     "accept": "Annehmen",
     "decline": "Ablehnen",
     "reason": "Warum wird abgelehnt?"
+  },
+  "portals": {
+    "empty": "Noch bietet keine Abteilung Anfragen an.",
+    "addToGroup": "„{name}“ zu einer Anfrage an mehrere Abteilungen hinzufügen",
+    "sendToSeveral": "{count, plural, one {Anfrage an # Abteilung} other {Anfrage an # Abteilungen}}",
+    "groupHint": "Wähle Anfragetypen mehrerer Abteilungen, um eine Anfrage an alle zu senden."
+  },
+  "requests": {
+    "new": "Neue Anfrage",
+    "newTitle": "Neue Anfrage",
+    "newGroupTitle": "Eine Anfrage an mehrere Abteilungen",
+    "groupTo": "Geht an: {departments}",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibe, was du brauchst…",
+    "choose": "Auswählen…",
+    "yes": "Ja",
+    "no": "Nein",
+    "requiredApprovals": "Erforderliche Genehmigungen",
+    "addApprovals": "Zusätzliche Genehmigungen (optional)",
+    "addGroupApprovals": "Genehmigungen für die ganze Anfrage (optional)",
+    "submit": "Anfrage senden",
+    "empty": "Noch keine Anfragen.",
+    "requester": "Antragsteller",
+    "team": "Team",
+    "otherDepartments": "Andere Abteilungen",
+    "linkedIssues": "Verknüpfte Aufgaben",
+    "createIssue": "Aufgabe anlegen",
+    "workProgress": "Erledigt: {done} von {total}",
+    "internal": "Intern",
+    "internalComment": "Intern (nur Team)",
+    "comment": "Kommentar",
+    "teamActions": "Team-Aktionen",
+    "accept": "Annehmen",
+    "askRequester": "Antragsteller fragen",
+    "resume": "Fortsetzen",
+    "resolve": "Lösen",
+    "decline": "Abweisen",
+    "send": "Senden",
+    "declineComment": "Grund der Abweisung",
+    "waitComment": "Frage an den Antragsteller",
+    "resolveComment": "Was wurde getan (optional)",
+    "resolvedQuestion": "Ist deine Anfrage gelöst?",
+    "confirm": "Ja, schließen",
+    "reopen": "Wieder öffnen",
+    "reopenComment": "Was fehlt noch?",
+    "changesRequested": "Änderungen angefordert — anpassen und erneut senden",
+    "resubmit": "Erneut senden",
+    "departments": "Abteilungen",
+    "status": {
+      "pending_approval": "Wartet auf Genehmigung",
+      "changes_requested": "Änderungen angefordert",
+      "rejected": "Abgelehnt",
+      "open": "Offen",
+      "in_progress": "In Arbeit",
+      "waiting_for_requester": "Wartet auf Antragsteller",
+      "resolved": "Gelöst",
+      "closed": "Geschlossen",
+      "declined": "Abgewiesen"
+    },
+    "groupStatus": {
+      "pending_approval": "Wartet auf Genehmigung",
+      "rejected": "Abgelehnt",
+      "in_progress": "In Arbeit",
+      "resolved": "Gelöst"
+    },
+    "fieldError": {
+      "required": "Pflichtfeld.",
+      "invalid": "Ungültiger Wert."
+    },
+    "event": {
+      "submitted": "{actor}: Anfrage gesendet",
+      "released": "Genehmigt — an das Team übergeben",
+      "status": "{actor}: Status → {status}",
+      "updated": "{actor}: Anfrage geändert",
+      "assigned": "{actor}: Zuständigkeit geändert",
+      "priority": "{actor}: Priorität → {priority}",
+      "issueLinked": "{actor}: {issue} verknüpft",
+      "resubmitted": "{actor}: mit Änderungen erneut gesendet"
+    }
+  },
+  "approvals": {
+    "title": "Genehmigungen",
+    "empty": "Nichts wartet auf deine Entscheidung.",
+    "stepN": "Schritt {n}",
+    "groupLevel": "ganze Anfrage",
+    "addedByRequester": "vom Antragsteller hinzugefügt",
+    "anyOf": "Eine Person von: {people}",
+    "allOf": "Alle: {people}",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "requestChanges": "Änderungen anfordern",
+    "comment": "Kommentar",
+    "commentPlaceholder": "Kommentar (Pflicht beim Ablehnen und Anfordern von Änderungen)",
+    "commentHint": "Deine Entscheidung ist endgültig und wird im Audit-Log festgehalten.",
+    "addStep": "Genehmigung hinzufügen",
+    "removeStep": "Schritt {n} entfernen",
+    "approverType": "Genehmigende Person",
+    "role": "Rolle",
+    "department": "Abteilung",
+    "person": "Person",
+    "rule": "Regel",
+    "ruleAny": "Eine Person entscheidet",
+    "ruleAll": "Alle müssen genehmigen",
+    "status": {
+      "waiting": "Wartet",
+      "active": "Wartet auf Entscheidung",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "changes_requested": "Änderungen angefordert"
+    },
+    "decision": {
+      "approve": "genehmigt",
+      "reject": "abgelehnt",
+      "request_changes": "Änderungen angefordert"
+    },
+    "type": {
+      "requester_department_supervisor": "Vorgesetzte der Abteilung des Antragstellers",
+      "role": "Rolle in einer Abteilung",
+      "department_head": "Abteilungsleitung",
+      "user": "Bestimmte Person"
+    },
+    "selector": {
+      "requester_department_supervisor": "Vorgesetzte der Abteilung des Antragstellers",
+      "role": "{role} · {department}",
+      "department_head": "Leitung {department}"
+    }
   }
 }

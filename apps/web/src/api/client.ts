@@ -4,6 +4,20 @@ import type {
   AdminRole,
   ApiErrorBody,
   AssignRoleInput,
+  ApprovalDecisionInput,
+  CreateRequestGroupInput,
+  CreateRequestInput,
+  DirectoryView,
+  PendingApproval,
+  PortalView,
+  RequestAction,
+  RequestGroupView,
+  RequesterAction,
+  RequestSummary,
+  RequestTypeInput,
+  RequestTypeView,
+  RequestView,
+  ResubmitRequestInput,
   AttachmentView,
   DatabaseProbeResult,
   DatabaseSettingsInput,
@@ -183,6 +197,66 @@ export const api = {
     apiRequest<IssueDetail>(`/api/comments/${id}`, { method: 'DELETE' }),
   uploadAttachment: (teamKey: string, file: File) =>
     uploadFile<AttachmentView>(`/api/teams/${encodeURIComponent(teamKey)}/attachments`, file),
+  directory: () => apiRequest<DirectoryView>('/api/directory'),
+  portals: () => apiRequest<PortalView[]>('/api/portals'),
+  requestType: (id: string) => apiRequest<RequestTypeView>(`/api/request-types/${id}`),
+  departmentRequestTypes: (departmentId: string) =>
+    apiRequest<RequestTypeView[]>(`/api/admin/departments/${departmentId}/request-types`),
+  createRequestType: (departmentId: string, body: RequestTypeInput) =>
+    apiRequest<RequestTypeView>(`/api/admin/departments/${departmentId}/request-types`, {
+      method: 'POST',
+      body,
+    }),
+  updateRequestType: (id: string, body: RequestTypeInput) =>
+    apiRequest<RequestTypeView>(`/api/admin/request-types/${id}`, { method: 'PUT', body }),
+  archiveRequestType: (id: string) =>
+    apiRequest<void>(`/api/admin/request-types/${id}/archive`, { method: 'POST' }),
+  updateDepartment: (id: string, body: { name?: string; headMemberId?: string | null }) =>
+    apiRequest<void>(`/api/admin/departments/${id}`, { method: 'PATCH', body }),
+  submitRequest: (body: CreateRequestInput) =>
+    apiRequest<RequestView>('/api/requests', { method: 'POST', body }),
+  submitRequestGroup: (body: CreateRequestGroupInput) =>
+    apiRequest<RequestGroupView>('/api/request-groups', { method: 'POST', body }),
+  request: (identifier: string) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}`),
+  requestGroup: (identifier: string) =>
+    apiRequest<RequestGroupView>(`/api/request-groups/${encodeURIComponent(identifier)}`),
+  myRequests: () => apiRequest<RequestSummary[]>('/api/me/requests'),
+  myApprovals: () => apiRequest<PendingApproval[]>('/api/me/approvals'),
+  teamRequests: (key: string) =>
+    apiRequest<RequestSummary[]>(`/api/teams/${encodeURIComponent(key)}/requests`),
+  departmentRequests: (id: string) =>
+    apiRequest<RequestSummary[]>(`/api/departments/${id}/requests`),
+  requestAction: (identifier: string, body: RequestAction) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}/actions`, {
+      method: 'POST',
+      body,
+    }),
+  requesterAction: (identifier: string, body: RequesterAction) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}/requester-actions`, {
+      method: 'POST',
+      body,
+    }),
+  resubmitRequest: (identifier: string, body: ResubmitRequestInput) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}/resubmit`, {
+      method: 'POST',
+      body,
+    }),
+  commentRequest: (identifier: string, body: { body: string; internal: boolean }) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}/comments`, {
+      method: 'POST',
+      body,
+    }),
+  spawnRequestIssue: (identifier: string, title?: string) =>
+    apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}/issues`, {
+      method: 'POST',
+      body: title ? { title } : {},
+    }),
+  decideApproval: (stepId: string, body: ApprovalDecisionInput) =>
+    apiRequest<{ request?: RequestView; group?: RequestGroupView }>(
+      `/api/approvals/${stepId}/decision`,
+      { method: 'POST', body },
+    ),
   peekInvite: (token: string) =>
     apiRequest<{ email: string; companyName: string }>(`/api/invites/${encodeURIComponent(token)}`),
   acceptInvite: (body: { token: string; name: string; password: string }) =>

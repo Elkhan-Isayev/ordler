@@ -98,7 +98,15 @@
     "assignee_not_in_team": "İcraçı komandanın üzvü olmalıdır.",
     "file_too_large": "Fayl çox böyükdür.",
     "file_missing": "Yükləmək üçün fayl seçin.",
-    "not_in_triage": "Bu tapşırığa artıq baxılıb."
+    "not_in_triage": "Bu tapşırığa artıq baxılıb.",
+    "form_invalid": "Qeyd olunmuş sahələri yoxlayın.",
+    "approvals_not_allowed": "Bu müraciət növü əlavə təsdiqlərə icazə vermir.",
+    "not_an_approver": "Bu addımı siz təsdiqləmirsiniz.",
+    "already_decided": "Siz artıq qərar vermisiniz.",
+    "step_not_active": "Bu addım qərar gözləmir.",
+    "invalid_transition": "Cari statusda bu əməliyyat mümkün deyil.",
+    "session_required": "Təsdiqləri yalnız sistemə daxil olduqdan sonra vermək olar.",
+    "request_type_archived": "Bu müraciət növü artıq təklif olunmur."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -119,6 +127,7 @@
     "nav": {
       "departments": "Departamentlər və komandalar",
       "members": "İştirakçılar",
+      "requestTypes": "Müraciət növləri",
       "authentication": "Giriş",
       "mail": "Poçt serveri",
       "database": "Verilənlər bazası",
@@ -140,7 +149,8 @@
       "confirmArchive": "«{name}» arxivə göndərilsin? Tarixçədə qalacaq, amma istifadə etmək olmayacaq.",
       "empty": "Hələ departament yoxdur. İlkini yaradın.",
       "noTeams": "Hələ komanda yoxdur.",
-      "memberCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}"
+      "memberCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}",
+      "head": "Müdir"
     },
     "members": {
       "title": "İştirakçılar",
@@ -247,6 +257,37 @@
       "change": "Bağlantını dəyiş",
       "changeWarning": "Ordler məlumatları bazalar arasında köçürmür. Artıq Ordler məlumatları olan bazanı (məsələn, ehtiyat nüsxədən bərpa edilmiş) və ya yenidən başlamaq üçün boş bazanı göstərin. Bunu yalnız sahiblər dəyişə bilər.",
       "restartRequired": "Saxlanıldı. Yeni bağlantıdan istifadə etmək üçün Ordler-i yenidən başladın, məsələn docker compose restart ordler."
+    },
+    "requestTypes": {
+      "title": "Müraciət növləri",
+      "subtitle": "Hər şöbənin servis portalında təklif etdikləri: formalar və təsdiqlər.",
+      "new": "Yeni müraciət növü",
+      "needsTeam": "Əvvəlcə komanda yaradın: müraciətlər komandaya yönəldilir.",
+      "editor": "Müraciət növü",
+      "name": "Ad",
+      "description": "Təsvir",
+      "targetTeam": "Müraciətləri alan komanda",
+      "fields": "Forma sahələri",
+      "fieldN": "Sahə {n}",
+      "fieldLabel": "Sahənin adı",
+      "fieldType": "Sahənin növü",
+      "options": "Variantlar vergüllə",
+      "required": "Məcburi",
+      "removeField": "Sahə {n} sil",
+      "addField": "Sahə əlavə et",
+      "mandatoryApprovals": "Ardıcıl məcburi təsdiqlər",
+      "allowRequesterApprovals": "Müraciətçi təsdiq əlavə edə bilər (məs. Finance)",
+      "empty": "Hələ müraciət növü yoxdur.",
+      "summary": "{fields, plural, =0 {Sahə yoxdur} one {# sahə} other {# sahə}}",
+      "type": {
+        "text": "Mətn",
+        "long_text": "Uzun mətn",
+        "number": "Rəqəm",
+        "date": "Tarix",
+        "select": "Seçim",
+        "multi_select": "Çoxlu seçim",
+        "checkbox": "Bayraqcıq"
+      }
     }
   },
   "invite": {
@@ -378,5 +419,132 @@
     "accept": "Qəbul et",
     "decline": "Rədd et",
     "reason": "Niyə rədd edilir?"
+  },
+  "portals": {
+    "empty": "Hələ heç bir şöbə müraciət qəbul etmir.",
+    "addToGroup": "«{name}» növünü bir neçə şöbəyə müraciətə əlavə et",
+    "sendToSeveral": "{count, plural, one {# şöbəyə müraciət} other {# şöbəyə müraciət}}",
+    "groupHint": "Bir müraciəti hamısına göndərmək üçün bir neçə şöbənin müraciət növlərini seçin."
+  },
+  "requests": {
+    "new": "Yeni müraciət",
+    "newTitle": "Yeni müraciət",
+    "newGroupTitle": "Bir neçə şöbəyə bir müraciət",
+    "groupTo": "Alıcılar: {departments}",
+    "title": "Başlıq",
+    "description": "Təsvir",
+    "descriptionPlaceholder": "Nəyə ehtiyacınız olduğunu təsvir edin…",
+    "choose": "Seçin…",
+    "yes": "Bəli",
+    "no": "Xeyr",
+    "requiredApprovals": "Məcburi təsdiqlər",
+    "addApprovals": "Əlavə təsdiqlər (istəyə görə)",
+    "addGroupApprovals": "Bütün müraciət üçün təsdiqlər (istəyə görə)",
+    "submit": "Müraciəti göndər",
+    "empty": "Hələ müraciət yoxdur.",
+    "requester": "Müraciətçi",
+    "team": "Komanda",
+    "otherDepartments": "Digər şöbələr",
+    "linkedIssues": "Əlaqəli tapşırıqlar",
+    "createIssue": "Tapşırıq yarat",
+    "workProgress": "Görülən iş: {done} / {total}",
+    "internal": "Daxili",
+    "internalComment": "Daxili (yalnız komanda)",
+    "comment": "Şərh",
+    "teamActions": "Komanda əməliyyatları",
+    "accept": "İşə götür",
+    "askRequester": "Müraciətçidən soruş",
+    "resume": "İşə qaytar",
+    "resolve": "Həll edildi",
+    "decline": "İmtina et",
+    "send": "Göndər",
+    "declineComment": "İmtina səbəbi",
+    "waitComment": "Müraciətçiyə sual",
+    "resolveComment": "Nə edildi (istəyə görə)",
+    "resolvedQuestion": "Müraciətiniz həll olundu?",
+    "confirm": "Bəli, bağla",
+    "reopen": "Yenidən aç",
+    "reopenComment": "Daha nə çatışmır?",
+    "changesRequested": "Düzəliş tələb olunur — düzəldin və yenidən göndərin",
+    "resubmit": "Yenidən göndər",
+    "departments": "Şöbələr",
+    "status": {
+      "pending_approval": "Təsdiqdə",
+      "changes_requested": "Düzəliş tələb olunur",
+      "rejected": "Rədd edilib",
+      "open": "Yeni",
+      "in_progress": "İcrada",
+      "waiting_for_requester": "Müraciətçinin cavabını gözləyir",
+      "resolved": "Həll edilib",
+      "closed": "Bağlanıb",
+      "declined": "İmtina edilib"
+    },
+    "groupStatus": {
+      "pending_approval": "Təsdiqdə",
+      "rejected": "Rədd edilib",
+      "in_progress": "İcrada",
+      "resolved": "Həll edilib"
+    },
+    "fieldError": {
+      "required": "Məcburi sahə.",
+      "invalid": "Yanlış dəyər."
+    },
+    "event": {
+      "submitted": "{actor}: müraciət göndərildi",
+      "released": "Təsdiqləndi — komandaya ötürüldü",
+      "status": "{actor}: status → {status}",
+      "updated": "{actor}: müraciət dəyişdirildi",
+      "assigned": "{actor}: icraçı dəyişdirildi",
+      "priority": "{actor}: prioritet → {priority}",
+      "issueLinked": "{actor}: {issue} əlaqələndirildi",
+      "resubmitted": "{actor}: düzəlişlərlə yenidən göndərildi"
+    }
+  },
+  "approvals": {
+    "title": "Təsdiqlər",
+    "empty": "Qərarınızı gözləyən heç nə yoxdur.",
+    "stepN": "Addım {n}",
+    "groupLevel": "bütün müraciət",
+    "addedByRequester": "müraciətçi əlavə edib",
+    "anyOf": "Hər hansı biri: {people}",
+    "allOf": "Hamısı: {people}",
+    "approve": "Təsdiqlə",
+    "reject": "Rədd et",
+    "requestChanges": "Düzəliş istə",
+    "comment": "Şərh",
+    "commentPlaceholder": "Şərh (rədd və düzəliş tələbi üçün məcburidir)",
+    "commentHint": "Qərarınız qətidir və audit jurnalına yazılır.",
+    "addStep": "Təsdiq əlavə et",
+    "removeStep": "Addım {n} sil",
+    "approverType": "Təsdiqləyən",
+    "role": "Rol",
+    "department": "Şöbə",
+    "person": "Əməkdaş",
+    "rule": "Qayda",
+    "ruleAny": "Hər hansı biri qərar verir",
+    "ruleAll": "Hamı təsdiqləməlidir",
+    "status": {
+      "waiting": "Gözləyir",
+      "active": "Qərar gözləyir",
+      "approved": "Təsdiqləndi",
+      "rejected": "Rədd edildi",
+      "changes_requested": "Düzəliş tələb olunub"
+    },
+    "decision": {
+      "approve": "təsdiqlədi",
+      "reject": "rədd etdi",
+      "request_changes": "düzəliş istədi"
+    },
+    "type": {
+      "requester_department_supervisor": "Müraciətçinin şöbə rəhbəri",
+      "role": "Şöbədə rol",
+      "department_head": "Şöbə müdiri",
+      "user": "Konkret əməkdaş"
+    },
+    "selector": {
+      "requester_department_supervisor": "Müraciətçinin şöbə rəhbəri",
+      "role": "{role} · {department}",
+      "department_head": "{department} şöbəsinin müdiri"
+    }
   }
 }

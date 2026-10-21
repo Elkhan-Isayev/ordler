@@ -73,12 +73,14 @@ export function Avatar({ member }: { member: MemberRef | null }) {
       />
     );
   }
+  // Letters only, so "Aliya (CS)" gives "AC" rather than "A(".
   const initials = member.name
     .split(/\s+/)
+    .map((part) => part.match(/\p{L}/u)?.[0] ?? '')
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]!.toUpperCase())
-    .join('');
+    .join('')
+    .toUpperCase();
   return (
     <span
       title={member.name}

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import type { AppContext } from '../app-context.js';
 import { APP_CONTEXT, parseBody, type OrdlerRequest } from '../http/http.js';
 import { Authenticated } from '../rbac/permission.guard.js';
+import { loadDirectory } from '../members/directory.js';
 import type { Actor } from './request.service.js';
 
 const spawnIssueSchema = z.object({ title: z.string().trim().max(255).optional() });
@@ -30,6 +31,11 @@ function actor(request: OrdlerRequest): Actor {
 @Controller()
 export class RequestsController {
   constructor(@Inject(APP_CONTEXT) private readonly ctx: AppContext) {}
+
+  @Get('directory')
+  directory() {
+    return loadDirectory(this.ctx.db);
+  }
 
   @Get('portals')
   portals(@Req() request: OrdlerRequest) {

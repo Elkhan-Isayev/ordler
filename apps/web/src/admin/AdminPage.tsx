@@ -5,12 +5,14 @@ import { AuthSection } from './AuthSection.js';
 import { DatabaseSection } from './DatabaseSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
 import { MailSection } from './MailSection.js';
+import { RequestTypesSection } from './RequestTypesSection.js';
 import { MembersSection } from './MembersSection.js';
 import { UpdatesSection } from './UpdatesSection.js';
 
 const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'departments', permission: 'org.manage' },
   { id: 'members', permission: 'org.manage' },
+  { id: 'requestTypes', permission: 'request_type.manage' },
   { id: 'authentication', permission: 'auth.manage' },
   { id: 'mail', permission: 'mail.manage' },
   { id: 'database', permission: 'org.manage' },
@@ -50,6 +52,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
       <div className="min-w-0 flex-1">
         {active === 'departments' && <DepartmentsSection />}
         {active === 'members' && <MembersSection currentMemberId={me.member.id} />}
+        {active === 'requestTypes' && <RequestTypesSection />}
         {active === 'authentication' && <AuthSection />}
         {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
         {active === 'database' && (

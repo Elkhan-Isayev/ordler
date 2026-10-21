@@ -144,6 +144,7 @@ function TeamNode({ team }: { team: SidebarTeam }) {
       </Toggle>
       {open && (
         <ul className="ml-3 flex flex-col gap-0.5 border-l border-line pl-2">
+          <NavItem href={`${base}/requests`}>{t('nav.requests')}</NavItem>
           <NavItem href={`${base}/triage`}>{t('nav.triage')}</NavItem>
           <NavItem href={`${base}/issues`}>{t('nav.issues')}</NavItem>
           <NavItem href={`${base}/board`}>{t('nav.board')}</NavItem>

@@ -7,6 +7,16 @@ import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
 import { TriagePage } from './issues/TriagePage.js';
+import { NewRequestPage } from './requests/NewRequestPage.js';
+import { PortalsPage } from './requests/PortalsPage.js';
+import {
+  ApprovalsPage,
+  DepartmentRequestsPage,
+  MyRequestsPage,
+  RequestGroupPage,
+  TeamRequestsPage,
+} from './requests/RequestLists.js';
+import { RequestPage } from './requests/RequestPage.js';
 import { usePathname } from './router.js';
 
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
@@ -15,6 +25,12 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const adminSection = /^\/admin(?:\/([a-z]+))?\/?$/.exec(path);
   const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
   const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
+  const teamRequests = /^\/teams\/([A-Za-z0-9]+)\/requests\/?$/.exec(path);
+  const departmentRequests = /^\/departments\/([0-9a-f-]{36})\/requests\/?$/.exec(path);
+  const newRequest = /^\/portals\/new\/([0-9a-f-]{36})\/?$/.exec(path);
+  const newGroup = /^\/portals\/group\/([0-9a-f,-]+)\/?$/.exec(path);
+  const requestPage = /^\/requests\/(REQ-\d+)\/?$/i.exec(path);
+  const groupPage = /^\/request-groups\/(REQ-G-\d+)\/?$/i.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
 
@@ -52,6 +68,27 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           />
         ) : triagePage ? (
           <TriagePage key={triagePage[1]} teamKey={triagePage[1]!.toUpperCase()} />
+        ) : teamRequests ? (
+          <TeamRequestsPage key={teamRequests[1]} teamKey={teamRequests[1]!.toUpperCase()} />
+        ) : departmentRequests ? (
+          <DepartmentRequestsPage
+            key={departmentRequests[1]}
+            departmentId={departmentRequests[1]!}
+          />
+        ) : path === '/portals' ? (
+          <PortalsPage />
+        ) : newRequest ? (
+          <NewRequestPage key={newRequest[1]} typeIds={[newRequest[1]!]} />
+        ) : newGroup ? (
+          <NewRequestPage key={newGroup[1]} typeIds={newGroup[1]!.split(',')} />
+        ) : requestPage ? (
+          <RequestPage key={requestPage[1]} identifier={requestPage[1]!.toUpperCase()} />
+        ) : groupPage ? (
+          <RequestGroupPage key={groupPage[1]} identifier={groupPage[1]!.toUpperCase()} />
+        ) : path === '/my-requests' ? (
+          <MyRequestsPage />
+        ) : path === '/approvals' ? (
+          <ApprovalsPage />
         ) : issuePage ? (
           <IssuePage key={issuePage[1]} identifier={issuePage[1]!.toUpperCase()} />
         ) : path === '/my-issues' ? (

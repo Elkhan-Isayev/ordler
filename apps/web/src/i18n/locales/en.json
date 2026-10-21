@@ -98,7 +98,15 @@
     "assignee_not_in_team": "The assignee must be a member of the team.",
     "file_too_large": "The file is too large.",
     "file_missing": "Choose a file to upload.",
-    "not_in_triage": "This issue was already triaged."
+    "not_in_triage": "This issue was already triaged.",
+    "form_invalid": "Check the highlighted fields.",
+    "approvals_not_allowed": "This request type does not allow additional approvals.",
+    "not_an_approver": "You are not an approver of this step.",
+    "already_decided": "You have already decided.",
+    "step_not_active": "This step is not waiting for a decision.",
+    "invalid_transition": "This action is not possible in the current status.",
+    "session_required": "Approvals can only be decided when signed in.",
+    "request_type_archived": "This request type is no longer offered."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -119,6 +127,7 @@
     "nav": {
       "departments": "Departments and teams",
       "members": "Members",
+      "requestTypes": "Request types",
       "authentication": "Sign-in",
       "mail": "Mail server",
       "database": "Database",
@@ -140,7 +149,8 @@
       "confirmArchive": "Archive {name}? It stays in history but can no longer be used.",
       "empty": "No departments yet. Create the first one.",
       "noTeams": "No teams yet.",
-      "memberCount": "{count, plural, one {# member} other {# members}}"
+      "memberCount": "{count, plural, one {# member} other {# members}}",
+      "head": "Head"
     },
     "members": {
       "title": "Members",
@@ -247,6 +257,37 @@
       "change": "Change connection",
       "changeWarning": "Ordler does not copy data between databases. Point it at a database that already holds Ordler data (for example, restored from a backup), or at an empty one to start over. Only Owners can change this.",
       "restartRequired": "Saved. Restart Ordler to use the new connection, e.g. docker compose restart ordler."
+    },
+    "requestTypes": {
+      "title": "Request types",
+      "subtitle": "What each department offers in its service portal, with forms and approvals.",
+      "new": "New request type",
+      "needsTeam": "Create a team first: requests are routed to a team.",
+      "editor": "Request type",
+      "name": "Name",
+      "description": "Description",
+      "targetTeam": "Requests go to team",
+      "fields": "Form fields",
+      "fieldN": "Field {n}",
+      "fieldLabel": "Field label",
+      "fieldType": "Field type",
+      "options": "Options, comma-separated",
+      "required": "Required",
+      "removeField": "Remove field {n}",
+      "addField": "Add field",
+      "mandatoryApprovals": "Mandatory approvals, in order",
+      "allowRequesterApprovals": "Requesters may add approvals (e.g. Finance)",
+      "empty": "No request types yet.",
+      "summary": "{fields, plural, =0 {No fields} one {# field} other {# fields}}",
+      "type": {
+        "text": "Text",
+        "long_text": "Long text",
+        "number": "Number",
+        "date": "Date",
+        "select": "Choice",
+        "multi_select": "Multiple choice",
+        "checkbox": "Checkbox"
+      }
     }
   },
   "invite": {
@@ -378,5 +419,132 @@
     "accept": "Accept",
     "decline": "Decline",
     "reason": "Why is it declined?"
+  },
+  "portals": {
+    "empty": "No department offers requests yet.",
+    "addToGroup": "Add {name} to a request to several departments",
+    "sendToSeveral": "{count, plural, one {Request from # department} other {Request from # departments}}",
+    "groupHint": "Tick request types of several departments to send one request to all of them."
+  },
+  "requests": {
+    "new": "New request",
+    "newTitle": "New request",
+    "newGroupTitle": "One request to several departments",
+    "groupTo": "Goes to: {departments}",
+    "title": "Title",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe what you need…",
+    "choose": "Choose…",
+    "yes": "Yes",
+    "no": "No",
+    "requiredApprovals": "Required approvals",
+    "addApprovals": "Additional approvals (optional)",
+    "addGroupApprovals": "Approvals for the whole request (optional)",
+    "submit": "Submit request",
+    "empty": "No requests yet.",
+    "requester": "Requester",
+    "team": "Team",
+    "otherDepartments": "Other departments",
+    "linkedIssues": "Linked issues",
+    "createIssue": "Create issue",
+    "workProgress": "Work done: {done} of {total}",
+    "internal": "Internal",
+    "internalComment": "Internal (team only)",
+    "comment": "Comment",
+    "teamActions": "Team actions",
+    "accept": "Accept",
+    "askRequester": "Ask the requester",
+    "resume": "Resume",
+    "resolve": "Resolve",
+    "decline": "Decline",
+    "send": "Send",
+    "declineComment": "Reason for declining",
+    "waitComment": "Question for the requester",
+    "resolveComment": "What was done (optional)",
+    "resolvedQuestion": "Is your request resolved?",
+    "confirm": "Yes, close it",
+    "reopen": "Reopen",
+    "reopenComment": "What is still missing?",
+    "changesRequested": "Changes requested — update and resubmit",
+    "resubmit": "Resubmit",
+    "departments": "Departments",
+    "status": {
+      "pending_approval": "Pending approval",
+      "changes_requested": "Changes requested",
+      "rejected": "Rejected",
+      "open": "Open",
+      "in_progress": "In progress",
+      "waiting_for_requester": "Waiting for requester",
+      "resolved": "Resolved",
+      "closed": "Closed",
+      "declined": "Declined"
+    },
+    "groupStatus": {
+      "pending_approval": "Pending approval",
+      "rejected": "Rejected",
+      "in_progress": "In progress",
+      "resolved": "Resolved"
+    },
+    "fieldError": {
+      "required": "Required.",
+      "invalid": "Invalid value."
+    },
+    "event": {
+      "submitted": "{actor} submitted the request",
+      "released": "Approved — sent to the team",
+      "status": "{actor}: status → {status}",
+      "updated": "{actor} updated the request",
+      "assigned": "{actor} changed the assignee",
+      "priority": "{actor}: priority → {priority}",
+      "issueLinked": "{actor} linked {issue}",
+      "resubmitted": "{actor} resubmitted with changes"
+    }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "empty": "Nothing waits for your decision.",
+    "stepN": "Step {n}",
+    "groupLevel": "whole request",
+    "addedByRequester": "added by requester",
+    "anyOf": "Any of: {people}",
+    "allOf": "All of: {people}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestChanges": "Request changes",
+    "comment": "Comment",
+    "commentPlaceholder": "Comment (required to reject or request changes)",
+    "commentHint": "Your decision is final and recorded in the audit log.",
+    "addStep": "Add approval",
+    "removeStep": "Remove step {n}",
+    "approverType": "Approver",
+    "role": "Role",
+    "department": "Department",
+    "person": "Person",
+    "rule": "Rule",
+    "ruleAny": "Any one decides",
+    "ruleAll": "Everyone must approve",
+    "status": {
+      "waiting": "Waiting",
+      "active": "Awaiting decision",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "changes_requested": "Changes requested"
+    },
+    "decision": {
+      "approve": "approved",
+      "reject": "rejected",
+      "request_changes": "requested changes"
+    },
+    "type": {
+      "requester_department_supervisor": "Supervisor of the requester's department",
+      "role": "Role in a department",
+      "department_head": "Head of a department",
+      "user": "Specific person"
+    },
+    "selector": {
+      "requester_department_supervisor": "Supervisor of the requester's department",
+      "role": "{role} · {department}",
+      "department_head": "Head of {department}"
+    }
   }
 }

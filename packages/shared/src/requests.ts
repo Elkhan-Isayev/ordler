@@ -409,3 +409,11 @@ export function parseGroupIdentifier(value: string): number | undefined {
   const match = /^REQ-G-(\d+)$/i.exec(value.trim());
   return match ? Number(match[1]) : undefined;
 }
+
+/** Response of GET /api/directory: who and what can be picked as an approver. */
+export interface DirectoryView {
+  members: MemberRef[];
+  departments: Array<{ id: string; name: string }>;
+  /** Roles usable in `role@department` selectors; system roles carry their key. */
+  roles: Array<{ id: string; key: string | null; name: string }>;
+}

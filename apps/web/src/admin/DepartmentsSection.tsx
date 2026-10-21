@@ -10,7 +10,16 @@ import { buttonClass, ghostButtonClass, inputClass, Panel, SectionHeader } from 
 export function DepartmentsSection() {
   const { t } = useTranslation();
   const [departments, setDepartments] = useState<AdminDepartment[]>();
+  const [people, setPeople] = useState<Array<{ id: string; name: string }>>([]);
   const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    // Only for choosing department heads; the section works without it.
+    api
+      .members()
+      .then((list) => setPeople(list.filter((m) => m.status === 'active')))
+      .catch(() => undefined);
+  }, []);
 
   const reload = useCallback(async () => {
     try {
@@ -73,7 +82,7 @@ export function DepartmentsSection() {
         <p className="text-sm text-ink-muted">{t('admin.departments.empty')}</p>
       )}
       {departments?.map((department) => (
-        <DepartmentCard key={department.id} department={department} run={run} />
+        <DepartmentCard key={department.id} department={department} people={people} run={run} />
       ))}
     </section>
   );
@@ -81,9 +90,11 @@ export function DepartmentsSection() {
 
 function DepartmentCard({
   department,
+  people,
   run,
 }: {
   department: AdminDepartment;
+  people: Array<{ id: string; name: string }>;
   run: (action: () => Promise<unknown>) => Promise<boolean>;
 }) {
   const { t } = useTranslation();
@@ -112,6 +123,27 @@ function DepartmentCard({
             <span className="ml-2 text-xs text-ink-faint">{t('admin.departments.archived')}</span>
           )}
         </h3>
+        {!archived && people.length > 0 && (
+          <label className="ml-auto flex items-center gap-1 text-xs text-ink-muted">
+            {t('admin.departments.head')}
+            <select
+              value={department.headMemberId ?? ''}
+              onChange={(event) =>
+                void run(() =>
+                  api.updateDepartment(department.id, { headMemberId: event.target.value || null }),
+                )
+              }
+              className={inputClass}
+            >
+              <option value="">—</option>
+              {people.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {!archived && (
           <button
             type="button"

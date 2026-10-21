@@ -98,7 +98,15 @@
     "assignee_not_in_team": "Исполнитель должен состоять в команде.",
     "file_too_large": "Файл слишком большой.",
     "file_missing": "Выберите файл для загрузки.",
-    "not_in_triage": "Задача уже разобрана."
+    "not_in_triage": "Задача уже разобрана.",
+    "form_invalid": "Проверьте отмеченные поля.",
+    "approvals_not_allowed": "Этот тип запроса не допускает дополнительных согласований.",
+    "not_an_approver": "Вы не согласующий этого шага.",
+    "already_decided": "Вы уже приняли решение.",
+    "step_not_active": "Этот шаг не ждёт решения.",
+    "invalid_transition": "В текущем статусе это действие недоступно.",
+    "session_required": "Согласовывать можно только после входа в систему.",
+    "request_type_archived": "Этот тип запроса больше не предлагается."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -119,6 +127,7 @@
     "nav": {
       "departments": "Департаменты и команды",
       "members": "Участники",
+      "requestTypes": "Типы запросов",
       "authentication": "Вход",
       "mail": "Почтовый сервер",
       "database": "База данных",
@@ -140,7 +149,8 @@
       "confirmArchive": "Отправить «{name}» в архив? Оно останется в истории, но использовать его будет нельзя.",
       "empty": "Департаментов пока нет. Создайте первый.",
       "noTeams": "Команд пока нет.",
-      "memberCount": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участника}}"
+      "memberCount": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участника}}",
+      "head": "Глава"
     },
     "members": {
       "title": "Участники",
@@ -247,6 +257,37 @@
       "change": "Изменить подключение",
       "changeWarning": "Ordler не переносит данные между базами. Укажите базу, где уже есть данные Ordler (например, восстановленную из резервной копии), или пустую, чтобы начать заново. Менять может только владелец.",
       "restartRequired": "Сохранено. Перезапустите Ordler, чтобы перейти на новое подключение, например docker compose restart ordler."
+    },
+    "requestTypes": {
+      "title": "Типы запросов",
+      "subtitle": "Что каждый отдел предлагает в своём сервисном портале: формы и согласования.",
+      "new": "Новый тип запроса",
+      "needsTeam": "Сначала создайте команду: запросы направляются команде.",
+      "editor": "Тип запроса",
+      "name": "Название",
+      "description": "Описание",
+      "targetTeam": "Запросы получает команда",
+      "fields": "Поля формы",
+      "fieldN": "Поле {n}",
+      "fieldLabel": "Название поля",
+      "fieldType": "Тип поля",
+      "options": "Варианты через запятую",
+      "required": "Обязательное",
+      "removeField": "Удалить поле {n}",
+      "addField": "Добавить поле",
+      "mandatoryApprovals": "Обязательные согласования по порядку",
+      "allowRequesterApprovals": "Заявитель может добавить согласования (например, Finance)",
+      "empty": "Типов запросов пока нет.",
+      "summary": "{fields, plural, =0 {Без полей} one {# поле} few {# поля} many {# полей} other {# поля}}",
+      "type": {
+        "text": "Текст",
+        "long_text": "Длинный текст",
+        "number": "Число",
+        "date": "Дата",
+        "select": "Выбор",
+        "multi_select": "Множественный выбор",
+        "checkbox": "Флажок"
+      }
     }
   },
   "invite": {
@@ -378,5 +419,132 @@
     "accept": "Принять",
     "decline": "Отклонить",
     "reason": "Почему отклоняете?"
+  },
+  "portals": {
+    "empty": "Отделы пока ничего не предлагают.",
+    "addToGroup": "Добавить «{name}» в запрос в несколько отделов",
+    "sendToSeveral": "{count, plural, one {Запрос в # отдел} few {Запрос в # отдела} many {Запрос в # отделов} other {Запрос в # отдела}}",
+    "groupHint": "Отметьте типы запросов разных отделов, чтобы отправить один запрос сразу всем."
+  },
+  "requests": {
+    "new": "Новый запрос",
+    "newTitle": "Новый запрос",
+    "newGroupTitle": "Один запрос в несколько отделов",
+    "groupTo": "Получатели: {departments}",
+    "title": "Заголовок",
+    "description": "Описание",
+    "descriptionPlaceholder": "Опишите, что нужно…",
+    "choose": "Выберите…",
+    "yes": "Да",
+    "no": "Нет",
+    "requiredApprovals": "Обязательные согласования",
+    "addApprovals": "Дополнительные согласования (необязательно)",
+    "addGroupApprovals": "Согласования для всего запроса (необязательно)",
+    "submit": "Отправить запрос",
+    "empty": "Запросов пока нет.",
+    "requester": "Заявитель",
+    "team": "Команда",
+    "otherDepartments": "Другие отделы",
+    "linkedIssues": "Связанные задачи",
+    "createIssue": "Создать задачу",
+    "workProgress": "Выполнено работ: {done} из {total}",
+    "internal": "Внутренний",
+    "internalComment": "Внутренний (только для команды)",
+    "comment": "Комментарий",
+    "teamActions": "Действия команды",
+    "accept": "Взять в работу",
+    "askRequester": "Спросить заявителя",
+    "resume": "Вернуть в работу",
+    "resolve": "Решено",
+    "decline": "Отказать",
+    "send": "Отправить",
+    "declineComment": "Причина отказа",
+    "waitComment": "Вопрос заявителю",
+    "resolveComment": "Что сделано (необязательно)",
+    "resolvedQuestion": "Ваш запрос решён?",
+    "confirm": "Да, закрыть",
+    "reopen": "Открыть снова",
+    "reopenComment": "Чего ещё не хватает?",
+    "changesRequested": "Нужны правки — исправьте и отправьте снова",
+    "resubmit": "Отправить снова",
+    "departments": "Отделы",
+    "status": {
+      "pending_approval": "На согласовании",
+      "changes_requested": "Нужны правки",
+      "rejected": "Отклонён",
+      "open": "Новый",
+      "in_progress": "В работе",
+      "waiting_for_requester": "Ждёт ответа заявителя",
+      "resolved": "Решён",
+      "closed": "Закрыт",
+      "declined": "Отказано"
+    },
+    "groupStatus": {
+      "pending_approval": "На согласовании",
+      "rejected": "Отклонён",
+      "in_progress": "В работе",
+      "resolved": "Решён"
+    },
+    "fieldError": {
+      "required": "Обязательное поле.",
+      "invalid": "Неверное значение."
+    },
+    "event": {
+      "submitted": "{actor}: запрос отправлен",
+      "released": "Согласовано — передано команде",
+      "status": "{actor}: статус → {status}",
+      "updated": "{actor}: запрос изменён",
+      "assigned": "{actor}: исполнитель изменён",
+      "priority": "{actor}: приоритет → {priority}",
+      "issueLinked": "{actor}: связана задача {issue}",
+      "resubmitted": "{actor}: отправлено снова с правками"
+    }
+  },
+  "approvals": {
+    "title": "Согласования",
+    "empty": "Ничего не ждёт вашего решения.",
+    "stepN": "Шаг {n}",
+    "groupLevel": "весь запрос",
+    "addedByRequester": "добавлено заявителем",
+    "anyOf": "Любой из: {people}",
+    "allOf": "Все: {people}",
+    "approve": "Согласовать",
+    "reject": "Отклонить",
+    "requestChanges": "Запросить правки",
+    "comment": "Комментарий",
+    "commentPlaceholder": "Комментарий (обязателен при отклонении и запросе правок)",
+    "commentHint": "Решение окончательное и записывается в журнал аудита.",
+    "addStep": "Добавить согласование",
+    "removeStep": "Удалить шаг {n}",
+    "approverType": "Согласующий",
+    "role": "Роль",
+    "department": "Отдел",
+    "person": "Сотрудник",
+    "rule": "Правило",
+    "ruleAny": "Решает любой",
+    "ruleAll": "Должны согласовать все",
+    "status": {
+      "waiting": "Ожидает",
+      "active": "Ждёт решения",
+      "approved": "Согласовано",
+      "rejected": "Отклонено",
+      "changes_requested": "Запрошены правки"
+    },
+    "decision": {
+      "approve": "согласовано",
+      "reject": "отклонено",
+      "request_changes": "запрошены правки"
+    },
+    "type": {
+      "requester_department_supervisor": "Руководитель отдела заявителя",
+      "role": "Роль в отделе",
+      "department_head": "Глава отдела",
+      "user": "Конкретный сотрудник"
+    },
+    "selector": {
+      "requester_department_supervisor": "Руководитель отдела заявителя",
+      "role": "{role} · {department}",
+      "department_head": "Глава отдела {department}"
+    }
   }
 }

@@ -600,6 +600,21 @@ describe('request groups (MVP criteria 12)', () => {
   });
 });
 
+describe('directory', () => {
+  it('lists names of people, departments and roles for pickers, without emails', async () => {
+    const directory = await call('GET', '/api/directory', people.agent!.cookie);
+    expect(directory.statusCode).toBe(200);
+    const body = directory.json<{
+      members: Array<{ name: string }>;
+      departments: Array<{ name: string }>;
+    }>();
+    expect(body.members.map((m) => m.name)).toContain('finboss');
+    expect(body.departments.map((d) => d.name)).toEqual(['Customer Support', 'Finance', 'IT']);
+    expect(directory.body).not.toContain('@push30.test');
+    expect((await call('GET', '/api/directory')).statusCode).toBe(401);
+  });
+});
+
 describe('request types', () => {
   it('lets department admins manage only their department', async () => {
     await person('itadmin', { role: 'department_admin', scope: dept(ids.it) });
