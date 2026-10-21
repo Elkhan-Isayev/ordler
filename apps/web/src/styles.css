@@ -37,6 +37,9 @@ body {
   min-height: 6rem;
   line-height: 1.6;
 }
+.ordler-prose.ordler-readonly .ProseMirror {
+  min-height: 0;
+}
 .ordler-prose h1,
 .ordler-prose h2,
 .ordler-prose h3 {

@@ -111,7 +111,11 @@ export function RichEditor({
           onFiles={onUpload ? insertFiles : undefined}
         />
       )}
-      <EditorContent editor={editor} className="ordler-prose min-h-24 px-3 py-2 text-sm text-ink" />
+      <EditorContent
+        editor={editor}
+        // Read-only text (comments) takes only the space its content needs.
+        className={`ordler-prose px-3 py-2 text-sm text-ink ${editable ? 'min-h-24' : 'ordler-readonly'}`}
+      />
       {uploading > 0 && (
         <p role="status" className="px-3 pb-2 text-xs text-ink-faint">
           {t('editor.uploading')}

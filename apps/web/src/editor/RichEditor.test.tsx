@@ -122,6 +122,8 @@ describe('RichEditor', () => {
     expect(await screen.findByRole('img', { name: 'Diagram' })).toBeInTheDocument();
     expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
     expect(textbox()).toHaveAttribute('contenteditable', 'false');
+    // No empty input area below read-only text.
+    expect(textbox().closest('.ordler-prose')).toHaveClass('ordler-readonly');
   });
 
   it('explains diagram syntax errors while editing', async () => {
