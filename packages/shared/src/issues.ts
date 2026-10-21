@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { PRIORITIES, type IssueStatusCategory, type Priority } from './status.js';
+import {
+  ISSUE_STATUS_CATEGORIES,
+  PRIORITIES,
+  type IssueStatusCategory,
+  type Priority,
+} from './status.js';
 
 /** Statuses every new team starts with; `key` lets the UI translate them (SPEC §5.2). */
 export const DEFAULT_TEAM_STATUSES = [
@@ -64,6 +69,8 @@ export const triageActionSchema = z.discriminatedUnion('action', [
     assigneeId: z.uuid().nullable().optional(),
   }),
   z.object({ action: z.literal('decline'), reason: z.string().trim().min(1).max(2000) }),
+  /** Closes the issue as a duplicate of another one the member can read. */
+  z.object({ action: z.literal('duplicate'), of: z.string().trim().min(3).max(40) }),
 ]);
 export type TriageAction = z.infer<typeof triageActionSchema>;
 
@@ -75,6 +82,8 @@ export const ISSUE_ERROR_CODES = [
   'label_not_in_team',
   'label_name_taken',
   'invalid_parent',
+  'status_in_use',
+  'status_required',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -160,6 +169,7 @@ export type IssueField =
   | 'dueDate'
   | 'labelIds'
   | 'parentId'
+  | 'duplicateOf'
   | 'triage';
 
 /** One entry of an issue's append-only history. */
@@ -192,6 +202,8 @@ export interface CommentView {
 export interface IssueDetail extends IssueSummary {
   description: string;
   parent: { id: string; identifier: string; title: string } | null;
+  /** Set when triage closed it as a duplicate (SPEC §5.2). */
+  duplicateOf: { identifier: string; title: string } | null;
   /** Direct sub-issues; the UI shows two levels (SPEC §5.1). */
   children: IssueSummary[];
   createdBy: MemberRef | null;
@@ -204,6 +216,8 @@ export type RealtimeServerMessage =
   | { type: 'subscribed'; topic: string }
   | { type: 'denied'; topic: string }
   | { type: 'issue.changed'; issue: IssueSummary }
+  /** Workflow or labels changed: reload the team. */
+  | { type: 'team.changed'; teamId: string }
   /** Something arrived in or left the member's Inbox or Approvals. */
   | { type: 'inbox.changed' }
   /** A request the member is involved in changed; pages showing it reload. */
@@ -231,3 +245,14 @@ export const searchQuerySchema = z.object({
   q: z.string().trim().min(1).max(200),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
+/** Workflow editor (SPEC §5.2): statuses inside the five categories. */
+export const createStatusSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  category: z.enum(ISSUE_STATUS_CATEGORIES),
+});
+export const updateStatusSchema = z
+  .object({ name: z.string().trim().min(1).max(60), isDefault: z.literal(true) })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, 'empty_update');
+export const reorderStatusesSchema = z.object({ ids: z.array(z.uuid()).min(1).max(50) });

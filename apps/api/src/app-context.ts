@@ -24,6 +24,7 @@ import { TokenService } from './tokens/token.service.js';
 import { AuditService } from './audit/audit.service.js';
 import { RolesService } from './members/roles.service.js';
 import { LabelService } from './issues/label.service.js';
+import { WorkflowService } from './issues/workflow.service.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -69,6 +70,7 @@ export interface AppContext {
   tokens: TokenService;
   roles: RolesService;
   labels: LabelService;
+  workflow: WorkflowService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -212,6 +214,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     tokens: new TokenService(deps.db, access, now),
     roles: new RolesService(deps.db, access),
     labels: new LabelService(deps.db, access, teamAccess),
+    workflow: new WorkflowService(deps.db, teamAccess, events),
     audit: new AuditService(deps.db),
     version: deps.version,
     attachments: new AttachmentService(

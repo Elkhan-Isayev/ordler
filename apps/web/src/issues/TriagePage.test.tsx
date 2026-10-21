@@ -19,6 +19,25 @@ afterEach(() => {
 const pending = (n: number) => issue(n, { inTriage: true, title: `Filed ${n}` });
 
 describe('TriagePage', () => {
+  it('marks an issue as a duplicate of another', async () => {
+    const calls = mockApi({
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+      'GET /api/teams/HELP/triage': () => ({ json: [pending(4)] }),
+      'POST /api/issues/HELP-4/triage': () => ({ json: detail(4) }),
+    });
+    await renderWithI18n(<TriagePage teamKey="HELP" />);
+    const item = await screen.findByRole('listitem', { name: 'HELP-4' });
+    await userEvent.click(within(item).getByRole('button', { name: 'Duplicate' }));
+    await userEvent.type(within(item).getByLabelText(/Duplicate of/), 'HELP-1');
+    await userEvent.click(within(item).getByRole('button', { name: 'Mark as duplicate' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST')!.body).toEqual({
+        action: 'duplicate',
+        of: 'HELP-1',
+      }),
+    );
+  });
+
   it('accepts an issue into the chosen status with an assignee', async () => {
     const calls = mockApi({
       'GET /api/teams/HELP': () => ({ json: TEAM }),

@@ -152,6 +152,17 @@ export function IssueRelations({
 
   return (
     <section aria-label={t('issues.subIssues.title')} className="flex flex-col gap-2">
+      {issue.duplicateOf && (
+        <p className="text-sm text-ink-muted">
+          {t('issues.duplicateOf')}{' '}
+          <Link
+            href={`/issue/${issue.duplicateOf.identifier}`}
+            className="text-ink hover:underline"
+          >
+            {issue.duplicateOf.identifier} {issue.duplicateOf.title}
+          </Link>
+        </p>
+      )}
       {issue.parent && (
         <p className="flex items-center gap-2 text-sm text-ink-muted">
           {t('issues.subIssues.parent')}{' '}

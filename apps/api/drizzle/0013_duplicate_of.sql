@@ -1,0 +1,1 @@
+ALTER TABLE "issues" ADD COLUMN "duplicate_of_id" uuid;

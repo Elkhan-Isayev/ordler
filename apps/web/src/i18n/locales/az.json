@@ -21,7 +21,8 @@
     "upcomingCycle": "Növbəti",
     "admin": "İdarəetmə",
     "board": "Lövhə",
-    "integrations": "İnteqrasiyalar"
+    "integrations": "İnteqrasiyalar",
+    "teamSettings": "Parametrlər"
   },
   "settings": {
     "language": "Dil"
@@ -114,7 +115,9 @@
     "role_name_taken": "Bu adda rol artıq var.",
     "label_not_in_team": "Bu etiket başqa komandaya aiddir.",
     "label_name_taken": "Bu adda etiket artıq var.",
-    "invalid_parent": "Bu tapşırıq ana ola bilməz: eyni komandada olmalı və onun alt tapşırığı olmamalıdır."
+    "invalid_parent": "Bu tapşırıq ana ola bilməz: eyni komandada olmalı və onun alt tapşırığı olmamalıdır.",
+    "status_in_use": "Bu status hələ tapşırıqlarda istifadə olunur. Əvvəlcə onları köçürün.",
+    "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -469,7 +472,8 @@
       "declined": "baxışda rədd edildi",
       "labels": "etiketlər → {to}",
       "parent": "başqa tapşırığın altına köçürüldü",
-      "parentRemoved": "ana tapşırıqdan ayrıldı"
+      "parentRemoved": "ana tapşırıqdan ayrıldı",
+      "duplicate": "dublikat kimi qeyd edildi"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -493,7 +497,8 @@
       "detach": "Ayır",
       "add": "Alt tapşırıq əlavə et",
       "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın"
-    }
+    },
+    "duplicateOf": "Dublikatıdır:"
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -526,7 +531,10 @@
     "empty": "Baxılacaq bir şey yoxdur.",
     "accept": "Qəbul et",
     "decline": "Rədd et",
-    "reason": "Niyə rədd edilir?"
+    "reason": "Niyə rədd edilir?",
+    "duplicate": "Dublikat",
+    "duplicateOf": "Dublikatı olduğu tapşırıq (identifikator)",
+    "markDuplicate": "Dublikat kimi qeyd et"
   },
   "portals": {
     "empty": "Hələ heç bir şöbə müraciət qəbul etmir.",
@@ -719,5 +727,24 @@
     "placeholder": "Tapşırıq və sorğuları axtarın…",
     "results": "Nəticələr",
     "empty": "Heç nə tapılmadı."
+  },
+  "teamSettings": {
+    "title": "Parametrlər",
+    "subtitle": "Bu komandanın workflow-u, etiketləri və Slack kanalları.",
+    "workflow": "Workflow",
+    "statusName": "{name} adı",
+    "default": "Defolt",
+    "moveUp": "{name} yuxarı",
+    "moveDown": "{name} aşağı",
+    "archive": "{name} arxivlə",
+    "archiveShort": "Arxivlə",
+    "addStatus": "Status əlavə et",
+    "newStatus": "Yeni status",
+    "category": "Kateqoriya",
+    "noLabels": "Hələ etiket yoxdur. İstənilən tapşırıqda yaradın.",
+    "labelColor": "{name} rəngi",
+    "labelName": "{name} adı",
+    "orgLabel": "Təşkilat etiketi",
+    "deleteLabel": "{name} sil"
   }
 }

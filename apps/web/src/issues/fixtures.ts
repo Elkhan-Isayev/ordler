@@ -70,6 +70,7 @@ export function detail(number: number, overrides: Partial<IssueDetail> = {}): Is
     ...issue(number),
     description: 'Screen flickers',
     parent: null,
+    duplicateOf: null,
     children: [],
     createdBy: { id: 'm-ann', name: 'Ann Lee' },
     comments: [],

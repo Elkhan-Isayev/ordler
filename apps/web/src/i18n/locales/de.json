@@ -21,7 +21,8 @@
     "upcomingCycle": "Anstehend",
     "admin": "Administration",
     "board": "Board",
-    "integrations": "Integrationen"
+    "integrations": "Integrationen",
+    "teamSettings": "Einstellungen"
   },
   "settings": {
     "language": "Sprache"
@@ -114,7 +115,9 @@
     "role_name_taken": "Eine Rolle mit diesem Namen existiert bereits.",
     "label_not_in_team": "Dieses Label gehört zu einem anderen Team.",
     "label_name_taken": "Ein Label mit diesem Namen existiert bereits.",
-    "invalid_parent": "Dieses Issue kann nicht übergeordnet sein: Es muss im selben Team und darf kein eigenes Unter-Issue sein."
+    "invalid_parent": "Dieses Issue kann nicht übergeordnet sein: Es muss im selben Team und darf kein eigenes Unter-Issue sein.",
+    "status_in_use": "Issues verwenden diesen Status noch. Verschieben Sie sie zuerst.",
+    "status_required": "Dieser Status ist erforderlich: Er ist der Standard oder der letzte seiner Kategorie."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -469,7 +472,8 @@
       "declined": "bei der Sichtung abgelehnt",
       "labels": "Labels → {to}",
       "parent": "unter ein anderes Issue verschoben",
-      "parentRemoved": "vom übergeordneten Issue gelöst"
+      "parentRemoved": "vom übergeordneten Issue gelöst",
+      "duplicate": "als Duplikat markiert"
     },
     "viaToken": "{actor} über Token „{token}“",
     "filters": {
@@ -493,7 +497,8 @@
       "detach": "Lösen",
       "add": "Unter-Issue hinzufügen",
       "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken"
-    }
+    },
+    "duplicateOf": "Duplikat von"
   },
   "editor": {
     "toolbar": "Formatierung",
@@ -526,7 +531,10 @@
     "empty": "Nichts zu sichten.",
     "accept": "Annehmen",
     "decline": "Ablehnen",
-    "reason": "Warum wird abgelehnt?"
+    "reason": "Warum wird abgelehnt?",
+    "duplicate": "Duplikat",
+    "duplicateOf": "Duplikat von (Issue-Kennung)",
+    "markDuplicate": "Als Duplikat markieren"
   },
   "portals": {
     "empty": "Noch bietet keine Abteilung Anfragen an.",
@@ -719,5 +727,24 @@
     "placeholder": "Issues und Anfragen suchen…",
     "results": "Ergebnisse",
     "empty": "Nichts gefunden."
+  },
+  "teamSettings": {
+    "title": "Einstellungen",
+    "subtitle": "Workflow, Labels und Slack-Kanäle dieses Teams.",
+    "workflow": "Workflow",
+    "statusName": "Name von {name}",
+    "default": "Standard",
+    "moveUp": "{name} nach oben",
+    "moveDown": "{name} nach unten",
+    "archive": "{name} archivieren",
+    "archiveShort": "Archivieren",
+    "addStatus": "Status hinzufügen",
+    "newStatus": "Neuer Status",
+    "category": "Kategorie",
+    "noLabels": "Noch keine Labels. Erstellen Sie sie in einem Issue.",
+    "labelColor": "Farbe von {name}",
+    "labelName": "Name von {name}",
+    "orgLabel": "Organisations-Label",
+    "deleteLabel": "{name} löschen"
   }
 }

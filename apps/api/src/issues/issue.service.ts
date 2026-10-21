@@ -46,7 +46,7 @@ export function likeEscape(text: string): string {
 }
 
 // Triage is recorded by its own action, not by field updates.
-const TRACKED: Array<Exclude<IssueField, 'triage' | 'labelIds'>> = [
+const TRACKED: Array<Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf'>> = [
   'title',
   'description',
   'statusId',
@@ -188,6 +188,13 @@ export class IssueService {
         if (decision.assigneeId) await this.assertTeamMember(team.id, decision.assigneeId);
         patch.assigneeId = decision.assigneeId;
       }
+    } else if (decision.action === 'duplicate') {
+      const original = await this.readableIssue(memberId, decision.of);
+      if (original.issueId === issueId) throw new DomainError('invalid_parent');
+      changes.triage = { from: 'pending', to: 'duplicate' };
+      changes.duplicateOf = { from: null, to: original.issueId };
+      patch.duplicateOfId = original.issueId;
+      patch.statusId = statuses.find((s) => s.category === 'canceled')!.id;
     } else {
       changes.triage = { from: 'pending', to: 'declined' };
       patch.statusId = statuses.find((s) => s.category === 'canceled')!.id;
@@ -723,9 +730,15 @@ export class IssueService {
       .where(and(eq(comments.subjectType, 'issue'), eq(comments.subjectId, issueId)))
       .orderBy(asc(comments.createdAt), asc(comments.id));
     const parent = summary.parentId ? await this.summary(summary.parentId) : undefined;
+    const [{ duplicateOfId } = { duplicateOfId: null }] = await this.db
+      .select({ duplicateOfId: issues.duplicateOfId })
+      .from(issues)
+      .where(eq(issues.id, issueId));
+    const original = duplicateOfId ? await this.summary(duplicateOfId) : undefined;
     return {
       ...summary,
       parent: parent ? { id: parent.id, identifier: parent.identifier, title: parent.title } : null,
+      duplicateOf: original ? { identifier: original.identifier, title: original.title } : null,
       children: await this.summaries(and(eq(issues.parentId, issueId), isNull(issues.archivedAt))),
       comments: thread.map(({ comment, authorName }): CommentView => {
         const own = comment.authorId === viewerId;

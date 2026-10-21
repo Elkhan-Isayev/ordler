@@ -37,6 +37,8 @@ import type {
   InviteResponse,
   CreateIssueInput,
   CreateLabelInput,
+  IssueStatusCategory,
+  WorkflowStatus,
   LabelView,
   IssueDetail,
   IssueSummary,
@@ -178,6 +180,23 @@ export const api = {
   team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
+  addStatus: (key: string, body: { name: string; category: IssueStatusCategory }) =>
+    apiRequest<WorkflowStatus[]>(`/api/teams/${encodeURIComponent(key)}/statuses`, {
+      method: 'POST',
+      body,
+    }),
+  reorderStatuses: (key: string, ids: string[]) =>
+    apiRequest<WorkflowStatus[]>(`/api/teams/${encodeURIComponent(key)}/statuses/order`, {
+      method: 'PUT',
+      body: { ids },
+    }),
+  updateWorkflowStatus: (id: string, body: { name?: string; isDefault?: true }) =>
+    apiRequest<WorkflowStatus[]>(`/api/statuses/${id}`, { method: 'PATCH', body }),
+  archiveStatus: (id: string) =>
+    apiRequest<WorkflowStatus[]>(`/api/statuses/${id}`, { method: 'DELETE' }),
+  updateLabel: (id: string, body: { name: string; color: string }) =>
+    apiRequest<LabelView>(`/api/labels/${id}`, { method: 'PATCH', body }),
+  deleteLabel: (id: string) => apiRequest<void>(`/api/labels/${id}`, { method: 'DELETE' }),
   createLabel: (body: CreateLabelInput) =>
     apiRequest<LabelView>('/api/labels', { method: 'POST', body }),
   search: (q: string) =>

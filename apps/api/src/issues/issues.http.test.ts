@@ -408,6 +408,37 @@ describe('triage', () => {
     });
   });
 
+  it('closes a duplicate and links the original', async () => {
+    await call('POST', '/api/teams/HELP/issues', owner, { title: 'Wi-Fi is down' });
+    const dee = await outsider();
+    await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'No internet' });
+    expect(
+      (
+        await call('POST', '/api/issues/HELP-2/triage', owner, {
+          action: 'duplicate',
+          of: 'HELP-2',
+        })
+      ).json(),
+    ).toEqual({ error: 'invalid_parent' });
+    expect(
+      (
+        await call('POST', '/api/issues/HELP-2/triage', owner, {
+          action: 'duplicate',
+          of: 'HELP-99',
+        })
+      ).statusCode,
+    ).toBe(404);
+    const closed = (
+      await call('POST', '/api/issues/HELP-2/triage', owner, { action: 'duplicate', of: 'help-1' })
+    ).json<IssueDetail>();
+    expect(closed).toMatchObject({
+      inTriage: false,
+      status: { category: 'canceled' },
+      duplicateOf: { identifier: 'HELP-1', title: 'Wi-Fi is down' },
+    });
+    expect(closed.events.at(-1)!.changes).toMatchObject({ triage: { to: 'duplicate' } });
+  });
+
   it('declines with a reason the filer can read', async () => {
     const dee = await outsider();
     await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Buy me a yacht' });

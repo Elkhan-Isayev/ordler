@@ -69,7 +69,7 @@ describe('Sidebar', () => {
     );
   });
 
-  it('shows team integrations only to those who manage the team', async () => {
+  it('shows team settings only to those who manage the team', async () => {
     const departments = [
       {
         id: 'it',
@@ -82,13 +82,13 @@ describe('Sidebar', () => {
     ];
     await renderSidebar('en', { departments });
     await userEvent.click(screen.getByRole('button', { name: /Helpdesk/ }));
-    expect(screen.getByRole('link', { name: 'Integrations' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',
-      '/teams/HELP/integrations',
+      '/teams/HELP/settings',
     );
     await userEvent.click(screen.getByRole('button', { name: /Helpdesk/ }));
     await userEvent.click(screen.getByRole('button', { name: /Infrastructure/ }));
-    expect(screen.queryByRole('link', { name: 'Integrations' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
   });
 
   it('collapses a department', async () => {

@@ -112,7 +112,8 @@ function TriageItem({
   onDecide: (decision: TriageAction) => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'idle' | 'decline'>('idle');
+  const [mode, setMode] = useState<'idle' | 'decline' | 'duplicate'>('idle');
+  const [original, setOriginal] = useState('');
   const [statusId, setStatusId] = useState(
     () => team.statuses.find((s) => s.isDefault)?.id ?? team.statuses[0]!.id,
   );
@@ -137,7 +138,29 @@ function TriageItem({
         <span className="text-ink">{issue.title}</span>
       </Link>
       {team.can.update &&
-        (mode === 'decline' ? (
+        (mode === 'duplicate' ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              value={original}
+              onChange={(event) => setOriginal(event.target.value)}
+              maxLength={40}
+              aria-label={t('triage.duplicateOf')}
+              placeholder={`${team.key}-1`}
+              className={`${inputClass} w-40`}
+            />
+            <button
+              type="button"
+              className={buttonClass}
+              disabled={busy || !original.trim()}
+              onClick={() => void run({ action: 'duplicate', of: original.trim() })}
+            >
+              {t('triage.markDuplicate')}
+            </button>
+            <button type="button" className={ghostButtonClass} onClick={() => setMode('idle')}>
+              {t('issues.cancel')}
+            </button>
+          </div>
+        ) : mode === 'decline' ? (
           <div className="flex flex-wrap items-center gap-2">
             <input
               value={reason}
@@ -199,6 +222,9 @@ function TriageItem({
               }
             >
               {t('triage.accept')}
+            </button>
+            <button type="button" className={ghostButtonClass} onClick={() => setMode('duplicate')}>
+              {t('triage.duplicate')}
             </button>
             <button type="button" className={ghostButtonClass} onClick={() => setMode('decline')}>
               {t('triage.decline')}

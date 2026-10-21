@@ -171,7 +171,7 @@ function TeamNode({ team }: { team: SidebarTeam }) {
           </NavItem>
           <NavItem href={`${base}/projects`}>{t('nav.projects')}</NavItem>
           <NavItem href={`${base}/views`}>{t('nav.views')}</NavItem>
-          {team.manage && <NavItem href={`${base}/integrations`}>{t('nav.integrations')}</NavItem>}
+          {team.manage && <NavItem href={`${base}/settings`}>{t('nav.teamSettings')}</NavItem>}
         </ul>
       )}
     </li>

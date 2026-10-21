@@ -159,6 +159,13 @@ export class RealtimeHub {
       }
       return;
     }
+    if (event.type === 'team.changed') {
+      for (const c of this.connections) {
+        if (c.teams.has(event.teamId) && (await this.canRead(c, event.teamId)))
+          this.send(c, { type: 'team.changed', teamId: event.teamId });
+      }
+      return;
+    }
     const listeners = [...this.connections].filter((c) => c.teams.has(event.teamId));
     if (listeners.length === 0) return;
     let issue: IssueSummary | undefined;

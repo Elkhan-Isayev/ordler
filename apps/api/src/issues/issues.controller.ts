@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
@@ -16,6 +17,9 @@ import {
   searchQuerySchema,
   createIssueSchema,
   createLabelSchema,
+  createStatusSchema,
+  reorderStatusesSchema,
+  updateStatusSchema,
   labelInputSchema,
   triageActionSchema,
   updateIssueSchema,
@@ -136,5 +140,26 @@ export class IssuesController {
       this.ctx.requests.search(request.member!.id, q, limit),
     ]);
     return { issues, requests };
+  }
+
+  @Post('teams/:key/statuses')
+  addStatus(@Param('key') key: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    return this.ctx.workflow.add(request.member!.id, key, parseBody(createStatusSchema, body));
+  }
+
+  @Put('teams/:key/statuses/order')
+  reorderStatuses(@Param('key') key: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    const { ids } = parseBody(reorderStatusesSchema, body);
+    return this.ctx.workflow.reorder(request.member!.id, key, ids);
+  }
+
+  @Patch('statuses/:id')
+  updateStatus(@Param('id') id: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    return this.ctx.workflow.update(request.member!.id, id, parseBody(updateStatusSchema, body));
+  }
+
+  @Delete('statuses/:id')
+  archiveStatus(@Param('id') id: string, @Req() request: OrdlerRequest) {
+    return this.ctx.workflow.archive(request.member!.id, id);
   }
 }

@@ -305,7 +305,13 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
           ? t('issues.event.dueDate', { to: String(change.to) })
           : t('issues.event.dueDateCleared');
       case 'triage':
-        return change.to === 'accepted' ? t('issues.event.accepted') : t('issues.event.declined');
+        return change.to === 'accepted'
+          ? t('issues.event.accepted')
+          : change.to === 'duplicate'
+            ? t('issues.event.duplicate')
+            : t('issues.event.declined');
+      case 'duplicateOf':
+        return '';
       case 'labelIds':
         return t('issues.event.labels', {
           to: (change.to as string[]).map((id) => labelName(t, team, id)).join(', ') || '—',
@@ -314,7 +320,7 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
         return change.to ? t('issues.event.parent') : t('issues.event.parentRemoved');
     }
   });
-  return `${actor}: ${parts.join(', ')}`;
+  return `${actor}: ${parts.filter(Boolean).join(', ')}`;
 }
 
 function statusName(t: TFunction, team: TeamView, id: unknown): string {

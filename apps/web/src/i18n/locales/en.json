@@ -21,7 +21,8 @@
     "upcomingCycle": "Upcoming",
     "admin": "Administration",
     "board": "Board",
-    "integrations": "Integrations"
+    "integrations": "Integrations",
+    "teamSettings": "Settings"
   },
   "settings": {
     "language": "Language"
@@ -114,7 +115,9 @@
     "role_name_taken": "A role with this name already exists.",
     "label_not_in_team": "This label belongs to another team.",
     "label_name_taken": "A label with this name already exists.",
-    "invalid_parent": "This issue cannot be the parent: it must be in the same team and not one of its sub-issues."
+    "invalid_parent": "This issue cannot be the parent: it must be in the same team and not one of its sub-issues.",
+    "status_in_use": "Issues still use this status. Move them first.",
+    "status_required": "This status is required: it is the default or the last one of its category."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -469,7 +472,8 @@
       "declined": "declined in triage",
       "labels": "labels → {to}",
       "parent": "moved under another issue",
-      "parentRemoved": "detached from its parent"
+      "parentRemoved": "detached from its parent",
+      "duplicate": "marked as duplicate"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -493,7 +497,8 @@
       "detach": "Detach",
       "add": "Add sub-issue",
       "addPlaceholder": "Add a sub-issue, press Enter"
-    }
+    },
+    "duplicateOf": "Duplicate of"
   },
   "editor": {
     "toolbar": "Formatting",
@@ -526,7 +531,10 @@
     "empty": "Nothing to triage.",
     "accept": "Accept",
     "decline": "Decline",
-    "reason": "Why is it declined?"
+    "reason": "Why is it declined?",
+    "duplicate": "Duplicate",
+    "duplicateOf": "Duplicate of (issue identifier)",
+    "markDuplicate": "Mark as duplicate"
   },
   "portals": {
     "empty": "No department offers requests yet.",
@@ -719,5 +727,24 @@
     "placeholder": "Search issues and requests…",
     "results": "Results",
     "empty": "Nothing found."
+  },
+  "teamSettings": {
+    "title": "Settings",
+    "subtitle": "Workflow, labels and Slack channels of this team.",
+    "workflow": "Workflow",
+    "statusName": "Name of {name}",
+    "default": "Default",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "archive": "Archive {name}",
+    "archiveShort": "Archive",
+    "addStatus": "Add status",
+    "newStatus": "New status",
+    "category": "Category",
+    "noLabels": "No labels yet. Create them from any issue.",
+    "labelColor": "Color of {name}",
+    "labelName": "Name of {name}",
+    "orgLabel": "Organization label",
+    "deleteLabel": "Delete {name}"
   }
 }
