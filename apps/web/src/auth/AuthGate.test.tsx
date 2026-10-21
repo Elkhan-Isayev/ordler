@@ -1,7 +1,9 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { request } from '../requests/fixtures.js';
 import { ME, mockApi } from '../test/api-mock.js';
+import { fakeRealtime } from '../test/realtime-fake.js';
 import { renderWithI18n } from '../test/render.js';
 import { AuthGate, takeAuthError } from './AuthGate.js';
 
@@ -40,6 +42,34 @@ describe('AuthGate', () => {
     });
     await renderWithI18n(<AuthGate browserLocale="en" />);
     expect(await screen.findByRole('heading', { name: 'Sign in to Ordler' })).toBeInTheDocument();
+  });
+
+  it('returns to the deep link after signing in (MVP criterion 13)', async () => {
+    const realtime = fakeRealtime();
+    window.history.replaceState(null, '', '/requests/REQ-7');
+    let signedIn = false;
+    const calls = mockApi({
+      'GET /api/setup/status': () => ({ json: { setupRequired: false } }),
+      'GET /api/me': () =>
+        signedIn ? { json: ME } : { status: 401, json: { error: 'unauthorized' } },
+      'GET /api/auth/strategies': () => ({ json: [{ kind: 'local', displayName: null }] }),
+      'POST /api/auth/password': () => {
+        signedIn = true;
+        return { json: ME };
+      },
+      'GET /api/requests/REQ-7': () => ({ json: request() }),
+      'GET /api/me/counts': () => ({ json: { unread: 0, approvals: 1 } }),
+    });
+    await renderWithI18n(<AuthGate browserLocale="en" />);
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(
+      screen.getByLabelText('Password', { selector: 'input' }),
+      'secret-password',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(calls.some((c) => c.path === '/api/requests/REQ-7')).toBe(true));
+    expect(window.location.pathname).toBe('/requests/REQ-7');
+    realtime.reset();
   });
 
   it('opens the app in the workspace language and signs out', async () => {

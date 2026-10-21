@@ -160,6 +160,22 @@ const queue = async (key: string, cookie: string) =>
   (await call('GET', `/api/teams/${key}/requests`, cookie)).json<RequestSummary[]>();
 
 describe('approvals (MVP criteria 2, 3, 4, 5)', () => {
+  it('accepts no decision without a signed-in session (MVP criterion 13)', async () => {
+    const request = await submitHeadsets((await hardwareType()).id);
+    const step = stepOf(request, 0).id;
+    expect((await decide('', step, { decision: 'approve' })).statusCode).toBe(401);
+    const bearer = await t.app.inject({
+      method: 'POST',
+      url: `/api/approvals/${step}/decision`,
+      headers: { authorization: 'Bearer ordl_pat_anything' },
+      payload: { decision: 'approve' },
+    });
+    expect(bearer.statusCode).toBe(401);
+    expect(
+      stepOf((await call('GET', '/api/requests/REQ-1', people.agent!.cookie)).json(), 0).status,
+    ).toBe('active');
+  });
+
   it('CS supervisor, then Finance supervisor, then IT triage', async () => {
     const type = await hardwareType();
     const request = await submitHeadsets(type.id);
