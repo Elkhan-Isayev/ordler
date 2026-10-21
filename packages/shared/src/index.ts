@@ -12,3 +12,4 @@ export * from './database.js';
 export * from './issues.js';
 export * from './attachments.js';
 export * from './requests.js';
+export * from './notifications.js';

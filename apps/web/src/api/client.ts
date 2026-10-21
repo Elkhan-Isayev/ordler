@@ -3,6 +3,10 @@ import type {
   AdminMember,
   AdminRole,
   ApiErrorBody,
+  ChatSubscriptionInput,
+  ChatSubscriptionView,
+  InboxCounts,
+  NotificationView,
   AssignRoleInput,
   ApprovalDecisionInput,
   CreateRequestGroupInput,
@@ -221,6 +225,19 @@ export const api = {
     apiRequest<RequestView>(`/api/requests/${encodeURIComponent(identifier)}`),
   requestGroup: (identifier: string) =>
     apiRequest<RequestGroupView>(`/api/request-groups/${encodeURIComponent(identifier)}`),
+  notifications: () => apiRequest<NotificationView[]>('/api/me/notifications'),
+  inboxCounts: () => apiRequest<InboxCounts>('/api/me/counts'),
+  markNotifications: (body: { ids?: string[]; read: boolean }) =>
+    apiRequest<InboxCounts>('/api/me/notifications/mark', { method: 'POST', body }),
+  slackSubscriptions: () => apiRequest<ChatSubscriptionView[]>('/api/integrations/slack'),
+  createSlackSubscription: (body: ChatSubscriptionInput) =>
+    apiRequest<ChatSubscriptionView>('/api/integrations/slack', { method: 'POST', body }),
+  deleteSlackSubscription: (id: string) =>
+    apiRequest<void>(`/api/integrations/slack/${id}`, { method: 'DELETE' }),
+  testSlackSubscription: (id: string) =>
+    apiRequest<{ sent: boolean; status: number }>(`/api/integrations/slack/${id}/test`, {
+      method: 'POST',
+    }),
   myRequests: () => apiRequest<RequestSummary[]>('/api/me/requests'),
   myApprovals: () => apiRequest<PendingApproval[]>('/api/me/approvals'),
   teamRequests: (key: string) =>

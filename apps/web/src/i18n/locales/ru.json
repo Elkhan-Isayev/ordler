@@ -131,7 +131,8 @@
       "authentication": "Вход",
       "mail": "Почтовый сервер",
       "database": "База данных",
-      "updates": "Обновления"
+      "updates": "Обновления",
+      "integrations": "Интеграции"
     },
     "departments": {
       "title": "Департаменты и команды",
@@ -287,6 +288,33 @@
         "select": "Выбор",
         "multi_select": "Множественный выбор",
         "checkbox": "Флажок"
+      }
+    },
+    "integrations": {
+      "title": "Интеграции",
+      "subtitle": "Отправляйте события команд в каналы Slack через incoming webhooks.",
+      "channels": "Каналы Slack",
+      "empty": "Каналы пока не подключены.",
+      "add": "Подключить канал",
+      "team": "Команда",
+      "name": "Название канала",
+      "webhookUrl": "URL incoming webhook",
+      "webhookHint": "Хранится в зашифрованном виде и больше не показывается.",
+      "eventsLabel": "События",
+      "test": "Отправить тестовое сообщение",
+      "testSent": "Тестовое сообщение отправлено",
+      "testFailed": "Slack ответил {status}",
+      "remove": "Удалить {name}",
+      "delete": "Удалить",
+      "events": {
+        "issue_created": "Новые задачи",
+        "issue_status_changed": "Смена статуса",
+        "issue_assigned": "Назначения",
+        "issue_commented": "Комментарии",
+        "request_received": "Новые запросы",
+        "approval_requested": "Запрошено согласование",
+        "approval_decided": "Решения по согласованию",
+        "request_resolved": "Запросы решены"
       }
     }
   },
@@ -545,6 +573,25 @@
       "requester_department_supervisor": "Руководитель отдела заявителя",
       "role": "{role} · {department}",
       "department_head": "Глава отдела {department}"
+    }
+  },
+  "inbox": {
+    "empty": "Ничего нового. Здесь появятся назначения, согласования и ответы.",
+    "markAllRead": "Отметить все как прочитанные",
+    "markRead": "Прочитано",
+    "markUnread": "Не прочитано",
+    "someone": "Кто-то",
+    "kinds": {
+      "issue_assigned": "{actor} назначил(а) вам {item}",
+      "issue_commented": "{actor} прокомментировал(а) {item}",
+      "issue_status_changed": "{actor} изменил(а) статус {item}",
+      "approval_requested": "Нужно ваше согласование: {item}",
+      "approval_decided": "{actor} принял(а) решение по согласованию {item}",
+      "request_rejected": "{item} отклонён",
+      "request_changes_requested": "По {item} запрошены правки",
+      "request_received": "Новый запрос вашей команде: {item}",
+      "request_status_changed": "{actor} обновил(а) {item}",
+      "request_commented": "{actor} прокомментировал(а) {item}"
     }
   }
 }

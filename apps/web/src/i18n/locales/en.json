@@ -131,7 +131,8 @@
       "authentication": "Sign-in",
       "mail": "Mail server",
       "database": "Database",
-      "updates": "Updates"
+      "updates": "Updates",
+      "integrations": "Integrations"
     },
     "departments": {
       "title": "Departments and teams",
@@ -287,6 +288,33 @@
         "select": "Choice",
         "multi_select": "Multiple choice",
         "checkbox": "Checkbox"
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "subtitle": "Post team events to Slack channels through incoming webhooks.",
+      "channels": "Slack channels",
+      "empty": "No channels connected yet.",
+      "add": "Connect a channel",
+      "team": "Team",
+      "name": "Channel name",
+      "webhookUrl": "Incoming webhook URL",
+      "webhookHint": "Stored encrypted and never shown again.",
+      "eventsLabel": "Events",
+      "test": "Send test message",
+      "testSent": "Test message sent",
+      "testFailed": "Slack answered {status}",
+      "remove": "Remove {name}",
+      "delete": "Remove",
+      "events": {
+        "issue_created": "New issues",
+        "issue_status_changed": "Status changes",
+        "issue_assigned": "Assignments",
+        "issue_commented": "Comments",
+        "request_received": "New requests",
+        "approval_requested": "Approvals requested",
+        "approval_decided": "Approvals decided",
+        "request_resolved": "Requests resolved"
       }
     }
   },
@@ -545,6 +573,25 @@
       "requester_department_supervisor": "Supervisor of the requester's department",
       "role": "{role} · {department}",
       "department_head": "Head of {department}"
+    }
+  },
+  "inbox": {
+    "empty": "Nothing new. Assignments, approvals and replies will show up here.",
+    "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "someone": "Someone",
+    "kinds": {
+      "issue_assigned": "{actor} assigned you {item}",
+      "issue_commented": "{actor} commented on {item}",
+      "issue_status_changed": "{actor} changed the status of {item}",
+      "approval_requested": "Your approval is needed on {item}",
+      "approval_decided": "{actor} decided an approval on {item}",
+      "request_rejected": "{item} was rejected",
+      "request_changes_requested": "Changes requested on {item}",
+      "request_received": "New request for your team: {item}",
+      "request_status_changed": "{actor} updated {item}",
+      "request_commented": "{actor} commented on {item}"
     }
   }
 }

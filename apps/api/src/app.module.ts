@@ -10,6 +10,7 @@ import { HealthController, READINESS_CHECK } from './health/health.controller.js
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
 import { AdminDatabaseController } from './install/admin-database.controller.js';
 import { IssuesController } from './issues/issues.controller.js';
+import { NotificationsController } from './notifications/notifications.controller.js';
 import { RequestsController } from './requests/requests.controller.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
@@ -40,6 +41,7 @@ export class AppModule {
         IssuesController,
         AttachmentsController,
         RequestsController,
+        NotificationsController,
       ],
       providers: [
         { provide: APP_CONTEXT, useValue: ctx },

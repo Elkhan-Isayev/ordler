@@ -31,6 +31,8 @@ interface Connection {
   memberId: string;
   token: string;
   teams: Set<string>;
+  /** Subscribed to its own member topic (Inbox, Approvals, requests it is involved in). */
+  personal: boolean;
   /** Read access per team, re-checked at most every ACCESS_CACHE_MS. */
   access: Map<string, { read: boolean; at: number }>;
   alive: boolean;
@@ -91,6 +93,7 @@ export class RealtimeHub {
       memberId: request.member!.id,
       token: parseCookies(request.headers.cookie)[SESSION_COOKIE] ?? '',
       teams: new Set(),
+      personal: false,
       access: new Map(),
       alive: true,
     };
@@ -111,8 +114,20 @@ export class RealtimeHub {
       return;
     }
     const teamId = /^team:([0-9a-f-]{36})$/.exec(message.topic)?.[1];
+    const memberId = /^member:([0-9a-f-]{36})$/.exec(message.topic)?.[1];
     if (message.type === 'unsubscribe') {
       if (teamId) connection.teams.delete(teamId);
+      if (memberId) connection.personal = false;
+      return;
+    }
+    if (memberId) {
+      // Only your own Inbox: nobody can listen to another member's notifications.
+      if (memberId !== connection.memberId) {
+        this.send(connection, { type: 'denied', topic: message.topic });
+        return;
+      }
+      connection.personal = true;
+      this.send(connection, { type: 'subscribed', topic: message.topic });
       return;
     }
     if (
@@ -128,6 +143,22 @@ export class RealtimeHub {
   }
 
   private async deliver(event: DomainEvent): Promise<void> {
+    if (event.type === 'member.inbox') {
+      for (const c of this.connections) {
+        if (c.personal && event.memberIds.includes(c.memberId))
+          this.send(c, { type: 'inbox.changed' });
+      }
+      return;
+    }
+    if (event.type === 'request.changed') {
+      for (const c of this.connections) {
+        const involved = c.personal && event.memberIds.includes(c.memberId);
+        const team = c.teams.has(event.teamId) && (await this.canRead(c, event.teamId));
+        if (involved || team)
+          this.send(c, { type: 'request.changed', identifier: event.identifier });
+      }
+      return;
+    }
     const listeners = [...this.connections].filter((c) => c.teams.has(event.teamId));
     if (listeners.length === 0) return;
     let issue: IssueSummary | undefined;

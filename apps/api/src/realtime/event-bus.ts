@@ -1,11 +1,12 @@
 import pg from 'pg';
 
 /** Something changed that open browser tabs should see; resolved to data per subscriber. */
-export interface DomainEvent {
-  type: 'issue.changed';
-  teamId: string;
-  issueId: string;
-}
+export type DomainEvent =
+  | { type: 'issue.changed'; teamId: string; issueId: string }
+  /** The Inbox or Approvals of these members changed. */
+  | { type: 'member.inbox'; memberIds: string[] }
+  /** A request changed: its team and the people involved (requester, approvers) hear it. */
+  | { type: 'request.changed'; teamId: string; identifier: string; memberIds: string[] };
 
 export type EventHandler = (event: DomainEvent) => void;
 

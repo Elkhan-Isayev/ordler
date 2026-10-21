@@ -1,7 +1,13 @@
 import { parse, TYPE, type MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { SUPPORTED_LOCALES } from '@ordler/shared';
 import { describe, expect, it } from 'vitest';
-import { EMAIL_MESSAGES, renderInviteEmail, renderOtpEmail, renderTestEmail } from './templates.js';
+import {
+  EMAIL_MESSAGES,
+  renderInviteEmail,
+  renderNotificationEmail,
+  renderOtpEmail,
+  renderTestEmail,
+} from './templates.js';
 
 const pluralOptions = (elements: MessageFormatElement[]) =>
   elements.flatMap((e) => (e.type === TYPE.plural ? [Object.keys(e.options)] : []));
@@ -56,5 +62,29 @@ describe('renderTestEmail', () => {
     const email = renderTestEmail({ locale: 'de', company: 'Push30' });
     expect(email.subject).toBe('Test-E-Mail von Push30 in Ordler');
     expect(email.text).toContain('Mailserver-Einstellungen');
+  });
+});
+
+describe('renderNotificationEmail', () => {
+  const input = {
+    company: 'Push30',
+    kind: 'approval_requested',
+    actor: 'Aysel',
+    item: 'REQ-7',
+    title: 'New laptop',
+    url: 'https://ordler.test/requests/REQ-7',
+  };
+
+  it.each(SUPPORTED_LOCALES)('names the event and links to it in %s', (locale) => {
+    const mail = renderNotificationEmail({ ...input, locale });
+    expect(mail.subject).toMatch(/^\[Push30\] .*REQ-7/);
+    expect(mail.text).toContain(input.url);
+    expect(mail.text).toContain('New laptop');
+  });
+
+  it('falls back to the item for unknown kinds', () => {
+    expect(
+      renderNotificationEmail({ ...input, locale: 'en', kind: 'something_else' }).subject,
+    ).toBe('[Push30] REQ-7');
   });
 });

@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
 import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
+import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
 import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
 import { TriagePage } from './issues/TriagePage.js';
 import { NewRequestPage } from './requests/NewRequestPage.js';
@@ -33,13 +34,14 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const groupPage = /^\/request-groups\/(REQ-G-\d+)\/?$/i.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
+  const counts = useInboxCounts(me.member.id);
 
   return (
     <div className="flex h-screen">
       <Sidebar
         workspaceName={me.workspace.companyName}
-        inboxCount={0}
-        pendingApprovals={0}
+        inboxCount={counts.unread}
+        pendingApprovals={counts.approvals}
         departments={me.departments}
         showAdmin={canAdminister}
         currentPath={path}
@@ -85,6 +87,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <RequestPage key={requestPage[1]} identifier={requestPage[1]!.toUpperCase()} />
         ) : groupPage ? (
           <RequestGroupPage key={groupPage[1]} identifier={groupPage[1]!.toUpperCase()} />
+        ) : path === '/inbox' ? (
+          <InboxPage memberId={me.member.id} />
         ) : path === '/my-requests' ? (
           <MyRequestsPage />
         ) : path === '/approvals' ? (

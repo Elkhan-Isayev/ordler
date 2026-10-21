@@ -11,12 +11,19 @@ import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SESSION_COOKIE } from '../auth/sessions.js';
 import { auditLog } from '../db/schema.js';
+import type { FetchFn } from '../notifications/slack.service.js';
 import { RecordingNotifier } from '../notifications/notifier.js';
+import type { DomainEvent } from '../realtime/event-bus.js';
 import { cookieFrom, createTestApp, type TestApp } from '../test/app.js';
 import { OWNER } from '../test/fixtures.js';
 
 let t: TestApp;
 let notifier: RecordingNotifier;
+let slackPosts: string[];
+const slackFetch: FetchFn = async (_url, init) => {
+  slackPosts.push(init.body);
+  return { status: 200, headers: { get: () => null } };
+};
 let owner: string;
 let roles: AdminRole[];
 const ids = {} as Record<'it' | 'finance' | 'cs' | 'help' | 'acc' | 'cs1', string>;
@@ -89,7 +96,8 @@ const teamScope = (id: string) => ({ type: 'team', id });
 
 beforeEach(async () => {
   notifier = new RecordingNotifier();
-  t = await createTestApp({ notifier });
+  slackPosts = [];
+  t = await createTestApp({ notifier, slackFetch });
   const setup = await call('POST', '/api/setup', undefined, {
     companyName: 'Push30',
     defaultLocale: 'en',
@@ -673,5 +681,49 @@ describe('request types', () => {
       title: 'x',
     });
     expect(archived.json()).toEqual({ error: 'request_type_archived' });
+  });
+});
+
+describe('live updates, counters and channels', () => {
+  it('tells the requester, approvers and the team that a request changed', async () => {
+    const changes: DomainEvent[] = [];
+    t.ctx.events.subscribe((event) => {
+      if (event.type === 'request.changed') changes.push(event);
+    });
+    await call('POST', '/api/integrations/slack', owner, {
+      teamId: ids.help,
+      name: '#it',
+      webhookUrl: 'https://hooks.slack.test/services/X',
+      events: ['approval_requested', 'approval_decided', 'request_received', 'request_resolved'],
+    });
+    const request = await submitHeadsets((await hardwareType()).id, []);
+    expect((await call('GET', '/api/me/counts', people.csboss!.cookie)).json()).toMatchObject({
+      approvals: 1,
+    });
+    expect((await call('GET', '/api/me/counts', people.finboss!.cookie)).json()).toMatchObject({
+      approvals: 0,
+    });
+
+    await decide(people.csboss!.cookie, stepOf(request, 0).id, { decision: 'approve' });
+    expect((await call('GET', '/api/me/counts', people.csboss!.cookie)).json()).toMatchObject({
+      approvals: 0,
+    });
+    expect(changes.at(-1)).toEqual({
+      type: 'request.changed',
+      teamId: ids.help,
+      identifier: 'REQ-1',
+      memberIds: expect.arrayContaining([people.agent!.id, people.csboss!.id]),
+    });
+
+    await t.ctx.slack.flush();
+    const kinds = slackPosts.map((body) => (JSON.parse(body) as { text: string }).text);
+    // Deliveries run in the background, so their order is not fixed.
+    expect(kinds.sort()).toEqual([
+      'Approval decided: REQ-1 20 headsets for CS',
+      'Approval requested: REQ-1 20 headsets for CS',
+      'New request: REQ-1 20 headsets for CS',
+    ]);
+    // Slack sees only public facts: no form answers or comments.
+    expect(slackPosts.join()).not.toContain('Headset');
   });
 });

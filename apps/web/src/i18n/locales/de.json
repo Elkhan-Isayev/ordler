@@ -131,7 +131,8 @@
       "authentication": "Anmeldung",
       "mail": "Mailserver",
       "database": "Datenbank",
-      "updates": "Updates"
+      "updates": "Updates",
+      "integrations": "Integrationen"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -287,6 +288,33 @@
         "select": "Auswahl",
         "multi_select": "Mehrfachauswahl",
         "checkbox": "Kontrollkästchen"
+      }
+    },
+    "integrations": {
+      "title": "Integrationen",
+      "subtitle": "Team-Ereignisse über Incoming Webhooks in Slack-Kanäle senden.",
+      "channels": "Slack-Kanäle",
+      "empty": "Noch keine Kanäle verbunden.",
+      "add": "Kanal verbinden",
+      "team": "Team",
+      "name": "Kanalname",
+      "webhookUrl": "Incoming-Webhook-URL",
+      "webhookHint": "Wird verschlüsselt gespeichert und nie wieder angezeigt.",
+      "eventsLabel": "Ereignisse",
+      "test": "Testnachricht senden",
+      "testSent": "Testnachricht gesendet",
+      "testFailed": "Slack antwortete {status}",
+      "remove": "{name} entfernen",
+      "delete": "Entfernen",
+      "events": {
+        "issue_created": "Neue Issues",
+        "issue_status_changed": "Statusänderungen",
+        "issue_assigned": "Zuweisungen",
+        "issue_commented": "Kommentare",
+        "request_received": "Neue Anfragen",
+        "approval_requested": "Angeforderte Genehmigungen",
+        "approval_decided": "Entschiedene Genehmigungen",
+        "request_resolved": "Erledigte Anfragen"
       }
     }
   },
@@ -545,6 +573,25 @@
       "requester_department_supervisor": "Vorgesetzte der Abteilung des Antragstellers",
       "role": "{role} · {department}",
       "department_head": "Leitung {department}"
+    }
+  },
+  "inbox": {
+    "empty": "Nichts Neues. Zuweisungen, Genehmigungen und Antworten erscheinen hier.",
+    "markAllRead": "Alle als gelesen markieren",
+    "markRead": "Als gelesen markieren",
+    "markUnread": "Als ungelesen markieren",
+    "someone": "Jemand",
+    "kinds": {
+      "issue_assigned": "{actor} hat Ihnen {item} zugewiesen",
+      "issue_commented": "{actor} hat {item} kommentiert",
+      "issue_status_changed": "{actor} hat den Status von {item} geändert",
+      "approval_requested": "Ihre Genehmigung wird für {item} benötigt",
+      "approval_decided": "{actor} hat über eine Genehmigung zu {item} entschieden",
+      "request_rejected": "{item} wurde abgelehnt",
+      "request_changes_requested": "Änderungen an {item} angefordert",
+      "request_received": "Neue Anfrage für Ihr Team: {item}",
+      "request_status_changed": "{actor} hat {item} aktualisiert",
+      "request_commented": "{actor} hat {item} kommentiert"
     }
   }
 }

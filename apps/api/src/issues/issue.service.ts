@@ -2,6 +2,7 @@ import {
   formatIssueIdentifier,
   parseIssueIdentifier,
   type CommentView,
+  type SlackEvent,
   type CreateIssueInput,
   type IssueDetail,
   type IssueEvent,
@@ -24,6 +25,8 @@ import {
   teams,
   workflowStatuses,
 } from '../db/schema.js';
+import type { Notifier } from '../notifications/notifier.js';
+import type { ChannelItem } from '../notifications/slack.service.js';
 import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess, TeamPermissions } from './team-access.js';
 import { teamStatuses } from './workflows.js';
@@ -42,10 +45,17 @@ const TRACKED: Array<Exclude<IssueField, 'triage'>> = [
   'dueDate',
 ];
 
+/** Slack channels of a team (SPEC §7.1); optional so tests can leave it out. */
+export interface TeamChannels {
+  publish(teamId: string, event: SlackEvent, item: ChannelItem): void;
+}
+
 export interface IssueServiceDeps {
   db: Db;
   access: TeamAccess;
   events: EventBus;
+  notifier?: Notifier;
+  channels?: TeamChannels;
   now?: () => Date;
 }
 
@@ -231,7 +241,17 @@ export class IssueService {
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
-    return this.detailById(issueId, memberId);
+    const created = await this.detailById(issueId, memberId);
+    this.toChannels(team.id, 'issue_created', created);
+    if (input.assigneeId) {
+      await this.deps.notifier?.notify({
+        recipients: [input.assigneeId],
+        kind: 'issue_assigned',
+        actorId: memberId,
+        subject: { type: 'issue', id: issueId },
+      });
+    }
+    return created;
   }
 
   async get(memberId: string, identifier: string): Promise<IssueDetail> {
@@ -282,7 +302,47 @@ export class IssueService {
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
-    return this.detailById(issueId, memberId);
+    const updated = await this.detailById(issueId, memberId);
+    if (changes.assigneeId && input.assigneeId) {
+      this.toChannels(team.id, 'issue_assigned', updated);
+      await this.deps.notifier?.notify({
+        recipients: [input.assigneeId],
+        kind: 'issue_assigned',
+        actorId: memberId,
+        subject: { type: 'issue', id: issueId },
+      });
+    }
+    if (changes.statusId) {
+      this.toChannels(team.id, 'issue_status_changed', updated);
+      await this.deps.notifier?.notify({
+        recipients: [before!.createdBy, updated.assignee?.id].filter((id): id is string =>
+          Boolean(id),
+        ),
+        kind: 'issue_status_changed',
+        actorId: memberId,
+        subject: { type: 'issue', id: issueId },
+      });
+    }
+    return updated;
+  }
+
+  /** Posts to the team's Slack channels; the item is the team's own, so nothing leaks. */
+  private toChannels(
+    teamId: string,
+    event: SlackEvent,
+    issue: IssueDetail,
+    excerpt?: string,
+  ): void {
+    if (!this.deps.channels) return;
+    this.deps.channels.publish(teamId, event, {
+      identifier: issue.identifier,
+      title: issue.title,
+      path: `/issue/${issue.identifier}`,
+      context: [issue.status.name, issue.priority, issue.assignee?.name ?? ''].filter(
+        (part) => part && part !== 'none',
+      ),
+      ...(excerpt ? { excerpt } : {}),
+    });
   }
 
   /** The issue as a team subscriber sees it; used to fan out realtime updates. */
@@ -414,7 +474,24 @@ export class IssueService {
       await tx.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
     });
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
-    return this.detailById(issueId, memberId);
+    const detail = await this.detailById(issueId, memberId);
+    this.toChannels(team.id, 'issue_commented', detail, body);
+    // Watchers: whoever filed, owns or discussed the issue (SPEC §5.1).
+    const [row] = await this.db
+      .select({ createdBy: issues.createdBy })
+      .from(issues)
+      .where(eq(issues.id, issueId));
+    await this.deps.notifier?.notify({
+      recipients: [
+        row?.createdBy,
+        detail.assignee?.id,
+        ...detail.comments.map((c) => c.author?.id),
+      ].filter((id): id is string => Boolean(id)),
+      kind: 'issue_commented',
+      actorId: memberId,
+      subject: { type: 'issue', id: issueId },
+    });
+    return detail;
   }
 
   async editComment(memberId: string, commentId: string, body: string): Promise<IssueDetail> {

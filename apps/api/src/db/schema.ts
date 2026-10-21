@@ -601,3 +601,45 @@ export const requestEvents = pgTable(
   },
   (t) => [index('request_events_request_idx').on(t.requestId, t.createdAt)],
 );
+
+/** A member's Inbox (SPEC §7): one row per recipient and event. */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id),
+    kind: text('kind').notNull(),
+    subjectType: text('subject_type', { enum: ['issue', 'request', 'request_group'] }).notNull(),
+    subjectId: uuid('subject_id').notNull(),
+    actorId: uuid('actor_id').references(() => members.id),
+    data: jsonb('data').notNull().default({}),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('notifications_member_idx').on(t.memberId, t.createdAt)],
+);
+
+/**
+ * Slack channel subscriptions through incoming webhooks (SPEC §7.1, level 1). The webhook URL
+ * is a secret: sealed with ENCRYPTION_KEY and never returned by the API.
+ */
+export const chatSubscriptions = pgTable(
+  'chat_subscriptions',
+  {
+    id: id(),
+    provider: text('provider', { enum: ['slack'] })
+      .notNull()
+      .default('slack'),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    name: text('name').notNull(),
+    targetEncrypted: text('target_encrypted').notNull(),
+    events: text('events').array().notNull(),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('chat_subscriptions_team_idx').on(t.teamId)],
+);

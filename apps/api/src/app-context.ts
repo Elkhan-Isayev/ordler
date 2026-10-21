@@ -19,7 +19,9 @@ import { AttachmentService } from './attachments/attachment.service.js';
 import { IssueService } from './issues/issue.service.js';
 import { RequestService } from './requests/request.service.js';
 import { RequestTypeService } from './requests/request-types.service.js';
-import { silentNotifier, type Notifier } from './notifications/notifier.js';
+import { NotificationService } from './notifications/notification.service.js';
+import type { Notifier } from './notifications/notifier.js';
+import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
 import { LocalEventBus, type EventBus } from './realtime/event-bus.js';
@@ -58,6 +60,8 @@ export interface AppContext {
   attachments: AttachmentService;
   requestTypes: RequestTypeService;
   requests: RequestService;
+  notifications: NotificationService;
+  slack: SlackService;
   events: EventBus;
   realtime: RealtimeHub;
   limits: {
@@ -66,6 +70,7 @@ export interface AppContext {
     otpVerify: RateLimiter;
     updateCheck: RateLimiter;
     testMail: RateLimiter;
+    slackTest: RateLimiter;
   };
 }
 
@@ -83,6 +88,8 @@ export interface AppContextDeps {
   events?: EventBus;
   /** Who hears about approvals, assignments and comments; Inbox, email and Slack in production. */
   notifier?: Notifier;
+  /** Outgoing Slack webhook calls; replaced in tests. */
+  slackFetch?: SlackFetchFn;
   /** Upload limit per attachment in bytes (ATTACHMENT_MAX_MB). */
   attachmentMaxBytes?: number;
   /** How often open sockets are pinged and their sessions re-checked. */
@@ -112,10 +119,28 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const events = deps.events ?? new LocalEventBus();
   const access = new DbAccessContext(deps.db);
   const teamAccess = new TeamAccess(deps.db, access);
+  const notifications = new NotificationService({
+    db: deps.db,
+    mail,
+    events,
+    baseUrl: deps.baseUrl,
+    log: (message) => console.warn(message),
+  });
+  const notifier = deps.notifier ?? notifications;
+  const slack = new SlackService({
+    db: deps.db,
+    box,
+    access,
+    baseUrl: deps.baseUrl,
+    log: (message) => console.warn(message),
+    ...(deps.slackFetch ? { fetch: deps.slackFetch } : {}),
+  });
   const issues = new IssueService({
     db: deps.db,
     access: teamAccess,
     events,
+    notifier,
+    channels: slack,
     now,
   });
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
@@ -167,9 +192,13 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       access,
       teamAccess,
       issues,
-      notifier: deps.notifier ?? silentNotifier,
+      notifier,
+      events,
+      channels: slack,
       now,
     }),
+    notifications,
+    slack,
     attachments: new AttachmentService(
       deps.db,
       teamAccess,
@@ -190,6 +219,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       // Manual "check now" clicks; GitHub allows 60 anonymous requests an hour per IP.
       updateCheck: new RateLimiter(1, 60_000),
       testMail: new RateLimiter(10, FIFTEEN_MINUTES),
+      slackTest: new RateLimiter(10, FIFTEEN_MINUTES),
     },
   };
 }

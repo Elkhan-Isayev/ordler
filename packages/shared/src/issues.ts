@@ -150,9 +150,13 @@ export interface IssueDetail extends IssueSummary {
 export type RealtimeServerMessage =
   | { type: 'subscribed'; topic: string }
   | { type: 'denied'; topic: string }
-  | { type: 'issue.changed'; issue: IssueSummary };
+  | { type: 'issue.changed'; issue: IssueSummary }
+  /** Something arrived in or left the member's Inbox or Approvals. */
+  | { type: 'inbox.changed' }
+  /** A request the member is involved in changed; pages showing it reload. */
+  | { type: 'request.changed'; identifier: string };
 
-/** Browser → server messages; topics are `team:<teamId>`. */
+/** Browser → server messages; topics are `team:<teamId>` and the member's own `member:<id>`. */
 export type RealtimeClientMessage =
   { type: 'subscribe'; topic: string } | { type: 'unsubscribe'; topic: string };
 
@@ -163,4 +167,8 @@ export const realtimeClientMessageSchema = z.discriminatedUnion('type', [
 
 export function teamTopic(teamId: string): string {
   return `team:${teamId}`;
+}
+
+export function memberTopic(memberId: string): string {
+  return `member:${memberId}`;
 }

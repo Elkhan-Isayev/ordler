@@ -116,6 +116,27 @@ describe('realtime updates', () => {
     expect(await tab.next()).toMatchObject({ type: 'denied', topic: 'nonsense' });
   });
 
+  it('pushes Inbox changes only to the member’s own topic', async () => {
+    const me = (await t.app.inject({ url: '/api/me', headers: { cookie: owner } })).json<{
+      member: { id: string };
+    }>();
+    const tab = await connect(owner);
+    tab.socket.send(
+      JSON.stringify({ type: 'subscribe', topic: 'member:00000000-0000-7000-8000-000000000000' }),
+    );
+    expect(await tab.next()).toMatchObject({ type: 'denied' });
+    tab.socket.send(JSON.stringify({ type: 'subscribe', topic: `member:${me.member.id}` }));
+    expect(await tab.next()).toEqual({ type: 'subscribed', topic: `member:${me.member.id}` });
+
+    await t.ctx.events.publish({
+      type: 'member.inbox',
+      memberIds: ['00000000-0000-7000-8000-000000000001'],
+    });
+    await t.ctx.events.publish({ type: 'member.inbox', memberIds: [me.member.id] });
+    expect(await tab.next()).toEqual({ type: 'inbox.changed' });
+    expect(tab.messages).toHaveLength(3);
+  });
+
   it('refuses connections without a session or from another site', async () => {
     await expect(open({ origin: TEST_BASE_URL })).rejects.toThrow('HTTP 401');
     await expect(open({ cookie: owner, origin: 'https://evil.test' })).rejects.toThrow('HTTP 403');

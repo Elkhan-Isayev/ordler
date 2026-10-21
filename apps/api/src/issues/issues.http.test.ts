@@ -73,7 +73,10 @@ async function createTeam(name: string, key: string, isPrivate = false): Promise
 beforeEach(async () => {
   const bus = new LocalEventBus();
   events = [];
-  bus.subscribe((event) => events.push(event));
+  // Inbox events are covered by the notification tests.
+  bus.subscribe((event) => {
+    if (event.type === 'issue.changed') events.push(event);
+  });
   t = await createTestApp({ events: bus });
   const setup = await call('POST', '/api/setup', undefined, {
     companyName: 'Push30',

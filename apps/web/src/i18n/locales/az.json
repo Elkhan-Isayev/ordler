@@ -131,7 +131,8 @@
       "authentication": "Giriş",
       "mail": "Poçt serveri",
       "database": "Verilənlər bazası",
-      "updates": "Yeniləmələr"
+      "updates": "Yeniləmələr",
+      "integrations": "İnteqrasiyalar"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -287,6 +288,33 @@
         "select": "Seçim",
         "multi_select": "Çoxlu seçim",
         "checkbox": "Bayraqcıq"
+      }
+    },
+    "integrations": {
+      "title": "İnteqrasiyalar",
+      "subtitle": "Komanda hadisələrini incoming webhook vasitəsilə Slack kanallarına göndərin.",
+      "channels": "Slack kanalları",
+      "empty": "Hələ heç bir kanal qoşulmayıb.",
+      "add": "Kanal qoş",
+      "team": "Komanda",
+      "name": "Kanalın adı",
+      "webhookUrl": "Incoming webhook URL",
+      "webhookHint": "Şifrələnmiş saxlanılır və bir daha göstərilmir.",
+      "eventsLabel": "Hadisələr",
+      "test": "Test mesajı göndər",
+      "testSent": "Test mesajı göndərildi",
+      "testFailed": "Slack {status} cavabı verdi",
+      "remove": "{name} sil",
+      "delete": "Sil",
+      "events": {
+        "issue_created": "Yeni tapşırıqlar",
+        "issue_status_changed": "Status dəyişiklikləri",
+        "issue_assigned": "Təyinatlar",
+        "issue_commented": "Şərhlər",
+        "request_received": "Yeni sorğular",
+        "approval_requested": "Təsdiq istənildi",
+        "approval_decided": "Təsdiq qərarları",
+        "request_resolved": "Həll olunmuş sorğular"
       }
     }
   },
@@ -545,6 +573,25 @@
       "requester_department_supervisor": "Müraciətçinin şöbə rəhbəri",
       "role": "{role} · {department}",
       "department_head": "{department} şöbəsinin müdiri"
+    }
+  },
+  "inbox": {
+    "empty": "Yeni heç nə yoxdur. Təyinatlar, təsdiqlər və cavablar burada görünəcək.",
+    "markAllRead": "Hamısını oxunmuş et",
+    "markRead": "Oxunmuş et",
+    "markUnread": "Oxunmamış et",
+    "someone": "Kimsə",
+    "kinds": {
+      "issue_assigned": "{actor} sizə {item} təyin etdi",
+      "issue_commented": "{actor} {item} üzrə şərh yazdı",
+      "issue_status_changed": "{actor} {item} statusunu dəyişdi",
+      "approval_requested": "{item} üçün təsdiqiniz lazımdır",
+      "approval_decided": "{actor} {item} üzrə təsdiq qərarı verdi",
+      "request_rejected": "{item} rədd edildi",
+      "request_changes_requested": "{item} üzrə düzəlişlər istənildi",
+      "request_received": "Komandanız üçün yeni sorğu: {item}",
+      "request_status_changed": "{actor} {item} sorğusunu yenilədi",
+      "request_commented": "{actor} {item} üzrə şərh yazdı"
     }
   }
 }

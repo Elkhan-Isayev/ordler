@@ -48,7 +48,8 @@ import {
   teams,
   workflowStatuses,
 } from '../db/schema.js';
-import type { IssueService } from '../issues/issue.service.js';
+import type { IssueService, TeamChannels } from '../issues/issue.service.js';
+import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess } from '../issues/team-access.js';
 import type { Notifier } from '../notifications/notifier.js';
 import type { AccessContextSource } from '../rbac/permission.guard.js';
@@ -73,6 +74,8 @@ export interface RequestServiceDeps {
   teamAccess: TeamAccess;
   issues: IssueService;
   notifier: Notifier;
+  events?: EventBus;
+  channels?: TeamChannels;
   now?: () => Date;
 }
 
@@ -128,6 +131,7 @@ export class RequestService {
     });
 
     await this.advance(requestId, actor.memberId);
+    await this.changed(requestId);
     return this.view(actor.memberId, requestId);
   }
 
@@ -289,6 +293,8 @@ export class RequestService {
         });
         await this.advance(subject.id, actor.memberId);
       }
+      this.toChannels(await this.fresh(subject.id), 'approval_decided');
+      await this.changed(subject.id);
       return { request: await this.view(actor.memberId, subject.id) };
     }
 
@@ -456,6 +462,7 @@ export class RequestService {
       await this.addComment(row.id, actor.memberId, action.comment, false);
       await this.setStatus(row, 'in_progress', actor.memberId, 'reopened');
     }
+    await this.changed(row.id);
     return this.view(actor.memberId, row.id);
   }
 
@@ -501,6 +508,7 @@ export class RequestService {
       // The step starts over: earlier decisions stay in history but no longer count.
       await this.activateStep(step, await this.fresh(row.id), actor.memberId);
     }
+    await this.changed(row.id);
     return this.view(actor.memberId, row.id);
   }
 
@@ -533,6 +541,7 @@ export class RequestService {
       actorId: actor.memberId,
       subject: { type: 'request', id: row.id },
     });
+    await this.changed(row.id);
     return this.view(actor.memberId, row.id);
   }
 
@@ -552,6 +561,7 @@ export class RequestService {
     });
     await this.db.update(issues).set({ sourceRequestId: row.id }).where(eq(issues.id, created.id));
     await this.event(row.id, actor.memberId, 'issue_spawned', { identifier: created.identifier });
+    await this.changed(row.id);
     return this.view(actor.memberId, row.id);
   }
 
@@ -565,6 +575,7 @@ export class RequestService {
     if (detail.teamId !== row.targetTeamId) throw new DomainError('validation_failed');
     await this.db.update(issues).set({ sourceRequestId: row.id }).where(eq(issues.id, detail.id));
     await this.event(row.id, actor.memberId, 'issue_linked', { identifier: detail.identifier });
+    await this.changed(row.id);
     return this.view(actor.memberId, row.id);
   }
 
@@ -677,6 +688,7 @@ export class RequestService {
       })
       .where(eq(approvalSteps.id, step.id));
     await this.event(row.id, actorId, 'approval_requested', { stepId: step.id });
+    this.toChannels(row, 'approval_requested');
     await this.deps.notifier.notify({
       recipients: approvers,
       kind: 'approval_requested',
@@ -874,8 +886,46 @@ export class RequestService {
     });
   }
 
+  /** Tells open pages of everyone involved, and the team's queue, that the request changed. */
+  private async changed(requestId: string): Promise<void> {
+    if (!this.deps.events) return;
+    const row = await this.fresh(requestId);
+    const owners: SQL[] = [eq(approvalSteps.requestId, row.id)];
+    if (row.groupId) owners.push(eq(approvalSteps.groupId, row.groupId));
+    const steps = await this.db
+      .select({ ids: approvalSteps.resolvedApproverIds })
+      .from(approvalSteps)
+      .where(sql`(${sql.join(owners, sql` or `)})`);
+    await this.deps.events.publish({
+      type: 'request.changed',
+      teamId: row.targetTeamId,
+      identifier: formatRequestIdentifier(row.number),
+      memberIds: [
+        ...new Set(
+          [row.requesterId, ...steps.flatMap((s) => s.ids)].filter((id): id is string =>
+            Boolean(id),
+          ),
+        ),
+      ],
+    });
+  }
+
+  /** Request events in the target team's Slack channels; only public facts, no comments. */
+  private toChannels(
+    row: RequestRow,
+    event: 'request_received' | 'approval_requested' | 'approval_decided' | 'request_resolved',
+  ) {
+    this.deps.channels?.publish(row.targetTeamId, event, {
+      identifier: formatRequestIdentifier(row.number),
+      title: row.title,
+      path: `/requests/${formatRequestIdentifier(row.number)}`,
+      context: [row.status],
+    });
+  }
+
   /** A request reached the team: its members hear about it. */
   private async notifyTeam(row: RequestRow, actorId: string) {
+    this.toChannels(row, 'request_received');
     const people = await this.db
       .select({ id: teamMemberships.memberId })
       .from(teamMemberships)

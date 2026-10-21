@@ -1,5 +1,6 @@
 import {
   PRIORITIES,
+  teamTopic,
   validateFormData,
   type FormValue,
   type Priority,
@@ -18,6 +19,7 @@ import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { formatWhen } from '../issues/Comments.js';
 import { Avatar, PriorityIcon, selectClass } from '../issues/ui.js';
+import { useRealtime } from '../realtime/client.js';
 import { Link } from '../router.js';
 import { ApprovalTimeline } from './ApprovalTimeline.js';
 import { FormAnswers, FormFields, RequestStatusBadge } from './common.js';
@@ -49,6 +51,14 @@ export function RequestPage({ identifier }: { identifier: string }) {
   useEffect(() => {
     void reload();
   }, [reload]);
+  // Approvals, comments and status changes by others show up without a refresh.
+  useRealtime(
+    request ? teamTopic(request.targetTeam.id) : undefined,
+    (message) => {
+      if (message.type === 'request.changed' && message.identifier === identifier) void reload();
+    },
+    () => void reload(),
+  );
 
   async function run(action: () => Promise<RequestView | undefined>): Promise<boolean> {
     try {
