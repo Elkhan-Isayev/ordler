@@ -136,7 +136,7 @@ export interface TeamView {
   /** Team labels and organization labels, by name. */
   labels: LabelView[];
   /** What the viewer may do; the server checks every request again. */
-  can: { create: boolean; update: boolean; assign: boolean; comment: boolean };
+  can: { create: boolean; update: boolean; assign: boolean; comment: boolean; delete: boolean };
 }
 
 export interface IssueSummary {
@@ -216,6 +216,8 @@ export type RealtimeServerMessage =
   | { type: 'subscribed'; topic: string }
   | { type: 'denied'; topic: string }
   | { type: 'issue.changed'; issue: IssueSummary }
+  /** The issue was deleted (archived): boards drop it. */
+  | { type: 'issue.removed'; issueId: string; teamId: string }
   /** Workflow or labels changed: reload the team. */
   | { type: 'team.changed'; teamId: string }
   /** Something arrived in or left the member's Inbox or Approvals. */

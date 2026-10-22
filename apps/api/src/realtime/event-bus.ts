@@ -3,6 +3,7 @@ import pg from 'pg';
 /** Something changed that open browser tabs should see; resolved to data per subscriber. */
 export type DomainEvent =
   | { type: 'issue.changed'; teamId: string; issueId: string }
+  | { type: 'issue.removed'; teamId: string; issueId: string }
   /** Team settings such as the workflow changed; open boards refetch the team. */
   | { type: 'team.changed'; teamId: string }
   /** The Inbox or Approvals of these members changed. */

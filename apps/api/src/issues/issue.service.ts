@@ -102,7 +102,13 @@ export class IssueService {
       statuses: await teamStatuses(this.db, team.id),
       members: people,
       labels: await this.teamLabels(team.id),
-      can: { create: can.create, update: can.update, assign: can.assign, comment: can.comment },
+      can: {
+        create: can.create,
+        update: can.update,
+        assign: can.assign,
+        comment: can.comment,
+        delete: can.delete,
+      },
     };
   }
 
@@ -153,6 +159,27 @@ export class IssueService {
     );
     const order = new Map(matches.map((m, index) => [m.id, index]));
     return found.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
+  }
+
+  /**
+   * Deletes an issue for everyone: it is archived, never erased, so history, comments and
+   * links stay in the database and the audit log records who did it.
+   */
+  async remove(memberId: string, identifier: string, via?: string): Promise<void> {
+    const { issueId, team, can } = await this.readableIssue(memberId, identifier);
+    if (!can.delete) throw new DomainError('forbidden');
+    await this.db
+      .update(issues)
+      .set({ archivedAt: this.now(), updatedAt: this.now() })
+      .where(eq(issues.id, issueId));
+    await writeAudit(this.db, {
+      actor: { type: via === undefined ? 'member' : 'token', id: memberId },
+      action: 'issue.deleted',
+      targetType: 'issue',
+      targetId: issueId,
+      after: { identifier: identifier.toUpperCase(), ...(via === undefined ? {} : { via }) },
+    });
+    await this.deps.events.publish({ type: 'issue.removed', teamId: team.id, issueId });
   }
 
   /** Issues from outside the team waiting for a decision (SPEC §5.2). */
@@ -467,6 +494,7 @@ export class IssueService {
         comment: false,
         deleteAnyComment: false,
         manage: false,
+        delete: false,
       };
     return this.deps.access.forTeam(memberId, team);
   }

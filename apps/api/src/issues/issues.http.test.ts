@@ -5,8 +5,10 @@ import type {
   IssueSummary,
   TeamView,
 } from '@ordler/shared';
+import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SESSION_COOKIE } from '../auth/sessions.js';
+import { auditLog, issues } from '../db/schema.js';
 import { LocalEventBus, type DomainEvent } from '../realtime/event-bus.js';
 import { cookieFrom, createTestApp, type TestApp } from '../test/app.js';
 import { OWNER } from '../test/fixtures.js';
@@ -102,7 +104,13 @@ describe('team issues', () => {
       ['done', 'completed'],
       ['canceled', 'canceled'],
     ]);
-    expect(team.can).toEqual({ create: true, update: true, assign: true, comment: true });
+    expect(team.can).toEqual({
+      create: true,
+      update: true,
+      assign: true,
+      comment: true,
+      delete: true,
+    });
   });
 
   it('numbers issues per team, starts them in the default status and records history', async () => {
@@ -219,6 +227,7 @@ describe('issue permissions', () => {
       update: false,
       assign: false,
       comment: false,
+      delete: false,
     });
     expect((await call('GET', '/api/issues/HELP-1', viewer.cookie)).statusCode).toBe(200);
     expect(
@@ -470,5 +479,54 @@ describe('triage', () => {
       (await call('POST', '/api/issues/HELP-1/triage', owner, { action: 'decline', reason: ' ' }))
         .statusCode,
     ).toBe(400);
+  });
+});
+
+describe('deleting issues', () => {
+  it('archives the issue for team leads and hides it everywhere', async () => {
+    const member = await person('mo@push30.test', {
+      role: 'member',
+      scope: { type: 'team', id: helpdeskId },
+      teams: [helpdeskId],
+    });
+    const lead = await person('lee@push30.test', {
+      role: 'team_lead',
+      scope: { type: 'team', id: helpdeskId },
+      teams: [helpdeskId],
+    });
+    const created = (
+      await call('POST', '/api/teams/HELP/issues', member.cookie, { title: 'Old idea' })
+    ).json<IssueDetail>();
+    expect((await call('GET', '/api/teams/HELP', member.cookie)).json<TeamView>().can.delete).toBe(
+      false,
+    );
+    expect((await call('DELETE', '/api/issues/HELP-1', member.cookie)).statusCode).toBe(403);
+
+    const removed: DomainEvent[] = [];
+    t.ctx.events.subscribe((event) => {
+      if (event.type === 'issue.removed') removed.push(event);
+    });
+    expect((await call('GET', '/api/teams/HELP', lead.cookie)).json<TeamView>().can.delete).toBe(
+      true,
+    );
+    expect((await call('DELETE', '/api/issues/help-1', lead.cookie)).statusCode).toBe(204);
+
+    expect((await call('GET', '/api/issues/HELP-1', lead.cookie)).statusCode).toBe(404);
+    expect((await call('GET', '/api/teams/HELP/issues', lead.cookie)).json()).toEqual([]);
+    expect((await call('DELETE', '/api/issues/HELP-1', lead.cookie)).statusCode).toBe(404);
+    expect(removed).toEqual([{ type: 'issue.removed', teamId: helpdeskId, issueId: created.id }]);
+    // Never erased: the row and its audit entry remain.
+    const [row] = await t.ctx.db.select().from(issues).where(eq(issues.id, created.id));
+    expect(row!.archivedAt).not.toBeNull();
+    const audit = await t.ctx.db
+      .select()
+      .from(auditLog)
+      .where(eq(auditLog.action, 'issue.deleted'));
+    expect(audit).toMatchObject([{ actorId: lead.id, after: { identifier: 'HELP-1' } }]);
+    // Numbers are never reused.
+    const next = (
+      await call('POST', '/api/teams/HELP/issues', lead.cookie, { title: 'New idea' })
+    ).json<IssueDetail>();
+    expect(next.identifier).toBe('HELP-2');
   });
 });

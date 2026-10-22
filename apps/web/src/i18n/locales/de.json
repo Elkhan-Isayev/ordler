@@ -499,7 +499,9 @@
       "add": "Unter-Issue hinzufügen",
       "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken"
     },
-    "duplicateOf": "Duplikat von"
+    "duplicateOf": "Duplikat von",
+    "delete": "Löschen",
+    "confirmDelete": "{identifier} löschen? Das Issue verschwindet aus Boards und Suche; in der Datenbank und im Audit-Log bleibt es erhalten."
   },
   "editor": {
     "toolbar": "Formatierung",

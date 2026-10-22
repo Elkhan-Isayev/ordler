@@ -55,6 +55,15 @@ describe('TeamIssuesPage', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('drops issues deleted by other people', async () => {
+    mockApi(base());
+    await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
+    await screen.findByText('Issue 2');
+    act(() => realtime.push({ type: 'issue.removed', issueId: 'i2', teamId: TEAM.id }));
+    await waitFor(() => expect(screen.queryByText('Issue 2')).not.toBeInTheDocument());
+    expect(screen.getByText('Issue 1')).toBeInTheDocument();
+  });
+
   it('moves a card by drag and drop, optimistically', async () => {
     const calls = mockApi({
       ...base(),

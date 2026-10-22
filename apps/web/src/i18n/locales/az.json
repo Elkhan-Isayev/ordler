@@ -499,7 +499,9 @@
       "add": "Alt tapşırıq əlavə et",
       "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın"
     },
-    "duplicateOf": "Dublikatıdır:"
+    "duplicateOf": "Dublikatıdır:",
+    "delete": "Sil",
+    "confirmDelete": "{identifier} silinsin? Tapşırıq lövhələrdən və axtarışdan yox olacaq; verilənlər bazasında və audit jurnalında qalacaq."
   },
   "editor": {
     "toolbar": "Formatlama",

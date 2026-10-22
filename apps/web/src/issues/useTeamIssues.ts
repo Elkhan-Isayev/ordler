@@ -93,6 +93,9 @@ export function useTeamIssues(key: string): TeamIssues {
       if (message.type === 'issue.changed' && message.issue.teamId === team?.id) {
         setIssues((list) => upsertIssue(list, message.issue));
       }
+      if (message.type === 'issue.removed' && message.teamId === team?.id) {
+        setIssues((list) => list.filter((issue) => issue.id !== message.issueId));
+      }
       // New statuses or labels: the board needs the fresh team.
       if (message.type === 'team.changed' && message.teamId === team?.id) void reload();
     },

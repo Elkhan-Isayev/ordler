@@ -499,7 +499,9 @@
       "add": "Add sub-issue",
       "addPlaceholder": "Add a sub-issue, press Enter"
     },
-    "duplicateOf": "Duplicate of"
+    "duplicateOf": "Duplicate of",
+    "delete": "Delete",
+    "confirmDelete": "Delete {identifier}? It disappears from boards and search; administrators keep it in the database and audit log."
   },
   "editor": {
     "toolbar": "Formatting",

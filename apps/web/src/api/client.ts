@@ -210,6 +210,8 @@ export const api = {
     }),
   issue: (identifier: string) =>
     apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}`),
+  deleteIssue: (identifier: string) =>
+    apiRequest<void>(`/api/issues/${encodeURIComponent(identifier)}`, { method: 'DELETE' }),
   updateIssue: (identifier: string, body: UpdateIssueInput) =>
     apiRequest<IssueDetail>(`/api/issues/${encodeURIComponent(identifier)}`, {
       method: 'PATCH',

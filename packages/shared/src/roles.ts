@@ -40,6 +40,7 @@ const TEAM_LEAD: readonly Permission[] = [
   'request.triage',
   'request.comment_internal',
   'issue.move_team',
+  'issue.delete',
 ];
 
 const DEPARTMENT_SUPERVISOR: readonly Permission[] = [...MEMBER, 'request.read_department'];

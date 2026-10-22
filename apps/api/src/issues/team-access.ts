@@ -11,6 +11,8 @@ export interface TeamPermissions {
   assign: boolean;
   comment: boolean;
   deleteAnyComment: boolean;
+  /** Deleting issues archives them (issue.delete). */
+  delete: boolean;
   /** Team settings: labels, workflow (team.update). */
   manage: boolean;
 }
@@ -45,6 +47,7 @@ export class TeamAccess {
       assign: read && has('issue.assign'),
       comment: read && has('comment.create'),
       deleteAnyComment: read && has('comment.delete_any'),
+      delete: read && has('issue.delete'),
       manage: read && has('team.update'),
     };
   }

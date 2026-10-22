@@ -17,7 +17,7 @@ import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { useRealtime } from '../realtime/client.js';
-import { Link } from '../router.js';
+import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
@@ -66,6 +66,8 @@ export function IssuePage({ identifier }: { identifier: string }) {
     (message) => {
       // Someone else changed this issue: refetch for the new history and description.
       if (message.type === 'issue.changed' && message.issue.id === issue?.id) void reload();
+      // Deleted by someone else: the page now answers not found.
+      if (message.type === 'issue.removed' && message.issueId === issue?.id) void reload();
     },
     () => void reload(),
   );
@@ -78,6 +80,17 @@ export function IssuePage({ identifier }: { identifier: string }) {
     } catch (failure) {
       setError(errorKey(failure));
       void reload();
+    }
+  }
+
+  async function remove() {
+    if (!issue || !team) return;
+    if (!window.confirm(t('issues.confirmDelete', { identifier: issue.identifier }))) return;
+    try {
+      await api.deleteIssue(issue.identifier);
+      navigate(`/teams/${team.key}/issues`);
+    } catch (failure) {
+      setError(errorKey(failure));
     }
   }
 
@@ -116,6 +129,15 @@ export function IssuePage({ identifier }: { identifier: string }) {
         </Link>
         <span>/</span>
         <span className="text-ink">{issue.identifier}</span>
+        {team.can.delete && (
+          <button
+            type="button"
+            className="ml-auto rounded-md px-2 py-1 text-xs text-ink-muted hover:bg-hover hover:text-ink"
+            onClick={() => void remove()}
+          >
+            {t('issues.delete')}
+          </button>
+        )}
       </header>
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">

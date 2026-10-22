@@ -58,13 +58,36 @@ describe('IssuePage', () => {
     mockApi({
       'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
       'GET /api/teams/HELP': () => ({
-        json: { ...TEAM, can: { create: false, update: false, assign: false, comment: false } },
+        json: {
+          ...TEAM,
+          can: { create: false, update: false, assign: false, comment: false, delete: false },
+        },
       }),
     });
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     expect(await screen.findByLabelText('Status')).toBeDisabled();
     expect(screen.getByLabelText('Assignee')).toBeDisabled();
     expect(screen.getByLabelText('Issue title')).toHaveAttribute('readonly');
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+  });
+
+  it('deletes the issue after confirmation and returns to the team list', async () => {
+    window.history.replaceState(null, '', '/issue/HELP-7');
+    const calls = mockApi({
+      'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+      'DELETE /api/issues/HELP-7': () => ({ status: 204 }),
+    });
+    const confirm = vi.fn().mockReturnValueOnce(false).mockReturnValueOnce(true);
+    vi.stubGlobal('confirm', confirm);
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    expect(calls.some((c) => c.method === 'DELETE')).toBe(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(confirm).toHaveBeenLastCalledWith(expect.stringContaining('Delete HELP-7?'));
+    await waitFor(() => expect(window.location.pathname).toBe('/teams/HELP/issues'));
+    expect(calls.filter((c) => c.method === 'DELETE')).toHaveLength(1);
+    window.history.replaceState(null, '', '/');
   });
 
   it('reloads when someone else changes the issue', async () => {

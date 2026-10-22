@@ -70,6 +70,12 @@ export class IssuesController {
     );
   }
 
+  @Delete('issues/:identifier')
+  @HttpCode(204)
+  remove(@Param('identifier') identifier: string, @Req() request: OrdlerRequest) {
+    return this.ctx.issues.remove(request.member!.id, identifier);
+  }
+
   @Post('issues/:identifier/comments')
   comment(
     @Param('identifier') identifier: string,
