@@ -509,6 +509,11 @@
     "assignees": {
       "edit": "Edit assignees",
       "label": "Assignees"
+    },
+    "menu": {
+      "copyLink": "Copy link",
+      "copyId": "Copy ID",
+      "openInNewTab": "Open in new tab"
     }
   },
   "editor": {

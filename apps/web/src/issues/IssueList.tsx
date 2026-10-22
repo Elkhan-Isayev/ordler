@@ -4,6 +4,7 @@ import {
   type IssueSummary,
   type WorkflowStatus,
 } from '@ordler/shared';
+import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { AvatarStack, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
@@ -23,10 +24,12 @@ export function IssueList({
   statuses,
   issues,
   showTeam = false,
+  onContextMenu,
 }: {
   statuses?: WorkflowStatus[] | undefined;
   issues: IssueSummary[];
   showTeam?: boolean;
+  onContextMenu?: ((issue: IssueSummary, event: MouseEvent) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const groups: Group[] = (
@@ -60,7 +63,15 @@ export function IssueList({
           </h2>
           <ul>
             {group.items.map((issue) => (
-              <li key={issue.id} className="border-b border-line">
+              <li
+                key={issue.id}
+                className="border-b border-line"
+                onContextMenu={(event) => {
+                  if (!onContextMenu) return;
+                  event.preventDefault();
+                  onContextMenu(issue, event);
+                }}
+              >
                 <Link
                   href={`/issue/${issue.identifier}`}
                   className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-hover"

@@ -55,6 +55,44 @@ describe('TeamIssuesPage', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('opens the issue menu on right click and applies the change', async () => {
+    const calls = mockApi({
+      ...base(),
+      'PATCH /api/issues/HELP-2': () => ({ json: detail(2, { priority: 'high' }) }),
+    });
+    await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
+    fireEvent.contextMenu(await screen.findByText('Issue 2'));
+    await userEvent.click(screen.getByRole('menuitem', { name: /Priority/ }));
+    await userEvent.click(screen.getByRole('menuitemradio', { name: 'High' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ priority: 'high' }),
+    );
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('drags the card, not the link, and marks it while moving', async () => {
+    mockApi(base());
+    await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
+    const link = (await screen.findByText('Issue 2')).closest('a')!;
+    expect(link).toHaveAttribute('draggable', 'false');
+    const item = link.closest('li')!;
+    const dataTransfer = {
+      setData: vi.fn(),
+      getData: () => '',
+      setDragImage: vi.fn(),
+      effectAllowed: '',
+    };
+    fireEvent.dragStart(item, { dataTransfer });
+    expect(dataTransfer.setDragImage).toHaveBeenCalledWith(
+      item,
+      expect.any(Number),
+      expect.any(Number),
+    );
+    expect(item).toHaveClass('opacity-40');
+    fireEvent.dragEnd(item);
+    expect(item).not.toHaveClass('opacity-40');
+  });
+
   it('drops issues deleted by other people', async () => {
     mockApi(base());
     await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);

@@ -509,6 +509,11 @@
     "assignees": {
       "edit": "Zuständige bearbeiten",
       "label": "Zuständige"
+    },
+    "menu": {
+      "copyLink": "Link kopieren",
+      "copyId": "ID kopieren",
+      "openInNewTab": "In neuem Tab öffnen"
     }
   },
   "editor": {

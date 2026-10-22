@@ -59,6 +59,7 @@ export interface TeamIssues {
   error: string | undefined;
   update(issue: IssueSummary, patch: UpdateIssueInput): Promise<void>;
   create(input: Partial<CreateIssueInput> & { title: string }): Promise<IssueSummary | undefined>;
+  remove(issue: IssueSummary): Promise<void>;
 }
 
 /**
@@ -127,6 +128,16 @@ export function useTeamIssues(key: string): TeamIssues {
     [team],
   );
 
+  const remove = useCallback(async (issue: IssueSummary) => {
+    setIssues((list) => list.filter((item) => item.id !== issue.id));
+    try {
+      await api.deleteIssue(issue.identifier);
+    } catch (failure) {
+      setIssues((list) => upsertIssue(list, issue));
+      setError(errorKey(failure));
+    }
+  }, []);
+
   const create = useCallback(
     async (input: Partial<CreateIssueInput> & { title: string }) => {
       try {
@@ -142,5 +153,5 @@ export function useTeamIssues(key: string): TeamIssues {
   );
 
   // Triage issues live on their own page until a member accepts them.
-  return { team, issues: issues.filter((issue) => !issue.inTriage), error, update, create };
+  return { team, issues: issues.filter((issue) => !issue.inTriage), error, update, create, remove };
 }

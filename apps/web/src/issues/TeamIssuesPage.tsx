@@ -13,6 +13,7 @@ import {
   serializeFilters,
   type IssueFilters,
 } from './filters.js';
+import { IssueContextMenu, type MenuPosition } from './IssueContextMenu.js';
 import { NewIssueDialog } from './NewIssueDialog.js';
 import { selectClass, statusLabel } from './ui.js';
 import { useTeamIssues } from './useTeamIssues.js';
@@ -22,7 +23,8 @@ export type IssueView = 'list' | 'board';
 /** A team's issues as a list (/teams/KEY/issues) or a board (/teams/KEY/board). */
 export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: IssueView }) {
   const { t } = useTranslation();
-  const { team, issues, error, update, create } = useTeamIssues(teamKey);
+  const { team, issues, error, update, create, remove } = useTeamIssues(teamKey);
+  const [menu, setMenu] = useState<MenuPosition>();
   const [creating, setCreating] = useState<{ statusId?: string } | undefined>();
   const [filters, setFilters] = useState<IssueFilters>(() => parseFilters(window.location.search));
 
@@ -89,9 +91,23 @@ export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: Issue
           issues={applyFilters(issues, filters)}
           onMove={(issue, patch) => void update(issue, patch)}
           onAdd={(statusId) => setCreating({ statusId })}
+          onContextMenu={(issue, event) => setMenu({ issue, x: event.clientX, y: event.clientY })}
         />
       ) : (
-        <IssueList statuses={team.statuses} issues={applyFilters(issues, filters)} />
+        <IssueList
+          statuses={team.statuses}
+          issues={applyFilters(issues, filters)}
+          onContextMenu={(issue, event) => setMenu({ issue, x: event.clientX, y: event.clientY })}
+        />
+      )}
+      {menu && (
+        <IssueContextMenu
+          menu={menu}
+          team={team}
+          onUpdate={(issue, patch) => void update(issue, patch)}
+          onDelete={(issue) => void remove(issue)}
+          onClose={() => setMenu(undefined)}
+        />
       )}
       {creating && (
         <NewIssueDialog

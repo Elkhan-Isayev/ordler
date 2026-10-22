@@ -509,6 +509,11 @@
     "assignees": {
       "edit": "İcraçıları dəyiş",
       "label": "İcraçılar"
+    },
+    "menu": {
+      "copyLink": "Linki kopyala",
+      "copyId": "ID-ni kopyala",
+      "openInNewTab": "Yeni tabda aç"
     }
   },
   "editor": {
