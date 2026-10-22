@@ -35,6 +35,8 @@ export const createIssueSchema = z.object({
   statusId: z.uuid().optional(),
   priority: z.enum(PRIORITIES).default('none'),
   assigneeId: z.uuid().nullable().default(null),
+  /** Several assignees, for teams that allow it; overrides `assigneeId`. */
+  assigneeIds: z.array(z.uuid()).max(10).optional(),
   dueDate: dueDateSchema.default(null),
   labelIds: labelIdsSchema.default([]),
   /** Parent issue in the same team; makes this a sub-issue. */
@@ -52,6 +54,7 @@ export const updateIssueSchema = z
     statusId: z.uuid(),
     priority: z.enum(PRIORITIES),
     assigneeId: z.uuid().nullable(),
+    assigneeIds: z.array(z.uuid()).max(10),
     dueDate: dueDateSchema,
     sortOrder: z.number().finite(),
     labelIds: labelIdsSchema,
@@ -84,6 +87,7 @@ export const ISSUE_ERROR_CODES = [
   'invalid_parent',
   'status_in_use',
   'status_required',
+  'single_assignee',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -135,6 +139,7 @@ export interface TeamView {
   members: MemberRef[];
   /** Team labels and organization labels, by name. */
   labels: LabelView[];
+  settings: { multipleAssignees: boolean };
   /** What the viewer may do; the server checks every request again. */
   can: { create: boolean; update: boolean; assign: boolean; comment: boolean; delete: boolean };
 }
@@ -149,7 +154,9 @@ export interface IssueSummary {
   statusId: string;
   status: Pick<WorkflowStatus, 'id' | 'key' | 'name' | 'category'>;
   priority: Priority;
+  /** The first assignee; kept for single-assignee teams and older clients. */
   assignee: MemberRef | null;
+  assignees: MemberRef[];
   dueDate: string | null;
   sortOrder: number;
   /** Waiting in the team's Triage; hidden from the board and list until accepted. */
@@ -166,6 +173,7 @@ export type IssueField =
   | 'statusId'
   | 'priority'
   | 'assigneeId'
+  | 'assigneeIds'
   | 'dueDate'
   | 'labelIds'
   | 'parentId'

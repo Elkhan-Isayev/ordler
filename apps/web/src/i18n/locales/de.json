@@ -117,7 +117,8 @@
     "label_name_taken": "Ein Label mit diesem Namen existiert bereits.",
     "invalid_parent": "Dieses Issue kann nicht übergeordnet sein: Es muss im selben Team und darf kein eigenes Unter-Issue sein.",
     "status_in_use": "Issues verwenden diesen Status noch. Verschieben Sie sie zuerst.",
-    "status_required": "Dieser Status ist erforderlich: Er ist der Standard oder der letzte seiner Kategorie."
+    "status_required": "Dieser Status ist erforderlich: Er ist der Standard oder der letzte seiner Kategorie.",
+    "single_assignee": "Dieses Team erlaubt eine zuständige Person pro Issue. Admins oder Teamleitungen können mehrere in den Teameinstellungen erlauben."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -166,7 +167,9 @@
       "noTeams": "Noch keine Teams.",
       "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
       "head": "Leitung",
-      "teamKeyPreview": "Issues dieses Teams werden {key}-1, {key}-2… nummeriert. 2–10 lateinische Großbuchstaben oder Ziffern, beginnend mit einem Buchstaben."
+      "teamKeyPreview": "Issues dieses Teams werden {key}-1, {key}-2… nummeriert. 2–10 lateinische Großbuchstaben oder Ziffern, beginnend mit einem Buchstaben.",
+      "multipleAssignees": "Mehrere Zuständige",
+      "multipleAssigneesFor": "Mehrere Zuständige in {name} erlauben"
     },
     "members": {
       "title": "Mitglieder",
@@ -474,7 +477,8 @@
       "labels": "Labels → {to}",
       "parent": "unter ein anderes Issue verschoben",
       "parentRemoved": "vom übergeordneten Issue gelöst",
-      "duplicate": "als Duplikat markiert"
+      "duplicate": "als Duplikat markiert",
+      "assignees": "Zuständige → {to}"
     },
     "viaToken": "{actor} über Token „{token}“",
     "filters": {
@@ -501,7 +505,11 @@
     },
     "duplicateOf": "Duplikat von",
     "delete": "Löschen",
-    "confirmDelete": "{identifier} löschen? Das Issue verschwindet aus Boards und Suche; in der Datenbank und im Audit-Log bleibt es erhalten."
+    "confirmDelete": "{identifier} löschen? Das Issue verschwindet aus Boards und Suche; in der Datenbank und im Audit-Log bleibt es erhalten.",
+    "assignees": {
+      "edit": "Zuständige bearbeiten",
+      "label": "Zuständige"
+    }
   },
   "editor": {
     "toolbar": "Formatierung",
@@ -748,6 +756,8 @@
     "labelColor": "Farbe von {name}",
     "labelName": "Name von {name}",
     "orgLabel": "Organisations-Label",
-    "deleteLabel": "{name} löschen"
+    "deleteLabel": "{name} löschen",
+    "multipleAssignees": "Mehrere Zuständige pro Issue",
+    "multipleAssigneesHint": "Wenn aus, hat jedes Issue höchstens eine zuständige Person."
   }
 }

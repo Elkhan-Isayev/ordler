@@ -9,6 +9,7 @@ import {
   type IssueField,
   type IssueSummary,
   type LabelRef,
+  type MemberRef,
   type LabelView,
   type TeamView,
   type TriageAction,
@@ -21,6 +22,7 @@ import type { Db } from '../db/client.js';
 import {
   comments,
   departments,
+  issueAssignees,
   issueEvents,
   issueLabels,
   issues,
@@ -46,15 +48,10 @@ export function likeEscape(text: string): string {
 }
 
 // Triage is recorded by its own action, not by field updates.
-const TRACKED: Array<Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf'>> = [
-  'title',
-  'description',
-  'statusId',
-  'priority',
-  'assigneeId',
-  'dueDate',
-  'parentId',
-];
+// Assignees and labels are lists and are compared separately.
+const TRACKED: Array<
+  Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds'>
+> = ['title', 'description', 'statusId', 'priority', 'dueDate', 'parentId'];
 
 /** Slack channels of a team (SPEC §7.1); optional so tests can leave it out. */
 export interface TeamChannels {
@@ -102,6 +99,7 @@ export class IssueService {
       statuses: await teamStatuses(this.db, team.id),
       members: people,
       labels: await this.teamLabels(team.id),
+      settings: { multipleAssignees: team.multipleAssignees },
       can: {
         create: can.create,
         update: can.update,
@@ -203,6 +201,7 @@ export class IssueService {
     const statuses = await teamStatuses(this.db, team.id);
     const changes: IssueEvent['changes'] = {};
     const patch: Partial<typeof issues.$inferInsert> = { inTriage: false };
+    let assigneeList: string[] | undefined;
     if (decision.action === 'accept') {
       changes.triage = { from: 'pending', to: 'accepted' };
       if (decision.statusId !== undefined) {
@@ -214,6 +213,7 @@ export class IssueService {
         if (!can.assign) throw new DomainError('forbidden');
         if (decision.assigneeId) await this.assertTeamMember(team.id, decision.assigneeId);
         patch.assigneeId = decision.assigneeId;
+        assigneeList = decision.assigneeId ? [decision.assigneeId] : [];
       }
     } else if (decision.action === 'duplicate') {
       const original = await this.readableIssue(memberId, decision.of);
@@ -242,6 +242,7 @@ export class IssueService {
       await tx
         .insert(issueEvents)
         .values({ issueId, actorId: memberId, kind: 'updated', changes, createdAt: now });
+      if (assigneeList) await this.writeAssignees(tx, issueId, assigneeList);
       if (decision.action === 'decline') {
         // The reason stays with the issue, so whoever filed it can read why.
         await tx.insert(comments).values({
@@ -261,7 +262,12 @@ export class IssueService {
   /** My issues: assigned to me, across every team I can still read. */
   async assignedTo(memberId: string): Promise<IssueSummary[]> {
     const all = await this.summaries(
-      and(eq(issues.assigneeId, memberId), isNull(issues.archivedAt), isNull(teams.archivedAt)),
+      and(
+        sql`exists (select 1 from ${issueAssignees} a where a.issue_id = ${issues.id}
+          and a.member_id = ${memberId}::uuid)`,
+        isNull(issues.archivedAt),
+        isNull(teams.archivedAt),
+      ),
     );
     const allowed = new Map<string, boolean>();
     const result: IssueSummary[] = [];
@@ -284,12 +290,12 @@ export class IssueService {
   ): Promise<IssueDetail> {
     const { team, can } = await this.readableTeam(memberId, key);
     if (!can.create) throw new DomainError('forbidden');
-    if (input.assigneeId && !can.assign) throw new DomainError('forbidden');
+    const assigneeIds = (await this.resolveAssignees(team, input)) ?? [];
+    if (assigneeIds.length > 0 && !can.assign) throw new DomainError('forbidden');
 
     const statuses = await teamStatuses(this.db, team.id);
     const statusId = input.statusId ?? (statuses.find((s) => s.isDefault) ?? statuses[0])!.id;
     if (!statuses.some((s) => s.id === statusId)) throw new DomainError('status_not_in_workflow');
-    if (input.assigneeId) await this.assertTeamMember(team.id, input.assigneeId);
     await this.assertLabels(team.id, input.labelIds);
     if (input.parentId) await this.assertParent(team.id, input.parentId);
 
@@ -316,7 +322,7 @@ export class IssueService {
           description: input.description,
           statusId,
           priority: input.priority,
-          assigneeId: input.assigneeId,
+          assigneeId: assigneeIds[0] ?? null,
           dueDate: input.dueDate,
           // New issues go to the top of their column.
           sortOrder: (top?.min ?? 1) - 1,
@@ -327,6 +333,7 @@ export class IssueService {
           updatedAt: now,
         })
         .returning({ id: issues.id });
+      await this.writeAssignees(tx, row!.id, assigneeIds);
       if (input.labelIds.length > 0) {
         await tx
           .insert(issueLabels)
@@ -349,9 +356,9 @@ export class IssueService {
       identifier: created.identifier,
     });
     this.toChannels(team.id, 'issue_created', created);
-    if (input.assigneeId) {
+    if (assigneeIds.length > 0) {
       await this.deps.notifier?.notify({
-        recipients: [input.assigneeId],
+        recipients: assigneeIds,
         kind: 'issue_assigned',
         actorId: memberId,
         subject: { type: 'issue', id: issueId },
@@ -372,8 +379,11 @@ export class IssueService {
     via?: string,
   ): Promise<IssueDetail> {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
-    const touchesAssignee = input.assigneeId !== undefined;
-    const touchesOther = Object.keys(input).some((field) => field !== 'assigneeId');
+    const nextAssignees = await this.resolveAssignees(team, input);
+    const touchesAssignee = nextAssignees !== undefined;
+    const touchesOther = Object.keys(input).some(
+      (field) => field !== 'assigneeId' && field !== 'assigneeIds',
+    );
     if (touchesAssignee && !can.assign) throw new DomainError('forbidden');
     if (touchesOther && !can.update) throw new DomainError('forbidden');
 
@@ -383,13 +393,25 @@ export class IssueService {
         throw new DomainError('status_not_in_workflow');
       }
     }
-    if (input.assigneeId) await this.assertTeamMember(team.id, input.assigneeId);
     if (input.labelIds) await this.assertLabels(team.id, input.labelIds);
     if (input.parentId) await this.assertParent(team.id, input.parentId, issueId);
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
     const changes: IssueEvent['changes'] = {};
-    const { labelIds, ...fields } = input;
+    const { labelIds, ...rest } = input;
+    // Assignees are written through issue_assignees below, not as a plain column.
+    const fields = Object.fromEntries(
+      Object.entries(rest).filter(([key]) => key !== 'assigneeId' && key !== 'assigneeIds'),
+    ) as Omit<typeof rest, 'assigneeId' | 'assigneeIds'>;
+    const currentAssignees =
+      (await this.assigneesOf([issueId])).get(issueId)?.map((a) => a.id) ?? [];
+    const addedAssignees = (nextAssignees ?? []).filter((id) => !currentAssignees.includes(id));
+    if (nextAssignees && nextAssignees.join() !== currentAssignees.join()) {
+      // Single-assignee teams keep the familiar "assigned to X" history line.
+      if (team.multipleAssignees)
+        changes.assigneeIds = { from: currentAssignees, to: nextAssignees };
+      else changes.assigneeId = { from: currentAssignees[0] ?? null, to: nextAssignees[0] ?? null };
+    }
     if (labelIds) {
       const current = (await this.labelsOf([issueId])).get(issueId) ?? [];
       const from = current.map((l) => l.id).sort();
@@ -408,8 +430,15 @@ export class IssueService {
     await this.db.transaction(async (tx) => {
       await tx
         .update(issues)
-        .set({ ...fields, updatedAt: now })
+        .set({
+          ...fields,
+          ...(nextAssignees ? { assigneeId: nextAssignees[0] ?? null } : {}),
+          updatedAt: now,
+        })
         .where(eq(issues.id, issueId));
+      if (changes.assigneeId || changes.assigneeIds) {
+        await this.writeAssignees(tx, issueId, nextAssignees!);
+      }
       if (changes.labelIds) {
         await tx.delete(issueLabels).where(eq(issueLabels.issueId, issueId));
         if (labelIds!.length > 0) {
@@ -434,10 +463,10 @@ export class IssueService {
       identifier: updated.identifier,
       fields: Object.keys(changes),
     });
-    if (changes.assigneeId && input.assigneeId) {
+    if (addedAssignees.length > 0) {
       this.toChannels(team.id, 'issue_assigned', updated);
       await this.deps.notifier?.notify({
-        recipients: [input.assigneeId],
+        recipients: addedAssignees,
         kind: 'issue_assigned',
         actorId: memberId,
         subject: { type: 'issue', id: issueId },
@@ -446,8 +475,8 @@ export class IssueService {
     if (changes.statusId) {
       this.toChannels(team.id, 'issue_status_changed', updated);
       await this.deps.notifier?.notify({
-        recipients: [before!.createdBy, updated.assignee?.id].filter((id): id is string =>
-          Boolean(id),
+        recipients: [before!.createdBy, ...updated.assignees.map((a) => a.id)].filter(
+          (id): id is string => Boolean(id),
         ),
         kind: 'issue_status_changed',
         actorId: memberId,
@@ -572,6 +601,7 @@ export class IssueService {
       .where(where)
       .orderBy(asc(issues.sortOrder), desc(issues.number));
     const labelMap = await this.labelsOf(rows.map((r) => r.issue.id));
+    const assigneeMap = await this.assigneesOf(rows.map((r) => r.issue.id));
     return rows.map(({ issue, teamKey, assigneeName, status }) => ({
       id: issue.id,
       identifier: formatIssueIdentifier(teamKey, issue.number),
@@ -583,6 +613,9 @@ export class IssueService {
       status,
       priority: issue.priority,
       assignee: issue.assigneeId ? { id: issue.assigneeId, name: assigneeName ?? '' } : null,
+      assignees:
+        assigneeMap.get(issue.id) ??
+        (issue.assigneeId ? [{ id: issue.assigneeId, name: assigneeName ?? '' }] : []),
       dueDate: issue.dueDate,
       sortOrder: issue.sortOrder,
       inTriage: issue.inTriage,
@@ -591,6 +624,48 @@ export class IssueService {
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
+  }
+
+  /** Assignees per issue in the order they were chosen; the first is `issues.assignee_id`. */
+  private async assigneesOf(issueIds: string[]): Promise<Map<string, MemberRef[]>> {
+    const map = new Map<string, MemberRef[]>();
+    if (issueIds.length === 0) return map;
+    const rows = await this.db
+      .select({ issueId: issueAssignees.issueId, id: members.id, name: members.name })
+      .from(issueAssignees)
+      .innerJoin(members, eq(members.id, issueAssignees.memberId))
+      .where(inArray(issueAssignees.issueId, issueIds))
+      .orderBy(asc(issueAssignees.position));
+    for (const { issueId, ...member } of rows) {
+      map.set(issueId, [...(map.get(issueId) ?? []), member]);
+    }
+    return map;
+  }
+
+  /**
+   * The assignee list an input asks for, or undefined when it does not touch assignees.
+   * Teams with one assignee per issue refuse a longer list.
+   */
+  private async resolveAssignees(
+    team: { id: string; multipleAssignees: boolean },
+    input: { assigneeId?: string | null | undefined; assigneeIds?: string[] | undefined },
+  ): Promise<string[] | undefined> {
+    let ids: string[] | undefined;
+    if (input.assigneeIds !== undefined) ids = [...new Set(input.assigneeIds)];
+    else if (input.assigneeId !== undefined) ids = input.assigneeId ? [input.assigneeId] : [];
+    if (!ids) return undefined;
+    if (ids.length > 1 && !team.multipleAssignees) throw new DomainError('single_assignee');
+    for (const id of ids) await this.assertTeamMember(team.id, id);
+    return ids;
+  }
+
+  private async writeAssignees(db: Db, issueId: string, ids: string[]): Promise<void> {
+    await db.delete(issueAssignees).where(eq(issueAssignees.issueId, issueId));
+    if (ids.length > 0) {
+      await db
+        .insert(issueAssignees)
+        .values(ids.map((memberId, position) => ({ issueId, memberId, position })));
+    }
   }
 
   /** Labels per issue, sorted by name. */
@@ -685,7 +760,7 @@ export class IssueService {
     await this.deps.notifier?.notify({
       recipients: [
         row?.createdBy,
-        detail.assignee?.id,
+        ...detail.assignees.map((a) => a.id),
         ...detail.comments.map((c) => c.author?.id),
       ].filter((id): id is string => Boolean(id)),
       kind: 'issue_commented',

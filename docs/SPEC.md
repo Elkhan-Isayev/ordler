@@ -200,7 +200,7 @@ approve a specific request only if the approval step's selector resolves to them
 | Description         | Rich text stored as Markdown: formatting, pasted images and files (stored in PostgreSQL), Mermaid diagrams; mentions later.                        |
 | Status              | From team workflow; always maps to a status category.                                                                                              |
 | Priority            | `none`, `urgent`, `high`, `medium`, `low`.                                                                                                         |
-| Assignee            | One member of the team (or none).                                                                                                                  |
+| Assignee            | One member of the team (or none); teams may allow several (setting).                                                                               |
 | Labels              | Organization-level and team-level labels, grouped.                                                                                                 |
 | Estimate            | Optional, team-configurable scale (points / t-shirt).                                                                                              |
 | Cycle, Project      | Optional.                                                                                                                                          |

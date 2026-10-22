@@ -19,6 +19,7 @@ export class OrgService {
         key: teams.key,
         name: teams.name,
         isPrivate: teams.isPrivate,
+        multipleAssignees: teams.multipleAssignees,
         archivedAt: teams.archivedAt,
         memberCount: count(teamMemberships.memberId),
       })
@@ -39,6 +40,7 @@ export class OrgService {
           key: team.key,
           name: team.name,
           isPrivate: team.isPrivate,
+          multipleAssignees: team.multipleAssignees,
           archivedAt: team.archivedAt?.toISOString() ?? null,
           memberCount: Number(team.memberCount),
         })),
@@ -147,7 +149,11 @@ export class OrgService {
 
   async updateTeam(
     id: string,
-    input: { name?: string | undefined; isPrivate?: boolean | undefined },
+    input: {
+      name?: string | undefined;
+      isPrivate?: boolean | undefined;
+      multipleAssignees?: boolean | undefined;
+    },
     actor: AuditActor,
   ): Promise<void> {
     const before = await this.team(id);
@@ -156,6 +162,9 @@ export class OrgService {
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.isPrivate !== undefined ? { isPrivate: input.isPrivate } : {}),
+        ...(input.multipleAssignees !== undefined
+          ? { multipleAssignees: input.multipleAssignees }
+          : {}),
       })
       .where(eq(teams.id, id));
     await writeAudit(this.db, {
@@ -163,7 +172,11 @@ export class OrgService {
       action: 'team.updated',
       targetType: 'team',
       targetId: id,
-      before: { name: before.name, isPrivate: before.isPrivate },
+      before: {
+        name: before.name,
+        isPrivate: before.isPrivate,
+        multipleAssignees: before.multipleAssignees,
+      },
       after: input,
     });
   }

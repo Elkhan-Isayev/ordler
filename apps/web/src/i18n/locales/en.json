@@ -117,7 +117,8 @@
     "label_name_taken": "A label with this name already exists.",
     "invalid_parent": "This issue cannot be the parent: it must be in the same team and not one of its sub-issues.",
     "status_in_use": "Issues still use this status. Move them first.",
-    "status_required": "This status is required: it is the default or the last one of its category."
+    "status_required": "This status is required: it is the default or the last one of its category.",
+    "single_assignee": "This team allows one assignee per issue. An admin or team lead can allow several in team settings."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -166,7 +167,9 @@
       "noTeams": "No teams yet.",
       "memberCount": "{count, plural, one {# member} other {# members}}",
       "head": "Head",
-      "teamKeyPreview": "Issues of this team will be numbered {key}-1, {key}-2… 2–10 Latin capital letters or digits, starting with a letter."
+      "teamKeyPreview": "Issues of this team will be numbered {key}-1, {key}-2… 2–10 Latin capital letters or digits, starting with a letter.",
+      "multipleAssignees": "Several assignees",
+      "multipleAssigneesFor": "Allow several assignees in {name}"
     },
     "members": {
       "title": "Members",
@@ -474,7 +477,8 @@
       "labels": "labels → {to}",
       "parent": "moved under another issue",
       "parentRemoved": "detached from its parent",
-      "duplicate": "marked as duplicate"
+      "duplicate": "marked as duplicate",
+      "assignees": "assignees → {to}"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -501,7 +505,11 @@
     },
     "duplicateOf": "Duplicate of",
     "delete": "Delete",
-    "confirmDelete": "Delete {identifier}? It disappears from boards and search; administrators keep it in the database and audit log."
+    "confirmDelete": "Delete {identifier}? It disappears from boards and search; administrators keep it in the database and audit log.",
+    "assignees": {
+      "edit": "Edit assignees",
+      "label": "Assignees"
+    }
   },
   "editor": {
     "toolbar": "Formatting",
@@ -748,6 +756,8 @@
     "labelColor": "Color of {name}",
     "labelName": "Name of {name}",
     "orgLabel": "Organization label",
-    "deleteLabel": "Delete {name}"
+    "deleteLabel": "Delete {name}",
+    "multipleAssignees": "Several assignees per issue",
+    "multipleAssigneesHint": "When off, every issue has at most one assignee."
   }
 }

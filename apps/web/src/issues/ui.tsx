@@ -103,3 +103,21 @@ export function LabelChip({ label }: { label: { name: string; color: string } })
     </span>
   );
 }
+
+/** Up to three overlapping avatars and a count for the rest. */
+export function AvatarStack({ members }: { members: MemberRef[] }) {
+  if (members.length === 0) return <Avatar member={null} />;
+  const shown = members.slice(0, 3);
+  return (
+    <span className="flex items-center -space-x-1.5" title={members.map((m) => m.name).join(', ')}>
+      {shown.map((member) => (
+        <span key={member.id} className="rounded-full ring-2 ring-surface">
+          <Avatar member={member} />
+        </span>
+      ))}
+      {members.length > shown.length && (
+        <span className="pl-2 text-[10px] text-ink-faint">+{members.length - shown.length}</span>
+      )}
+    </span>
+  );
+}

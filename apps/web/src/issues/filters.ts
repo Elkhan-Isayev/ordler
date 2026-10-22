@@ -40,8 +40,8 @@ export function applyFilters(issues: IssueSummary[], filters: IssueFilters): Iss
       (!filters.status || issue.statusId === filters.status) &&
       (!filters.assignee ||
         (filters.assignee === 'none'
-          ? !issue.assignee
-          : issue.assignee?.id === filters.assignee)) &&
+          ? issue.assignees.length === 0
+          : issue.assignees.some((a) => a.id === filters.assignee))) &&
       (!filters.priority || issue.priority === filters.priority) &&
       (!filters.label || issue.labels.some((label) => label.id === filters.label)),
   );

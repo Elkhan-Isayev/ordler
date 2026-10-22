@@ -28,13 +28,12 @@ export function applyPatch(
   patch: UpdateIssueInput,
   team: TeamView,
 ): IssueSummary {
-  const { assigneeId } = patch;
-  const assignee =
-    assigneeId === undefined
-      ? issue.assignee
-      : assigneeId === null
-        ? null
-        : (team.members.find((m) => m.id === assigneeId) ?? { id: assigneeId, name: '' });
+  const ids =
+    patch.assigneeIds ??
+    (patch.assigneeId === undefined ? undefined : patch.assigneeId ? [patch.assigneeId] : []);
+  const assignees = ids
+    ? ids.map((id) => team.members.find((m) => m.id === id) ?? { id, name: '' })
+    : issue.assignees;
   // The summary has no description, so a description edit changes nothing here.
   return {
     ...issue,
@@ -48,7 +47,8 @@ export function applyPatch(
     ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
     ...(patch.dueDate !== undefined ? { dueDate: patch.dueDate } : {}),
     ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
-    assignee,
+    assignees,
+    assignee: assignees[0] ?? null,
   };
 }
 

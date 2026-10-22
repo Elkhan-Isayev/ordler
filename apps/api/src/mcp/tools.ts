@@ -43,7 +43,7 @@ export function issueBrief(ctx: AppContext, issue: IssueSummary) {
     team: issue.teamKey,
     status: issue.status.name,
     priority: issue.priority,
-    assignee: issue.assignee?.name ?? null,
+    assignees: issue.assignees.map((a) => a.name),
     labels: issue.labels.map((l) => l.name),
     dueDate: issue.dueDate,
     inTriage: issue.inTriage,
@@ -262,7 +262,7 @@ const tools: ToolDefinition[] = [
       const issues = (await ctx.issues.list(caller.memberId, key)).filter(
         (i) =>
           (!status || i.statusId === status) &&
-          (!assignee || i.assignee?.id === assignee) &&
+          (!assignee || i.assignees.some((a) => a.id === assignee)) &&
           (!label || i.labels.some((l) => l.id === label)),
       );
       return issues.slice(0, args.limit).map((i) => issueBrief(ctx, i));
@@ -280,6 +280,11 @@ const tools: ToolDefinition[] = [
       priority: z.enum(PRIORITIES).optional(),
       status: z.string().max(100).optional(),
       assignee: z.string().max(200).optional().describe('Member name, or "me"'),
+      assignees: z
+        .array(z.string().max(200))
+        .max(10)
+        .optional()
+        .describe('Several member names, for teams that allow multiple assignees'),
       labels: z.array(z.string().max(60)).max(20).optional().describe('Label names'),
       parent: identifierSchema.optional().describe('Parent issue identifier, for a sub-issue'),
     }),
@@ -293,6 +298,7 @@ const tools: ToolDefinition[] = [
         priority?: (typeof PRIORITIES)[number];
         status?: string;
         assignee?: string;
+        assignees?: string[];
         labels?: string[];
         parent?: string;
       },
@@ -307,6 +313,9 @@ const tools: ToolDefinition[] = [
           description: args.description ?? '',
           priority: args.priority ?? 'none',
           assigneeId: args.assignee ? assigneeId(team, caller, args.assignee) : null,
+          ...(args.assignees
+            ? { assigneeIds: args.assignees.map((name) => assigneeId(team, caller, name)!) }
+            : {}),
           dueDate: null,
           labelIds: labelIds(team, args.labels ?? []),
           parentId: args.parent ? (await ctx.issues.get(caller.memberId, args.parent)).id : null,
@@ -329,6 +338,7 @@ const tools: ToolDefinition[] = [
       status: z.string().max(100).optional(),
       priority: z.enum(PRIORITIES).optional(),
       assignee: z.string().max(200).nullable().optional(),
+      assignees: z.array(z.string().max(200)).max(10).optional().describe('Replaces all assignees'),
       labels: z.array(z.string().max(60)).max(20).optional().describe('Replaces all labels'),
     }),
     async run(
@@ -341,6 +351,7 @@ const tools: ToolDefinition[] = [
         status?: string;
         priority?: (typeof PRIORITIES)[number];
         assignee?: string | null;
+        assignees?: string[];
         labels?: string[];
       },
     ) {
@@ -353,6 +364,10 @@ const tools: ToolDefinition[] = [
         ...(args.assignee !== undefined
           ? { assigneeId: assigneeId(team, caller, args.assignee) }
           : {}),
+        ...(args.assignees !== undefined
+          ? { assigneeIds: args.assignees.map((name) => assigneeId(team, caller, name)!) }
+          : {}),
+        ...(args.labels !== undefined ? { labelIds: labelIds(team, args.labels) } : {}),
       };
       if (Object.keys(patch).length === 0) throw new DomainError('validation_failed');
       return issueFull(

@@ -117,7 +117,8 @@
     "label_name_taken": "Bu adda etiket artıq var.",
     "invalid_parent": "Bu tapşırıq ana ola bilməz: eyni komandada olmalı və onun alt tapşırığı olmamalıdır.",
     "status_in_use": "Bu status hələ tapşırıqlarda istifadə olunur. Əvvəlcə onları köçürün.",
-    "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur."
+    "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur.",
+    "single_assignee": "Bu komandada tapşırığın bir icraçısı olur. Admin və ya komanda rəhbəri komanda parametrlərində bir neçəsinə icazə verə bilər."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -166,7 +167,9 @@
       "noTeams": "Hələ komanda yoxdur.",
       "memberCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}",
       "head": "Müdir",
-      "teamKeyPreview": "Bu komandanın tapşırıqları {key}-1, {key}-2… kimi nömrələnəcək. 2–10 böyük latın hərfi və ya rəqəm, birincisi hərf olmalıdır."
+      "teamKeyPreview": "Bu komandanın tapşırıqları {key}-1, {key}-2… kimi nömrələnəcək. 2–10 böyük latın hərfi və ya rəqəm, birincisi hərf olmalıdır.",
+      "multipleAssignees": "Bir neçə icraçı",
+      "multipleAssigneesFor": "{name} komandasında bir neçə icraçıya icazə ver"
     },
     "members": {
       "title": "İştirakçılar",
@@ -474,7 +477,8 @@
       "labels": "etiketlər → {to}",
       "parent": "başqa tapşırığın altına köçürüldü",
       "parentRemoved": "ana tapşırıqdan ayrıldı",
-      "duplicate": "dublikat kimi qeyd edildi"
+      "duplicate": "dublikat kimi qeyd edildi",
+      "assignees": "icraçılar → {to}"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -501,7 +505,11 @@
     },
     "duplicateOf": "Dublikatıdır:",
     "delete": "Sil",
-    "confirmDelete": "{identifier} silinsin? Tapşırıq lövhələrdən və axtarışdan yox olacaq; verilənlər bazasında və audit jurnalında qalacaq."
+    "confirmDelete": "{identifier} silinsin? Tapşırıq lövhələrdən və axtarışdan yox olacaq; verilənlər bazasında və audit jurnalında qalacaq.",
+    "assignees": {
+      "edit": "İcraçıları dəyiş",
+      "label": "İcraçılar"
+    }
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -748,6 +756,8 @@
     "labelColor": "{name} rəngi",
     "labelName": "{name} adı",
     "orgLabel": "Təşkilat etiketi",
-    "deleteLabel": "{name} sil"
+    "deleteLabel": "{name} sil",
+    "multipleAssignees": "Tapşırıqda bir neçə icraçı",
+    "multipleAssigneesHint": "Söndürüldükdə hər tapşırığın ən çox bir icraçısı olur."
   }
 }

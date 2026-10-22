@@ -53,6 +53,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   invalid_parent: 400,
   status_in_use: 409,
   status_required: 409,
+  single_assignee: 400,
   file_too_large: 413,
   file_missing: 400,
   form_invalid: 400,

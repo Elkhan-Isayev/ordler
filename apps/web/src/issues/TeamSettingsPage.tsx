@@ -85,6 +85,19 @@ export function TeamSettingsPage({ teamKey }: { teamKey: string }) {
       />
       {error && <FormError message={error} />}
       <Panel>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={team.settings.multipleAssignees}
+            onChange={(event) =>
+              void run(() => api.updateTeam(team.id, { multipleAssignees: event.target.checked }))
+            }
+          />
+          {t('teamSettings.multipleAssignees')}
+        </label>
+        <p className="text-xs text-ink-faint">{t('teamSettings.multipleAssigneesHint')}</p>
+      </Panel>
+      <Panel>
         <h3 className="text-sm font-semibold text-ink">{t('teamSettings.workflow')}</h3>
         {ISSUE_STATUS_CATEGORIES.map((category) => {
           const statuses = team.statuses.filter((s) => s.category === category);

@@ -82,6 +82,8 @@ export const teams = pgTable(
     key: text('key').notNull(),
     name: text('name').notNull(),
     isPrivate: boolean('is_private').notNull().default(false),
+    /** Issues may have several assignees (ClickUp-style); one by default. */
+    multipleAssignees: boolean('multiple_assignees').notNull().default(false),
     /** Last issue number handed out; incremented under a row lock so numbers never repeat. */
     issueCounter: integer('issue_counter').notNull().default(0),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
@@ -713,5 +715,26 @@ export const issueLabels = pgTable(
   (t) => [
     primaryKey({ columns: [t.issueId, t.labelId] }),
     index('issue_labels_label_idx').on(t.labelId),
+  ],
+);
+
+/**
+ * Every assignee of an issue. `issues.assignee_id` stays the first one, so single-assignee
+ * teams and older readers keep working (expand/contract).
+ */
+export const issueAssignees = pgTable(
+  'issue_assignees',
+  {
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id),
+    position: integer('position').notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.issueId, t.memberId] }),
+    index('issue_assignees_member_idx').on(t.memberId),
   ],
 );

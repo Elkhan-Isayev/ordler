@@ -15,6 +15,7 @@ export const DEPARTMENTS: AdminDepartment[] = [
         key: 'HELP',
         name: 'Helpdesk',
         isPrivate: false,
+        multipleAssignees: false,
         archivedAt: null,
         memberCount: 2,
       },

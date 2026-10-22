@@ -20,7 +20,9 @@ export const createTeamBodySchema = z.object({
   isPrivate: z.boolean().default(false),
 });
 
-export const updateTeamSchema = z.object({ name: nameSchema, isPrivate: z.boolean() }).partial();
+export const updateTeamSchema = z
+  .object({ name: nameSchema, isPrivate: z.boolean(), multipleAssignees: z.boolean() })
+  .partial();
 
 export const scopeInputSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('organization') }),
@@ -85,6 +87,7 @@ export interface AdminDepartment {
     key: string;
     name: string;
     isPrivate: boolean;
+    multipleAssignees: boolean;
     archivedAt: string | null;
     memberCount: number;
   }>;

@@ -162,7 +162,11 @@ describe('MCP with a personal token (MVP criterion 15)', () => {
       assignee: 'me',
     });
     expect(made.isError).toBe(false);
-    expect(made.data()).toMatchObject({ identifier: 'HELP-2', priority: 'high', assignee: 'dev' });
+    expect(made.data()).toMatchObject({
+      identifier: 'HELP-2',
+      priority: 'high',
+      assignees: ['dev'],
+    });
 
     const refused = await tool(token, 'create_issue', { team: 'ACC', title: 'Peek at payroll' });
     expect(refused).toMatchObject({ isError: true, text: 'Ordler refused: not_found' });

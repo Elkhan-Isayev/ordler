@@ -6,6 +6,7 @@ import { buttonClass, ghostButtonClass } from '../admin/common.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
+import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
 import { selectClass, statusLabel } from './ui.js';
 
 /** "New issue" form for one team; the status defaults to the column it was opened from. */
@@ -24,6 +25,7 @@ export function NewIssueDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const description = useRef('');
+  const [assignees, setAssignees] = useState<string[]>([]);
   const defaultStatus =
     initialStatusId ?? team.statuses.find((s) => s.isDefault)?.id ?? team.statuses[0]?.id;
 
@@ -38,14 +40,13 @@ export function NewIssueDialog({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const assigneeId = String(form.get('assigneeId') ?? '');
     setBusy(true);
     const created = await onCreate({
       title: String(form.get('title')).trim(),
       description: description.current,
       statusId: String(form.get('statusId')),
       priority: String(form.get('priority')) as Priority,
-      ...(assigneeId ? { assigneeId } : {}),
+      ...(assignees.length > 0 ? assigneePatch(team, assignees) : {}),
     });
     setBusy(false);
     if (created) onClose();
@@ -112,19 +113,14 @@ export function NewIssueDialog({
             ))}
           </select>
           {team.can.assign && (
-            <select
-              name="assigneeId"
-              defaultValue=""
-              aria-label={t('issues.assignee')}
-              className={selectClass}
-            >
-              <option value="">{t('issues.noAssignee')}</option>
-              {team.members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
+            <AssigneePicker
+              team={team}
+              value={assignees.map(
+                (id) => team.members.find((m) => m.id === id) ?? { id, name: '' },
+              )}
+              editable
+              onChange={setAssignees}
+            />
           )}
         </div>
         <div className="flex justify-end gap-2">

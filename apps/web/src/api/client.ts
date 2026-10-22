@@ -142,6 +142,10 @@ export const api = {
       method: 'POST',
       body,
     }),
+  updateTeam: (
+    id: string,
+    body: { name?: string; isPrivate?: boolean; multipleAssignees?: boolean },
+  ) => apiRequest<void>(`/api/admin/teams/${id}`, { method: 'PATCH', body }),
   archiveTeam: (id: string) =>
     apiRequest<void>(`/api/admin/teams/${id}/archive`, { method: 'POST' }),
   members: () => apiRequest<AdminMember[]>('/api/admin/members'),

@@ -3,7 +3,7 @@ import { useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { positionBetween } from './position.js';
-import { Avatar, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
+import { AvatarStack, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
 
 const DRAG_TYPE = 'application/x-ordler-issue';
 
@@ -123,7 +123,7 @@ function Card({ issue }: { issue: IssueSummary }) {
     >
       <div className="flex items-center justify-between text-xs text-ink-faint">
         <span>{issue.identifier}</span>
-        <Avatar member={issue.assignee} />
+        <AvatarStack members={issue.assignees} />
       </div>
       <span className="text-ink">{issue.title}</span>
       <div className="flex items-center gap-2 text-xs text-ink-faint">

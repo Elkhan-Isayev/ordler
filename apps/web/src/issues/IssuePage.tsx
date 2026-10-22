@@ -19,6 +19,7 @@ import { RichEditor } from '../editor/RichEditor.js';
 import { useRealtime } from '../realtime/client.js';
 import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
+import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
 
@@ -247,21 +248,12 @@ export function IssuePage({ identifier }: { identifier: string }) {
             </select>
           </Property>
           <Property label={t('issues.assignee')}>
-            <Avatar member={issue.assignee} />
-            <select
-              value={issue.assignee?.id ?? ''}
-              disabled={!team.can.assign}
-              aria-label={t('issues.assignee')}
-              className={selectClass}
-              onChange={(event) => void save({ assigneeId: event.target.value || null })}
-            >
-              <option value="">{t('issues.noAssignee')}</option>
-              {team.members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
+            <AssigneePicker
+              team={team}
+              value={issue.assignees}
+              editable={team.can.assign}
+              onChange={(ids) => void save(assigneePatch(team, ids))}
+            />
           </Property>
           <Property label={t('issues.labels.label')}>
             <LabelPicker
@@ -314,6 +306,10 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
         return t('issues.event.status', { to: statusName(t, team, change.to) });
       case 'priority':
         return t('issues.event.priority', { to: t(`issues.priority.${String(change.to)}`) });
+      case 'assigneeIds':
+        return t('issues.event.assignees', {
+          to: (change.to as string[]).map((id) => memberName(t, team, id)).join(', ') || '—',
+        });
       case 'assigneeId':
         return change.to
           ? t('issues.event.assigned', { to: memberName(t, team, change.to) })

@@ -72,6 +72,16 @@ describe('DepartmentsSection', () => {
     );
   });
 
+  it('lets a team allow several assignees', async () => {
+    const calls = mockApi({
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      [`PATCH /api/admin/teams/${TEAM_ID}`]: () => ({ status: 204 }),
+    });
+    await renderWithI18n(<DepartmentsSection />);
+    await userEvent.click(await screen.findByRole('checkbox', { name: /Allow several assignees/ }));
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ multipleAssignees: true });
+  });
+
   it('archives only after confirmation', async () => {
     const calls = mockApi({
       'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),

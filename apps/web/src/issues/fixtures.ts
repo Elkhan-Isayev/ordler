@@ -33,6 +33,7 @@ export const TEAM: TeamView = {
     { id: 'm-ann', name: 'Ann Lee' },
     { id: 'm-bob', name: 'Bob Stone' },
   ],
+  settings: { multipleAssignees: false },
   labels: [
     { id: 'l-bug', name: 'Bug', color: '#e5484d', scope: 'team' },
     { id: 'l-sec', name: 'Security', color: '#3e63dd', scope: 'organization' },
@@ -54,6 +55,7 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     status: { id: found.id, key: found.key, name: found.name, category: found.category },
     priority: 'none',
     assignee: null,
+    assignees: overrides.assignee ? [overrides.assignee] : [],
     dueDate: null,
     sortOrder: -number,
     inTriage: false,

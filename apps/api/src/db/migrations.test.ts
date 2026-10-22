@@ -147,6 +147,31 @@ describe('upgrades keep data', () => {
     expect(grants.rows).toEqual([{ n: 1 }]);
   });
 
+  it('keeps existing assignees when issues gain several (0014)', async () => {
+    const { client, db } = await database();
+    const before = journal.entries.findIndex((e) => e.tag === '0014_multiple_assignees');
+    await migrate(db, { migrationsFolder: folderUpTo(before) });
+    await seedFirstRelease(client);
+    await client.exec(`
+      insert into workflows (id, owner_type, owner_id)
+        select '01a13d37-d040-7000-b257-000000000010', 'team', id from teams where key = 'HELP';
+      insert into workflow_statuses (id, workflow_id, name, category, position)
+        values ('01a13d37-d040-7000-b257-000000000011', '01a13d37-d040-7000-b257-000000000010', 'Todo', 'unstarted', 0);
+      insert into issues (team_id, number, title, status_id, assignee_id)
+        select id, 1, 'Assigned', '01a13d37-d040-7000-b257-000000000011', '01a13d37-d040-7000-b257-000000000002'
+        from teams where key = 'HELP';
+      insert into issues (team_id, number, title, status_id)
+        select id, 2, 'Nobody', '01a13d37-d040-7000-b257-000000000011' from teams where key = 'HELP';
+    `);
+    await migrate(db, { migrationsFolder: MIGRATIONS });
+    const rows = await client.query(
+      `select i.number, a.member_id, a.position from issue_assignees a join issues i on i.id = a.issue_id`,
+    );
+    expect(rows.rows).toEqual([
+      { number: 1, member_id: '01a13d37-d040-7000-b257-000000000002', position: 0 },
+    ]);
+  });
+
   it('rolls back every pending migration when one fails, leaving data untouched', async () => {
     const { client, db } = await database();
     await migrate(db, { migrationsFolder: folderUpTo(1) });

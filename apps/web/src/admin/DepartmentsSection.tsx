@@ -195,6 +195,21 @@ function DepartmentCard({
                   {t('admin.departments.memberCount', { count: team.memberCount })}
                 </span>
                 {!team.archivedAt && (
+                  <label className="flex items-center gap-1 text-xs text-ink-muted">
+                    <input
+                      type="checkbox"
+                      checked={team.multipleAssignees}
+                      aria-label={t('admin.departments.multipleAssigneesFor', { name: team.name })}
+                      onChange={(event) =>
+                        void run(() =>
+                          api.updateTeam(team.id, { multipleAssignees: event.target.checked }),
+                        )
+                      }
+                    />
+                    {t('admin.departments.multipleAssignees')}
+                  </label>
+                )}
+                {!team.archivedAt && (
                   <button
                     type="button"
                     className={ghostButtonClass}
