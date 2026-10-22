@@ -156,7 +156,7 @@
       "create": "Yarat",
       "addTeam": "Komanda əlavə et",
       "teamName": "Komandanın adı",
-      "teamKey": "Açar",
+      "teamKey": "Tapşırıq açarı",
       "teamKeyHint": "2–10 böyük latın hərfi və ya rəqəm, məsələn HELP. Tapşırıq nömrələrinin prefiksidir.",
       "private": "Qapalı",
       "archive": "Arxivə göndər",
@@ -165,7 +165,8 @@
       "empty": "Hələ departament yoxdur. İlkini yaradın.",
       "noTeams": "Hələ komanda yoxdur.",
       "memberCount": "{count, plural, one {# iştirakçı} other {# iştirakçı}}",
-      "head": "Müdir"
+      "head": "Müdir",
+      "teamKeyPreview": "Bu komandanın tapşırıqları {key}-1, {key}-2… kimi nömrələnəcək. 2–10 böyük latın hərfi və ya rəqəm, birincisi hərf olmalıdır."
     },
     "members": {
       "title": "İştirakçılar",

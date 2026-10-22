@@ -156,7 +156,7 @@
       "create": "Anlegen",
       "addTeam": "Team hinzufügen",
       "teamName": "Teamname",
-      "teamKey": "Schlüssel",
+      "teamKey": "Issue-Schlüssel",
       "teamKeyHint": "2–10 Großbuchstaben oder Ziffern, z. B. HELP. Präfix der Aufgabennummern.",
       "private": "Privat",
       "archive": "Archivieren",
@@ -165,7 +165,8 @@
       "empty": "Noch keine Abteilungen. Lege die erste an.",
       "noTeams": "Noch keine Teams.",
       "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
-      "head": "Leitung"
+      "head": "Leitung",
+      "teamKeyPreview": "Issues dieses Teams werden {key}-1, {key}-2… nummeriert. 2–10 lateinische Großbuchstaben oder Ziffern, beginnend mit einem Buchstaben."
     },
     "members": {
       "title": "Mitglieder",

@@ -100,6 +100,8 @@ function DepartmentCard({
   const { t } = useTranslation();
   const archived = department.archivedAt !== null;
 
+  const [key, setKey] = useState('');
+
   async function addTeam(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -111,7 +113,10 @@ function DepartmentCard({
         isPrivate: data.get('isPrivate') === 'on',
       }),
     );
-    if (ok) form.reset();
+    if (ok) {
+      form.reset();
+      setKey('');
+    }
   }
 
   return (
@@ -214,32 +219,42 @@ function DepartmentCard({
         <form
           onSubmit={addTeam}
           aria-label={`${t('admin.departments.addTeam')}: ${department.name}`}
-          className="flex flex-wrap items-center gap-2"
+          className="flex flex-wrap items-end gap-2"
         >
-          <input
-            name="name"
-            required
-            maxLength={120}
-            aria-label={t('admin.departments.teamName')}
-            placeholder={t('admin.departments.teamName')}
-            className={`${inputClass} flex-1`}
-          />
-          <input
-            name="key"
-            required
-            pattern="[A-Za-z][A-Za-z0-9]{1,9}"
-            maxLength={10}
-            aria-label={t('admin.departments.teamKey')}
-            title={t('admin.departments.teamKeyHint')}
-            placeholder="HELP"
-            className={`${inputClass} w-24 font-mono uppercase`}
-          />
+          <label className="flex flex-1 flex-col gap-1 text-xs text-ink-muted">
+            {t('admin.departments.teamName')}
+            <input
+              name="name"
+              required
+              maxLength={120}
+              placeholder="Platform"
+              className={inputClass}
+            />
+          </label>
+          <label className="flex w-32 flex-col gap-1 text-xs text-ink-muted">
+            {t('admin.departments.teamKey')}
+            <input
+              name="key"
+              required
+              pattern="[A-Za-z][A-Za-z0-9]{1,9}"
+              maxLength={10}
+              title={t('admin.departments.teamKeyHint')}
+              placeholder="PLAT"
+              value={key}
+              onChange={(event) => setKey(event.target.value.toUpperCase())}
+              className={`${inputClass} font-mono uppercase`}
+            />
+          </label>
           <label className="flex items-center gap-1 text-xs text-ink-muted">
             <input type="checkbox" name="isPrivate" /> {t('admin.departments.private')}
           </label>
           <button type="submit" className={buttonClass}>
             {t('admin.departments.addTeam')}
           </button>
+          {/* Shows what the key is for before the team exists. */}
+          <p className="w-full text-xs text-ink-faint">
+            {t('admin.departments.teamKeyPreview', { key: key || 'PLAT' })}
+          </p>
         </form>
       )}
     </Panel>

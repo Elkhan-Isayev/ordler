@@ -42,7 +42,7 @@ describe('DepartmentsSection', () => {
 
     const addTeam = screen.getByRole('form', { name: 'Add team: IT' });
     await userEvent.type(within(addTeam).getByLabelText('Team name'), 'Infrastructure');
-    await userEvent.type(within(addTeam).getByLabelText('Key'), 'infra');
+    await userEvent.type(within(addTeam).getByLabelText('Issue key'), 'infra');
     await userEvent.click(within(addTeam).getByRole('button', { name: 'Add team' }));
     await waitFor(() =>
       expect(calls.find((c) => c.path.endsWith('/teams'))?.body).toEqual({
@@ -64,7 +64,8 @@ describe('DepartmentsSection', () => {
     await renderWithI18n(<DepartmentsSection />, 'ru');
     const addTeam = await screen.findByRole('form', { name: 'Добавить команду: IT' });
     await userEvent.type(within(addTeam).getByLabelText('Название команды'), 'Copy');
-    await userEvent.type(within(addTeam).getByLabelText('Ключ'), 'HELP');
+    await userEvent.type(within(addTeam).getByLabelText('Ключ задач'), 'help');
+    expect(within(addTeam).getByText(/HELP-1, HELP-2/)).toBeInTheDocument();
     await userEvent.click(within(addTeam).getByRole('button', { name: 'Добавить команду' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Этот ключ уже занят другой командой.',

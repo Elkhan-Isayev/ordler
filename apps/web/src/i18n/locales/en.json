@@ -156,7 +156,7 @@
       "create": "Create",
       "addTeam": "Add team",
       "teamName": "Team name",
-      "teamKey": "Key",
+      "teamKey": "Issue key",
       "teamKeyHint": "2–10 capital letters or digits, e.g. HELP. Prefixes issue numbers.",
       "private": "Private",
       "archive": "Archive",
@@ -165,7 +165,8 @@
       "empty": "No departments yet. Create the first one.",
       "noTeams": "No teams yet.",
       "memberCount": "{count, plural, one {# member} other {# members}}",
-      "head": "Head"
+      "head": "Head",
+      "teamKeyPreview": "Issues of this team will be numbered {key}-1, {key}-2… 2–10 Latin capital letters or digits, starting with a letter."
     },
     "members": {
       "title": "Members",
