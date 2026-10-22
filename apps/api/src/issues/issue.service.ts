@@ -709,6 +709,20 @@ export class IssueService {
     if (ids.some((id) => !allowed.has(id))) throw new DomainError('label_not_in_team');
   }
 
+  /** Root first; bounded so damaged data can never loop forever. */
+  private async ancestorsOf(
+    parentId: string | null,
+  ): Promise<Array<{ id: string; identifier: string; title: string }>> {
+    const chain: Array<{ id: string; identifier: string; title: string }> = [];
+    for (let current = parentId; current && chain.length < 20;) {
+      const found = await this.summary(current);
+      if (!found) break;
+      chain.unshift({ id: found.id, identifier: found.identifier, title: found.title });
+      current = found.parentId;
+    }
+    return chain;
+  }
+
   /** Same team, and never an ancestor loop (an issue cannot sit under its own sub-issue). */
   private async assertParent(teamId: string, parentId: string, issueId?: string): Promise<void> {
     let current: string | null = parentId;
@@ -833,6 +847,9 @@ export class IssueService {
       .where(and(eq(comments.subjectType, 'issue'), eq(comments.subjectId, issueId)))
       .orderBy(asc(comments.createdAt), asc(comments.id));
     const parent = summary.parentId ? await this.summary(summary.parentId) : undefined;
+    const children = await this.summaries(
+      and(eq(issues.parentId, issueId), isNull(issues.archivedAt)),
+    );
     const [{ duplicateOfId } = { duplicateOfId: null }] = await this.db
       .select({ duplicateOfId: issues.duplicateOfId })
       .from(issues)
@@ -842,7 +859,20 @@ export class IssueService {
       ...summary,
       parent: parent ? { id: parent.id, identifier: parent.identifier, title: parent.title } : null,
       duplicateOf: original ? { identifier: original.identifier, title: original.title } : null,
-      children: await this.summaries(and(eq(issues.parentId, issueId), isNull(issues.archivedAt))),
+      children,
+      grandchildren:
+        children.length === 0
+          ? []
+          : await this.summaries(
+              and(
+                inArray(
+                  issues.parentId,
+                  children.map((c) => c.id),
+                ),
+                isNull(issues.archivedAt),
+              ),
+            ),
+      ancestors: await this.ancestorsOf(summary.parentId),
       comments: thread.map(({ comment, authorName }): CommentView => {
         const own = comment.authorId === viewerId;
         const deleted = comment.deletedAt !== null;

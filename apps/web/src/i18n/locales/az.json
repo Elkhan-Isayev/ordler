@@ -494,14 +494,17 @@
       "edit": "Etiketləri dəyiş",
       "new": "Yeni etiket",
       "newPlaceholder": "Yeni etiket, Enter basın",
-      "deleted": "silinmiş etiket"
+      "deleted": "silinmiş etiket",
+      "none": "Etiketsiz"
     },
     "subIssues": {
       "title": "Alt tapşırıqlar",
       "parent": "Alt tapşırığıdır:",
       "detach": "Ayır",
       "add": "Alt tapşırıq əlavə et",
-      "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın"
+      "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın",
+      "parentLabel": "Ana tapşırıq",
+      "noParent": "Ana tapşırıq yoxdur"
     },
     "duplicateOf": "Dublikatıdır:",
     "delete": "Sil",
@@ -514,7 +517,10 @@
       "copyLink": "Linki kopyala",
       "copyId": "ID-ni kopyala",
       "openInNewTab": "Yeni tabda aç"
-    }
+    },
+    "newDescriptionPlaceholder": "Təsvir əlavə edin… Mətn, ekran görüntüsü və ya fayl yapışdırın, ya da bura atın; diaqramlar alətlər panelindən.",
+    "attachHint": "Fayllar və şəkillər birbaşa təsvirə əlavə olunur.",
+    "createMore": "Daha birini yarat"
   },
   "editor": {
     "toolbar": "Formatlama",

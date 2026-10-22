@@ -10,7 +10,7 @@ import {
   type UpdateIssueInput,
 } from '@ordler/shared';
 import type { TFunction } from 'i18next';
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
@@ -129,6 +129,19 @@ export function IssuePage({ identifier }: { identifier: string }) {
           {team.name}
         </Link>
         <span>/</span>
+        {/* Parent chain, so a sub-issue always shows where it belongs. */}
+        {issue.ancestors.map((ancestor) => (
+          <Fragment key={ancestor.id}>
+            <Link
+              href={`/issue/${ancestor.identifier}`}
+              title={ancestor.title}
+              className="hover:text-ink"
+            >
+              {ancestor.identifier}
+            </Link>
+            <span>›</span>
+          </Fragment>
+        ))}
         <span className="text-ink">{issue.identifier}</span>
         {team.can.delete && (
           <button

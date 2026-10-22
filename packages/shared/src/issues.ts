@@ -214,6 +214,10 @@ export interface IssueDetail extends IssueSummary {
   duplicateOf: { identifier: string; title: string } | null;
   /** Direct sub-issues; the UI shows two levels (SPEC §5.1). */
   children: IssueSummary[];
+  /** Sub-issues of the children (second level), grouped by `parentId` in the UI. */
+  grandchildren: IssueSummary[];
+  /** Parent chain from the top-level issue down to the direct parent. */
+  ancestors: Array<{ id: string; identifier: string; title: string }>;
   createdBy: MemberRef | null;
   events: IssueEvent[];
   comments: CommentView[];

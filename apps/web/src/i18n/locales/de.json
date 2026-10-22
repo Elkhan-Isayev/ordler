@@ -494,14 +494,17 @@
       "edit": "Labels bearbeiten",
       "new": "Neues Label",
       "newPlaceholder": "Neues Label, Enter drücken",
-      "deleted": "gelöschtes Label"
+      "deleted": "gelöschtes Label",
+      "none": "Keine Labels"
     },
     "subIssues": {
       "title": "Unter-Issues",
       "parent": "Unter-Issue von",
       "detach": "Lösen",
       "add": "Unter-Issue hinzufügen",
-      "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken"
+      "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken",
+      "parentLabel": "Übergeordnetes Issue",
+      "noParent": "Kein übergeordnetes"
     },
     "duplicateOf": "Duplikat von",
     "delete": "Löschen",
@@ -514,7 +517,10 @@
       "copyLink": "Link kopieren",
       "copyId": "ID kopieren",
       "openInNewTab": "In neuem Tab öffnen"
-    }
+    },
+    "newDescriptionPlaceholder": "Beschreibung hinzufügen… Text, Screenshots oder Dateien einfügen oder hierher ziehen; Diagramme über die Werkzeugleiste.",
+    "attachHint": "Dateien und Bilder landen direkt in der Beschreibung.",
+    "createMore": "Weitere erstellen"
   },
   "editor": {
     "toolbar": "Formatierung",

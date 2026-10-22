@@ -71,6 +71,26 @@ describe('IssuePage', () => {
     expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
   });
 
+  it('shows the parent chain of a sub-issue', async () => {
+    mockApi({
+      'GET /api/issues/HELP-7': () => ({
+        json: detail(7, {
+          ancestors: [
+            { id: 'i1', identifier: 'HELP-1', title: 'Office move' },
+            { id: 'i2', identifier: 'HELP-2', title: 'Pack' },
+          ],
+        }),
+      }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+    });
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    expect(await screen.findByRole('link', { name: 'HELP-1' })).toHaveAttribute(
+      'href',
+      '/issue/HELP-1',
+    );
+    expect(screen.getByRole('link', { name: 'HELP-2' })).toHaveAttribute('title', 'Pack');
+  });
+
   it('deletes the issue after confirmation and returns to the team list', async () => {
     window.history.replaceState(null, '', '/issue/HELP-7');
     const calls = mockApi({

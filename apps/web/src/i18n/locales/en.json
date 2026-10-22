@@ -494,14 +494,17 @@
       "edit": "Edit labels",
       "new": "New label",
       "newPlaceholder": "New label, press Enter",
-      "deleted": "deleted label"
+      "deleted": "deleted label",
+      "none": "No labels"
     },
     "subIssues": {
       "title": "Sub-issues",
       "parent": "Sub-issue of",
       "detach": "Detach",
       "add": "Add sub-issue",
-      "addPlaceholder": "Add a sub-issue, press Enter"
+      "addPlaceholder": "Add a sub-issue, press Enter",
+      "parentLabel": "Parent issue",
+      "noParent": "No parent"
     },
     "duplicateOf": "Duplicate of",
     "delete": "Delete",
@@ -514,7 +517,10 @@
       "copyLink": "Copy link",
       "copyId": "Copy ID",
       "openInNewTab": "Open in new tab"
-    }
+    },
+    "newDescriptionPlaceholder": "Add a description… Paste text, screenshots or files, or drop them here; diagrams via the toolbar.",
+    "attachHint": "Files and images go straight into the description.",
+    "createMore": "Create more"
   },
   "editor": {
     "toolbar": "Formatting",

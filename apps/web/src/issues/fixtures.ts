@@ -74,6 +74,8 @@ export function detail(number: number, overrides: Partial<IssueDetail> = {}): Is
     parent: null,
     duplicateOf: null,
     children: [],
+    grandchildren: [],
+    ancestors: [],
     createdBy: { id: 'm-ann', name: 'Ann Lee' },
     comments: [],
     events: [

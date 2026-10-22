@@ -156,6 +156,12 @@ describe('sub-issues', () => {
 
     const detail = (await call('GET', '/api/issues/HELP-1', dev)).json<IssueDetail>();
     expect(detail.children.map((c) => c.identifier)).toEqual(['HELP-2']);
+    expect(detail.grandchildren.map((c) => [c.identifier, c.parentId])).toEqual([
+      ['HELP-3', child.id],
+    ]);
+    expect(detail.ancestors).toEqual([]);
+    const deep = (await call('GET', '/api/issues/HELP-3', dev)).json<IssueDetail>();
+    expect(deep.ancestors.map((a) => a.identifier)).toEqual(['HELP-1', 'HELP-2']);
     expect(detail.parent).toBeNull();
 
     expect(

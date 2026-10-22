@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
@@ -94,5 +94,26 @@ describe('IssueRelations', () => {
     expect(screen.getByRole('link', { name: 'HELP-1 Office move' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Отвязать' }));
     expect(calls[0]).toMatchObject({ method: 'PATCH', body: { parentId: null } });
+  });
+});
+
+describe('nested sub-issues', () => {
+  it('shows the second level under its parent, like Linear', async () => {
+    await renderWithI18n(
+      <IssueRelations
+        issue={detail(1, {
+          children: [issue(2, { title: 'Sub issue 1', parentId: 'i1' })],
+          grandchildren: [issue(3, { title: 'Sub sub issue', parentId: 'i2' })],
+        })}
+        team={TEAM}
+        onChanged={vi.fn()}
+        onError={vi.fn()}
+      />,
+    );
+    const nested = screen.getByRole('list', { name: 'HELP-2' });
+    expect(within(nested).getByRole('link', { name: /HELP-3/ })).toHaveAttribute(
+      'href',
+      '/issue/HELP-3',
+    );
   });
 });

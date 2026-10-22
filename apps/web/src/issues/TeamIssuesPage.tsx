@@ -113,6 +113,7 @@ export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: Issue
         <NewIssueDialog
           team={team}
           initialStatusId={creating.statusId}
+          parentIssues={issues}
           onCreate={create}
           onClose={() => setCreating(undefined)}
         />

@@ -1,11 +1,11 @@
-import type { IssueDetail, TeamView } from '@ordler/shared';
+import type { IssueDetail, IssueSummary, TeamView } from '@ordler/shared';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ghostButtonClass, inputClass } from '../admin/common.js';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { Link } from '../router.js';
-import { LabelChip, StatusIcon } from './ui.js';
+import { AvatarStack, LabelChip, StatusIcon } from './ui.js';
 
 /** Palette for new labels; the next unused color keeps neighbours distinguishable. */
 export const LABEL_COLORS = [
@@ -188,18 +188,24 @@ export function IssueRelations({
         </h2>
       )}
       <ul className="flex flex-col">
-        {issue.children.map((child) => (
-          <li key={child.id}>
-            <Link
-              href={`/issue/${child.identifier}`}
-              className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-hover"
-            >
-              <StatusIcon category={child.status.category} />
-              <span className="w-20 shrink-0 text-ink-faint">{child.identifier}</span>
-              <span className="truncate text-ink">{child.title}</span>
-            </Link>
-          </li>
-        ))}
+        {issue.children.map((child) => {
+          const nested = issue.grandchildren.filter((g) => g.parentId === child.id);
+          return (
+            <li key={child.id}>
+              <SubIssueRow issue={child} />
+              {/* Second level, indented like Linear; deeper levels open on the sub-issue. */}
+              {nested.length > 0 && (
+                <ul aria-label={child.identifier} className="ml-5 border-l border-line pl-2">
+                  {nested.map((grandchild) => (
+                    <li key={grandchild.id}>
+                      <SubIssueRow issue={grandchild} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
       </ul>
       {team.can.create && (
         <form onSubmit={(event) => void addSubIssue(event)}>
@@ -214,5 +220,19 @@ export function IssueRelations({
         </form>
       )}
     </section>
+  );
+}
+
+function SubIssueRow({ issue }: { issue: IssueSummary }) {
+  return (
+    <Link
+      href={`/issue/${issue.identifier}`}
+      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-hover"
+    >
+      <StatusIcon category={issue.status.category} />
+      <span className="w-20 shrink-0 text-ink-faint">{issue.identifier}</span>
+      <span className="min-w-0 flex-1 truncate text-ink">{issue.title}</span>
+      <AvatarStack members={issue.assignees} />
+    </Link>
   );
 }
