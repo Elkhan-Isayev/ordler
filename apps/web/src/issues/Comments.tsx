@@ -1,4 +1,4 @@
-import type { CommentView } from '@ordler/shared';
+import type { CommentView, MemberRef } from '@ordler/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClass, ghostButtonClass } from '../admin/common.js';
@@ -17,11 +17,13 @@ export function CommentItem({
   onEdit,
   onDelete,
   onUpload,
+  mentionables,
 }: {
   comment: CommentView;
   onEdit: (body: string) => Promise<boolean>;
   onDelete: () => Promise<void>;
   onUpload?: Uploader | undefined;
+  mentionables?: MemberRef[] | undefined;
 }) {
   const { t, i18n } = useTranslation();
   const [editing, setEditing] = useState(false);
@@ -68,6 +70,7 @@ export function CommentItem({
             label={t('comments.edit')}
             onChange={setDraft}
             onUpload={onUpload}
+            mentionables={mentionables}
           />
           <div className="flex gap-2">
             <button
@@ -101,10 +104,12 @@ export function CommentItem({
 export function CommentComposer({
   onSend,
   onUpload,
+  mentionables,
   onUploadError,
 }: {
   onSend: (body: string) => Promise<boolean>;
   onUpload?: Uploader | undefined;
+  mentionables?: MemberRef[] | undefined;
   onUploadError?: (error: unknown) => void;
 }) {
   const { t } = useTranslation();
@@ -140,6 +145,7 @@ export function CommentComposer({
         placeholder={t('comments.placeholder')}
         onChange={setDraft}
         onUpload={onUpload}
+        mentionables={mentionables}
         onUploadError={onUploadError}
       />
       <div className="flex justify-end">

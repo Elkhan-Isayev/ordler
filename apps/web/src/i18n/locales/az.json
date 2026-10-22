@@ -535,7 +535,8 @@
     "attach": "Fayl əlavə et",
     "uploading": "Yüklənir…",
     "diagram": "Diaqram",
-    "diagramError": "Diaqramda sintaksis xətası var."
+    "diagramError": "Diaqramda sintaksis xətası var.",
+    "mention": "Kimisə qeyd et"
   },
   "comments": {
     "by": "Şərh: {author}",
@@ -701,7 +702,8 @@
       "request_changes_requested": "{item} üzrə düzəlişlər istənildi",
       "request_received": "Komandanız üçün yeni sorğu: {item}",
       "request_status_changed": "{actor} {item} sorğusunu yenilədi",
-      "request_commented": "{actor} {item} üzrə şərh yazdı"
+      "request_commented": "{actor} {item} üzrə şərh yazdı",
+      "issue_mentioned": "{actor} sizi {item} tapşırığında qeyd etdi"
     }
   },
   "tokens": {

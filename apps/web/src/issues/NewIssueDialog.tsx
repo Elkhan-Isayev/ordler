@@ -146,6 +146,7 @@ export function NewIssueDialog({
               description.current = markdown;
             }}
             onUpload={(file) => api.uploadAttachment(team.key, file)}
+            mentionables={team.members}
             onUploadError={(failure) => setError(t(errorKey(failure)))}
           />
           <FormError message={error} />

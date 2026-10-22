@@ -4,6 +4,7 @@ import type { MemberRef } from './issues.js';
 export const NOTIFICATION_KINDS = [
   'issue_assigned',
   'issue_commented',
+  'issue_mentioned',
   'issue_status_changed',
   'approval_requested',
   'approval_decided',

@@ -270,3 +270,15 @@ export const updateStatusSchema = z
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
 export const reorderStatusesSchema = z.object({ ids: z.array(z.uuid()).min(1).max(50) });
+
+/** Mentions are Markdown links to a person: `[@Ann Lee](/people/<member id>)`. */
+export function mentionHref(memberId: string): string {
+  return `/people/${memberId}`;
+}
+
+const MENTION = /\]\(\/people\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\)/g;
+
+/** Member ids mentioned in Markdown, each once, in order of appearance. */
+export function extractMentions(markdown: string): string[] {
+  return [...new Set([...markdown.matchAll(MENTION)].map((match) => match[1]!))];
+}

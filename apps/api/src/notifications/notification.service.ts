@@ -28,6 +28,7 @@ import type { NotificationInput, Notifier } from './notifier.js';
 /** Events worth an email; the rest stay in the Inbox. */
 export const EMAILED_KINDS: ReadonlySet<NotificationKind> = new Set([
   'issue_assigned',
+  'issue_mentioned',
   'approval_requested',
   'request_rejected',
   'request_changes_requested',

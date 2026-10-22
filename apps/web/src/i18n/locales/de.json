@@ -535,7 +535,8 @@
     "attach": "Dateien anhängen",
     "uploading": "Wird hochgeladen…",
     "diagram": "Diagramm",
-    "diagramError": "Das Diagramm enthält einen Syntaxfehler."
+    "diagramError": "Das Diagramm enthält einen Syntaxfehler.",
+    "mention": "Jemanden erwähnen"
   },
   "comments": {
     "by": "Kommentar von {author}",
@@ -701,7 +702,8 @@
       "request_changes_requested": "Änderungen an {item} angefordert",
       "request_received": "Neue Anfrage für Ihr Team: {item}",
       "request_status_changed": "{actor} hat {item} aktualisiert",
-      "request_commented": "{actor} hat {item} kommentiert"
+      "request_commented": "{actor} hat {item} kommentiert",
+      "issue_mentioned": "{actor} hat Sie in {item} erwähnt"
     }
   },
   "tokens": {

@@ -155,3 +155,56 @@ describe('assignees', () => {
     expect(outsider.json()).toEqual({ error: 'assignee_not_in_team' });
   });
 });
+
+describe('mentions', () => {
+  const mention = (person: { id: string }, name: string) => `[@${name}](/people/${person.id})`;
+
+  it('notifies people newly mentioned in descriptions and comments', async () => {
+    await call('POST', '/api/teams/PLAT/issues', people.ann.cookie, {
+      title: 'Test env',
+      description: `Prepare it ${mention(people.bob, 'bob')}`,
+    });
+    expect(notifier.sent.at(-1)).toMatchObject({
+      kind: 'issue_mentioned',
+      recipients: [people.bob.id],
+      actorId: people.ann.id,
+    });
+
+    // Editing keeps bob; only cat is new.
+    notifier.sent.length = 0;
+    await call('PATCH', '/api/issues/PLAT-1', people.ann.cookie, {
+      description: `Prepare it ${mention(people.bob, 'bob')} ${mention(people.cat, 'cat')}`,
+    });
+    expect(notifier.sent).toMatchObject([{ kind: 'issue_mentioned', recipients: [people.cat.id] }]);
+
+    // A comment mention replaces the generic comment notification for that person.
+    notifier.sent.length = 0;
+    await call('POST', '/api/issues/PLAT-1/comments', people.bob.cookie, {
+      body: `Done, ${mention(people.ann, 'ann')}`,
+    });
+    expect(notifier.sent[0]).toMatchObject({
+      kind: 'issue_mentioned',
+      recipients: [people.ann.id],
+    });
+    // The actor is dropped later by the notification service; ann is not told twice.
+    const commented = notifier.sent.filter((n) => n.kind === 'issue_commented');
+    expect(commented.flatMap((n) => n.recipients)).not.toContain(people.ann.id);
+  });
+
+  it('never tells someone who cannot read the team', async () => {
+    const dept = (await call('POST', '/api/admin/departments', owner, { name: 'Finance' })).json<{
+      id: string;
+    }>();
+    await call('POST', `/api/admin/departments/${dept.id}/teams`, owner, {
+      name: 'Ledger',
+      key: 'LED',
+      isPrivate: true,
+    });
+    notifier.sent.length = 0;
+    await call('POST', '/api/teams/LED/issues', owner, {
+      title: 'Secret',
+      description: `ping ${mention(people.ann, 'ann')}`,
+    });
+    expect(notifier.sent.filter((n) => n.kind === 'issue_mentioned')).toEqual([]);
+  });
+});

@@ -1,4 +1,4 @@
-import type { AttachmentView } from '@ordler/shared';
+import { mentionHref, type AttachmentView, type MemberRef } from '@ordler/shared';
 import { CodeBlock } from '@tiptap/extension-code-block';
 import { Image } from '@tiptap/extension-image';
 import { Placeholder } from '@tiptap/extension-placeholder';
@@ -26,7 +26,33 @@ export interface RichEditorProps {
   onUpload?: Uploader | undefined;
   /** Shown while an upload fails, e.g. the file is too large. */
   onUploadError?: (error: unknown) => void;
+  /** People offered after typing "@"; mentions notify them (SPEC §5.1). */
+  mentionables?: MemberRef[] | undefined;
   className?: string;
+}
+
+/** An open "@" suggestion: what was typed after "@", where it starts, which row is picked. */
+interface MentionState {
+  query: string;
+  from: number;
+  to: number;
+  left: number;
+  top: number;
+  index: number;
+}
+
+const MENTION_QUERY = /(?:^|\s)@([\p{L}\p{N}._-]{0,30})$/u;
+
+/** People whose name contains the query, best (prefix) matches first. */
+export function mentionCandidates(people: MemberRef[], query: string): MemberRef[] {
+  const q = query.toLowerCase();
+  return people
+    .filter((p) => p.name.toLowerCase().includes(q))
+    .sort(
+      (a, b) =>
+        Number(!a.name.toLowerCase().startsWith(q)) - Number(!b.name.toLowerCase().startsWith(q)),
+    )
+    .slice(0, 8);
 }
 
 /**
@@ -42,6 +68,7 @@ export function RichEditor({
   onChange,
   onUpload,
   onUploadError,
+  mentionables,
   className = '',
 }: RichEditorProps) {
   const { t } = useTranslation();
@@ -49,6 +76,14 @@ export function RichEditor({
   const uploader = useRef({ onUpload, onUploadError });
   uploader.current = { onUpload, onUploadError };
   const [uploading, setUploading] = useState(0);
+  const [mention, setMention] = useState<MentionState>();
+  // Key handling runs inside ProseMirror, which keeps the first closure: read through refs.
+  const mentionRef = useRef<{ state: MentionState | undefined; people: MemberRef[] }>({
+    state: undefined,
+    people: [],
+  });
+  const candidates = mention ? mentionCandidates(mentionables ?? [], mention.query) : [];
+  mentionRef.current = { state: mention, people: candidates };
 
   const editor = useEditor({
     editable,
@@ -64,9 +99,31 @@ export function RichEditor({
     editorProps: {
       attributes: { 'aria-label': label, role: 'textbox', 'aria-multiline': 'true' },
       handlePaste: (_view, event) => insertFiles(event.clipboardData?.files),
+      handleKeyDown: (_view, event) => {
+        const { state, people } = mentionRef.current;
+        if (!state || people.length === 0) return false;
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          const step = event.key === 'ArrowDown' ? 1 : -1;
+          setMention({ ...state, index: (state.index + step + people.length) % people.length });
+          return true;
+        }
+        if (event.key === 'Enter' || event.key === 'Tab') {
+          pickRef.current(people[state.index]!);
+          return true;
+        }
+        if (event.key === 'Escape') {
+          setMention(undefined);
+          return true;
+        }
+        return false;
+      },
       handleDrop: (_view, event) => insertFiles((event as DragEvent).dataTransfer?.files),
     },
-    onUpdate: ({ editor: current }) => onChange?.(current.getMarkdown()),
+    onUpdate: ({ editor: current }) => {
+      onChange?.(current.getMarkdown());
+      findMention(current);
+    },
+    onSelectionUpdate: ({ editor: current }) => findMention(current),
     onBlur: ({ editor: current }) => {
       const markdown = current.getMarkdown();
       if (markdown !== committed.current) {
@@ -75,6 +132,51 @@ export function RichEditor({
       }
     },
   });
+
+  /** Opens the "@" list when the text just before the cursor is "@" plus a name. */
+  function findMention(current: Editor) {
+    if (!mentionables?.length || !current.isEditable) return;
+    const { $from, empty } = current.state.selection;
+    const before = $from.parent.textBetween(0, $from.parentOffset, '\n', '\0');
+    const match = empty ? MENTION_QUERY.exec(before) : null;
+    if (!match) {
+      setMention(undefined);
+      return;
+    }
+    const query = match[1]!;
+    const from = $from.pos - query.length - 1;
+    const coords = current.view.coordsAtPos(from);
+    setMention((previous) => ({
+      query,
+      from,
+      to: $from.pos,
+      left: coords.left,
+      top: coords.bottom + 4,
+      index: previous?.query === query ? previous.index : 0,
+    }));
+  }
+
+  /** Replaces "@query" with a linked "@Name" that the server recognises as a mention. */
+  function pick(person: MemberRef) {
+    const state = mentionRef.current.state;
+    if (!editor || !state) return;
+    editor
+      .chain()
+      .focus()
+      .insertContentAt({ from: state.from, to: state.to }, [
+        {
+          type: 'text',
+          text: `@${person.name}`,
+          marks: [{ type: 'link', attrs: { href: mentionHref(person.id) } }],
+        },
+        { type: 'text', text: ' ' },
+      ])
+      .unsetMark('link')
+      .run();
+    setMention(undefined);
+  }
+  const pickRef = useRef(pick);
+  pickRef.current = pick;
 
   // Another tab changed the text: show it unless this user is typing right now.
   useEffect(() => {
@@ -116,6 +218,32 @@ export function RichEditor({
         // Read-only text (comments) takes only the space its content needs.
         className={`ordler-prose px-3 py-2 text-sm text-ink ${editable ? 'min-h-24' : 'ordler-readonly'}`}
       />
+      {mention && candidates.length > 0 && (
+        <ul
+          role="listbox"
+          aria-label={t('editor.mention')}
+          style={{ left: mention.left, top: mention.top }}
+          className="fixed z-50 w-56 rounded-lg border border-line bg-surface p-1 shadow-lg"
+        >
+          {candidates.map((person, index) => (
+            <li
+              key={person.id}
+              role="option"
+              aria-selected={index === mention.index}
+              // Keep focus in the editor while choosing.
+              onMouseDown={(event) => {
+                event.preventDefault();
+                pick(person);
+              }}
+              className={`cursor-pointer rounded px-2 py-1.5 text-sm text-ink ${
+                index === mention.index ? 'bg-hover' : ''
+              }`}
+            >
+              {person.name}
+            </li>
+          ))}
+        </ul>
+      )}
       {uploading > 0 && (
         <p role="status" className="px-3 pb-2 text-xs text-ink-faint">
           {t('editor.uploading')}

@@ -14,7 +14,7 @@ export const EMAIL_MESSAGES = {
     testBody:
       'This is a test email from {company} on Ordler.\n\nIf you can read it, the mail server settings work.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor} assigned you {item}} issue_commented {{actor} commented on {item}} issue_status_changed {{actor} changed the status of {item}} approval_requested {Approval needed: {item}} approval_decided {{actor} approved {item}} request_rejected {{item} was rejected} request_changes_requested {Changes requested on {item}} request_received {New request for your team: {item}} request_status_changed {{item} was updated} request_commented {{actor} commented on {item}} other {{item}}}',
+      '{kind, select, issue_assigned {{actor} assigned you {item}} issue_commented {{actor} commented on {item}} issue_mentioned {{actor} mentioned you in {item}} issue_status_changed {{actor} changed the status of {item}} approval_requested {Approval needed: {item}} approval_decided {{actor} approved {item}} request_rejected {{item} was rejected} request_changes_requested {Changes requested on {item}} request_received {New request for your team: {item}} request_status_changed {{item} was updated} request_commented {{actor} commented on {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOpen in Ordler: {url}\n\nDecisions and replies happen in Ordler after signing in.',
     slackOpen: 'Open in Ordler',
@@ -33,7 +33,7 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Это тестовое письмо от {company} в Ordler.\n\nЕсли вы его читаете, настройки почтового сервера работают.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor}: вам назначена {item}} issue_commented {{actor}: комментарий к {item}} issue_status_changed {{actor}: изменён статус {item}} approval_requested {Нужно согласование: {item}} approval_decided {{actor}: согласовано {item}} request_rejected {{item}: отклонено} request_changes_requested {{item}: нужны правки} request_received {Новый запрос вашей команде: {item}} request_status_changed {{item}: обновление} request_commented {{actor}: комментарий к {item}} other {{item}}}',
+      '{kind, select, issue_assigned {{actor}: вам назначена {item}} issue_commented {{actor}: комментарий к {item}} issue_mentioned {{actor}: вас упомянули в {item}} issue_status_changed {{actor}: изменён статус {item}} approval_requested {Нужно согласование: {item}} approval_decided {{actor}: согласовано {item}} request_rejected {{item}: отклонено} request_changes_requested {{item}: нужны правки} request_received {Новый запрос вашей команде: {item}} request_status_changed {{item}: обновление} request_commented {{actor}: комментарий к {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nОткрыть в Ordler: {url}\n\nРешения и ответы принимаются в Ordler после входа.',
     slackOpen: 'Открыть в Ordler',
@@ -52,7 +52,7 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Dies ist eine Test-E-Mail von {company} in Ordler.\n\nWenn du sie lesen kannst, funktionieren die Mailserver-Einstellungen.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor} hat dir {item} zugewiesen} issue_commented {{actor} hat {item} kommentiert} issue_status_changed {{actor} hat den Status von {item} geändert} approval_requested {Genehmigung nötig: {item}} approval_decided {{actor} hat {item} genehmigt} request_rejected {{item} wurde abgelehnt} request_changes_requested {Änderungen angefordert: {item}} request_received {Neue Anfrage für dein Team: {item}} request_status_changed {{item} wurde aktualisiert} request_commented {{actor} hat {item} kommentiert} other {{item}}}',
+      '{kind, select, issue_assigned {{actor} hat dir {item} zugewiesen} issue_commented {{actor} hat {item} kommentiert} issue_mentioned {{actor} hat Sie in {item} erwähnt} issue_status_changed {{actor} hat den Status von {item} geändert} approval_requested {Genehmigung nötig: {item}} approval_decided {{actor} hat {item} genehmigt} request_rejected {{item} wurde abgelehnt} request_changes_requested {Änderungen angefordert: {item}} request_received {Neue Anfrage für dein Team: {item}} request_status_changed {{item} wurde aktualisiert} request_commented {{actor} hat {item} kommentiert} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nIn Ordler öffnen: {url}\n\nEntscheidungen und Antworten erfolgen in Ordler nach der Anmeldung.',
     slackOpen: 'In Ordler öffnen',
@@ -71,7 +71,7 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Bu, Ordler-də {company} tərəfindən göndərilən test məktubudur.\n\nOnu oxuya bilirsinizsə, poçt serverinin ayarları işləyir.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor}: sizə {item} təyin edildi} issue_commented {{actor}: {item} üzrə şərh} issue_status_changed {{actor}: {item} statusu dəyişdi} approval_requested {Təsdiq lazımdır: {item}} approval_decided {{actor}: {item} təsdiqləndi} request_rejected {{item}: rədd edildi} request_changes_requested {{item}: düzəliş tələb olunur} request_received {Komandanıza yeni müraciət: {item}} request_status_changed {{item}: yeniləmə} request_commented {{actor}: {item} üzrə şərh} other {{item}}}',
+      '{kind, select, issue_assigned {{actor}: sizə {item} təyin edildi} issue_commented {{actor}: {item} üzrə şərh} issue_mentioned {{actor} sizi {item} tapşırığında qeyd etdi} issue_status_changed {{actor}: {item} statusu dəyişdi} approval_requested {Təsdiq lazımdır: {item}} approval_decided {{actor}: {item} təsdiqləndi} request_rejected {{item}: rədd edildi} request_changes_requested {{item}: düzəliş tələb olunur} request_received {Komandanıza yeni müraciət: {item}} request_status_changed {{item}: yeniləmə} request_commented {{actor}: {item} üzrə şərh} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOrdler-də aç: {url}\n\nQərarlar və cavablar sistemə daxil olduqdan sonra Ordler-də verilir.',
     slackOpen: 'Ordler-də aç',

@@ -178,6 +178,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
             placeholder={t('issues.descriptionPlaceholder')}
             onCommit={(description) => void save({ description })}
             onUpload={upload}
+            mentionables={team.members}
             onUploadError={(failure) => setError(errorKey(failure))}
           />
           <IssueRelations
@@ -206,6 +207,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
                     <CommentItem
                       comment={entry.comment}
                       onUpload={upload}
+                      mentionables={team.members}
                       onEdit={(body) => run(() => api.editComment(entry.comment.id, body))}
                       onDelete={async () => {
                         await run(() => api.deleteComment(entry.comment.id));
@@ -218,6 +220,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
             {team.can.comment && (
               <CommentComposer
                 onUpload={upload}
+                mentionables={team.members}
                 onUploadError={(failure) => setError(errorKey(failure))}
                 onSend={(body) => run(() => api.addComment(issue.identifier, body))}
               />

@@ -52,3 +52,14 @@ describe('isTerminalCategory', () => {
     expect(isTerminalCategory('pending_approval')).toBe(false);
   });
 });
+
+describe('extractMentions', () => {
+  it('finds each mentioned member once', async () => {
+    const { extractMentions, mentionHref } = await import('./issues.js');
+    const ann = '01a13d37-d040-7000-b257-0000000000a1';
+    const bob = '01a13d37-d040-7000-b257-0000000000b2';
+    const text = `Hi [@Ann](${mentionHref(ann)}) and [@Bob](/people/${bob}), [@Ann](/people/${ann}). [x](/people/nope)`;
+    expect(extractMentions(text)).toEqual([ann, bob]);
+    expect(extractMentions('no mentions @here')).toEqual([]);
+  });
+});

@@ -112,3 +112,13 @@ body {
   height: 0;
   pointer-events: none;
 }
+
+/* Mentions are links to /people/<id>; they read as names, not as navigation. */
+.ordler-prose a[href^='/people/'] {
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--color-accent) 15%, transparent);
+  padding: 0 0.2rem;
+  color: var(--color-ink);
+  text-decoration: none;
+  pointer-events: none;
+}

@@ -535,7 +535,8 @@
     "attach": "Прикрепить файлы",
     "uploading": "Загрузка…",
     "diagram": "Диаграмма",
-    "diagramError": "В диаграмме синтаксическая ошибка."
+    "diagramError": "В диаграмме синтаксическая ошибка.",
+    "mention": "Упомянуть участника"
   },
   "comments": {
     "by": "Комментарий: {author}",
@@ -701,7 +702,8 @@
       "request_changes_requested": "По {item} запрошены правки",
       "request_received": "Новый запрос вашей команде: {item}",
       "request_status_changed": "{actor} обновил(а) {item}",
-      "request_commented": "{actor} прокомментировал(а) {item}"
+      "request_commented": "{actor} прокомментировал(а) {item}",
+      "issue_mentioned": "{actor} упомянул(а) вас в {item}"
     }
   },
   "tokens": {

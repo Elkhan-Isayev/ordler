@@ -535,7 +535,8 @@
     "attach": "Attach files",
     "uploading": "Uploading…",
     "diagram": "Diagram",
-    "diagramError": "The diagram has a syntax error."
+    "diagramError": "The diagram has a syntax error.",
+    "mention": "Mention someone"
   },
   "comments": {
     "by": "Comment by {author}",
@@ -701,7 +702,8 @@
       "request_changes_requested": "Changes requested on {item}",
       "request_received": "New request for your team: {item}",
       "request_status_changed": "{actor} updated {item}",
-      "request_commented": "{actor} commented on {item}"
+      "request_commented": "{actor} commented on {item}",
+      "issue_mentioned": "{actor} mentioned you in {item}"
     }
   },
   "tokens": {

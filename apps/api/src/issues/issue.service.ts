@@ -1,4 +1,5 @@
 import {
+  extractMentions,
   formatIssueIdentifier,
   parseIssueIdentifier,
   type CommentView,
@@ -356,6 +357,7 @@ export class IssueService {
       identifier: created.identifier,
     });
     this.toChannels(team.id, 'issue_created', created);
+    await this.notifyMentions(memberId, team, issueId, input.description);
     if (assigneeIds.length > 0) {
       await this.deps.notifier?.notify({
         recipients: assigneeIds,
@@ -463,6 +465,9 @@ export class IssueService {
       identifier: updated.identifier,
       fields: Object.keys(changes),
     });
+    if (input.description !== undefined) {
+      await this.notifyMentions(memberId, team, issueId, input.description, before!.description);
+    }
     if (addedAssignees.length > 0) {
       this.toChannels(team.id, 'issue_assigned', updated);
       await this.deps.notifier?.notify({
@@ -709,6 +714,34 @@ export class IssueService {
     if (ids.some((id) => !allowed.has(id))) throw new DomainError('label_not_in_team');
   }
 
+  /**
+   * Tells people newly mentioned in `markdown` (SPEC §5.1 watchers). Only members who can read
+   * the team hear about it, so a mention never reveals a private issue. Returns who was told.
+   */
+  private async notifyMentions(
+    memberId: string,
+    team: { id: string; isPrivate: boolean },
+    issueId: string,
+    markdown: string,
+    before = '',
+  ): Promise<string[]> {
+    const already = new Set(extractMentions(before));
+    const recipients: string[] = [];
+    for (const id of extractMentions(markdown)) {
+      if (already.has(id) || id === memberId) continue;
+      if ((await this.deps.access.forTeam(id, team)).read) recipients.push(id);
+    }
+    if (recipients.length > 0) {
+      await this.deps.notifier?.notify({
+        recipients,
+        kind: 'issue_mentioned',
+        actorId: memberId,
+        subject: { type: 'issue', id: issueId },
+      });
+    }
+    return recipients;
+  }
+
   /** Root first; bounded so damaged data can never loop forever. */
   private async ancestorsOf(
     parentId: string | null,
@@ -771,12 +804,14 @@ export class IssueService {
       .select({ createdBy: issues.createdBy })
       .from(issues)
       .where(eq(issues.id, issueId));
+    const mentioned = await this.notifyMentions(memberId, team, issueId, body);
     await this.deps.notifier?.notify({
+      // Mentioned people already got a more specific notification.
       recipients: [
         row?.createdBy,
         ...detail.assignees.map((a) => a.id),
         ...detail.comments.map((c) => c.author?.id),
-      ].filter((id): id is string => Boolean(id)),
+      ].filter((id): id is string => Boolean(id) && !mentioned.includes(id!)),
       kind: 'issue_commented',
       actorId: memberId,
       subject: { type: 'issue', id: issueId },
@@ -792,6 +827,7 @@ export class IssueService {
     await this.db.update(comments).set({ body, updatedAt: now }).where(eq(comments.id, commentId));
     await this.db.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    await this.notifyMentions(memberId, team, issueId, body, comment.body);
     return this.detailById(issueId, memberId);
   }
 
