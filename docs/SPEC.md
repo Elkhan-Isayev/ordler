@@ -464,7 +464,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
 | Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
 | Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
-| Data                            | Export all data (JSON), import from Linear/Jira CSV (Phase 2).                                                                                                                                    |
+| Data                            | Export all data (JSON), import from Linear and Jira via API or export files (§10.2, Phase 2).                                                                                                                                    |
 
 ### 8.1 Authentication strategies and registration
 
@@ -605,6 +605,96 @@ access, but self-service: **every member creates tokens for themselves**.
 - Rate limits per token (default 120 requests/min); tool results are paginated and
   truncated to keep responses small for agents.
 - Tool descriptions are English; returned data keeps the original language of the content.
+
+### 10.2 Import from Linear and Jira (Phase 2)
+
+Companies switch to Ordler with years of history in Linear or Jira. Import moves that work
+over once (or repeatedly during a trial period) without losing context, and works for
+installations that cannot reach the internet.
+
+**Sources and how Ordler reads them**
+
+| Source                          | Online (API)                                                         | Offline (file)                                     |
+| ------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| Linear                          | GraphQL API with a personal API key (read-only use)                  | Linear CSV export (Settings → Import/export)       |
+| Jira Cloud                      | REST API v3, account email + API token; scope chosen with JQL        | Jira CSV export ("all fields") or XML backup issues |
+| Jira Server / Data Center       | REST API v2 with a personal access token; internal URLs allowed      | Same CSV export                                    |
+
+Offline import covers air-gapped installs: the admin uploads the export file (and, for
+attachments, the attachments folder as a ZIP). API import is preferred because it also
+brings comments, attachments and relations reliably.
+
+**Wizard (Admin → Import, requires `org.manage`)**
+
+1. **Connect**: choose the source; enter the API key/token or upload files. Credentials are
+   encrypted at rest, write-only, used only for this import and deleted when it finishes.
+   Jira base URLs must be `https`; private network addresses are allowed (Server/DC is
+   usually internal) because only org admins can start an import.
+2. **Scope**: Linear teams (and optionally projects/cycles), Jira projects or any JQL
+   (e.g. `project = IT AND updated >= -365d`); include or skip completed/canceled and
+   archived items.
+3. **Map** (pre-filled, editable):
+   - Linear team / Jira project → existing Ordler team, or a new team in a chosen
+     department; the key is suggested from the source key.
+   - Statuses → the team's workflow by category: Linear state types map one-to-one
+     (backlog, unstarted, started, completed, canceled); Jira status categories To Do /
+     In Progress / Done → unstarted / started / completed, with resolutions such as
+     "Won't Do" or "Duplicate" → canceled. Missing statuses can be created in the workflow.
+   - Priority: Linear 0–4 → none / urgent / high / medium / low; Jira Highest → urgent,
+     High → high, Medium → medium, Low and Lowest → low.
+   - People matched by email to Ordler members; unmatched people can be invited, mapped to
+     someone else, or kept as a plain name on imported content ("Imported from Jira:
+     Jane Doe").
+   - Labels and Jira components → team labels; Jira issue types (Bug, Story, Task…) →
+     labels such as `type:Bug`, so nothing is lost before custom fields exist.
+   - Hierarchy: Linear parent/sub-issues and Jira sub-tasks → Ordler sub-issues; Jira
+     epics → parent issues (or projects once Projects ship).
+   - Cycles / sprints → cycles; estimates / story points → estimate.
+4. **Dry run**: counts per team, unmapped people, unmapped statuses, attachments that exceed
+   `ATTACHMENT_MAX_MB`, and warnings — nothing is written yet.
+5. **Run**: a background job (PostgreSQL job table, so it survives restarts and runs on one
+   replica), throttled to the source API limits, with live progress, pause/cancel and
+   resume from the last item.
+6. **Report**: imported / updated / skipped / failed items with reasons, downloadable as CSV;
+   the whole run is recorded in the audit log.
+
+**What comes over**
+
+- Title, description (Linear Markdown as is; Jira ADF or wiki markup converted to
+  Markdown, mentions become Ordler mentions when the person is mapped), status, priority,
+  assignee(s), labels, due date, estimate, creator, original created/updated times.
+- Comments with their original author and time; attachments and inline images downloaded
+  into PostgreSQL (§8 attachments), with links rewritten.
+- Parent/sub-issue links; relations `blocks` / `blocked by` / `relates to` / `duplicates`.
+- Field history is not replayed: each issue gets one history entry "Imported from Linear
+  ENG-123" with a link to the original, plus the import run in the audit log.
+
+**Identifiers and repeat runs**
+
+- Imported issues get new Ordler identifiers (`TEAMKEY-n`); the source key (`ENG-123`,
+  `IT-42`) is kept as an alias: searching for it or opening `/issue/ENG-123` finds the
+  Ordler issue.
+- A mapping table `external_refs (source, external_id → ordler_id)` makes import idempotent:
+  running it again updates changed items and adds new ones instead of duplicating, which
+  allows a trial period with both tools before switching over.
+- Imported items never trigger notifications, Slack posts or emails.
+
+**Out of scope for the first version**: Jira Service Management requests and approval
+history become plain issues (mapping to Ordler requests is Phase 3); Jira custom fields are
+appended to the description as a table; workflows' transition rules are not imported.
+
+**Acceptance criteria**
+
+1. An org admin imports a Linear team with sub-issues, comments and images through the API;
+   statuses, priorities, assignees and parent links match the source, and images open from
+   Ordler with Linear unreachable.
+2. A Jira Server project behind the firewall is imported with JQL; ADF/wiki descriptions
+   render as Markdown; epics become parents of their stories.
+3. The same import from a Jira CSV export on an air-gapped install produces the same
+   issues (without attachments unless the ZIP is supplied).
+4. Running the import twice creates no duplicates and updates items changed in between.
+5. Searching `ENG-123` finds the imported issue; no member received a notification during the
+   import; tokens are not readable through the API after the run.
 
 ---
 
@@ -810,7 +900,8 @@ audit_log(id, actor_type, actor_id, action, target_type, target_id,
 
 Cycles, projects, initiatives, saved/shared views, timeline layout, SLA policies with
 business hours, approval timeouts/escalation/delegation, conditional steps and fields,
-routing rules, webhooks + public API, email-in, import from Linear/Jira, editable email templates,
+routing rules, webhooks + public API, email-in, import from Linear and Jira via API or export
+files (§10.2), editable email templates,
 Slack app (DMs, link unfurls, create from message).
 
 ### Phase 3
