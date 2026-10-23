@@ -464,7 +464,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
 | Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
 | Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
-| Data                            | Export all data (JSON), import from Linear and Jira via API or export files (§10.2, Phase 2).                                                                                                                                    |
+| Data                            | Export all data (JSON), import from Linear and Jira via API or export files (§10.2, Phase 2).                                                                                                     |
 
 ### 8.1 Authentication strategies and registration
 
@@ -614,11 +614,11 @@ installations that cannot reach the internet.
 
 **Sources and how Ordler reads them**
 
-| Source                          | Online (API)                                                         | Offline (file)                                     |
-| ------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| Linear                          | GraphQL API with a personal API key (read-only use)                  | Linear CSV export (Settings → Import/export)       |
-| Jira Cloud                      | REST API v3, account email + API token; scope chosen with JQL        | Jira CSV export ("all fields") or XML backup issues |
-| Jira Server / Data Center       | REST API v2 with a personal access token; internal URLs allowed      | Same CSV export                                    |
+| Source                    | Online (API)                                                    | Offline (file)                                      |
+| ------------------------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| Linear                    | GraphQL API with a personal API key (read-only use)             | Linear CSV export (Settings → Import/export)        |
+| Jira Cloud                | REST API v3, account email + API token; scope chosen with JQL   | Jira CSV export ("all fields") or XML backup issues |
+| Jira Server / Data Center | REST API v2 with a personal access token; internal URLs allowed | Same CSV export                                     |
 
 Offline import covers air-gapped installs: the admin uploads the export file (and, for
 attachments, the attachments folder as a ZIP). API import is preferred because it also
