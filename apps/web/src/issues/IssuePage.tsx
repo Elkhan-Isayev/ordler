@@ -21,7 +21,7 @@ import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
-import { Avatar, PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
+import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
 
 type TimelineEntry =
   | { kind: 'event'; at: string; event: IssueEvent }
@@ -154,82 +154,84 @@ export function IssuePage({ identifier }: { identifier: string }) {
         )}
       </header>
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
-          <FormError message={error ? t(error) : undefined} />
-          <input
-            key={`title-${issue.updatedAt}`}
-            defaultValue={issue.title}
-            readOnly={!canEdit}
-            aria-label={t('issues.title')}
-            maxLength={255}
-            className="bg-transparent text-xl font-semibold text-ink outline-none"
-            onBlur={(event) => {
-              const title = event.currentTarget.value.trim();
-              if (title && title !== issue.title) void save({ title });
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur();
-            }}
-          />
-          <RichEditor
-            value={issue.description}
-            editable={canEdit}
-            label={t('issues.description')}
-            placeholder={t('issues.descriptionPlaceholder')}
-            onCommit={(description) => void save({ description })}
-            onUpload={upload}
-            mentionables={team.members}
-            onUploadError={(failure) => setError(errorKey(failure))}
-          />
-          <IssueRelations
-            issue={issue}
-            team={team}
-            onChanged={() => void reload()}
-            onError={(code) => setError(code)}
-          />
-          <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
-            <ol className="flex flex-col gap-3 text-sm text-ink-muted">
-              {timeline(issue).map((entry) =>
-                entry.kind === 'event' ? (
-                  <li key={entry.event.id} className="flex items-start gap-2">
-                    <Avatar member={entry.event.actor} />
-                    <span>
-                      {describeEvent(t, entry.event, team)}
-                      <span className="text-ink-faint">
-                        {' '}
-                        · {formatWhen(entry.event.createdAt, i18n.language)}
+        <main className="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-8 md:px-12">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+            <FormError message={error ? t(error) : undefined} />
+            <input
+              key={`title-${issue.updatedAt}`}
+              defaultValue={issue.title}
+              readOnly={!canEdit}
+              aria-label={t('issues.title')}
+              maxLength={255}
+              className="bg-transparent text-2xl font-semibold tracking-tight text-ink outline-none"
+              onBlur={(event) => {
+                const title = event.currentTarget.value.trim();
+                if (title && title !== issue.title) void save({ title });
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') event.currentTarget.blur();
+              }}
+            />
+            <RichEditor
+              value={issue.description}
+              editable={canEdit}
+              label={t('issues.description')}
+              placeholder={t('issues.descriptionPlaceholder')}
+              onCommit={(description) => void save({ description })}
+              onUpload={upload}
+              mentionables={team.members}
+              onUploadError={(failure) => setError(errorKey(failure))}
+            />
+            <IssueRelations
+              issue={issue}
+              team={team}
+              onChanged={() => void reload()}
+              onError={(code) => setError(code)}
+            />
+            <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
+              <ol className="flex flex-col gap-3 text-sm text-ink-muted">
+                {timeline(issue).map((entry) =>
+                  entry.kind === 'event' ? (
+                    <li key={entry.event.id} className="flex items-start gap-2">
+                      <Avatar member={entry.event.actor} />
+                      <span>
+                        {describeEvent(t, entry.event, team)}
+                        <span className="text-ink-faint">
+                          {' '}
+                          · {formatWhen(entry.event.createdAt, i18n.language)}
+                        </span>
                       </span>
-                    </span>
-                  </li>
-                ) : (
-                  <li key={entry.comment.id}>
-                    <CommentItem
-                      comment={entry.comment}
-                      onUpload={upload}
-                      mentionables={team.members}
-                      onEdit={(body) => run(() => api.editComment(entry.comment.id, body))}
-                      onDelete={async () => {
-                        await run(() => api.deleteComment(entry.comment.id));
-                      }}
-                    />
-                  </li>
-                ),
+                    </li>
+                  ) : (
+                    <li key={entry.comment.id}>
+                      <CommentItem
+                        comment={entry.comment}
+                        onUpload={upload}
+                        mentionables={team.members}
+                        onEdit={(body) => run(() => api.editComment(entry.comment.id, body))}
+                        onDelete={async () => {
+                          await run(() => api.deleteComment(entry.comment.id));
+                        }}
+                      />
+                    </li>
+                  ),
+                )}
+              </ol>
+              {team.can.comment && (
+                <CommentComposer
+                  onUpload={upload}
+                  mentionables={team.members}
+                  onUploadError={(failure) => setError(errorKey(failure))}
+                  onSend={(body) => run(() => api.addComment(issue.identifier, body))}
+                />
               )}
-            </ol>
-            {team.can.comment && (
-              <CommentComposer
-                onUpload={upload}
-                mentionables={team.members}
-                onUploadError={(failure) => setError(errorKey(failure))}
-                onSend={(body) => run(() => api.addComment(issue.identifier, body))}
-              />
-            )}
-          </section>
+            </section>
+          </div>
         </main>
         <aside
           aria-label={t('issues.properties')}
-          className="flex w-full shrink-0 flex-col gap-3 border-line p-6 text-sm md:w-72 md:border-l"
+          className="m-3 flex w-auto shrink-0 flex-col gap-4 self-start rounded-xl border border-line bg-card p-4 text-sm shadow-card md:w-72"
         >
           <Property label={t('issues.status.label')}>
             <StatusIcon category={issue.status.category} />
@@ -237,7 +239,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
               value={issue.statusId}
               disabled={!canEdit}
               aria-label={t('issues.status.label')}
-              className={selectClass}
+              className={quietSelectClass}
               onChange={(event) => void save({ statusId: event.target.value })}
             >
               {team.statuses.map((status) => (
@@ -253,7 +255,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
               value={issue.priority}
               disabled={!canEdit}
               aria-label={t('issues.priority.label')}
-              className={selectClass}
+              className={quietSelectClass}
               onChange={(event) => void save({ priority: event.target.value as Priority })}
             >
               {PRIORITIES.map((priority) => (
@@ -267,6 +269,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
             <AssigneePicker
               team={team}
               value={issue.assignees}
+              quiet
               editable={team.can.assign}
               onChange={(ids) => void save(assigneePatch(team, ids))}
             />
@@ -287,7 +290,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
               value={issue.dueDate ?? ''}
               disabled={!canEdit}
               aria-label={t('issues.dueDate')}
-              className={selectClass}
+              className={quietSelectClass}
               onChange={(event) => void save({ dueDate: event.target.value || null })}
             />
           </Property>

@@ -99,7 +99,7 @@ export function IssueContextMenu({
         <div
           role="menu"
           aria-label={label}
-          className="absolute top-0 left-full ml-1 max-h-72 w-52 overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-lg"
+          className="absolute top-0 left-full ml-1 max-h-72 w-52 overflow-y-auto rounded-lg border border-line bg-card p-1 shadow-lg"
         >
           {children}
         </div>
@@ -113,7 +113,7 @@ export function IssueContextMenu({
       role="menu"
       aria-label={issue.identifier}
       style={{ left, top }}
-      className="fixed z-50 w-56 rounded-lg border border-line bg-surface p-1 shadow-lg"
+      className="fixed z-50 w-56 rounded-lg border border-line bg-card p-1 shadow-lg"
       onContextMenu={(event) => event.preventDefault()}
     >
       {team.can.update &&

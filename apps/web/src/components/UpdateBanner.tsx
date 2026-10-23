@@ -99,11 +99,11 @@ export function UpdateBanner({ isAdmin }: { isAdmin: boolean }) {
         <div className="flex flex-col gap-2 text-ink-muted">
           <p>{t('updates.backup')}</p>
           <p>{t('updates.compose', { latest })}</p>
-          <pre className="overflow-x-auto rounded-md bg-surface p-2 text-xs text-ink">
+          <pre className="overflow-x-auto rounded-md bg-card p-2 text-xs text-ink">
             docker compose pull && docker compose up -d
           </pre>
           <p>{t('updates.helm')}</p>
-          <pre className="overflow-x-auto rounded-md bg-surface p-2 text-xs text-ink">
+          <pre className="overflow-x-auto rounded-md bg-card p-2 text-xs text-ink">
             {`helm upgrade ordler ordler/ordler --reuse-values --set image.tag=${latest}`}
           </pre>
           <p>{t('updates.dataSafety')}</p>

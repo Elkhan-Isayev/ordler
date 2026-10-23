@@ -15,7 +15,7 @@ export function TextField({
       <input
         id={id}
         aria-describedby={hint ? hintId : undefined}
-        className="rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+        className="rounded-md border border-line bg-card px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         {...input}
       />
       {hint && (
@@ -64,7 +64,7 @@ export function Card({
   return (
     <main className="flex min-h-screen items-center justify-center bg-sidebar p-4">
       <section
-        className={`flex w-full ${wide ? 'max-w-xl' : 'max-w-sm'} flex-col gap-5 rounded-xl border border-line bg-surface p-6 shadow-sm`}
+        className={`flex w-full ${wide ? 'max-w-xl' : 'max-w-sm'} flex-col gap-5 rounded-xl border border-line bg-card p-6 shadow-sm`}
       >
         <header className="flex flex-col gap-1">
           <h1 className="text-lg font-semibold text-ink">{title}</h1>

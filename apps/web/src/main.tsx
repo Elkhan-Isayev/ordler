@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { AuthGate } from './auth/AuthGate.js';
 import { createI18n } from './i18n/index.js';
+// Bundled, so on-prem installs never fetch fonts from the internet.
+import '@fontsource-variable/inter';
 import './styles.css';
 
 const browserLocale = resolveLocale({ acceptLanguage: navigator.languages.join(',') });

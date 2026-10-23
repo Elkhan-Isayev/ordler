@@ -1,5 +1,17 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  CircleCheck,
+  FolderKanban,
+  Inbox,
+  Layers,
+  Mountain,
+  Send,
+  Settings,
+  Stamp,
+  Store,
+  type LucideIcon,
+} from 'lucide-react';
 import { Link } from '../router.js';
 
 export interface SidebarTeam {
@@ -75,12 +87,17 @@ export function Sidebar({
         </div>
 
         <ul className="flex flex-col gap-0.5">
-          <NavItem href="/inbox" badge={formatBadge(inboxCount)}>
+          <NavItem icon={Inbox} href="/inbox" badge={formatBadge(inboxCount)}>
             {t('nav.inbox')}
           </NavItem>
-          <NavItem href="/my-issues">{t('nav.myIssues')}</NavItem>
-          <NavItem href="/my-requests">{t('nav.myRequests')}</NavItem>
+          <NavItem icon={CircleCheck} href="/my-issues">
+            {t('nav.myIssues')}
+          </NavItem>
+          <NavItem icon={Send} href="/my-requests">
+            {t('nav.myRequests')}
+          </NavItem>
           <NavItem
+            icon={Stamp}
             href="/approvals"
             badge={formatBadge(pendingApprovals)}
             badgeLabel={t('nav.pendingApprovals', { count: pendingApprovals })}
@@ -90,12 +107,24 @@ export function Sidebar({
         </ul>
 
         <Section title={t('nav.workspace')}>
-          <NavItem href="/initiatives">{t('nav.initiatives')}</NavItem>
-          <NavItem href="/projects">{t('nav.projects')}</NavItem>
-          <NavItem href="/views">{t('nav.views')}</NavItem>
-          <NavItem href="/portals">{t('nav.servicePortals')}</NavItem>
+          <NavItem icon={Mountain} href="/initiatives">
+            {t('nav.initiatives')}
+          </NavItem>
+          <NavItem icon={FolderKanban} href="/projects">
+            {t('nav.projects')}
+          </NavItem>
+          <NavItem icon={Layers} href="/views">
+            {t('nav.views')}
+          </NavItem>
+          <NavItem icon={Store} href="/portals">
+            {t('nav.servicePortals')}
+          </NavItem>
           {showAdmin && (
-            <NavItem href="/admin" active={currentPath?.startsWith('/admin') ?? false}>
+            <NavItem
+              icon={Settings}
+              href="/admin"
+              active={currentPath?.startsWith('/admin') ?? false}
+            >
               {t('nav.admin')}
             </NavItem>
           )}
@@ -216,12 +245,14 @@ function NavItem({
   badge,
   badgeLabel,
   active,
+  icon: Icon,
   children,
 }: {
   href: string;
   badge?: string | undefined;
   badgeLabel?: string;
   active?: boolean;
+  icon?: LucideIcon | undefined;
   children: ReactNode;
 }) {
   const current = useContext(CurrentPath);
@@ -231,13 +262,17 @@ function NavItem({
       <Link
         href={href}
         aria-current={active ? 'page' : undefined}
-        className={`flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-hover hover:text-ink ${
-          active ? 'bg-hover text-ink' : ''
+        className={`flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-hover hover:text-ink ${
+          active ? 'bg-hover font-medium text-ink' : ''
         }`}
       >
-        <span className="truncate">{children}</span>
+        {Icon && <Icon aria-hidden size={16} strokeWidth={1.75} className="shrink-0 opacity-80" />}
+        <span className="flex-1 truncate">{children}</span>
         {badge && (
-          <span aria-label={badgeLabel} className="text-xs text-ink-faint">
+          <span
+            aria-label={badgeLabel}
+            className="rounded-full bg-accent/20 px-1.5 text-[11px] font-medium text-ink"
+          >
             {badge}
           </span>
         )}

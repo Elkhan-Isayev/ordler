@@ -116,7 +116,7 @@ export function NewIssueDialog({
         aria-modal="true"
         aria-label={t('issues.newIssueIn', { team: team.name })}
         onSubmit={submit}
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-xl border border-line bg-surface shadow-2xl"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-xl border border-line bg-card shadow-2xl"
       >
         <header className="flex items-center gap-2 px-5 pt-4 text-xs text-ink-faint">
           <span className="rounded bg-hover px-1.5 py-0.5 font-mono text-ink-muted">
@@ -207,7 +207,7 @@ export function NewIssueDialog({
                         .map((l) => l.name)
                         .join(', ')}
                 </summary>
-                <div className="absolute bottom-full left-0 z-10 mb-1 flex w-48 flex-col gap-1 rounded-lg border border-line bg-surface p-2 shadow-lg">
+                <div className="absolute bottom-full left-0 z-10 mb-1 flex w-48 flex-col gap-1 rounded-lg border border-line bg-card p-2 shadow-lg">
                   {team.labels.map((label) => (
                     <label key={label.id} className="flex items-center gap-1.5 text-xs text-ink">
                       <input

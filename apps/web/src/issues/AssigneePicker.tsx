@@ -1,6 +1,6 @@
 import type { MemberRef, TeamView } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
-import { AvatarStack, selectClass } from './ui.js';
+import { AvatarStack, quietSelectClass, selectClass } from './ui.js';
 
 /**
  * One assignee as a select; several (when the team allows it) as checkboxes. Reports the full
@@ -10,11 +10,14 @@ export function AssigneePicker({
   team,
   value,
   editable,
+  quiet = false,
   onChange,
 }: {
   team: TeamView;
   value: MemberRef[];
   editable: boolean;
+  /** Borderless, for the issue's properties panel. */
+  quiet?: boolean;
   onChange: (ids: string[]) => void;
 }) {
   const { t } = useTranslation();
@@ -25,7 +28,7 @@ export function AssigneePicker({
         value={ids[0] ?? ''}
         disabled={!editable}
         aria-label={t('issues.assignee')}
-        className={selectClass}
+        className={quiet ? quietSelectClass : selectClass}
         onChange={(event) => onChange(event.target.value ? [event.target.value] : [])}
       >
         <option value="">{t('issues.noAssignee')}</option>

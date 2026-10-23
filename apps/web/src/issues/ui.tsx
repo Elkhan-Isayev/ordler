@@ -84,7 +84,8 @@ export function Avatar({ member }: { member: MemberRef | null }) {
   return (
     <span
       title={member.name}
-      className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/20 text-[10px] font-semibold text-ink"
+      style={{ backgroundColor: avatarColor(member.id) }}
+      className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
     >
       {initials || '?'}
     </span>
@@ -92,7 +93,11 @@ export function Avatar({ member }: { member: MemberRef | null }) {
 }
 
 export const selectClass =
-  'rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink outline-none focus:border-accent disabled:opacity-60';
+  'rounded-lg border border-line bg-card px-2 py-1 text-sm text-ink outline-none transition-colors hover:border-ink-faint focus:border-accent disabled:opacity-60';
+
+/** Quiet controls for the properties panel: text until hovered, like Linear. */
+export const quietSelectClass =
+  'rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-ink outline-none transition-colors hover:bg-hover focus:border-accent disabled:opacity-60 disabled:hover:bg-transparent';
 
 /** A label as a small pill with its color dot. */
 export function LabelChip({ label }: { label: { name: string; color: string } }) {
@@ -111,7 +116,7 @@ export function AvatarStack({ members }: { members: MemberRef[] }) {
   return (
     <span className="flex items-center -space-x-1.5" title={members.map((m) => m.name).join(', ')}>
       {shown.map((member) => (
-        <span key={member.id} className="rounded-full ring-2 ring-surface">
+        <span key={member.id} className="rounded-full ring-2 ring-card">
           <Avatar member={member} />
         </span>
       ))}
@@ -120,4 +125,22 @@ export function AvatarStack({ members }: { members: MemberRef[] }) {
       )}
     </span>
   );
+}
+
+/** Warm, readable colours; the same person always gets the same one. */
+const AVATAR_COLORS = [
+  '#e07a5f',
+  '#d4a24c',
+  '#81b29a',
+  '#5b8e7d',
+  '#7a8fd1',
+  '#9b5de5',
+  '#c96a9b',
+  '#b5835a',
+];
+
+export function avatarColor(seed: string): string {
+  let hash = 0;
+  for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]!;
 }

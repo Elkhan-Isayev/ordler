@@ -105,7 +105,7 @@ function Column({
   return (
     <section
       aria-label={label}
-      className={`flex w-72 shrink-0 flex-col gap-2 rounded-lg p-2 transition-colors ${
+      className={`flex w-72 shrink-0 flex-col gap-2 rounded-xl p-2 transition-colors ${
         target ? 'bg-accent/10' : 'bg-sidebar'
       }`}
       onDragOver={(event) => {
@@ -180,7 +180,7 @@ function Card({ issue }: { issue: IssueSummary }) {
       href={`/issue/${issue.identifier}`}
       // The list item is dragged, not the link: browsers would otherwise drag a URL.
       draggable={false}
-      className="flex cursor-grab flex-col gap-2 rounded-md border border-line bg-surface p-3 text-sm shadow-xs select-none hover:border-ink-faint active:cursor-grabbing"
+      className="flex cursor-grab flex-col gap-2 rounded-lg border border-line bg-card p-3 text-sm shadow-card select-none hover:border-ink-faint active:cursor-grabbing"
     >
       <div className="flex items-center justify-between text-xs text-ink-faint">
         <span>{issue.identifier}</span>

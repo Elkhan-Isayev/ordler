@@ -63,7 +63,7 @@ export function SetupWizard({
               setLocale(next);
               void i18n.changeLanguage(next);
             }}
-            className="rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink"
+            className="rounded-md border border-line bg-card px-3 py-2 text-sm text-ink"
           >
             {SUPPORTED_LOCALES.map((code) => (
               <option key={code} value={code}>

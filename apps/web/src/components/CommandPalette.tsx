@@ -94,7 +94,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-label={t('search.title')}
-        className="flex w-full max-w-xl flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-lg"
+        className="flex w-full max-w-xl flex-col overflow-hidden rounded-xl border border-line bg-card shadow-lg"
       >
         <input
           autoFocus

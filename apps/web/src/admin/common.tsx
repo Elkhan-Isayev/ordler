@@ -13,14 +13,14 @@ export function SectionHeader({ title, subtitle }: { title: string; subtitle?: s
 
 export function Panel({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-xl border border-line bg-card p-4 shadow-card">
       {children}
     </div>
   );
 }
 
 export const inputClass =
-  'rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-accent';
+  'rounded-md border border-line bg-card px-3 py-1.5 text-sm text-ink outline-none focus:border-accent';
 export const buttonClass =
   'rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60';
 export const ghostButtonClass =

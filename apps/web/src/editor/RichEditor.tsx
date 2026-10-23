@@ -204,7 +204,7 @@ export function RichEditor({
 
   return (
     <div
-      className={`ordler-editor flex flex-col rounded-md border border-line bg-surface ${className}`}
+      className={`ordler-editor flex flex-col rounded-lg border border-line bg-card ${className}`}
     >
       {editor && editable && (
         <Toolbar
@@ -223,7 +223,7 @@ export function RichEditor({
           role="listbox"
           aria-label={t('editor.mention')}
           style={{ left: mention.left, top: mention.top }}
-          className="fixed z-50 w-56 rounded-lg border border-line bg-surface p-1 shadow-lg"
+          className="fixed z-50 w-56 rounded-lg border border-line bg-card p-1 shadow-lg"
         >
           {candidates.map((person, index) => (
             <li

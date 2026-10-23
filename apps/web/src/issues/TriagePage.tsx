@@ -130,7 +130,7 @@ function TriageItem({
   return (
     <li
       aria-label={issue.identifier}
-      className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-3 text-sm"
+      className="flex flex-col gap-3 rounded-lg border border-line bg-card p-3 text-sm"
     >
       <Link href={`/issue/${issue.identifier}`} className="flex items-center gap-2 hover:underline">
         <PriorityIcon priority={issue.priority} />
