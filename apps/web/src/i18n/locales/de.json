@@ -501,10 +501,10 @@
       "title": "Unter-Issues",
       "parent": "Unter-Issue von",
       "detach": "Lösen",
-      "add": "Unter-Issue hinzufügen",
-      "addPlaceholder": "Unter-Issue hinzufügen, Enter drücken",
+      "add": "Unter-Issue",
       "parentLabel": "Übergeordnetes Issue",
-      "noParent": "Kein übergeordnetes"
+      "noParent": "Kein übergeordnetes",
+      "newIn": "Neues Unter-Issue von {parent}"
     },
     "duplicateOf": "Duplikat von",
     "delete": "Löschen",
@@ -520,7 +520,9 @@
     },
     "newDescriptionPlaceholder": "Beschreibung hinzufügen… Text, Screenshots oder Dateien einfügen oder hierher ziehen; Diagramme über die Werkzeugleiste.",
     "attachHint": "Dateien und Bilder landen direkt in der Beschreibung.",
-    "createMore": "Weitere erstellen"
+    "createMore": "Weitere erstellen",
+    "dueDatePick": "Fälligkeit",
+    "dueDateClear": "Fälligkeit entfernen"
   },
   "editor": {
     "toolbar": "Formatierung",

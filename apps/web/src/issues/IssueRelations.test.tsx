@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
@@ -75,9 +75,16 @@ describe('IssueRelations', () => {
     );
     expect(screen.getByRole('heading', { name: /Sub-issues\s*1\/2/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /HELP-8/ })).toHaveAttribute('href', '/issue/HELP-8');
-    await userEvent.type(screen.getByLabelText('Add sub-issue'), 'Buy boxes{Enter}');
-    expect(calls[0]!.body).toEqual({ title: 'Buy boxes', parentId: 'i7' });
-    expect(onChanged).toHaveBeenCalled();
+    // The full new-issue dialog opens with the parent fixed, so a description can be added.
+    await userEvent.click(screen.getByRole('button', { name: 'Add sub-issue' }));
+    const dialog = screen.getByRole('dialog', { name: 'New issue in Helpdesk' });
+    expect(within(dialog).getByText('New sub-issue of HELP-7')).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('Parent issue')).not.toBeInTheDocument();
+    await userEvent.type(within(dialog).getByLabelText('Issue title'), 'Buy boxes');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Create issue' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalled());
+    expect(calls[0]!.body).toMatchObject({ title: 'Buy boxes', parentId: 'i7' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('links to the parent and detaches from it', async () => {

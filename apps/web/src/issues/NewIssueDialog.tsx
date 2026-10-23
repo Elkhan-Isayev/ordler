@@ -13,6 +13,7 @@ import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
+import { DueDatePicker } from './DueDatePicker.js';
 import { PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
 
 const chipClass = `${selectClass} h-8`;
@@ -35,11 +36,14 @@ export function NewIssueDialog({
   team,
   initialStatusId,
   parentIssues = [],
+  parent,
   onCreate,
   onClose,
 }: {
   team: TeamView;
   initialStatusId?: string | undefined;
+  /** Creating a sub-issue: the parent is fixed and shown instead of the parent picker. */
+  parent?: { id: string; identifier: string; title: string } | undefined;
   /** Issues the new one may be filed under as a sub-issue. */
   parentIssues?: IssueSummary[];
   onCreate: (input: Partial<CreateIssueInput> & { title: string }) => Promise<unknown>;
@@ -54,7 +58,7 @@ export function NewIssueDialog({
   const [assignees, setAssignees] = useState<string[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
-  const [parentId, setParentId] = useState('');
+  const [parentId, setParentId] = useState(parent?.id ?? '');
   const [createMore, setCreateMore] = useState(false);
   // Bumping the key gives a fresh, empty editor after "Create more".
   const [editorKey, setEditorKey] = useState(0);
@@ -122,7 +126,9 @@ export function NewIssueDialog({
           <span className="rounded bg-hover px-1.5 py-0.5 font-mono text-ink-muted">
             {team.key}
           </span>
-          {t('issues.newIssueIn', { team: team.name })}
+          {parent
+            ? t('issues.subIssues.newIn', { parent: parent.identifier })
+            : t('issues.newIssueIn', { team: team.name })}
         </header>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-3">
           <input
@@ -234,15 +240,16 @@ export function NewIssueDialog({
             </Chip>
           )}
           <Chip label={t('issues.dueDate')}>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(event) => setDueDate(event.target.value)}
-              aria-label={t('issues.dueDate')}
-              className={chipClass}
-            />
+            <DueDatePicker value={dueDate || null} onChange={(next) => setDueDate(next ?? '')} />
           </Chip>
-          {parentIssues.length > 0 && (
+          {parent && (
+            <Chip label={t('issues.subIssues.parentLabel')}>
+              <span className={`${chipClass} inline-flex max-w-64 items-center truncate`}>
+                {parent.identifier} {parent.title}
+              </span>
+            </Chip>
+          )}
+          {!parent && parentIssues.length > 0 && (
             <Chip label={t('issues.subIssues.parentLabel')}>
               <select
                 value={parentId}

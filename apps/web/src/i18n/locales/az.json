@@ -501,10 +501,10 @@
       "title": "Alt tapşırıqlar",
       "parent": "Alt tapşırığıdır:",
       "detach": "Ayır",
-      "add": "Alt tapşırıq əlavə et",
-      "addPlaceholder": "Alt tapşırıq əlavə edin, Enter basın",
+      "add": "Alt tapşırıq",
       "parentLabel": "Ana tapşırıq",
-      "noParent": "Ana tapşırıq yoxdur"
+      "noParent": "Ana tapşırıq yoxdur",
+      "newIn": "{parent} üçün yeni alt tapşırıq"
     },
     "duplicateOf": "Dublikatıdır:",
     "delete": "Sil",
@@ -520,7 +520,9 @@
     },
     "newDescriptionPlaceholder": "Təsvir əlavə edin… Mətn, ekran görüntüsü və ya fayl yapışdırın, ya da bura atın; diaqramlar alətlər panelindən.",
     "attachHint": "Fayllar və şəkillər birbaşa təsvirə əlavə olunur.",
-    "createMore": "Daha birini yarat"
+    "createMore": "Daha birini yarat",
+    "dueDatePick": "Son tarix",
+    "dueDateClear": "Son tarixi sil"
   },
   "editor": {
     "toolbar": "Formatlama",

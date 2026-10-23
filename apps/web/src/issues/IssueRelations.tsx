@@ -1,10 +1,12 @@
 import type { IssueDetail, IssueSummary, TeamView } from '@ordler/shared';
+import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ghostButtonClass, inputClass } from '../admin/common.js';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { Link } from '../router.js';
+import { NewIssueDialog } from './NewIssueDialog.js';
 import { AvatarStack, LabelChip, StatusIcon } from './ui.js';
 
 /** Palette for new labels; the next unused color keeps neighbours distinguishable. */
@@ -127,19 +129,7 @@ export function IssueRelations({
   onError: (code: string) => void;
 }) {
   const { t } = useTranslation();
-  const [title, setTitle] = useState('');
-
-  async function addSubIssue(event: FormEvent) {
-    event.preventDefault();
-    if (!title.trim()) return;
-    try {
-      await api.createIssue(team.key, { title: title.trim(), parentId: issue.id });
-      setTitle('');
-      onChanged();
-    } catch (failure) {
-      onError(errorKey(failure));
-    }
-  }
+  const [creating, setCreating] = useState(false);
 
   async function detach() {
     try {
@@ -208,16 +198,31 @@ export function IssueRelations({
         })}
       </ul>
       {team.can.create && (
-        <form onSubmit={(event) => void addSubIssue(event)}>
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={255}
-            placeholder={t('issues.subIssues.addPlaceholder')}
-            aria-label={t('issues.subIssues.add')}
-            className={`${inputClass} w-full`}
-          />
-        </form>
+        <button
+          type="button"
+          className="flex w-fit items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-ink-muted hover:bg-hover hover:text-ink"
+          onClick={() => setCreating(true)}
+        >
+          <Plus aria-hidden size={14} />
+          {t('issues.subIssues.add')}
+        </button>
+      )}
+      {creating && (
+        <NewIssueDialog
+          team={team}
+          parent={{ id: issue.id, identifier: issue.identifier, title: issue.title }}
+          onCreate={async (input) => {
+            try {
+              const created = await api.createIssue(team.key, input);
+              onChanged();
+              return created;
+            } catch (failure) {
+              onError(errorKey(failure));
+              return undefined;
+            }
+          }}
+          onClose={() => setCreating(false)}
+        />
       )}
     </section>
   );

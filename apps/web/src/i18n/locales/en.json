@@ -502,9 +502,9 @@
       "parent": "Sub-issue of",
       "detach": "Detach",
       "add": "Add sub-issue",
-      "addPlaceholder": "Add a sub-issue, press Enter",
       "parentLabel": "Parent issue",
-      "noParent": "No parent"
+      "noParent": "No parent",
+      "newIn": "New sub-issue of {parent}"
     },
     "duplicateOf": "Duplicate of",
     "delete": "Delete",
@@ -520,7 +520,9 @@
     },
     "newDescriptionPlaceholder": "Add a description… Paste text, screenshots or files, or drop them here; diagrams via the toolbar.",
     "attachHint": "Files and images go straight into the description.",
-    "createMore": "Create more"
+    "createMore": "Create more",
+    "dueDatePick": "Due date",
+    "dueDateClear": "Clear due date"
   },
   "editor": {
     "toolbar": "Formatting",

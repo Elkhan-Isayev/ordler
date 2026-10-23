@@ -20,6 +20,7 @@ import { useRealtime } from '../realtime/client.js';
 import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
+import { DueDatePicker } from './DueDatePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
 
@@ -285,13 +286,10 @@ export function IssuePage({ identifier }: { identifier: string }) {
             />
           </Property>
           <Property label={t('issues.dueDate')}>
-            <input
-              type="date"
-              value={issue.dueDate ?? ''}
-              disabled={!canEdit}
-              aria-label={t('issues.dueDate')}
-              className={quietSelectClass}
-              onChange={(event) => void save({ dueDate: event.target.value || null })}
+            <DueDatePicker
+              value={issue.dueDate}
+              editable={canEdit}
+              onChange={(dueDate) => void save({ dueDate })}
             />
           </Property>
         </aside>
