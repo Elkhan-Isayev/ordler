@@ -520,9 +520,11 @@
     },
     "newDescriptionPlaceholder": "Təsvir əlavə edin… Mətn, ekran görüntüsü və ya fayl yapışdırın, ya da bura atın; diaqramlar alətlər panelindən.",
     "attachHint": "Fayllar və şəkillər birbaşa təsvirə əlavə olunur.",
-    "createMore": "Daha birini yarat",
+    "createMore": "Növbəti üçün açıq saxla",
     "dueDatePick": "Son tarix",
-    "dueDateClear": "Son tarixi sil"
+    "dueDateClear": "Son tarixi sil",
+    "createMoreHint": "Yaratdıqdan sonra pəncərə açıq qalır: status, icraçılar, etiketlər və ana tapşırıq saxlanılır, bir neçə tapşırığı ardıcıl əlavə edə bilərsiniz.",
+    "createdKeepOpen": "{identifier} yaradıldı. Növbətini əlavə edin."
   },
   "editor": {
     "toolbar": "Formatlama",

@@ -60,6 +60,8 @@ export function NewIssueDialog({
   const [dueDate, setDueDate] = useState('');
   const [parentId, setParentId] = useState(parent?.id ?? '');
   const [createMore, setCreateMore] = useState(false);
+  // Last issue created while the dialog stays open, so the person sees it worked.
+  const [lastCreated, setLastCreated] = useState<string>();
   // Bumping the key gives a fresh, empty editor after "Create more".
   const [editorKey, setEditorKey] = useState(0);
   const description = useRef('');
@@ -100,6 +102,7 @@ export function NewIssueDialog({
       onClose();
       return;
     }
+    setLastCreated((created as { identifier?: string }).identifier ?? title.trim());
     // Keep the chosen properties, clear the text, ready for the next issue.
     setTitle('');
     description.current = '';
@@ -268,8 +271,17 @@ export function NewIssueDialog({
           )}
         </div>
         <footer className="flex flex-wrap items-center gap-3 border-t border-line px-5 py-3">
-          <span className="text-xs text-ink-faint">{t('issues.attachHint')}</span>
-          <label className="ml-auto flex items-center gap-1.5 text-xs text-ink-muted">
+          {lastCreated ? (
+            <span role="status" className="text-xs text-ink-muted">
+              {t('issues.createdKeepOpen', { identifier: lastCreated })}
+            </span>
+          ) : (
+            <span className="text-xs text-ink-faint">{t('issues.attachHint')}</span>
+          )}
+          <label
+            title={t('issues.createMoreHint')}
+            className="ml-auto flex items-center gap-1.5 text-xs text-ink-muted"
+          >
             <input
               type="checkbox"
               checked={createMore}

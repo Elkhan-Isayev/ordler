@@ -520,9 +520,11 @@
     },
     "newDescriptionPlaceholder": "Add a description… Paste text, screenshots or files, or drop them here; diagrams via the toolbar.",
     "attachHint": "Files and images go straight into the description.",
-    "createMore": "Create more",
+    "createMore": "Keep open for the next issue",
     "dueDatePick": "Due date",
-    "dueDateClear": "Clear due date"
+    "dueDateClear": "Clear due date",
+    "createMoreHint": "After creating, the dialog stays open with status, assignees, labels and parent kept, so you can add several issues in a row.",
+    "createdKeepOpen": "{identifier} created. Add the next one."
   },
   "editor": {
     "toolbar": "Formatting",

@@ -25,3 +25,6 @@ date input looked filled with today's date in Safari.
 ## Notes
 
 None.
+
+"Create more" is renamed to "Keep open for the next issue" with a tooltip explaining what
+stays filled in, and after each issue created this way the footer confirms "IT-5 created".

@@ -39,16 +39,17 @@ describe('NewIssueDialog', () => {
   });
 
   it('keeps the dialog open with "Create more" and submits on Ctrl+Enter', async () => {
-    const onCreate = vi.fn(async () => ({}));
+    const onCreate = vi.fn(async () => ({ identifier: 'HELP-9' }));
     const onClose = vi.fn();
     await renderWithI18n(<NewIssueDialog team={TEAM} onCreate={onCreate} onClose={onClose} />);
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Create more' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Keep open for the next issue' }));
     const title = screen.getByLabelText('Issue title');
     await userEvent.type(title, 'First');
     await userEvent.keyboard('{Control>}{Enter}{/Control}');
     expect(onCreate).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
     expect(title).toHaveValue('');
+    expect(screen.getByRole('status')).toHaveTextContent('HELP-9 created. Add the next one.');
     expect(screen.getByRole('button', { name: 'Create issue' })).toBeDisabled();
     // No parent chooser when there is nothing to nest under.
     expect(screen.queryByLabelText('Parent issue')).not.toBeInTheDocument();

@@ -520,9 +520,11 @@
     },
     "newDescriptionPlaceholder": "Beschreibung hinzufügen… Text, Screenshots oder Dateien einfügen oder hierher ziehen; Diagramme über die Werkzeugleiste.",
     "attachHint": "Dateien und Bilder landen direkt in der Beschreibung.",
-    "createMore": "Weitere erstellen",
+    "createMore": "Für das nächste Issue offen lassen",
     "dueDatePick": "Fälligkeit",
-    "dueDateClear": "Fälligkeit entfernen"
+    "dueDateClear": "Fälligkeit entfernen",
+    "createMoreHint": "Nach dem Erstellen bleibt der Dialog offen; Status, Zuständige, Labels und übergeordnetes Issue bleiben erhalten, sodass Sie mehrere Issues nacheinander anlegen können.",
+    "createdKeepOpen": "{identifier} erstellt. Legen Sie das nächste an."
   },
   "editor": {
     "toolbar": "Formatierung",
