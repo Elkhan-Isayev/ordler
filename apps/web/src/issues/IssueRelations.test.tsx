@@ -1,10 +1,10 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
 import { renderWithI18n } from '../test/render.js';
 import { detail, issue, TEAM } from './fixtures.js';
-import { IssueRelations, LabelPicker, nextLabelColor } from './IssueRelations.js';
+import { IssueRelations, LabelPicker, moveBefore, nextLabelColor } from './IssueRelations.js';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -122,5 +122,52 @@ describe('nested sub-issues', () => {
       'href',
       '/issue/HELP-3',
     );
+  });
+});
+
+describe('reordering sub-issues', () => {
+  it('moves an item before another or to the end', () => {
+    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+    expect(moveBefore(items, 'c', 'a').map((i) => i.id)).toEqual(['c', 'a', 'b']);
+    expect(moveBefore(items, 'a', undefined).map((i) => i.id)).toEqual(['b', 'c', 'a']);
+    expect(moveBefore(items, 'b', 'b')).toBe(items);
+  });
+
+  it('drags IT-4 above IT-3 and saves the new positions', async () => {
+    const onChanged = vi.fn();
+    const calls = mockApi({
+      'PATCH /api/issues/HELP-3': () => ({ json: detail(3) }),
+      'PATCH /api/issues/HELP-4': () => ({ json: detail(4) }),
+    });
+    await renderWithI18n(
+      <IssueRelations
+        issue={detail(2, {
+          children: [
+            issue(3, { title: 'Add sub sub issues', parentId: 'i2' }),
+            issue(4, { title: 'Activate Google auth', parentId: 'i2', subOrder: 1 }),
+          ],
+        })}
+        team={TEAM}
+        onChanged={onChanged}
+        onError={vi.fn()}
+      />,
+    );
+    const row = (text: string) => screen.getByText(text).closest('li')!;
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '' };
+    fireEvent.dragStart(row('Activate Google auth'), { dataTransfer });
+    fireEvent.dragOver(row('Add sub sub issues'), { dataTransfer });
+    fireEvent.drop(row('Add sub sub issues'), { dataTransfer });
+
+    const list = screen.getByRole('list', { name: 'Sub-issues' });
+    expect(
+      within(list)
+        .getAllByRole('link')
+        .map((l) => l.textContent),
+    ).toEqual([expect.stringContaining('HELP-4'), expect.stringContaining('HELP-3')]);
+    await waitFor(() => expect(onChanged).toHaveBeenCalled());
+    expect(calls.map((c) => [c.path, c.body])).toEqual([
+      ['/api/issues/HELP-4', { subOrder: 0 }],
+      ['/api/issues/HELP-3', { subOrder: 1 }],
+    ]);
   });
 });

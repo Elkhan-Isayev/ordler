@@ -188,6 +188,29 @@ describe('sub-issues', () => {
   });
 });
 
+describe('sub-issue order', () => {
+  it('lists sub-issues in creation order, appends new ones and can be reordered', async () => {
+    const parent = (await issue(dev, { title: 'Release' })).json<IssueDetail>();
+    for (const title of ['First', 'Second', 'Third']) {
+      await issue(dev, { title, parentId: parent.id });
+    }
+    const titles = async () =>
+      (await call('GET', '/api/issues/HELP-1', dev))
+        .json<IssueDetail>()
+        .children.map((c) => c.title);
+    expect(await titles()).toEqual(['First', 'Second', 'Third']);
+
+    // Drag "Third" above "First": a position before the first one.
+    const before = (await call('GET', '/api/issues/HELP-1', dev)).json<IssueDetail>().children;
+    await call('PATCH', '/api/issues/HELP-4', dev, { subOrder: before[0]!.subOrder - 1 });
+    expect(await titles()).toEqual(['Third', 'First', 'Second']);
+    // Reordering is not a history event.
+    expect((await call('GET', '/api/issues/HELP-4', dev)).json<IssueDetail>().events).toHaveLength(
+      1,
+    );
+  });
+});
+
 describe('search (SPEC §5.4)', () => {
   it('finds issues by title, description, comment and identifier in readable teams only', async () => {
     await issue(dev, { title: 'VPN drops at night', description: 'Tunnel resets' });

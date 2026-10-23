@@ -61,6 +61,7 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     inTriage: false,
     labels: [],
     parentId: null,
+    subOrder: 0,
     createdAt: '2026-10-18T09:00:00.000Z',
     updatedAt: '2026-10-18T09:00:00.000Z',
     ...overrides,

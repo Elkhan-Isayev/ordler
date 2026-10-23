@@ -1,6 +1,6 @@
 import type { IssueDetail, IssueSummary, TeamView } from '@ordler/shared';
-import { Plus } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { GripVertical, Plus } from 'lucide-react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ghostButtonClass, inputClass } from '../admin/common.js';
 import { api } from '../api/client.js';
@@ -131,6 +131,21 @@ export function IssueRelations({
   const { t } = useTranslation();
   const [creating, setCreating] = useState(false);
 
+  /** Saves positions 0..n-1 for the siblings whose position changed. */
+  async function reorder(ordered: IssueSummary[]) {
+    try {
+      await Promise.all(
+        ordered.flatMap((item, index) =>
+          item.subOrder === index ? [] : [api.updateIssue(item.identifier, { subOrder: index })],
+        ),
+      );
+      onChanged();
+    } catch (failure) {
+      onError(errorKey(failure));
+      onChanged();
+    }
+  }
+
   async function detach() {
     try {
       await api.updateIssue(issue.identifier, { parentId: null });
@@ -177,26 +192,26 @@ export function IssueRelations({
           )}
         </h2>
       )}
-      <ul className="flex flex-col">
-        {issue.children.map((child) => {
+      <SortableSubIssues
+        items={issue.children}
+        label={t('issues.subIssues.title')}
+        canReorder={team.can.update}
+        onReorder={reorder}
+        renderNested={(child) => {
           const nested = issue.grandchildren.filter((g) => g.parentId === child.id);
-          return (
-            <li key={child.id}>
-              <SubIssueRow issue={child} />
-              {/* Second level, indented like Linear; deeper levels open on the sub-issue. */}
-              {nested.length > 0 && (
-                <ul aria-label={child.identifier} className="ml-5 border-l border-line pl-2">
-                  {nested.map((grandchild) => (
-                    <li key={grandchild.id}>
-                      <SubIssueRow issue={grandchild} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+          // Second level, indented like Linear; deeper levels open on the sub-issue.
+          return nested.length > 0 ? (
+            <div className="ml-5 border-l border-line pl-2">
+              <SortableSubIssues
+                items={nested}
+                label={child.identifier}
+                canReorder={team.can.update}
+                onReorder={reorder}
+              />
+            </div>
+          ) : null;
+        }}
+      />
       {team.can.create && (
         <button
           type="button"
@@ -232,6 +247,8 @@ function SubIssueRow({ issue }: { issue: IssueSummary }) {
   return (
     <Link
       href={`/issue/${issue.identifier}`}
+      // The row is dragged to reorder, not the link.
+      draggable={false}
       className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-hover"
     >
       <StatusIcon category={issue.status.category} />
@@ -239,5 +256,114 @@ function SubIssueRow({ issue }: { issue: IssueSummary }) {
       <span className="min-w-0 flex-1 truncate text-ink">{issue.title}</span>
       <AvatarStack members={issue.assignees} />
     </Link>
+  );
+}
+
+/** Moves `id` to sit before `beforeId` (or last); returns the new order. */
+export function moveBefore<T extends { id: string }>(
+  items: T[],
+  id: string,
+  beforeId: string | undefined,
+): T[] {
+  const moving = items.find((item) => item.id === id);
+  if (!moving || id === beforeId) return items;
+  const rest = items.filter((item) => item.id !== id);
+  const index = beforeId ? rest.findIndex((item) => item.id === beforeId) : rest.length;
+  return [
+    ...rest.slice(0, index < 0 ? rest.length : index),
+    moving,
+    ...rest.slice(index < 0 ? rest.length : index),
+  ];
+}
+
+/** Sub-issues of one parent; dragging a row reorders it among its siblings only. */
+function SortableSubIssues({
+  items,
+  label,
+  canReorder,
+  onReorder,
+  renderNested,
+}: {
+  items: IssueSummary[];
+  label: string;
+  canReorder: boolean;
+  onReorder: (ordered: IssueSummary[]) => void;
+  renderNested?: (item: IssueSummary) => ReactNode;
+}) {
+  const [order, setOrder] = useState(items);
+  const [dragging, setDragging] = useState<string>();
+  const [over, setOver] = useState<string | null>();
+  useEffect(() => setOrder(items), [items]);
+
+  function drop(beforeId: string | undefined) {
+    if (!dragging) return;
+    const next = moveBefore(order, dragging, beforeId);
+    setDragging(undefined);
+    setOver(undefined);
+    if (next.map((i) => i.id).join() === order.map((i) => i.id).join()) return;
+    setOrder(next);
+    onReorder(next);
+  }
+
+  return (
+    <ul
+      aria-label={label}
+      className="flex flex-col"
+      onDragOver={(event) => {
+        if (!dragging) return;
+        event.preventDefault();
+        if (over === undefined) setOver(null);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        drop(undefined);
+      }}
+    >
+      {order.map((item) => (
+        <li
+          key={item.id}
+          draggable={canReorder}
+          className={`group relative ${item.id === dragging ? 'opacity-40' : ''}`}
+          onDragStart={(event) => {
+            event.stopPropagation();
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', item.identifier);
+            setDragging(item.id);
+          }}
+          onDragEnd={() => {
+            setDragging(undefined);
+            setOver(undefined);
+          }}
+          onDragOver={(event) => {
+            if (!dragging) return;
+            event.preventDefault();
+            event.stopPropagation();
+            setOver(item.id);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            drop(item.id);
+          }}
+        >
+          {over === item.id && dragging !== item.id && (
+            <span aria-hidden className="absolute inset-x-2 -top-px h-0.5 rounded-full bg-accent" />
+          )}
+          <div className="flex items-center">
+            {canReorder && (
+              <GripVertical
+                aria-hidden
+                size={14}
+                className="-ml-4 shrink-0 cursor-grab text-ink-faint opacity-0 group-hover:opacity-100"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <SubIssueRow issue={item} />
+            </div>
+          </div>
+          {renderNested?.(item)}
+        </li>
+      ))}
+    </ul>
   );
 }

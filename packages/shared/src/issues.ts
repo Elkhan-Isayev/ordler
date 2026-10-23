@@ -57,6 +57,8 @@ export const updateIssueSchema = z
     assigneeIds: z.array(z.uuid()).max(10),
     dueDate: dueDateSchema,
     sortOrder: z.number().finite(),
+    /** Position among the parent's sub-issues (drag and drop on the parent's page). */
+    subOrder: z.number().finite(),
     labelIds: labelIdsSchema,
     parentId: z.uuid().nullable(),
   })
@@ -163,6 +165,7 @@ export interface IssueSummary {
   inTriage: boolean;
   labels: LabelRef[];
   parentId: string | null;
+  subOrder: number;
   createdAt: string;
   updatedAt: string;
 }

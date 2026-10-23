@@ -1,0 +1,1 @@
+ALTER TABLE "issues" ADD COLUMN "sub_order" double precision DEFAULT 0 NOT NULL;

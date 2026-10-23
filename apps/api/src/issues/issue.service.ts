@@ -43,6 +43,11 @@ type TeamRow = typeof teams.$inferSelect;
 
 const assignee = aliasedTable(members, 'assignee');
 
+/** Sub-issues in their chosen order; equal positions keep creation order (IT-3 before IT-4). */
+function bySubOrder(list: IssueSummary[]): IssueSummary[] {
+  return [...list].sort((a, b) => a.subOrder - b.subOrder || a.number - b.number);
+}
+
 /** Search text is literal: % and _ match themselves. */
 export function likeEscape(text: string): string {
   return text.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -300,6 +305,8 @@ export class IssueService {
     await this.assertLabels(team.id, input.labelIds);
     if (input.parentId) await this.assertParent(team.id, input.parentId);
 
+    // New sub-issues go last under their parent; read before the transaction holds the connection.
+    const subOrder = input.parentId ? await this.nextSubOrder(input.parentId) : 0;
     const now = this.now();
     // Issues from outside the team wait in Triage until a member accepts them.
     const inTriage = !(await this.isTeamMember(team.id, memberId));
@@ -329,6 +336,7 @@ export class IssueService {
           sortOrder: (top?.min ?? 1) - 1,
           inTriage,
           parentId: input.parentId,
+          subOrder,
           createdBy: memberId,
           createdAt: now,
           updatedAt: now,
@@ -428,12 +436,18 @@ export class IssueService {
         field === 'description' ? { from: null, to: null } : { from: before![field], to: next };
     }
 
+    // Moved under another parent: last among its new siblings.
+    const movedSubOrder =
+      input.parentId && input.parentId !== before!.parentId && input.subOrder === undefined
+        ? await this.nextSubOrder(input.parentId)
+        : undefined;
     const now = this.now();
     await this.db.transaction(async (tx) => {
       await tx
         .update(issues)
         .set({
           ...fields,
+          ...(movedSubOrder !== undefined ? { subOrder: movedSubOrder } : {}),
           ...(nextAssignees ? { assigneeId: nextAssignees[0] ?? null } : {}),
           updatedAt: now,
         })
@@ -626,6 +640,7 @@ export class IssueService {
       inTriage: issue.inTriage,
       labels: labelMap.get(issue.id) ?? [],
       parentId: issue.parentId,
+      subOrder: issue.subOrder,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
@@ -740,6 +755,14 @@ export class IssueService {
       });
     }
     return recipients;
+  }
+
+  private async nextSubOrder(parentId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ max: sql<number | null>`max(${issues.subOrder})` })
+      .from(issues)
+      .where(eq(issues.parentId, parentId));
+    return (row?.max ?? 0) + 1;
   }
 
   /** Root first; bounded so damaged data can never loop forever. */
@@ -883,8 +906,8 @@ export class IssueService {
       .where(and(eq(comments.subjectType, 'issue'), eq(comments.subjectId, issueId)))
       .orderBy(asc(comments.createdAt), asc(comments.id));
     const parent = summary.parentId ? await this.summary(summary.parentId) : undefined;
-    const children = await this.summaries(
-      and(eq(issues.parentId, issueId), isNull(issues.archivedAt)),
+    const children = bySubOrder(
+      await this.summaries(and(eq(issues.parentId, issueId), isNull(issues.archivedAt))),
     );
     const [{ duplicateOfId } = { duplicateOfId: null }] = await this.db
       .select({ duplicateOfId: issues.duplicateOfId })
@@ -899,13 +922,15 @@ export class IssueService {
       grandchildren:
         children.length === 0
           ? []
-          : await this.summaries(
-              and(
-                inArray(
-                  issues.parentId,
-                  children.map((c) => c.id),
+          : bySubOrder(
+              await this.summaries(
+                and(
+                  inArray(
+                    issues.parentId,
+                    children.map((c) => c.id),
+                  ),
+                  isNull(issues.archivedAt),
                 ),
-                isNull(issues.archivedAt),
               ),
             ),
       ancestors: await this.ancestorsOf(summary.parentId),

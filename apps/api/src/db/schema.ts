@@ -365,6 +365,8 @@ export const issues = pgTable(
     sourceRequestId: uuid('source_request_id'),
     /** Parent issue in the same team (SPEC §5.1 sub-issues); any depth. */
     parentId: uuid('parent_id'),
+    /** Position among the parent's sub-issues; ties fall back to creation order. */
+    subOrder: doublePrecision('sub_order').notNull().default(0),
     /** Closed in triage as a duplicate of this issue (SPEC §5.1 relations). */
     duplicateOfId: uuid('duplicate_of_id'),
     createdBy: uuid('created_by').references(() => members.id),
