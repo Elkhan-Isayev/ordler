@@ -464,7 +464,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
 | Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
 | Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
-| Data                            | Export all data (JSON), import from Linear and Jira via API or export files (§10.2, Phase 2).                                                                                                     |
+| Data                            | Export all data (JSON), import from Linear and Jira via API token (§10.2, Phase 2).                                                                                                               |
 
 ### 8.1 Authentication strategies and registration
 
@@ -609,24 +609,24 @@ access, but self-service: **every member creates tokens for themselves**.
 ### 10.2 Import from Linear and Jira (Phase 2)
 
 Companies switch to Ordler with years of history in Linear or Jira. Import moves that work
-over once (or repeatedly during a trial period) without losing context, and works for
-installations that cannot reach the internet.
+over once (or repeatedly during a trial period) without losing context. Import uses only
+the source's API with a token: Ordler must be able to reach Linear or the Jira server.
 
-**Sources and how Ordler reads them**
+**Sources (token only)**
 
-| Source                    | Online (API)                                                    | Offline (file)                                      |
-| ------------------------- | --------------------------------------------------------------- | --------------------------------------------------- |
-| Linear                    | GraphQL API with a personal API key (read-only use)             | Linear CSV export (Settings → Import/export)        |
-| Jira Cloud                | REST API v3, account email + API token; scope chosen with JQL   | Jira CSV export ("all fields") or XML backup issues |
-| Jira Server / Data Center | REST API v2 with a personal access token; internal URLs allowed | Same CSV export                                     |
+| Source                    | Access                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Linear                    | GraphQL API with a personal API key; Ordler only reads                                 |
+| Jira Cloud                | REST API v3 with the account email and an API token; scope chosen with JQL             |
+| Jira Server / Data Center | REST API v2 with a personal access token; internal URLs allowed; scope chosen with JQL |
 
-Offline import covers air-gapped installs: the admin uploads the export file (and, for
-attachments, the attachments folder as a ZIP). API import is preferred because it also
-brings comments, attachments and relations reliably.
+File-based import (CSV/XML exports) is not supported: exports lose comments, attachments and
+relations.
 
 **Wizard (Admin → Import, requires `org.manage`)**
 
-1. **Connect**: choose the source; enter the API key/token or upload files. Credentials are
+1. **Connect**: choose the source and enter the API key or token; Ordler checks it with one
+   read-only call and shows whose account it belongs to. Tokens are
    encrypted at rest, write-only, used only for this import and deleted when it finishes.
    Jira base URLs must be `https`; private network addresses are allowed (Server/DC is
    usually internal) because only org admins can start an import.
@@ -690,8 +690,8 @@ appended to the description as a table; workflows' transition rules are not impo
    Ordler with Linear unreachable.
 2. A Jira Server project behind the firewall is imported with JQL; ADF/wiki descriptions
    render as Markdown; epics become parents of their stories.
-3. The same import from a Jira CSV export on an air-gapped install produces the same
-   issues (without attachments unless the ZIP is supplied).
+3. A Jira Cloud project is imported with email + API token; an invalid or revoked token is
+   refused at the Connect step with a clear message.
 4. Running the import twice creates no duplicates and updates items changed in between.
 5. Searching `ENG-123` finds the imported issue; no member received a notification during the
    import; tokens are not readable through the API after the run.
@@ -900,8 +900,7 @@ audit_log(id, actor_type, actor_id, action, target_type, target_id,
 
 Cycles, projects, initiatives, saved/shared views, timeline layout, SLA policies with
 business hours, approval timeouts/escalation/delegation, conditional steps and fields,
-routing rules, webhooks + public API, email-in, import from Linear and Jira via API or export
-files (§10.2), editable email templates,
+routing rules, webhooks + public API, email-in, import from Linear and Jira via API token (§10.2), editable email templates,
 Slack app (DMs, link unfurls, create from message).
 
 ### Phase 3

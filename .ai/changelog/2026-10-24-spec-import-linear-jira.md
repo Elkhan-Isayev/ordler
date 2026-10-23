@@ -7,7 +7,7 @@
 ## Summary
 
 Specifies how organizations move existing work into Ordler: an admin wizard that reads
-Linear (GraphQL API or CSV) and Jira Cloud/Server/Data Center (REST API with JQL, or CSV),
+Linear (GraphQL API key) and Jira Cloud/Server/Data Center (REST API token with JQL) — token only, no file import —
 maps teams, statuses, priorities, people, labels and hierarchy, runs a dry run, imports in a
 resumable background job, and can be re-run without duplicates.
 
