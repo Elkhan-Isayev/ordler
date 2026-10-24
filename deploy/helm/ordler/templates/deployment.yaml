@@ -71,8 +71,10 @@ spec:
               value: {{ .Values.database.user | quote }}
             - name: DB_SSL
               value: {{ .Values.database.ssl | quote }}
+            {{- if .Values.database.schema }}
             - name: DB_SCHEMA
               value: {{ .Values.database.schema | quote }}
+            {{- end }}
             - name: DB_POOL_MAX
               value: {{ .Values.database.poolMax | quote }}
             {{- if or .Values.database.existingSecret .Values.database.password }}

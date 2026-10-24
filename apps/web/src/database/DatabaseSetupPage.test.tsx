@@ -24,7 +24,7 @@ const EXPECTED = {
   user: 'ordler',
   password: 'db-secret',
   ssl: 'require',
-  schema: 'ordler',
+  schema: 'public',
   installToken: 'K7QX-2M9P-WD4T',
 };
 

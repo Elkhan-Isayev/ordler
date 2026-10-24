@@ -32,7 +32,8 @@ database:
   ssl: disable
   # CA bundle (PEM) for verify-full, e.g. the AWS RDS global bundle.
   sslCa: ''
-  schema: ordler
+  # Empty: `public` for new installs; installs created before 0.3 keep using `ordler`.
+  schema: ''
   poolMax: 20
 
 # Key that encrypts stored secrets (SMTP, Google, database password). Generated once and kept

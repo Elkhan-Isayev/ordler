@@ -180,7 +180,7 @@ finds **Administration** in the sidebar. Stop the database with
 | ----------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
 | `DATABASE_URL` or `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` | install page            | PostgreSQL connection; every secret also accepts `*_FILE`                                     |
 | `DB_SSL`, `DB_SSL_CA`                                                   | `disable`               | `require` or `verify-full` (use `verify-full` with the RDS CA bundle)                         |
-| `DB_SCHEMA`                                                             | `ordler`                | Schema Ordler owns; the database can be shared                                                |
+| `DB_SCHEMA`                                                             | `public`                | Schema for Ordler's tables; installs made before 0.3 keep `ordler` automatically              |
 | `ENCRYPTION_KEY`                                                        | generated in `/data`    | 32-byte base64 key sealing stored secrets                                                     |
 | `ORDLER_DATA_DIR`                                                       | `/data`                 | Volume for install-page database settings and the generated key                               |
 | `BASE_URL`                                                              | `http://localhost:3000` | Public URL used in emails, OAuth callbacks and the CSRF check                                 |

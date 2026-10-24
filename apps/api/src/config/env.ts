@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { DEFAULT_ATTACHMENT_MAX_MB, SUPPORTED_LOCALES } from '@ordler/shared';
 import { z } from 'zod';
+import { DEFAULT_SCHEMA } from '../db/schema-default.js';
 
 export type Env = Record<string, string | undefined>;
 export type FileReader = (path: string) => string;
@@ -16,6 +17,8 @@ export interface DatabaseConfig {
   user?: string;
   password?: string;
   schema: string;
+  /** No DB_SCHEMA was given: startup picks `public`, or `ordler` for installs made before 0.3. */
+  schemaFromDefault?: boolean;
   ssl: SslMode;
   sslCa?: string;
   poolMax: number;
@@ -89,7 +92,7 @@ const envSchema = z.object({
   DB_SCHEMA: z
     .string()
     .regex(/^[a-z_][a-z0-9_]*$/, 'DB_SCHEMA must be a lowercase SQL identifier')
-    .default('ordler'),
+    .optional(),
   DB_SSL: z.enum(['disable', 'require', 'verify-full']).default('disable'),
   DB_SSL_CA: z.string().optional(),
   DB_POOL_MAX: z.coerce.number().int().min(1).max(500).default(20),
@@ -175,7 +178,9 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
               ? { connectionString: e.DATABASE_URL }
               : { host: e.DB_HOST, database: e.DB_NAME, user: e.DB_USER, password: e.DB_PASS }),
             port: e.DB_PORT,
-            schema: e.DB_SCHEMA,
+            ...(e.DB_SCHEMA
+              ? { schema: e.DB_SCHEMA }
+              : { schema: DEFAULT_SCHEMA, schemaFromDefault: true }),
             ssl: e.DB_SSL,
             ...(e.DB_SSL_CA ? { sslCa: e.DB_SSL_CA } : {}),
             poolMax: e.DB_POOL_MAX,
@@ -233,7 +238,9 @@ export function describeConfig(config: AppConfig): Record<string, unknown> {
     database: database
       ? {
           target: database.connectionString ? 'DATABASE_URL' : `${database.host}:${database.port}`,
-          schema: database.schema,
+          schema: database.schemaFromDefault
+            ? 'auto (public, or ordler if found)'
+            : database.schema,
           ssl: database.ssl,
           poolMax: database.poolMax,
         }

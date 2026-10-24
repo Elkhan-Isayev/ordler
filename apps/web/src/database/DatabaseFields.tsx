@@ -69,7 +69,7 @@ export function DatabaseFields({
           name="schema"
           required
           pattern="[a-z_][a-z0-9_]*"
-          defaultValue={defaults.schema ?? 'ordler'}
+          defaultValue={defaults.schema ?? 'public'}
           className={inputClass}
         />
       </label>

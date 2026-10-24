@@ -5,6 +5,16 @@ const KEY = Buffer.alloc(32, 7).toString('base64');
 const RDS_CA = '-----BEGIN CERTIFICATE-----\nMIIfake\n-----END CERTIFICATE-----';
 
 describe('loadConfig', () => {
+  it('uses an explicit DB_SCHEMA as is', () => {
+    const config = loadConfig({
+      DATABASE_URL: 'postgres://u:p@localhost/ordler',
+      DB_SCHEMA: 'ordler',
+      ENCRYPTION_KEY: KEY,
+    });
+    expect(config.database).toMatchObject({ schema: 'ordler' });
+    expect(config.database?.schemaFromDefault).toBeUndefined();
+  });
+
   it('applies defaults with a connection string', () => {
     const config = loadConfig({
       DATABASE_URL: 'postgres://u:p@localhost/ordler',
@@ -17,7 +27,9 @@ describe('loadConfig', () => {
       defaultLocale: 'en',
       database: {
         connectionString: 'postgres://u:p@localhost/ordler',
-        schema: 'ordler',
+        schema: 'public',
+        // No DB_SCHEMA: startup may still keep an older install in `ordler`.
+        schemaFromDefault: true,
         ssl: 'disable',
         poolMax: 20,
       },

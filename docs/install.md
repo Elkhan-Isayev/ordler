@@ -13,8 +13,10 @@ CREATE DATABASE ordler OWNER ordler;
 ```
 
 The user needs no superuser rights: owning the database (or `CREATE` on it) is enough.
-Ordler keeps its tables in the `ordler` schema, so the database can be shared with other
-applications.
+Ordler keeps its tables in the `public` schema of that database, like Wiki.js, so give it a
+database of its own. To share a database with other applications, set `DB_SCHEMA` (Helm:
+`database.schema`) to a schema of its own, e.g. `ordler`. Installations created before 0.3
+used `ordler` by default and keep using it automatically.
 
 ## 2. Run Ordler
 

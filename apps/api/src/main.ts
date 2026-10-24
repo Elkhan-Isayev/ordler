@@ -12,6 +12,7 @@ import { DataDir } from './config/data-dir.js';
 import { describeConfig, loadConfig, type AppConfig, type DatabaseConfig } from './config/env.js';
 import { SecretBox } from './crypto/secret-box.js';
 import type { Db } from './db/client.js';
+import { DEFAULT_SCHEMA, resolveDefaultSchema } from './db/schema-default.js';
 import { createSchemaSql, MIGRATION_LOCK_KEY, withAdvisoryLock } from './db/migrate.js';
 import { probeDatabase } from './db/probe.js';
 import {
@@ -77,6 +78,12 @@ async function startApplication(
   storage: { encryptionKey: Buffer; box: SecretBox; dataDir: DataDir; webDir: string },
   logger: Logger,
 ): Promise<void> {
+  if (database.schemaFromDefault) {
+    database = { ...database, schema: await pickDefaultSchema(database), schemaFromDefault: false };
+    if (database.schema !== DEFAULT_SCHEMA) {
+      logger.log(`Using schema "${database.schema}", where this installation's data already is`);
+    }
+  }
   const pool = new pg.Pool(toPoolConfig(database));
   const db = drizzle(pool, { schema }) as unknown as Db;
   const readiness = new DatabaseReadiness(pool);
@@ -142,6 +149,17 @@ async function startApplication(
   readiness.markMigrated();
   if (config.role !== 'web') ctx.updates.start();
   logger.log(`Listening on port ${config.port}`);
+}
+
+/** One short connection to see whether an older installation lives in the `ordler` schema. */
+async function pickDefaultSchema(database: DatabaseConfig): Promise<string> {
+  const client = new pg.Client(toPoolConfig({ ...database, schema: DEFAULT_SCHEMA }));
+  await client.connect();
+  try {
+    return await resolveDefaultSchema(client);
+  } finally {
+    await client.end();
+  }
 }
 
 function generatedKey(dataDir: DataDir, logger: Logger): Buffer {
