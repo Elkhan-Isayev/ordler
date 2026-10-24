@@ -16,7 +16,7 @@ export interface MenuPosition {
   y: number;
 }
 
-type Section = 'status' | 'priority' | 'assignee' | 'labels' | 'cycle';
+type Section = 'status' | 'priority' | 'assignee' | 'labels' | 'cycle' | 'project';
 
 const itemClass =
   'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink hover:bg-hover focus:bg-hover focus:outline-none';
@@ -188,6 +188,32 @@ export function IssueContextMenu({
             >
               <Avatar member={member} />
               {member.name}
+            </button>
+          )),
+        ])}
+      {team.can.update &&
+        team.projects.length > 0 &&
+        submenu('project', t('projects.project'), [
+          <button
+            key="none"
+            type="button"
+            role="menuitemradio"
+            aria-checked={!issue.projectId}
+            className={itemClass}
+            onClick={() => apply({ projectId: null, milestoneId: null })}
+          >
+            {t('projects.noProject')}
+          </button>,
+          ...team.projects.map((project) => (
+            <button
+              key={project.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={issue.projectId === project.id}
+              className={itemClass}
+              onClick={() => apply({ projectId: project.id, milestoneId: null })}
+            >
+              {project.name}
             </button>
           )),
         ])}

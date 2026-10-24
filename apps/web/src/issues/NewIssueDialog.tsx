@@ -14,6 +14,7 @@ import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
 import { CyclePicker } from '../cycles/CyclePicker.js';
+import { ProjectPicker } from '../projects/ProjectPicker.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
 
@@ -60,6 +61,8 @@ export function NewIssueDialog({
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
   const [cycleId, setCycleId] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [milestoneId, setMilestoneId] = useState<string | null>(null);
   const [parentId, setParentId] = useState(parent?.id ?? '');
   const [createMore, setCreateMore] = useState(false);
   // Last issue created while the dialog stays open, so the person sees it worked.
@@ -98,6 +101,8 @@ export function NewIssueDialog({
       ...(dueDate ? { dueDate } : {}),
       ...(parentId ? { parentId } : {}),
       ...(cycleId ? { cycleId } : {}),
+      ...(projectId ? { projectId } : {}),
+      ...(milestoneId ? { milestoneId } : {}),
     });
     setBusy(false);
     if (!created) return;
@@ -243,6 +248,20 @@ export function NewIssueDialog({
                   ))}
                 </div>
               </details>
+            </Chip>
+          )}
+          {team.projects.length > 0 && (
+            <Chip label={t('projects.project')}>
+              <ProjectPicker
+                team={team}
+                projectId={projectId}
+                milestoneId={milestoneId}
+                className={chipClass}
+                onChange={(patch) => {
+                  if (patch.projectId !== undefined) setProjectId(patch.projectId);
+                  setMilestoneId(patch.milestoneId ?? null);
+                }}
+              />
             </Chip>
           )}
           {team.cycles.length > 0 && (

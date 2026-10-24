@@ -116,6 +116,11 @@ export class IssuesController {
     );
   }
 
+  @Get('teams')
+  teams(@Req() request: OrdlerRequest) {
+    return this.ctx.issues.readableTeams(request.member!.id);
+  }
+
   @Get('me/issues')
   mine(@Req() request: OrdlerRequest) {
     return this.ctx.issues.assignedTo(request.member!.id);

@@ -55,6 +55,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   status_required: 409,
   single_assignee: 400,
   cycle_not_in_team: 400,
+  project_not_in_team: 400,
   file_too_large: 413,
   file_missing: 400,
   form_invalid: 400,

@@ -21,6 +21,7 @@ import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
 import { CyclePicker } from '../cycles/CyclePicker.js';
+import { ProjectPicker } from '../projects/ProjectPicker.js';
 import { cycleName } from '../cycles/format.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
@@ -298,6 +299,18 @@ export function IssuePage({ identifier }: { identifier: string }) {
               />
             </Property>
           )}
+          {(team.projects.length > 0 || issue.projectId) && (
+            <Property label={t('projects.project')}>
+              <ProjectPicker
+                team={team}
+                projectId={issue.projectId}
+                milestoneId={issue.milestoneId}
+                editable={canEdit}
+                className={quietSelectClass}
+                onChange={(patch) => void save(patch)}
+              />
+            </Property>
+          )}
           <Property label={t('issues.dueDate')}>
             <DueDatePicker
               value={issue.dueDate}
@@ -368,6 +381,21 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
         return change.to
           ? t('issues.event.cycle', { to: cycleLabel(t, team, change.to) })
           : t('issues.event.cycleRemoved');
+      case 'projectId':
+        return change.to
+          ? t('issues.event.project', {
+              to:
+                team.projects.find((p) => p.id === change.to)?.name ?? t('projects.closedProject'),
+            })
+          : t('issues.event.projectRemoved');
+      case 'milestoneId':
+        return change.to
+          ? t('issues.event.milestone', {
+              to:
+                team.projects.flatMap((p) => p.milestones).find((m) => m.id === change.to)?.name ??
+                '—',
+            })
+          : '';
       case 'parentId':
         return change.to ? t('issues.event.parent') : t('issues.event.parentRemoved');
     }

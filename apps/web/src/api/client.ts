@@ -38,6 +38,10 @@ import type {
   CreateIssueInput,
   CreateLabelInput,
   CycleDetail,
+  ProjectDetail,
+  ProjectHealth,
+  ProjectInput,
+  ProjectSummary,
   CycleSettings,
   CycleView,
   TeamCycles,
@@ -188,6 +192,24 @@ export const api = {
   team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
+  readableTeams: () =>
+    apiRequest<Array<{ id: string; key: string; name: string; department: string }>>('/api/teams'),
+  projects: (teamKey?: string) =>
+    apiRequest<ProjectSummary[]>(
+      teamKey ? `/api/teams/${encodeURIComponent(teamKey)}/projects` : '/api/projects',
+    ),
+  project: (id: string) => apiRequest<ProjectDetail>(`/api/projects/${id}`),
+  createProject: (body: ProjectInput) =>
+    apiRequest<ProjectDetail>('/api/projects', { method: 'POST', body }),
+  updateProject: (id: string, body: Partial<ProjectInput>) =>
+    apiRequest<ProjectDetail>(`/api/projects/${id}`, { method: 'PATCH', body }),
+  archiveProject: (id: string) => apiRequest<void>(`/api/projects/${id}`, { method: 'DELETE' }),
+  postProjectUpdate: (id: string, body: { health: ProjectHealth; body: string }) =>
+    apiRequest<ProjectDetail>(`/api/projects/${id}/updates`, { method: 'POST', body }),
+  addMilestone: (id: string, body: { name: string; targetDate: string | null }) =>
+    apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
+  removeMilestone: (id: string) =>
+    apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
   teamCycles: (key: string) =>
     apiRequest<TeamCycles>(`/api/teams/${encodeURIComponent(key)}/cycles`),
   updateCycleSettings: (key: string, body: CycleSettings) =>

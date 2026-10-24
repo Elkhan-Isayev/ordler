@@ -213,6 +213,22 @@ export function FilterBar({
           ))}
         </select>
       )}
+      {team.projects.length > 0 && (
+        <select
+          aria-label={t('projects.project')}
+          value={filters.project ?? ''}
+          className={selectClass}
+          onChange={(event) => set('project', event.target.value)}
+        >
+          <option value="">{t('projects.anyProject')}</option>
+          <option value="none">{t('projects.noProject')}</option>
+          {team.projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      )}
       {activeFilterCount(filters) > 0 && (
         <button type="button" className={ghostButtonClass} onClick={() => onChange({})}>
           {t('issues.filters.clear')}

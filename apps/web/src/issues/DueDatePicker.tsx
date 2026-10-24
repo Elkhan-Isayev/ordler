@@ -9,10 +9,13 @@ import { useTranslation } from 'react-i18next';
 export function DueDatePicker({
   value,
   editable = true,
+  placeholder,
   onChange,
 }: {
   value: string | null;
   editable?: boolean;
+  /** Text while empty; "Due date" by default. */
+  placeholder?: string;
   onChange: (value: string | null) => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -20,7 +23,7 @@ export function DueDatePicker({
     ? new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(
         new Date(`${value}T00:00:00`),
       )
-    : t('issues.dueDatePick');
+    : (placeholder ?? t('issues.dueDatePick'));
   return (
     <span className="inline-flex items-center gap-1">
       <span
@@ -34,7 +37,7 @@ export function DueDatePicker({
           <input
             type="date"
             value={value ?? ''}
-            aria-label={t('issues.dueDate')}
+            aria-label={placeholder ?? t('issues.dueDate')}
             onChange={(event) => onChange(event.target.value || null)}
             className="absolute inset-0 cursor-pointer opacity-0"
           />

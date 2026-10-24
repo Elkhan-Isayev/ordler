@@ -52,6 +52,7 @@ export const TEAM: TeamView = {
       state: 'upcoming',
     },
   ],
+  projects: [{ id: 'p-1', name: 'Office move', milestones: [{ id: 'ms-1', name: 'Pack' }] }],
   labels: [
     { id: 'l-bug', name: 'Bug', color: '#e5484d', scope: 'team' },
     { id: 'l-sec', name: 'Security', color: '#3e63dd', scope: 'organization' },
@@ -81,6 +82,8 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     parentId: null,
     subOrder: 0,
     cycleId: null,
+    projectId: null,
+    milestoneId: null,
     createdAt: '2026-10-18T09:00:00.000Z',
     updatedAt: '2026-10-18T09:00:00.000Z',
     ...overrides,

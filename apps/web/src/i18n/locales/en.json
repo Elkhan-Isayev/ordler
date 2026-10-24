@@ -119,7 +119,8 @@
     "status_in_use": "Issues still use this status. Move them first.",
     "status_required": "This status is required: it is the default or the last one of its category.",
     "single_assignee": "This team allows one assignee per issue. An admin or team lead can allow several in team settings.",
-    "cycle_not_in_team": "This cycle has ended or belongs to another team."
+    "cycle_not_in_team": "This cycle has ended or belongs to another team.",
+    "project_not_in_team": "This project or milestone does not include this team."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -481,7 +482,10 @@
       "duplicate": "marked as duplicate",
       "assignees": "assignees → {to}",
       "cycle": "cycle → {to}",
-      "cycleRemoved": "removed from the cycle"
+      "cycleRemoved": "removed from the cycle",
+      "project": "project → {to}",
+      "projectRemoved": "removed from the project",
+      "milestone": "milestone → {to}"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -812,5 +816,52 @@
     "upcomingCount": "Upcoming cycles planned ahead",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
     "rolloverHint": "When a cycle ends, its unfinished issues move to the next cycle automatically."
+  },
+  "projects": {
+    "project": "Project",
+    "noProject": "No project",
+    "anyProject": "Any project",
+    "closedProject": "Closed project",
+    "milestone": "Milestone",
+    "noMilestone": "No milestone",
+    "new": "New project",
+    "create": "Create project",
+    "empty": "No projects yet. Create one to plan work across teams.",
+    "name": "Project name",
+    "teams": "Teams",
+    "lead": "Lead",
+    "noLead": "No lead",
+    "statusLabel": "Status",
+    "startDate": "Start",
+    "targetDate": "Target date",
+    "progress": "Progress",
+    "progressTitle": "{completed} of {total} issues done",
+    "description": "Description",
+    "descriptionPlaceholder": "What is this project about?",
+    "status": {
+      "planned": "Planned",
+      "in_progress": "In progress",
+      "paused": "Paused",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "health": {
+      "on_track": "On track",
+      "at_risk": "At risk",
+      "off_track": "Off track"
+    },
+    "healthLabel": "Health",
+    "noUpdates": "No updates yet",
+    "milestones": "Milestones",
+    "noMilestones": "No milestones yet.",
+    "addMilestone": "Add a milestone, press Enter",
+    "removeMilestone": "Remove {name}",
+    "updates": "Status updates",
+    "updateBody": "Status update",
+    "updatePlaceholder": "How is the project going?",
+    "postUpdate": "Post update",
+    "issues": "Issues",
+    "archive": "Archive",
+    "confirmArchive": "Archive {name}? Its issues stay, they just leave the project."
   }
 }

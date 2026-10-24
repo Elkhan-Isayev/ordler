@@ -26,6 +26,7 @@ import { RolesService } from './members/roles.service.js';
 import { LabelService } from './issues/label.service.js';
 import { WorkflowService } from './issues/workflow.service.js';
 import { CycleService } from './cycles/cycle.service.js';
+import { ProjectService } from './projects/project.service.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -73,6 +74,7 @@ export interface AppContext {
   labels: LabelService;
   workflow: WorkflowService;
   cycles: CycleService;
+  projects: ProjectService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -218,6 +220,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     labels: new LabelService(deps.db, access, teamAccess),
     workflow: new WorkflowService(deps.db, teamAccess, events),
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
+    projects: new ProjectService({ db: deps.db, access, teamAccess, issues, now }),
     audit: new AuditService(deps.db),
     version: deps.version,
     attachments: new AttachmentService(

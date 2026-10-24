@@ -42,6 +42,8 @@ export const createIssueSchema = z.object({
   /** Parent issue in the same team; makes this a sub-issue. */
   parentId: z.uuid().nullable().default(null),
   cycleId: z.uuid().nullable().default(null),
+  projectId: z.uuid().nullable().default(null),
+  milestoneId: z.uuid().nullable().default(null),
 });
 /** What clients send; defaults fill the rest. */
 export type CreateIssueInput = z.input<typeof createIssueSchema>;
@@ -63,6 +65,8 @@ export const updateIssueSchema = z
     labelIds: labelIdsSchema,
     parentId: z.uuid().nullable(),
     cycleId: z.uuid().nullable(),
+    projectId: z.uuid().nullable(),
+    milestoneId: z.uuid().nullable(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
@@ -93,6 +97,7 @@ export const ISSUE_ERROR_CODES = [
   'status_required',
   'single_assignee',
   'cycle_not_in_team',
+  'project_not_in_team',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -147,6 +152,8 @@ export interface TeamView {
   settings: { multipleAssignees: boolean };
   /** Current and upcoming cycles, for pickers; empty when cycles are off. */
   cycles: CycleRef[];
+  /** Active projects that include this team, with their milestones, for pickers. */
+  projects: Array<{ id: string; name: string; milestones: Array<{ id: string; name: string }> }>;
   /** What the viewer may do; the server checks every request again. */
   can: { create: boolean; update: boolean; assign: boolean; comment: boolean; delete: boolean };
 }
@@ -172,6 +179,8 @@ export interface IssueSummary {
   parentId: string | null;
   subOrder: number;
   cycleId: string | null;
+  projectId: string | null;
+  milestoneId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -187,6 +196,8 @@ export type IssueField =
   | 'labelIds'
   | 'parentId'
   | 'cycleId'
+  | 'projectId'
+  | 'milestoneId'
   | 'duplicateOf'
   | 'triage';
 

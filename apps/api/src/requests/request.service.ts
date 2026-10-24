@@ -561,6 +561,8 @@ export class RequestService {
       labelIds: [],
       parentId: null,
       cycleId: null,
+      projectId: null,
+      milestoneId: null,
     });
     await this.db.update(issues).set({ sourceRequestId: row.id }).where(eq(issues.id, created.id));
     await this.event(row.id, actor.memberId, 'issue_spawned', { identifier: created.identifier });

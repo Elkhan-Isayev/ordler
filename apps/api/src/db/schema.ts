@@ -374,6 +374,8 @@ export const issues = pgTable(
     /** Parent issue in the same team (SPEC §5.1 sub-issues); any depth. */
     parentId: uuid('parent_id'),
     cycleId: uuid('cycle_id'),
+    projectId: uuid('project_id'),
+    milestoneId: uuid('milestone_id'),
     /** Position among the parent's sub-issues; ties fall back to creation order. */
     subOrder: doublePrecision('sub_order').notNull().default(0),
     /** Closed in triage as a duplicate of this issue (SPEC §5.1 relations). */
@@ -389,6 +391,7 @@ export const issues = pgTable(
     index('issues_assignee_idx').on(t.assigneeId),
     index('issues_parent_idx').on(t.parentId),
     index('issues_cycle_idx').on(t.cycleId),
+    index('issues_project_idx').on(t.projectId),
   ],
 );
 
@@ -771,4 +774,83 @@ export const cycles = pgTable(
     uniqueIndex('cycles_team_number_uq').on(t.teamId, t.number),
     index('cycles_team_dates_idx').on(t.teamId, t.startsOn),
   ],
+);
+
+/** Projects (SPEC §5.2): work across one or more teams toward a target date. */
+export const projects = pgTable('projects', {
+  id: id(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  status: text('status', {
+    enum: ['planned', 'in_progress', 'paused', 'completed', 'canceled'],
+  })
+    .notNull()
+    .default('planned'),
+  leadId: uuid('lead_id').references(() => members.id),
+  startDate: date('start_date'),
+  targetDate: date('target_date'),
+  createdBy: uuid('created_by').references(() => members.id),
+  createdAt: createdAt(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
+});
+
+export const projectTeams = pgTable(
+  'project_teams',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.teamId] }),
+    index('project_teams_team_idx').on(t.teamId),
+  ],
+);
+
+export const projectMembers = pgTable(
+  'project_members',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.memberId] })],
+);
+
+export const projectMilestones = pgTable(
+  'project_milestones',
+  {
+    id: id(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id),
+    name: text('name').notNull(),
+    targetDate: date('target_date'),
+    position: doublePrecision('position').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index('project_milestones_project_idx').on(t.projectId)],
+);
+
+/** Status updates with health, newest first on the project page; never edited. */
+export const projectUpdates = pgTable(
+  'project_updates',
+  {
+    id: id(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id),
+    authorId: uuid('author_id').references(() => members.id),
+    health: text('health', { enum: ['on_track', 'at_risk', 'off_track'] }).notNull(),
+    body: text('body').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('project_updates_project_idx').on(t.projectId, t.createdAt)],
 );

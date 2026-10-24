@@ -9,9 +9,10 @@ export interface IssueFilters {
   label?: string;
   /** Cycle id, or `none` for issues outside any cycle. */
   cycle?: string;
+  project?: string;
 }
 
-const KEYS = ['status', 'assignee', 'priority', 'label', 'cycle'] as const;
+const KEYS = ['status', 'assignee', 'priority', 'label', 'cycle', 'project'] as const;
 
 export function parseFilters(search: string): IssueFilters {
   const params = new URLSearchParams(search);
@@ -47,7 +48,9 @@ export function applyFilters(issues: IssueSummary[], filters: IssueFilters): Iss
       (!filters.priority || issue.priority === filters.priority) &&
       (!filters.label || issue.labels.some((label) => label.id === filters.label)) &&
       (!filters.cycle ||
-        (filters.cycle === 'none' ? !issue.cycleId : issue.cycleId === filters.cycle)),
+        (filters.cycle === 'none' ? !issue.cycleId : issue.cycleId === filters.cycle)) &&
+      (!filters.project ||
+        (filters.project === 'none' ? !issue.projectId : issue.projectId === filters.project)),
   );
 }
 

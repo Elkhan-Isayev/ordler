@@ -12,6 +12,7 @@ import { AdminDatabaseController } from './install/admin-database.controller.js'
 import { IssuesController } from './issues/issues.controller.js';
 import { AdminRolesController } from './admin/admin-roles.controller.js';
 import { CyclesController } from './cycles/cycles.controller.js';
+import { ProjectsController } from './projects/projects.controller.js';
 import { McpServer } from './mcp/mcp.server.js';
 import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
@@ -48,6 +49,7 @@ export class AppModule {
         NotificationsController,
         TokensController,
         CyclesController,
+        ProjectsController,
         AdminRolesController,
       ],
       providers: [

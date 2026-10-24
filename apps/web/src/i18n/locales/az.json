@@ -119,7 +119,8 @@
     "status_in_use": "Bu status hələ tapşırıqlarda istifadə olunur. Əvvəlcə onları köçürün.",
     "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur.",
     "single_assignee": "Bu komandada tapşırığın bir icraçısı olur. Admin və ya komanda rəhbəri komanda parametrlərində bir neçəsinə icazə verə bilər.",
-    "cycle_not_in_team": "Bu dövr bitib və ya başqa komandaya aiddir."
+    "cycle_not_in_team": "Bu dövr bitib və ya başqa komandaya aiddir.",
+    "project_not_in_team": "Bu layihə və ya mərhələ bu komandanı əhatə etmir."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -481,7 +482,10 @@
       "duplicate": "dublikat kimi qeyd edildi",
       "assignees": "icraçılar → {to}",
       "cycle": "dövr → {to}",
-      "cycleRemoved": "dövrdən çıxarıldı"
+      "cycleRemoved": "dövrdən çıxarıldı",
+      "project": "layihə → {to}",
+      "projectRemoved": "layihədən çıxarıldı",
+      "milestone": "mərhələ → {to}"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -812,5 +816,52 @@
     "upcomingCount": "Əvvəlcədən planlaşdırılan dövrlər",
     "weeks": "{count, plural, one {# həftə} other {# həftə}}",
     "rolloverHint": "Dövr bitəndə tamamlanmamış tapşırıqlar avtomatik növbəti dövrə keçir."
+  },
+  "projects": {
+    "project": "Layihə",
+    "noProject": "Layihəsiz",
+    "anyProject": "İstənilən layihə",
+    "closedProject": "Bağlı layihə",
+    "milestone": "Mərhələ",
+    "noMilestone": "Mərhələsiz",
+    "new": "Yeni layihə",
+    "create": "Layihə yarat",
+    "empty": "Hələ layihə yoxdur. Komandalar arası işi planlaşdırmaq üçün yaradın.",
+    "name": "Layihənin adı",
+    "teams": "Komandalar",
+    "lead": "Rəhbər",
+    "noLead": "Rəhbərsiz",
+    "statusLabel": "Status",
+    "startDate": "Başlanğıc",
+    "targetDate": "Hədəf tarix",
+    "progress": "İrəliləyiş",
+    "progressTitle": "{total} tapşırıqdan {completed} hazırdır",
+    "description": "Təsvir",
+    "descriptionPlaceholder": "Bu layihə nə haqqındadır?",
+    "status": {
+      "planned": "Planlaşdırılıb",
+      "in_progress": "İcrada",
+      "paused": "Fasilədə",
+      "completed": "Tamamlanıb",
+      "canceled": "Ləğv edilib"
+    },
+    "health": {
+      "on_track": "Plan üzrə",
+      "at_risk": "Risk altında",
+      "off_track": "Gecikir"
+    },
+    "healthLabel": "Vəziyyət",
+    "noUpdates": "Hələ yeniləmə yoxdur",
+    "milestones": "Mərhələlər",
+    "noMilestones": "Hələ mərhələ yoxdur.",
+    "addMilestone": "Mərhələ əlavə edin, Enter basın",
+    "removeMilestone": "{name} sil",
+    "updates": "Status yeniləmələri",
+    "updateBody": "Status yeniləməsi",
+    "updatePlaceholder": "Layihə necə gedir?",
+    "postUpdate": "Dərc et",
+    "issues": "Tapşırıqlar",
+    "archive": "Arxivlə",
+    "confirmArchive": "{name} arxivlənsin? Tapşırıqlar qalır, sadəcə layihədən çıxır."
   }
 }

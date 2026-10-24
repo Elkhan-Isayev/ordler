@@ -25,6 +25,9 @@ import {
   comments,
   cycles,
   departments,
+  projectMilestones,
+  projects,
+  projectTeams,
   issueAssignees,
   issueEvents,
   issueLabels,
@@ -59,7 +62,17 @@ export function likeEscape(text: string): string {
 // Assignees and labels are lists and are compared separately.
 const TRACKED: Array<
   Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds'>
-> = ['title', 'description', 'statusId', 'priority', 'dueDate', 'parentId', 'cycleId'];
+> = [
+  'title',
+  'description',
+  'statusId',
+  'priority',
+  'dueDate',
+  'parentId',
+  'cycleId',
+  'projectId',
+  'milestoneId',
+];
 
 /** Slack channels of a team (SPEC §7.1); optional so tests can leave it out. */
 export interface TeamChannels {
@@ -109,6 +122,7 @@ export class IssueService {
       labels: await this.teamLabels(team.id),
       settings: { multipleAssignees: team.multipleAssignees },
       cycles: await this.openCycles(team.id),
+      projects: await this.teamProjects(team.id),
       can: {
         create: can.create,
         update: can.update,
@@ -187,6 +201,25 @@ export class IssueService {
       after: { identifier: identifier.toUpperCase(), ...(via === undefined ? {} : { via }) },
     });
     await this.deps.events.publish({ type: 'issue.removed', teamId: team.id, issueId });
+  }
+
+  /** Teams the member can read, for pickers such as a project's teams. */
+  async readableTeams(
+    memberId: string,
+  ): Promise<Array<{ id: string; key: string; name: string; department: string }>> {
+    const rows = await this.db
+      .select({ team: teams, department: departments.name })
+      .from(teams)
+      .innerJoin(departments, eq(departments.id, teams.departmentId))
+      .where(isNull(teams.archivedAt))
+      .orderBy(asc(departments.name), asc(teams.name));
+    const result = [];
+    for (const { team, department } of rows) {
+      if ((await this.deps.access.forTeam(memberId, team)).read) {
+        result.push({ id: team.id, key: team.key, name: team.name, department });
+      }
+    }
+    return result;
   }
 
   /** Issues from outside the team waiting for a decision (SPEC §5.2). */
@@ -308,6 +341,7 @@ export class IssueService {
     await this.assertLabels(team.id, input.labelIds);
     if (input.parentId) await this.assertParent(team.id, input.parentId);
     if (input.cycleId) await this.assertCycle(team.id, input.cycleId);
+    const placement = await this.projectPlacement(team.id, input.projectId, input.milestoneId);
 
     // New sub-issues go last under their parent; read before the transaction holds the connection.
     const subOrder = input.parentId ? await this.nextSubOrder(input.parentId) : 0;
@@ -341,6 +375,8 @@ export class IssueService {
           inTriage,
           parentId: input.parentId,
           cycleId: input.cycleId,
+          projectId: placement.projectId,
+          milestoneId: placement.milestoneId,
           subOrder,
           createdBy: memberId,
           createdAt: now,
@@ -411,6 +447,24 @@ export class IssueService {
     }
     if (input.labelIds) await this.assertLabels(team.id, input.labelIds);
     if (input.cycleId) await this.assertCycle(team.id, input.cycleId);
+    // Project and milestone move together: a milestone implies its project, a new project
+    // drops a milestone that belongs to another one.
+    if (input.projectId !== undefined || input.milestoneId !== undefined) {
+      const [current] = await this.db
+        .select({ projectId: issues.projectId, milestoneId: issues.milestoneId })
+        .from(issues)
+        .where(eq(issues.id, issueId));
+      const placement = await this.projectPlacement(
+        team.id,
+        input.projectId !== undefined ? input.projectId : current!.projectId,
+        input.milestoneId !== undefined
+          ? input.milestoneId
+          : input.projectId !== undefined && input.projectId !== current!.projectId
+            ? null
+            : current!.milestoneId,
+      );
+      input = { ...input, projectId: placement.projectId, milestoneId: placement.milestoneId };
+    }
     if (input.parentId) await this.assertParent(team.id, input.parentId, issueId);
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
@@ -649,6 +703,8 @@ export class IssueService {
       parentId: issue.parentId,
       subOrder: issue.subOrder,
       cycleId: issue.cycleId,
+      projectId: issue.projectId,
+      milestoneId: issue.milestoneId,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
@@ -763,6 +819,69 @@ export class IssueService {
       });
     }
     return recipients;
+  }
+
+  /** Active projects of the team with their milestones, for pickers. */
+  private async teamProjects(teamId: string): Promise<TeamView['projects']> {
+    const rows = await this.db
+      .select({ id: projects.id, name: projects.name })
+      .from(projectTeams)
+      .innerJoin(projects, eq(projects.id, projectTeams.projectId))
+      .where(
+        and(
+          eq(projectTeams.teamId, teamId),
+          isNull(projects.archivedAt),
+          sql`${projects.status} not in ('completed', 'canceled')`,
+        ),
+      )
+      .orderBy(asc(projects.name));
+    if (rows.length === 0) return [];
+    const milestones = await this.db
+      .select({
+        id: projectMilestones.id,
+        name: projectMilestones.name,
+        projectId: projectMilestones.projectId,
+      })
+      .from(projectMilestones)
+      .where(
+        inArray(
+          projectMilestones.projectId,
+          rows.map((r) => r.id),
+        ),
+      )
+      .orderBy(asc(projectMilestones.position));
+    return rows.map((r) => ({
+      ...r,
+      milestones: milestones
+        .filter((m) => m.projectId === r.id)
+        .map(({ id, name }) => ({ id, name })),
+    }));
+  }
+
+  /**
+   * Checks a project/milestone pair for a team's issue: the project must include the team and
+   * be live; a milestone must belong to it (and alone implies its project).
+   */
+  private async projectPlacement(
+    teamId: string,
+    projectId: string | null | undefined,
+    milestoneId: string | null | undefined,
+  ): Promise<{ projectId: string | null; milestoneId: string | null }> {
+    let project = projectId ?? null;
+    const milestone = milestoneId ?? null;
+    if (milestone) {
+      const [row] = await this.db
+        .select({ projectId: projectMilestones.projectId })
+        .from(projectMilestones)
+        .where(eq(projectMilestones.id, milestone));
+      if (!row || (project && row.projectId !== project))
+        throw new DomainError('project_not_in_team');
+      project = row.projectId;
+    }
+    if (project && !(await this.teamProjects(teamId)).some((p) => p.id === project)) {
+      throw new DomainError('project_not_in_team');
+    }
+    return { projectId: project, milestoneId: milestone };
   }
 
   /** Current and upcoming cycles, so pickers never offer a finished one. */

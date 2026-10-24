@@ -158,6 +158,13 @@ function cycleIdOf(team: TeamView, value: string): string {
   return cycle.id;
 }
 
+function projectIdOf(team: TeamView, name: string): string {
+  const wanted = name.trim().toLowerCase();
+  const project = team.projects.find((p) => p.name.toLowerCase() === wanted);
+  if (!project) throw new DomainError('project_not_in_team');
+  return project.id;
+}
+
 function teamKeyOf(identifier: string): string {
   return identifier.split('-')[0]!.toUpperCase();
 }
@@ -305,6 +312,7 @@ const tools: ToolDefinition[] = [
         .max(20)
         .optional()
         .describe('"current", "next", or a cycle number of the team'),
+      project: z.string().max(120).optional().describe('Project name that includes the team'),
     }),
     async run(
       ctx,
@@ -320,6 +328,7 @@ const tools: ToolDefinition[] = [
         labels?: string[];
         parent?: string;
         cycle?: string;
+        project?: string;
       },
     ) {
       const key = args.team.toUpperCase();
@@ -339,6 +348,8 @@ const tools: ToolDefinition[] = [
           labelIds: labelIds(team, args.labels ?? []),
           parentId: args.parent ? (await ctx.issues.get(caller.memberId, args.parent)).id : null,
           cycleId: args.cycle ? cycleIdOf(team, args.cycle) : null,
+          projectId: args.project ? projectIdOf(team, args.project) : null,
+          milestoneId: null,
           ...(args.status ? { statusId: statusId(team, args.status) } : {}),
         },
         caller.tokenName,
