@@ -28,6 +28,8 @@ import { WorkflowService } from './issues/workflow.service.js';
 import { CycleService } from './cycles/cycle.service.js';
 import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
+import { ImportService } from './imports/import.service.js';
+import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -77,6 +79,7 @@ export interface AppContext {
   cycles: CycleService;
   projects: ProjectService;
   initiatives: InitiativeService;
+  imports: ImportService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -121,6 +124,8 @@ export interface AppContextDeps {
   version?: string | undefined;
   updateCheck?: { enabled: boolean; repository: string };
   updatesFetch?: UpdateFetchFn;
+  /** Linear and Jira clients for imports; replaced in tests. */
+  importSources?: SourceFactory;
 }
 
 export function createAppContext(deps: AppContextDeps): AppContext {
@@ -162,6 +167,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     now,
   });
   const projects = new ProjectService({ db: deps.db, access, teamAccess, issues, now });
+  const org = new OrgService(deps.db);
+  const attachmentMaxBytes = deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024;
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
   const sessions = new SessionService(deps.db, sessionTtlMs, now);
 
@@ -194,7 +201,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       now,
       ...(deps.updatesFetch ? { fetch: deps.updatesFetch } : {}),
     }),
-    org: new OrgService(deps.db),
+    org,
     members: new AdminMembersService({
       db: deps.db,
       baseUrl: deps.baseUrl,
@@ -225,13 +232,18 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
+    imports: new ImportService({
+      db: deps.db,
+      box,
+      org,
+      events,
+      sources: deps.importSources ?? sourceFactory(),
+      maxAttachmentBytes: attachmentMaxBytes,
+      now,
+    }),
     audit: new AuditService(deps.db),
     version: deps.version,
-    attachments: new AttachmentService(
-      deps.db,
-      teamAccess,
-      deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024,
-    ),
+    attachments: new AttachmentService(deps.db, teamAccess, attachmentMaxBytes),
     events,
     realtime: new RealtimeHub({
       baseUrl: deps.baseUrl,

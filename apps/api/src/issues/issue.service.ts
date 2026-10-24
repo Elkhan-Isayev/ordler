@@ -61,7 +61,10 @@ export function likeEscape(text: string): string {
 // Triage is recorded by its own action, not by field updates.
 // Assignees and labels are lists and are compared separately.
 const TRACKED: Array<
-  Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds'>
+  Exclude<
+    IssueField,
+    'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds' | 'imported'
+  >
 > = [
   'title',
   'description',
@@ -154,7 +157,8 @@ export class IssueService {
     const pattern = `%${likeEscape(query)}%`;
     const parsed = parseIssueIdentifier(query.toUpperCase());
     const byIdentifier = parsed
-      ? sql`(${teams.key} = ${parsed.teamKey} and ${issues.number} = ${parsed.number})`
+      ? sql`((${teams.key} = ${parsed.teamKey} and ${issues.number} = ${parsed.number})
+          or ${issues.externalKey} = ${query.toUpperCase()})`
       : sql`false`;
     const matches = await this.db
       .select({ id: issues.id })
@@ -623,19 +627,32 @@ export class IssueService {
   private async readableIssue(memberId: string, identifier: string) {
     const parsed = parseIssueIdentifier(identifier.toUpperCase());
     if (!parsed) throw new DomainError('not_found');
-    const { team, can } = await this.readableTeam(memberId, parsed.teamKey);
     const [row] = await this.db
       .select({ id: issues.id })
       .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
       .where(
         and(
-          eq(issues.teamId, team.id),
+          eq(teams.key, parsed.teamKey),
           eq(issues.number, parsed.number),
           isNull(issues.archivedAt),
         ),
       );
-    if (!row) throw new DomainError('not_found');
-    return { issueId: row.id, team, can };
+    if (row) {
+      const { team, can } = await this.readableTeam(memberId, parsed.teamKey);
+      return { issueId: row.id, team, can };
+    }
+    // Imported issues answer to their old key too (SPEC §10.2); Ordler's own keys win.
+    const [alias] = await this.db
+      .select({ id: issues.id, teamKey: teams.key })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(and(eq(issues.externalKey, identifier.toUpperCase()), isNull(issues.archivedAt)))
+      .orderBy(asc(issues.createdAt))
+      .limit(1);
+    if (!alias) throw new DomainError('not_found');
+    const { team, can } = await this.readableTeam(memberId, alias.teamKey);
+    return { issueId: alias.id, team, can };
   }
 
   private async isTeamMember(teamId: string, memberId: string): Promise<boolean> {

@@ -18,6 +18,7 @@ describe('adminSections', () => {
       'members',
       'authentication',
       'tokens',
+      'import',
       'database',
       'updates',
     ]);

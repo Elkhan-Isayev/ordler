@@ -54,6 +54,43 @@ export function safeFilename(name: string): string {
 
 const MIME = /^[a-z]+\/[a-z0-9.+-]+$/;
 
+/** Writes a file without permission checks; callers decide who may (uploads, the importer). */
+export async function storeAttachment(
+  db: Db,
+  input: { teamId: string; uploadedBy: string | null; file: UploadedFile },
+): Promise<AttachmentView> {
+  const { file } = input;
+  const image = sniffImage(file.data);
+  const mimetype = file.mimetype.toLowerCase();
+  const contentType = image ?? (MIME.test(mimetype) ? mimetype : 'application/octet-stream');
+  const filename = safeFilename(file.filename);
+  const sha256 = createHash('sha256').update(file.data).digest('hex');
+
+  const id = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(attachments)
+      .values({
+        teamId: input.teamId,
+        uploadedBy: input.uploadedBy,
+        filename,
+        contentType,
+        size: file.data.length,
+        sha256,
+      })
+      .returning({ id: attachments.id });
+    await tx.insert(attachmentContents).values({ attachmentId: row!.id, data: file.data });
+    return row!.id;
+  });
+  return {
+    id,
+    url: attachmentUrl(id, filename),
+    filename,
+    contentType,
+    size: file.data.length,
+    isImage: Boolean(image),
+  };
+}
+
 /**
  * Attachments stored in PostgreSQL (ADR 0008). Uploading needs write access to the team's
  * issues; downloading needs read access, the same rule as the issue that shows them.
@@ -74,35 +111,7 @@ export class AttachmentService {
     if (file.data.length === 0) throw new DomainError('file_missing');
     if (file.data.length > this.maxBytes) throw new DomainError('file_too_large');
 
-    const image = sniffImage(file.data);
-    const mimetype = file.mimetype.toLowerCase();
-    const contentType = image ?? (MIME.test(mimetype) ? mimetype : 'application/octet-stream');
-    const filename = safeFilename(file.filename);
-    const sha256 = createHash('sha256').update(file.data).digest('hex');
-
-    const id = await this.db.transaction(async (tx) => {
-      const [row] = await tx
-        .insert(attachments)
-        .values({
-          teamId: team.id,
-          uploadedBy: memberId,
-          filename,
-          contentType,
-          size: file.data.length,
-          sha256,
-        })
-        .returning({ id: attachments.id });
-      await tx.insert(attachmentContents).values({ attachmentId: row!.id, data: file.data });
-      return row!.id;
-    });
-    return {
-      id,
-      url: attachmentUrl(id, filename),
-      filename,
-      contentType,
-      size: file.data.length,
-      isImage: Boolean(image),
-    };
+    return storeAttachment(this.db, { teamId: team.id, uploadedBy: memberId, file });
   }
 
   async read(memberId: string, id: string): Promise<StoredAttachment> {

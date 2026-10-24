@@ -120,7 +120,10 @@
     "status_required": "Этот статус обязателен: он по умолчанию или последний в своей категории.",
     "single_assignee": "В этой команде у задачи один исполнитель. Админ или тимлид может разрешить нескольких в настройках команды.",
     "cycle_not_in_team": "Этот цикл уже закончился или принадлежит другой команде.",
-    "project_not_in_team": "Этот проект или веха не включает эту команду."
+    "project_not_in_team": "Этот проект или веха не включает эту команду.",
+    "import_auth_failed": "Источник отклонил токен. Проверьте его и его права.",
+    "import_source_failed": "Источник недоступен или ответил ошибкой. Попробуйте позже.",
+    "import_not_ready": "В текущем состоянии импорт не может этого сделать."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -149,7 +152,8 @@
       "integrations": "Интеграции",
       "tokens": "Токены и MCP",
       "roles": "Роли",
-      "audit": "Журнал аудита"
+      "audit": "Журнал аудита",
+      "import": "Импорт"
     },
     "departments": {
       "title": "Департаменты и команды",
@@ -485,7 +489,9 @@
       "cycleRemoved": "убрана из цикла",
       "project": "проект → {to}",
       "projectRemoved": "убрана из проекта",
-      "milestone": "веха → {to}"
+      "milestone": "веха → {to}",
+      "imported": "{actor} импортировал(а) задачу из {source} ({key})",
+      "reimported": "{actor} обновил(а) задачу из {source} ({key})"
     },
     "viaToken": "{actor} через токен «{token}»",
     "filters": {
@@ -882,5 +888,80 @@
     "addProject": "Добавить проект…",
     "removeProject": "Убрать {name}",
     "confirmArchive": "Отправить {name} в архив? Проекты останутся как есть."
+  },
+  "imports": {
+    "subtitle": "Перенесите задачи, комментарии и файлы из Linear или Jira по API-токену. Во время импорта никто не получает уведомлений, а повторный запуск не создаёт дубликатов.",
+    "history": "Прошлые импорты",
+    "source": {
+      "linear": "Linear",
+      "jira": "Jira"
+    },
+    "countsShort": "импортировано {imported} · ошибок {failed}",
+    "status": {
+      "draft": "Черновик",
+      "running": "Выполняется",
+      "paused": "На паузе",
+      "completed": "Завершён",
+      "failed": "Ошибка",
+      "canceled": "Отменён"
+    },
+    "connect": "Подключите источник",
+    "baseUrl": "Адрес сайта Jira",
+    "email": "Email аккаунта (Jira Cloud)",
+    "emailHint": "Оставьте пустым для Jira Server или Data Center с персональным токеном доступа.",
+    "tokenLabel": {
+      "linear": "API-ключ Linear",
+      "jira": "API-токен Jira"
+    },
+    "tokenHint": {
+      "linear": "Linear → Settings → Security & access → Personal API keys. Хранится зашифрованным и стирается по окончании импорта.",
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Профиль → Personal access tokens. Хранится зашифрованным и стирается по окончании импорта."
+    },
+    "connecting": "Подключение…",
+    "connectButton": "Подключить",
+    "loading": "Загрузка…",
+    "connectedAs": "Подключено к {source} как {name}.",
+    "containers": {
+      "linear": "Команды для импорта",
+      "jira": "Проекты для импорта"
+    },
+    "target": "Куда",
+    "newTeam": "Новая команда…",
+    "teamName": "Название команды",
+    "teamKey": "Ключ",
+    "department": "Департамент",
+    "statusMap": "Статусы",
+    "statusFor": "Статус Ordler для {name}",
+    "byCategory": "По типу статуса",
+    "people": "Люди",
+    "peopleHint": "Где возможно, сопоставлены по email. Несопоставленные люди останутся именами в комментариях.",
+    "personFor": "Участник Ordler для {name}",
+    "nobody": "Никто",
+    "includeClosed": "Включить завершённые и отменённые задачи",
+    "jql": "Дополнительный фильтр JQL (необязательно)",
+    "dryRun": "Пробный прогон",
+    "start": "Начать импорт",
+    "discard": "Отменить",
+    "dryRunTitle": "Будет перенесено:",
+    "dryRunCounts": "задач: {issues}, комментариев: {comments}, файлов: {attachments}",
+    "unmapped": "Ни с кем не сопоставлены: {names}",
+    "oversize": "{count, plural, one {# файл превышает} few {# файла превышают} many {# файлов превышают} other {# файла превышают}} лимит загрузки и будут пропущены.",
+    "warning": {
+      "estimate": "Оценки пока не импортируются.",
+      "cycle": "Циклы не импортируются.",
+      "links": "Связи задач, кроме подзадач, пока не импортируются.",
+      "truncated": "Посчитаны только первые 1000 задач каждого источника."
+    },
+    "counts": "импортировано {imported}, обновлено {updated}, без изменений {skipped}, ошибок {failed} · комментариев {comments}, файлов {attachments}",
+    "failed": "Импорт завершился ошибкой: {error}",
+    "report": "{count, plural, one {# замечание} few {# замечания} many {# замечаний} other {# замечания}}",
+    "notImported": "Не перенесено: {fields}",
+    "reason": {
+      "deleted_in_ordler": "Удалена в Ordler, не тронута"
+    },
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "cancel": "Остановить импорт",
+    "close": "Закрыть"
   }
 }

@@ -2,6 +2,7 @@ import type {
   AdminErrorCode,
   AttachmentErrorCode,
   AuthErrorCode,
+  ImportErrorCode,
   IssueErrorCode,
   RequestErrorCode,
   TokenErrorCode,
@@ -13,7 +14,8 @@ export type DomainErrorCode =
   | IssueErrorCode
   | AttachmentErrorCode
   | RequestErrorCode
-  | TokenErrorCode;
+  | TokenErrorCode
+  | ImportErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -66,6 +68,10 @@ const STATUS: Record<DomainErrorCode, number> = {
   invalid_transition: 409,
   session_required: 403,
   request_type_archived: 409,
+  // Not 401: that would read as "your Ordler session ended" to the web client.
+  import_auth_failed: 422,
+  import_source_failed: 502,
+  import_not_ready: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

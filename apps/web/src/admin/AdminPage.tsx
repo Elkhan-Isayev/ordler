@@ -5,6 +5,7 @@ import { AuditSection } from './AuditSection.js';
 import { AuthSection } from './AuthSection.js';
 import { DatabaseSection } from './DatabaseSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
+import { ImportSection } from './ImportSection.js';
 import { IntegrationsSection } from './IntegrationsSection.js';
 import { MailSection } from './MailSection.js';
 import { TokensSection } from './TokensSection.js';
@@ -22,6 +23,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'mail', permission: 'mail.manage' },
   { id: 'integrations', permission: 'team.update' },
   { id: 'tokens', permission: 'org.manage' },
+  { id: 'import', permission: 'org.manage' },
   { id: 'database', permission: 'org.manage' },
   { id: 'updates', permission: 'org.manage' },
   { id: 'audit', permission: 'org.audit.read' },
@@ -65,6 +67,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
         {active === 'integrations' && <IntegrationsSection />}
         {active === 'tokens' && <TokensSection />}
+        {active === 'import' && <ImportSection />}
         {active === 'database' && (
           <DatabaseSection canEdit={me.organizationPermissions.includes('instance.manage')} />
         )}

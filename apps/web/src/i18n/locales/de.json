@@ -120,7 +120,10 @@
     "status_required": "Dieser Status ist erforderlich: Er ist der Standard oder der letzte seiner Kategorie.",
     "single_assignee": "Dieses Team erlaubt eine zuständige Person pro Issue. Admins oder Teamleitungen können mehrere in den Teameinstellungen erlauben.",
     "cycle_not_in_team": "Dieser Zyklus ist beendet oder gehört zu einem anderen Team.",
-    "project_not_in_team": "Dieses Projekt oder dieser Meilenstein umfasst dieses Team nicht."
+    "project_not_in_team": "Dieses Projekt oder dieser Meilenstein umfasst dieses Team nicht.",
+    "import_auth_failed": "Die Quelle hat das Token abgelehnt. Prüfen Sie es und seine Berechtigungen.",
+    "import_source_failed": "Die Quelle ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut.",
+    "import_not_ready": "Dieser Import kann das in seinem aktuellen Zustand nicht."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -149,7 +152,8 @@
       "integrations": "Integrationen",
       "tokens": "Zugriffstoken und MCP",
       "roles": "Rollen",
-      "audit": "Audit-Log"
+      "audit": "Audit-Log",
+      "import": "Import"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -485,7 +489,9 @@
       "cycleRemoved": "aus dem Zyklus entfernt",
       "project": "Projekt → {to}",
       "projectRemoved": "aus dem Projekt entfernt",
-      "milestone": "Meilenstein → {to}"
+      "milestone": "Meilenstein → {to}",
+      "imported": "{actor} hat dieses Issue aus {source} importiert ({key})",
+      "reimported": "{actor} hat dieses Issue aus {source} aktualisiert ({key})"
     },
     "viaToken": "{actor} über Token „{token}“",
     "filters": {
@@ -882,5 +888,80 @@
     "addProject": "Projekt hinzufügen…",
     "removeProject": "{name} entfernen",
     "confirmArchive": "{name} archivieren? Die Projekte bleiben unverändert."
+  },
+  "imports": {
+    "subtitle": "Übernehmen Sie Issues, Kommentare und Dateien per API-Token aus Linear oder Jira. Während des Imports wird niemand benachrichtigt, und ein erneuter Lauf erzeugt keine Duplikate.",
+    "history": "Frühere Importe",
+    "source": {
+      "linear": "Linear",
+      "jira": "Jira"
+    },
+    "countsShort": "{imported} importiert · {failed} fehlgeschlagen",
+    "status": {
+      "draft": "Entwurf",
+      "running": "Läuft",
+      "paused": "Pausiert",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "canceled": "Abgebrochen"
+    },
+    "connect": "Quelle verbinden",
+    "baseUrl": "Adresse der Jira-Site",
+    "email": "Konto-E-Mail (Jira Cloud)",
+    "emailHint": "Leer lassen für Jira Server oder Data Center mit persönlichem Zugriffstoken.",
+    "tokenLabel": {
+      "linear": "Linear-API-Schlüssel",
+      "jira": "Jira-API-Token"
+    },
+    "tokenHint": {
+      "linear": "Linear → Settings → Security & access → Personal API keys. Wird verschlüsselt gespeichert und nach dem Import gelöscht.",
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Wird verschlüsselt gespeichert und nach dem Import gelöscht."
+    },
+    "connecting": "Verbinde…",
+    "connectButton": "Verbinden",
+    "loading": "Wird geladen…",
+    "connectedAs": "Mit {source} verbunden als {name}.",
+    "containers": {
+      "linear": "Zu importierende Teams",
+      "jira": "Zu importierende Projekte"
+    },
+    "target": "Nach",
+    "newTeam": "Neues Team…",
+    "teamName": "Teamname",
+    "teamKey": "Schlüssel",
+    "department": "Abteilung",
+    "statusMap": "Status",
+    "statusFor": "Ordler-Status für {name}",
+    "byCategory": "Nach Art zuordnen",
+    "people": "Personen",
+    "peopleHint": "Wo möglich per E-Mail zugeordnet. Nicht zugeordnete Personen bleiben als Namen in Kommentaren.",
+    "personFor": "Ordler-Mitglied für {name}",
+    "nobody": "Niemand",
+    "includeClosed": "Erledigte und abgebrochene Issues einschließen",
+    "jql": "Zusätzlicher JQL-Filter (optional)",
+    "dryRun": "Probelauf",
+    "start": "Import starten",
+    "discard": "Verwerfen",
+    "dryRunTitle": "Dieser Import würde übernehmen:",
+    "dryRunCounts": "{issues} Issues, {comments} Kommentare, {attachments} Dateien",
+    "unmapped": "Niemandem zugeordnet: {names}",
+    "oversize": "{count, plural, one {# Datei überschreitet} other {# Dateien überschreiten}} das Upload-Limit und {count, plural, one {wird} other {werden}} übersprungen.",
+    "warning": {
+      "estimate": "Schätzungen werden noch nicht importiert.",
+      "cycle": "Zyklen werden nicht importiert.",
+      "links": "Verknüpfungen außer Unter-Issues werden noch nicht importiert.",
+      "truncated": "Es wurden nur die ersten 1.000 Issues je Quelle gezählt."
+    },
+    "counts": "{imported} importiert, {updated} aktualisiert, {skipped} unverändert, {failed} fehlgeschlagen · {comments} Kommentare, {attachments} Dateien",
+    "failed": "Import fehlgeschlagen: {error}",
+    "report": "{count, plural, one {# Hinweis} other {# Hinweise}}",
+    "notImported": "Nicht importiert: {fields}",
+    "reason": {
+      "deleted_in_ordler": "In Ordler gelöscht, unverändert gelassen"
+    },
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "cancel": "Import abbrechen",
+    "close": "Schließen"
   }
 }

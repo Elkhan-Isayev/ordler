@@ -150,6 +150,7 @@ async function startApplication(
   if (config.role !== 'web') {
     ctx.updates.start();
     ctx.cycles.start(undefined, (message) => logger.warn(message));
+    ctx.imports.startRunner(undefined, (message) => logger.warn(message));
   }
   logger.log(`Listening on port ${config.port}`);
 }

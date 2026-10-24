@@ -1,4 +1,9 @@
 import type {
+  ImportConfig,
+  ImportConnectInput,
+  ImportDryRun,
+  ImportOptions,
+  ImportRunView,
   AdminDepartment,
   AdminMember,
   AdminRole,
@@ -213,6 +218,20 @@ export const api = {
     apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
   removeMilestone: (id: string) =>
     apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
+  imports: () => apiRequest<ImportRunView[]>('/api/admin/imports'),
+  importRun: (id: string) => apiRequest<ImportRunView>(`/api/admin/imports/${id}`),
+  connectImport: (body: ImportConnectInput) =>
+    apiRequest<ImportRunView>('/api/admin/imports', { method: 'POST', body }),
+  importOptions: (id: string, containers?: string[]) =>
+    apiRequest<ImportOptions>(
+      `/api/admin/imports/${id}/options${containers?.length ? `?containers=${containers.map(encodeURIComponent).join(',')}` : ''}`,
+    ),
+  configureImport: (id: string, body: ImportConfig) =>
+    apiRequest<ImportRunView>(`/api/admin/imports/${id}/config`, { method: 'PUT', body }),
+  dryRunImport: (id: string) =>
+    apiRequest<ImportDryRun>(`/api/admin/imports/${id}/dry-run`, { method: 'POST' }),
+  importAction: (id: string, action: 'start' | 'pause' | 'cancel') =>
+    apiRequest<ImportRunView>(`/api/admin/imports/${id}/${action}`, { method: 'POST' }),
   initiatives: () => apiRequest<InitiativeSummary[]>('/api/initiatives'),
   initiative: (id: string) => apiRequest<InitiativeDetail>(`/api/initiatives/${id}`),
   createInitiative: (body: InitiativeInput) =>

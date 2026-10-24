@@ -376,6 +376,8 @@ export const issues = pgTable(
     cycleId: uuid('cycle_id'),
     projectId: uuid('project_id'),
     milestoneId: uuid('milestone_id'),
+    /** Key in the tool it was imported from (ENG-123), kept as an alias (SPEC §10.2). */
+    externalKey: text('external_key'),
     /** Position among the parent's sub-issues; ties fall back to creation order. */
     subOrder: doublePrecision('sub_order').notNull().default(0),
     /** Closed in triage as a duplicate of this issue (SPEC §5.1 relations). */
@@ -392,6 +394,7 @@ export const issues = pgTable(
     index('issues_parent_idx').on(t.parentId),
     index('issues_cycle_idx').on(t.cycleId),
     index('issues_project_idx').on(t.projectId),
+    index('issues_external_key_idx').on(t.externalKey),
   ],
 );
 
@@ -885,4 +888,47 @@ export const initiativeProjects = pgTable(
     primaryKey({ columns: [t.initiativeId, t.projectId] }),
     index('initiative_projects_project_idx').on(t.projectId),
   ],
+);
+
+/** One import from Linear or Jira (ADR 0010); the cursor makes it resumable. */
+export const importRuns = pgTable('import_runs', {
+  id: id(),
+  source: text('source', { enum: ['linear', 'jira'] }).notNull(),
+  /** `linear` or `jira:<base url>`: what external ids are unique within. */
+  sourceKey: text('source_key').notNull(),
+  baseUrl: text('base_url'),
+  email: text('email'),
+  /** Sealed with the instance key; erased once the run ends. */
+  tokenEncrypted: text('token_encrypted'),
+  account: jsonb('account').notNull().default({}),
+  status: text('status', {
+    enum: ['draft', 'running', 'paused', 'completed', 'failed', 'canceled'],
+  })
+    .notNull()
+    .default('draft'),
+  config: jsonb('config').notNull().default({}),
+  cursor: jsonb('cursor').notNull().default({}),
+  counts: jsonb('counts').notNull().default({}),
+  report: jsonb('report').notNull().default([]),
+  error: text('error'),
+  /** A worker owns the run until then; a crashed worker's lease simply runs out. */
+  leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  createdBy: uuid('created_by').references(() => members.id),
+  createdAt: createdAt(),
+  startedAt: timestamp('started_at', { withTimezone: true }),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+});
+
+export const externalRefs = pgTable(
+  'external_refs',
+  {
+    sourceKey: text('source_key').notNull(),
+    kind: text('kind', { enum: ['issue', 'comment', 'attachment'] }).notNull(),
+    externalId: text('external_id').notNull(),
+    ordlerId: uuid('ordler_id').notNull(),
+    /** The source's own updated time when last imported, to skip unchanged items. */
+    sourceUpdatedAt: timestamp('source_updated_at', { withTimezone: true }),
+    importRunId: uuid('import_run_id').references(() => importRuns.id),
+  },
+  (t) => [primaryKey({ columns: [t.sourceKey, t.kind, t.externalId] })],
 );

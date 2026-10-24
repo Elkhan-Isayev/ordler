@@ -120,7 +120,10 @@
     "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur.",
     "single_assignee": "Bu komandada tapşırığın bir icraçısı olur. Admin və ya komanda rəhbəri komanda parametrlərində bir neçəsinə icazə verə bilər.",
     "cycle_not_in_team": "Bu dövr bitib və ya başqa komandaya aiddir.",
-    "project_not_in_team": "Bu layihə və ya mərhələ bu komandanı əhatə etmir."
+    "project_not_in_team": "Bu layihə və ya mərhələ bu komandanı əhatə etmir.",
+    "import_auth_failed": "Mənbə tokeni rədd etdi. Tokeni və onun icazələrini yoxlayın.",
+    "import_source_failed": "Mənbəyə qoşulmaq mümkün olmadı və ya xəta ilə cavab verdi. Sonra yenidən cəhd edin.",
+    "import_not_ready": "Bu idxal hazırkı vəziyyətində bunu edə bilməz."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -149,7 +152,8 @@
       "integrations": "İnteqrasiyalar",
       "tokens": "Tokenlər və MCP",
       "roles": "Rollar",
-      "audit": "Audit jurnalı"
+      "audit": "Audit jurnalı",
+      "import": "İdxal"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -485,7 +489,9 @@
       "cycleRemoved": "dövrdən çıxarıldı",
       "project": "layihə → {to}",
       "projectRemoved": "layihədən çıxarıldı",
-      "milestone": "mərhələ → {to}"
+      "milestone": "mərhələ → {to}",
+      "imported": "{actor} bu tapşırığı {source} sistemindən idxal etdi ({key})",
+      "reimported": "{actor} bu tapşırığı {source} sistemindən yenilədi ({key})"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -882,5 +888,80 @@
     "addProject": "Layihə əlavə et…",
     "removeProject": "{name} çıxar",
     "confirmArchive": "{name} arxivlənsin? Layihələr olduğu kimi qalır."
+  },
+  "imports": {
+    "subtitle": "API tokeni ilə Linear və ya Jira-dan tapşırıqları, şərhləri və faylları köçürün. İdxal zamanı heç kimə bildiriş göndərilmir, təkrar işə salmaq dublikat yaratmır.",
+    "history": "Əvvəlki idxallar",
+    "source": {
+      "linear": "Linear",
+      "jira": "Jira"
+    },
+    "countsShort": "{imported} idxal edildi · {failed} xəta",
+    "status": {
+      "draft": "Qaralama",
+      "running": "İcra olunur",
+      "paused": "Fasilədə",
+      "completed": "Tamamlandı",
+      "failed": "Xəta",
+      "canceled": "Ləğv edildi"
+    },
+    "connect": "Mənbəni qoşun",
+    "baseUrl": "Jira saytının ünvanı",
+    "email": "Hesabın e-poçtu (Jira Cloud)",
+    "emailHint": "Şəxsi giriş tokeni ilə Jira Server və ya Data Center üçün boş saxlayın.",
+    "tokenLabel": {
+      "linear": "Linear API açarı",
+      "jira": "Jira API tokeni"
+    },
+    "tokenHint": {
+      "linear": "Linear → Settings → Security & access → Personal API keys. Şifrələnmiş saxlanılır və idxal bitəndə silinir.",
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Şifrələnmiş saxlanılır və idxal bitəndə silinir."
+    },
+    "connecting": "Qoşulur…",
+    "connectButton": "Qoş",
+    "loading": "Yüklənir…",
+    "connectedAs": "{source} sisteminə {name} kimi qoşuldu.",
+    "containers": {
+      "linear": "İdxal ediləcək komandalar",
+      "jira": "İdxal ediləcək layihələr"
+    },
+    "target": "Hara",
+    "newTeam": "Yeni komanda…",
+    "teamName": "Komandanın adı",
+    "teamKey": "Açar",
+    "department": "Departament",
+    "statusMap": "Statuslar",
+    "statusFor": "{name} üçün Ordler statusu",
+    "byCategory": "Növünə görə",
+    "people": "İnsanlar",
+    "peopleHint": "Mümkün olduqda e-poçta görə uyğunlaşdırılıb. Heç kimə uyğunlaşdırılmayanlar şərhlərdə ad kimi qalır.",
+    "personFor": "{name} üçün Ordler üzvü",
+    "nobody": "Heç kim",
+    "includeClosed": "Tamamlanmış və ləğv edilmiş tapşırıqları daxil et",
+    "jql": "Əlavə JQL filtri (istəyə görə)",
+    "dryRun": "Sınaq yoxlaması",
+    "start": "İdxala başla",
+    "discard": "İmtina et",
+    "dryRunTitle": "Bu idxal köçürəcək:",
+    "dryRunCounts": "{issues} tapşırıq, {comments} şərh, {attachments} fayl",
+    "unmapped": "Heç kimə uyğunlaşdırılmayıb: {names}",
+    "oversize": "{count, plural, one {# fayl} other {# fayl}} yükləmə limitini keçir və ötürüləcək.",
+    "warning": {
+      "estimate": "Qiymətləndirmələr hələ idxal edilmir.",
+      "cycle": "Tsikllər idxal edilmir.",
+      "links": "Alt tapşırıqlardan başqa əlaqələr hələ idxal edilmir.",
+      "truncated": "Hər mənbə üçün yalnız ilk 1000 tapşırıq sayıldı."
+    },
+    "counts": "{imported} idxal edildi, {updated} yeniləndi, {skipped} dəyişməyib, {failed} xəta · {comments} şərh, {attachments} fayl",
+    "failed": "İdxal xəta ilə bitdi: {error}",
+    "report": "{count, plural, one {# qeyd} other {# qeyd}}",
+    "notImported": "İdxal edilmədi: {fields}",
+    "reason": {
+      "deleted_in_ordler": "Ordler-də silinib, toxunulmadı"
+    },
+    "pause": "Fasilə",
+    "resume": "Davam et",
+    "cancel": "İdxalı dayandır",
+    "close": "Bağla"
   }
 }

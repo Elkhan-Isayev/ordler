@@ -340,6 +340,14 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
   const actor = event.viaToken
     ? t('issues.viaToken', { actor: name, token: event.viaToken })
     : name;
+  const imported = event.changes.imported?.to as { source: string; key: string } | undefined;
+  if (imported) {
+    return t(event.kind === 'created' ? 'issues.event.imported' : 'issues.event.reimported', {
+      actor,
+      source: t(`imports.source.${imported.source}`),
+      key: imported.key,
+    });
+  }
   if (event.kind === 'created') return t('issues.event.created', { actor });
   const parts = (
     Object.entries(event.changes) as Array<[IssueField, { from: unknown; to: unknown }]>
@@ -398,6 +406,8 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
           : '';
       case 'parentId':
         return change.to ? t('issues.event.parent') : t('issues.event.parentRemoved');
+      case 'imported':
+        return '';
     }
   });
   return `${actor}: ${parts.filter(Boolean).join(', ')}`;

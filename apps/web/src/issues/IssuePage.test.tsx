@@ -168,6 +168,26 @@ describe('describeEvent', () => {
     );
   });
 
+  it('tells where an imported issue came from', async () => {
+    const i18n = await createI18n('en');
+    const event = {
+      id: 'e',
+      kind: 'created' as const,
+      actor: { id: 'm-ann', name: 'Ann Lee' },
+      changes: {
+        imported: { from: null, to: { source: 'jira', key: 'OPS-12', url: 'https://x.test' } },
+      },
+      viaToken: null,
+      createdAt: '2026-10-18T09:00:00.000Z',
+    };
+    expect(describeEvent(i18n.t, event, TEAM)).toBe(
+      'Ann Lee imported this issue from Jira (OPS-12)',
+    );
+    expect(describeEvent(i18n.t, { ...event, kind: 'updated' }, TEAM)).toBe(
+      'Ann Lee updated this issue from Jira (OPS-12)',
+    );
+  });
+
   it('names labels, including deleted ones, and parent changes', async () => {
     const i18n = await createI18n('en');
     const base = {

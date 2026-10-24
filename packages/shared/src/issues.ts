@@ -198,6 +198,7 @@ export type IssueField =
   | 'cycleId'
   | 'projectId'
   | 'milestoneId'
+  | 'imported'
   | 'duplicateOf'
   | 'triage';
 

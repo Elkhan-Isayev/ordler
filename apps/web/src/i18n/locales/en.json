@@ -120,7 +120,10 @@
     "status_required": "This status is required: it is the default or the last one of its category.",
     "single_assignee": "This team allows one assignee per issue. An admin or team lead can allow several in team settings.",
     "cycle_not_in_team": "This cycle has ended or belongs to another team.",
-    "project_not_in_team": "This project or milestone does not include this team."
+    "project_not_in_team": "This project or milestone does not include this team.",
+    "import_auth_failed": "The source rejected the token. Check it and its permissions.",
+    "import_source_failed": "The source could not be reached or answered with an error. Try again later.",
+    "import_not_ready": "This import cannot do that in its current state."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -149,7 +152,8 @@
       "integrations": "Integrations",
       "tokens": "Access tokens and MCP",
       "roles": "Roles",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "import": "Import"
     },
     "departments": {
       "title": "Departments and teams",
@@ -485,7 +489,9 @@
       "cycleRemoved": "removed from the cycle",
       "project": "project → {to}",
       "projectRemoved": "removed from the project",
-      "milestone": "milestone → {to}"
+      "milestone": "milestone → {to}",
+      "imported": "{actor} imported this issue from {source} ({key})",
+      "reimported": "{actor} updated this issue from {source} ({key})"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -882,5 +888,80 @@
     "addProject": "Add a project…",
     "removeProject": "Remove {name}",
     "confirmArchive": "Archive {name}? Its projects stay as they are."
+  },
+  "imports": {
+    "subtitle": "Bring issues, comments and files over from Linear or Jira with an API token. Nobody is notified while it runs, and running it again does not create duplicates.",
+    "history": "Previous imports",
+    "source": {
+      "linear": "Linear",
+      "jira": "Jira"
+    },
+    "countsShort": "{imported} imported · {failed} failed",
+    "status": {
+      "draft": "Draft",
+      "running": "Running",
+      "paused": "Paused",
+      "completed": "Completed",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "connect": "Connect a source",
+    "baseUrl": "Jira site address",
+    "email": "Account email (Jira Cloud)",
+    "emailHint": "Leave empty for Jira Server or Data Center with a personal access token.",
+    "tokenLabel": {
+      "linear": "Linear API key",
+      "jira": "Jira API token"
+    },
+    "tokenHint": {
+      "linear": "Linear → Settings → Security & access → Personal API keys. Stored encrypted and erased when the import ends.",
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profile → Personal access tokens. Stored encrypted and erased when the import ends."
+    },
+    "connecting": "Connecting…",
+    "connectButton": "Connect",
+    "loading": "Loading…",
+    "connectedAs": "Connected to {source} as {name}.",
+    "containers": {
+      "linear": "Teams to import",
+      "jira": "Projects to import"
+    },
+    "target": "Into",
+    "newTeam": "New team…",
+    "teamName": "Team name",
+    "teamKey": "Key",
+    "department": "Department",
+    "statusMap": "Statuses",
+    "statusFor": "Ordler status for {name}",
+    "byCategory": "Match by kind",
+    "people": "People",
+    "peopleHint": "Matched by email where possible. People mapped to nobody stay as names in comments.",
+    "personFor": "Ordler member for {name}",
+    "nobody": "Nobody",
+    "includeClosed": "Include completed and canceled issues",
+    "jql": "Extra JQL filter (optional)",
+    "dryRun": "Dry run",
+    "start": "Start import",
+    "discard": "Discard",
+    "dryRunTitle": "This import would bring over:",
+    "dryRunCounts": "{issues} issues, {comments} comments, {attachments} files",
+    "unmapped": "Not mapped to anyone: {names}",
+    "oversize": "{count, plural, one {# file is} other {# files are}} over the upload limit and will be skipped.",
+    "warning": {
+      "estimate": "Estimates are not imported yet.",
+      "cycle": "Cycles are not imported.",
+      "links": "Issue links other than sub-issues are not imported yet.",
+      "truncated": "Only the first 1,000 issues per source were counted."
+    },
+    "counts": "{imported} imported, {updated} updated, {skipped} unchanged, {failed} failed · {comments} comments, {attachments} files",
+    "failed": "Import failed: {error}",
+    "report": "{count, plural, one {# note} other {# notes}}",
+    "notImported": "Not imported: {fields}",
+    "reason": {
+      "deleted_in_ordler": "Deleted in Ordler, left alone"
+    },
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel import",
+    "close": "Close"
   }
 }
