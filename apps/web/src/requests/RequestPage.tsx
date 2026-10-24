@@ -1,3 +1,4 @@
+import { SlaClocks } from './Sla.js';
 import {
   PRIORITIES,
   teamTopic,
@@ -274,6 +275,7 @@ export function RequestPage({ identifier }: { identifier: string }) {
               </Property>
             </>
           )}
+          <SlaClocks sla={request.slaClocks} />
           {request.can.confirm && (
             <RequesterActions
               onConfirm={() =>

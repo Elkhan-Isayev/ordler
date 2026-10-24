@@ -123,7 +123,8 @@
     "project_not_in_team": "Bu layihə və ya mərhələ bu komandanı əhatə etmir.",
     "import_auth_failed": "Mənbə tokeni rədd etdi. Tokeni və onun icazələrini yoxlayın.",
     "import_source_failed": "Mənbəyə qoşulmaq mümkün olmadı və ya xəta ilə cavab verdi. Sonra yenidən cəhd edin.",
-    "import_not_ready": "Bu idxal hazırkı vəziyyətində bunu edə bilməz."
+    "import_not_ready": "Bu idxal hazırkı vəziyyətində bunu edə bilməz.",
+    "calendar_in_use": "Bu təqvim SLA siyasətində istifadə olunur. Əvvəlcə siyasəti dəyişin."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -154,7 +155,8 @@
       "roles": "Rollar",
       "audit": "Audit jurnalı",
       "import": "İdxal",
-      "webhooks": "Vebhuklar"
+      "webhooks": "Vebhuklar",
+      "sla": "SLA"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -339,7 +341,9 @@
         "request_received": "Yeni sorğular",
         "approval_requested": "Təsdiq istənildi",
         "approval_decided": "Təsdiq qərarları",
-        "request_resolved": "Həll olunmuş sorğular"
+        "request_resolved": "Həll olunmuş sorğular",
+        "sla_at_risk": "SLA risk altında",
+        "sla_breached": "SLA pozuldu"
       }
     },
     "tokens": {
@@ -721,7 +725,9 @@
       "request_received": "Komandanız üçün yeni sorğu: {item}",
       "request_status_changed": "{actor} {item} sorğusunu yenilədi",
       "request_commented": "{actor} {item} üzrə şərh yazdı",
-      "issue_mentioned": "{actor} sizi {item} tapşırığında qeyd etdi"
+      "issue_mentioned": "{actor} sizi {item} tapşırığında qeyd etdi",
+      "sla_at_risk": "{item} üzrə SLA risk altında",
+      "sla_breached": "{item} üzrə SLA pozuldu"
     }
   },
   "tokens": {
@@ -1012,7 +1018,53 @@
       "request_status_changed": "Sorğunun statusu dəyişdi",
       "request_commented": "Sorğuya şərh",
       "approval_requested": "Təsdiq istənildi",
-      "approval_decided": "Təsdiq qərarı verildi"
+      "approval_decided": "Təsdiq qərarı verildi",
+      "sla_at_risk": "SLA risk altında",
+      "sla_breached": "SLA pozuldu"
+    }
+  },
+  "sla": {
+    "subtitle": "Sorğular üçün iş saatları ilə hesablanan reaksiya və həll müddətləri. Sorğu sahibinin cavabı gözlənilərkən saat dayanır.",
+    "department": "Departament",
+    "calendars": "İş saatları",
+    "newCalendar": "Yeni təqvim",
+    "editCalendar": "Təqvimi dəyiş",
+    "noCalendars": "Hələ təqvim yoxdur: saatlar fasiləsiz işləyir.",
+    "policies": "SLA siyasətləri",
+    "newPolicy": "Yeni siyasət",
+    "editPolicy": "Siyasəti dəyiş",
+    "noPolicies": "Hələ SLA siyasəti yoxdur.",
+    "archive": "Arxivə göndər",
+    "confirmArchivePolicy": "“{name}” arxivə göndərilsin? Sorğu növləri onu itirəcək, artıq gedən sorğuların saatları qalacaq.",
+    "name": "Ad",
+    "timezone": "Saat qurşağı",
+    "from": "Başlanğıc",
+    "to": "Son",
+    "workingDays": "İş günləri",
+    "holidays": "Bayramlar (hər sətirdə bir tarix)",
+    "save": "Saxla",
+    "calendar": "İş saatları",
+    "allDay": "Fasiləsiz",
+    "pauseDuringApproval": "Təsdiqlər gözlənilərkən saatı dayandır",
+    "firstResponseHours": "İlk reaksiya, saat",
+    "resolutionHours": "Həll, saat",
+    "firstResponseFor": "{priority} üçün ilk reaksiya",
+    "resolutionFor": "{priority} üçün həll",
+    "targetsHint": "Müddət yoxdursa sahəni boş saxlayın. 0,5 = 30 dəqiqə.",
+    "policy": "SLA siyasəti",
+    "noPolicy": "SLA yoxdur",
+    "title": "SLA",
+    "metric": {
+      "firstResponse": "İlk reaksiya",
+      "resolution": "Həll"
+    },
+    "state": {
+      "on_track": "Vaxtında",
+      "at_risk": "Risk altında",
+      "breached": "Pozulub",
+      "paused": "Fasilədə",
+      "met": "Yerinə yetirildi",
+      "missed": "Gecikdi"
     }
   }
 }

@@ -1,3 +1,4 @@
+import { SlaBadgeChip } from './Sla.js';
 import type {
   ApprovalDecisionInput,
   PendingApproval,
@@ -81,6 +82,7 @@ export function RequestTable({
               {request.department.name} · {request.requestType.name}
             </span>
             {showRequester && <Avatar member={request.requester} />}
+            <SlaBadgeChip badge={request.sla} />
             <RequestStatusBadge status={request.status} />
           </Link>
         </li>

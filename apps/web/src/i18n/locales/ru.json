@@ -123,7 +123,8 @@
     "project_not_in_team": "Этот проект или веха не включает эту команду.",
     "import_auth_failed": "Источник отклонил токен. Проверьте его и его права.",
     "import_source_failed": "Источник недоступен или ответил ошибкой. Попробуйте позже.",
-    "import_not_ready": "В текущем состоянии импорт не может этого сделать."
+    "import_not_ready": "В текущем состоянии импорт не может этого сделать.",
+    "calendar_in_use": "Этот календарь используется политикой SLA. Сначала измените политику."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -154,7 +155,8 @@
       "roles": "Роли",
       "audit": "Журнал аудита",
       "import": "Импорт",
-      "webhooks": "Вебхуки"
+      "webhooks": "Вебхуки",
+      "sla": "SLA"
     },
     "departments": {
       "title": "Департаменты и команды",
@@ -339,7 +341,9 @@
         "request_received": "Новые запросы",
         "approval_requested": "Запрошено согласование",
         "approval_decided": "Решения по согласованию",
-        "request_resolved": "Запросы решены"
+        "request_resolved": "Запросы решены",
+        "sla_at_risk": "SLA под угрозой",
+        "sla_breached": "SLA нарушен"
       }
     },
     "tokens": {
@@ -721,7 +725,9 @@
       "request_received": "Новый запрос вашей команде: {item}",
       "request_status_changed": "{actor} обновил(а) {item}",
       "request_commented": "{actor} прокомментировал(а) {item}",
-      "issue_mentioned": "{actor} упомянул(а) вас в {item}"
+      "issue_mentioned": "{actor} упомянул(а) вас в {item}",
+      "sla_at_risk": "SLA под угрозой: {item}",
+      "sla_breached": "SLA нарушен: {item}"
     }
   },
   "tokens": {
@@ -1012,7 +1018,53 @@
       "request_status_changed": "Статус заявки изменён",
       "request_commented": "Комментарий к заявке",
       "approval_requested": "Запрошено согласование",
-      "approval_decided": "Решение по согласованию"
+      "approval_decided": "Решение по согласованию",
+      "sla_at_risk": "SLA под угрозой",
+      "sla_breached": "SLA нарушен"
+    }
+  },
+  "sla": {
+    "subtitle": "Сроки реакции и решения по заявкам в рабочих часах. Пока ждём ответа заявителя, часы стоят.",
+    "department": "Департамент",
+    "calendars": "Рабочие часы",
+    "newCalendar": "Новый календарь",
+    "editCalendar": "Изменить календарь",
+    "noCalendars": "Календарей пока нет: часы идут круглосуточно.",
+    "policies": "Политики SLA",
+    "newPolicy": "Новая политика",
+    "editPolicy": "Изменить политику",
+    "noPolicies": "Политик SLA пока нет.",
+    "archive": "В архив",
+    "confirmArchivePolicy": "Отправить «{name}» в архив? Типы заявок её потеряют, у уже идущих заявок часы сохранятся.",
+    "name": "Название",
+    "timezone": "Часовой пояс",
+    "from": "С",
+    "to": "До",
+    "workingDays": "Рабочие дни",
+    "holidays": "Праздники (по одной дате в строке)",
+    "save": "Сохранить",
+    "calendar": "Рабочие часы",
+    "allDay": "Круглосуточно",
+    "pauseDuringApproval": "Останавливать часы, пока идут согласования",
+    "firstResponseHours": "Первая реакция, часов",
+    "resolutionHours": "Решение, часов",
+    "firstResponseFor": "Первая реакция для приоритета {priority}",
+    "resolutionFor": "Решение для приоритета {priority}",
+    "targetsHint": "Пустое поле — без срока. 0,5 = 30 минут.",
+    "policy": "Политика SLA",
+    "noPolicy": "Без SLA",
+    "title": "SLA",
+    "metric": {
+      "firstResponse": "Первая реакция",
+      "resolution": "Решение"
+    },
+    "state": {
+      "on_track": "В срок",
+      "at_risk": "Под угрозой",
+      "breached": "Нарушен",
+      "paused": "На паузе",
+      "met": "Выполнен",
+      "missed": "Просрочен"
     }
   }
 }

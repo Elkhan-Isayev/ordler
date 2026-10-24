@@ -13,6 +13,8 @@ export const NOTIFICATION_KINDS = [
   'request_received',
   'request_status_changed',
   'request_commented',
+  'sla_at_risk',
+  'sla_breached',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -58,6 +60,8 @@ export const SLACK_EVENTS = [
   'approval_requested',
   'approval_decided',
   'request_resolved',
+  'sla_at_risk',
+  'sla_breached',
 ] as const;
 export type SlackEvent = (typeof SLACK_EVENTS)[number];
 

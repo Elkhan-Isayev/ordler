@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { MemberRef } from './issues.js';
+import type { RequestSlaView, SlaBadge } from './sla.js';
 import { PRIORITIES, type Priority } from './status.js';
 
 // ---------------------------------------------------------------------------------------------
@@ -194,6 +195,8 @@ export const requestTypeInputSchema = z.object({
   targetTeamId: z.uuid(),
   approvalSteps: z.array(approvalStepInputSchema).max(10).default([]),
   allowRequesterApprovals: z.boolean().default(false),
+  /** SLA policy of the same department (SPEC §6.5). */
+  slaPolicyId: z.uuid().nullable().default(null),
 });
 export type RequestTypeInput = z.infer<typeof requestTypeInputSchema>;
 
@@ -208,6 +211,7 @@ export interface RequestTypeView {
   targetTeam: { id: string; key: string; name: string };
   approvalSteps: Array<ApprovalStepInput & { names: SelectorNames }>;
   allowRequesterApprovals: boolean;
+  slaPolicy: { id: string; name: string } | null;
   archivedAt: string | null;
 }
 
@@ -332,6 +336,8 @@ export interface RequestSummary {
   requester: MemberRef | null;
   assignee: MemberRef | null;
   group: { id: string; identifier: string } | null;
+  /** The SLA clock closest to breaching, when the type has an SLA. */
+  sla: SlaBadge | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -345,6 +351,8 @@ export interface RequestView extends RequestSummary {
   approvals: ApprovalStepView[];
   comments: RequestCommentView[];
   events: RequestEventView[];
+  /** Both SLA clocks; requesters see them too, as the expected response times (SPEC §6.2). */
+  slaClocks: RequestSlaView | null;
   /** Agents get identifiers and statuses; requesters only see how many are done. */
   linkedIssues:
     | { kind: 'details'; items: Array<{ identifier: string; title: string; done: boolean }> }

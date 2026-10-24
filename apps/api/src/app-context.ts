@@ -30,6 +30,7 @@ import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
 import { WebhookService, type WebhookFetch } from './webhooks/webhook.service.js';
+import { SlaService } from './sla/sla.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
@@ -82,6 +83,7 @@ export interface AppContext {
   initiatives: InitiativeService;
   imports: ImportService;
   webhooks: WebhookService;
+  sla: SlaService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -171,6 +173,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     log: (message) => console.warn(message),
     ...(deps.webhookFetch ? { fetch: deps.webhookFetch } : {}),
   });
+  const sla = new SlaService({
+    db: deps.db,
+    access,
+    notifier,
+    hooks: webhooks,
+    channels: slack,
+    now,
+    log: (message) => console.warn(message),
+  });
   const issues = new IssueService({
     db: deps.db,
     access: teamAccess,
@@ -226,7 +237,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     mail,
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     issues,
-    requestTypes: new RequestTypeService(deps.db, access),
+    requestTypes: new RequestTypeService(deps.db, access, sla),
     requests: new RequestService({
       db: deps.db,
       access,
@@ -236,6 +247,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       events,
       channels: slack,
       hooks: webhooks,
+      sla,
       now,
     }),
     notifications,
@@ -248,6 +260,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
     webhooks,
+    sla,
     imports: new ImportService({
       db: deps.db,
       box,

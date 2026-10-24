@@ -14,12 +14,12 @@ export const EMAIL_MESSAGES = {
     testBody:
       'This is a test email from {company} on Ordler.\n\nIf you can read it, the mail server settings work.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor} assigned you {item}} issue_commented {{actor} commented on {item}} issue_mentioned {{actor} mentioned you in {item}} issue_status_changed {{actor} changed the status of {item}} approval_requested {Approval needed: {item}} approval_decided {{actor} approved {item}} request_rejected {{item} was rejected} request_changes_requested {Changes requested on {item}} request_received {New request for your team: {item}} request_status_changed {{item} was updated} request_commented {{actor} commented on {item}} other {{item}}}',
+      '{kind, select, issue_assigned {{actor} assigned you {item}} issue_commented {{actor} commented on {item}} issue_mentioned {{actor} mentioned you in {item}} issue_status_changed {{actor} changed the status of {item}} approval_requested {Approval needed: {item}} approval_decided {{actor} approved {item}} request_rejected {{item} was rejected} request_changes_requested {Changes requested on {item}} request_received {New request for your team: {item}} request_status_changed {{item} was updated} request_commented {{actor} commented on {item}} sla_at_risk {SLA at risk: {item}} sla_breached {SLA breached: {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOpen in Ordler: {url}\n\nDecisions and replies happen in Ordler after signing in.',
     slackOpen: 'Open in Ordler',
     slackEvent:
-      '{kind, select, issue_created {New issue} issue_status_changed {Status changed} issue_assigned {Assigned} issue_commented {New comment} request_received {New request} approval_requested {Approval requested} approval_decided {Approval decided} request_resolved {Request resolved} other {Update}}',
+      '{kind, select, issue_created {New issue} issue_status_changed {Status changed} issue_assigned {Assigned} issue_commented {New comment} request_received {New request} approval_requested {Approval requested} approval_decided {Approval decided} request_resolved {Request resolved} sla_at_risk {SLA at risk} sla_breached {SLA breached} other {Update}}',
     slackTest: 'Ordler is connected to this channel for {team}.',
   },
   ru: {
@@ -33,12 +33,12 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Это тестовое письмо от {company} в Ordler.\n\nЕсли вы его читаете, настройки почтового сервера работают.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor}: вам назначена {item}} issue_commented {{actor}: комментарий к {item}} issue_mentioned {{actor}: вас упомянули в {item}} issue_status_changed {{actor}: изменён статус {item}} approval_requested {Нужно согласование: {item}} approval_decided {{actor}: согласовано {item}} request_rejected {{item}: отклонено} request_changes_requested {{item}: нужны правки} request_received {Новый запрос вашей команде: {item}} request_status_changed {{item}: обновление} request_commented {{actor}: комментарий к {item}} other {{item}}}',
+      '{kind, select, issue_assigned {{actor}: вам назначена {item}} issue_commented {{actor}: комментарий к {item}} issue_mentioned {{actor}: вас упомянули в {item}} issue_status_changed {{actor}: изменён статус {item}} approval_requested {Нужно согласование: {item}} approval_decided {{actor}: согласовано {item}} request_rejected {{item}: отклонено} request_changes_requested {{item}: нужны правки} request_received {Новый запрос вашей команде: {item}} request_status_changed {{item}: обновление} request_commented {{actor}: комментарий к {item}} sla_at_risk {SLA под угрозой: {item}} sla_breached {SLA нарушен: {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nОткрыть в Ordler: {url}\n\nРешения и ответы принимаются в Ordler после входа.',
     slackOpen: 'Открыть в Ordler',
     slackEvent:
-      '{kind, select, issue_created {Новая задача} issue_status_changed {Изменён статус} issue_assigned {Назначена} issue_commented {Новый комментарий} request_received {Новый запрос} approval_requested {Нужно согласование} approval_decided {Решение по согласованию} request_resolved {Запрос решён} other {Обновление}}',
+      '{kind, select, issue_created {Новая задача} issue_status_changed {Изменён статус} issue_assigned {Назначена} issue_commented {Новый комментарий} request_received {Новый запрос} approval_requested {Нужно согласование} approval_decided {Решение по согласованию} request_resolved {Запрос решён} sla_at_risk {SLA под угрозой} sla_breached {SLA нарушен} other {Обновление}}',
     slackTest: 'Ordler подключён к этому каналу для команды {team}.',
   },
   de: {
@@ -52,12 +52,12 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Dies ist eine Test-E-Mail von {company} in Ordler.\n\nWenn du sie lesen kannst, funktionieren die Mailserver-Einstellungen.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor} hat dir {item} zugewiesen} issue_commented {{actor} hat {item} kommentiert} issue_mentioned {{actor} hat Sie in {item} erwähnt} issue_status_changed {{actor} hat den Status von {item} geändert} approval_requested {Genehmigung nötig: {item}} approval_decided {{actor} hat {item} genehmigt} request_rejected {{item} wurde abgelehnt} request_changes_requested {Änderungen angefordert: {item}} request_received {Neue Anfrage für dein Team: {item}} request_status_changed {{item} wurde aktualisiert} request_commented {{actor} hat {item} kommentiert} other {{item}}}',
+      '{kind, select, issue_assigned {{actor} hat dir {item} zugewiesen} issue_commented {{actor} hat {item} kommentiert} issue_mentioned {{actor} hat Sie in {item} erwähnt} issue_status_changed {{actor} hat den Status von {item} geändert} approval_requested {Genehmigung nötig: {item}} approval_decided {{actor} hat {item} genehmigt} request_rejected {{item} wurde abgelehnt} request_changes_requested {Änderungen angefordert: {item}} request_received {Neue Anfrage für dein Team: {item}} request_status_changed {{item} wurde aktualisiert} request_commented {{actor} hat {item} kommentiert} sla_at_risk {SLA gefährdet: {item}} sla_breached {SLA verletzt: {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nIn Ordler öffnen: {url}\n\nEntscheidungen und Antworten erfolgen in Ordler nach der Anmeldung.',
     slackOpen: 'In Ordler öffnen',
     slackEvent:
-      '{kind, select, issue_created {Neue Aufgabe} issue_status_changed {Status geändert} issue_assigned {Zugewiesen} issue_commented {Neuer Kommentar} request_received {Neue Anfrage} approval_requested {Genehmigung angefragt} approval_decided {Genehmigung entschieden} request_resolved {Anfrage gelöst} other {Aktualisierung}}',
+      '{kind, select, issue_created {Neue Aufgabe} issue_status_changed {Status geändert} issue_assigned {Zugewiesen} issue_commented {Neuer Kommentar} request_received {Neue Anfrage} approval_requested {Genehmigung angefragt} approval_decided {Genehmigung entschieden} request_resolved {Anfrage gelöst} sla_at_risk {SLA gefährdet} sla_breached {SLA verletzt} other {Aktualisierung}}',
     slackTest: 'Ordler ist für {team} mit diesem Kanal verbunden.',
   },
   az: {
@@ -71,12 +71,12 @@ export const EMAIL_MESSAGES = {
     testBody:
       'Bu, Ordler-də {company} tərəfindən göndərilən test məktubudur.\n\nOnu oxuya bilirsinizsə, poçt serverinin ayarları işləyir.',
     notifySubject:
-      '{kind, select, issue_assigned {{actor}: sizə {item} təyin edildi} issue_commented {{actor}: {item} üzrə şərh} issue_mentioned {{actor} sizi {item} tapşırığında qeyd etdi} issue_status_changed {{actor}: {item} statusu dəyişdi} approval_requested {Təsdiq lazımdır: {item}} approval_decided {{actor}: {item} təsdiqləndi} request_rejected {{item}: rədd edildi} request_changes_requested {{item}: düzəliş tələb olunur} request_received {Komandanıza yeni müraciət: {item}} request_status_changed {{item}: yeniləmə} request_commented {{actor}: {item} üzrə şərh} other {{item}}}',
+      '{kind, select, issue_assigned {{actor}: sizə {item} təyin edildi} issue_commented {{actor}: {item} üzrə şərh} issue_mentioned {{actor} sizi {item} tapşırığında qeyd etdi} issue_status_changed {{actor}: {item} statusu dəyişdi} approval_requested {Təsdiq lazımdır: {item}} approval_decided {{actor}: {item} təsdiqləndi} request_rejected {{item}: rədd edildi} request_changes_requested {{item}: düzəliş tələb olunur} request_received {Komandanıza yeni müraciət: {item}} request_status_changed {{item}: yeniləmə} request_commented {{actor}: {item} üzrə şərh} sla_at_risk {SLA risk altında: {item}} sla_breached {SLA pozuldu: {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOrdler-də aç: {url}\n\nQərarlar və cavablar sistemə daxil olduqdan sonra Ordler-də verilir.',
     slackOpen: 'Ordler-də aç',
     slackEvent:
-      '{kind, select, issue_created {Yeni tapşırıq} issue_status_changed {Status dəyişdi} issue_assigned {Təyin edildi} issue_commented {Yeni şərh} request_received {Yeni müraciət} approval_requested {Təsdiq istənildi} approval_decided {Təsdiq qərarı} request_resolved {Müraciət həll edildi} other {Yeniləmə}}',
+      '{kind, select, issue_created {Yeni tapşırıq} issue_status_changed {Status dəyişdi} issue_assigned {Təyin edildi} issue_commented {Yeni şərh} request_received {Yeni müraciət} approval_requested {Təsdiq istənildi} approval_decided {Təsdiq qərarı} request_resolved {Müraciət həll edildi} sla_at_risk {SLA risk altında} sla_breached {SLA pozuldu} other {Yeniləmə}}',
     slackTest: 'Ordler {team} komandası üçün bu kanala qoşulub.',
   },
 } satisfies Record<Locale, Record<string, string>>;

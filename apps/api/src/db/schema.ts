@@ -497,6 +497,8 @@ export const requestTypes = pgTable(
     /** Mandatory approval steps, in order: [{ selector, rule }]. */
     approvalSteps: jsonb('approval_steps').notNull().default([]),
     allowRequesterApprovals: boolean('allow_requester_approvals').notNull().default(false),
+    /** SLA targets for requests of this type (SPEC §6.5); none when null. */
+    slaPolicyId: uuid('sla_policy_id'),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -554,6 +556,10 @@ export const requests = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
     closedAt: timestamp('closed_at', { withTimezone: true }),
+    /** The type's SLA policy when submitted; later policy edits still apply to it. */
+    slaPolicyId: uuid('sla_policy_id'),
+    /** At-risk and breach alerts already sent, e.g. { "resolution:breached": "…" }. */
+    slaAlerts: jsonb('sla_alerts').notNull().default({}),
   },
   (t) => [
     index('requests_requester_idx').on(t.requesterId),
@@ -992,3 +998,32 @@ export const apiIdempotencyKeys = pgTable(
     index('api_idempotency_keys_created_idx').on(t.createdAt),
   ],
 );
+
+/** Working hours of a department (SPEC §6.5); SLA clocks only run inside them. */
+export const businessCalendars = pgTable('business_calendars', {
+  id: id(),
+  departmentId: uuid('department_id')
+    .notNull()
+    .references(() => departments.id),
+  name: text('name').notNull(),
+  timezone: text('timezone').notNull(),
+  /** [{ day: 1–7, start: "09:00", end: "18:00" }] */
+  hours: jsonb('hours').notNull().default([]),
+  holidays: jsonb('holidays').notNull().default([]),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});
+
+/** First-response and resolution targets per priority (SPEC §6.5). */
+export const slaPolicies = pgTable('sla_policies', {
+  id: id(),
+  departmentId: uuid('department_id')
+    .notNull()
+    .references(() => departments.id),
+  name: text('name').notNull(),
+  calendarId: uuid('calendar_id').references(() => businessCalendars.id),
+  pauseDuringApproval: boolean('pause_during_approval').notNull().default(true),
+  targets: jsonb('targets').notNull().default({}),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
+  createdAt: createdAt(),
+});

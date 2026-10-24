@@ -123,7 +123,8 @@
     "project_not_in_team": "Dieses Projekt oder dieser Meilenstein umfasst dieses Team nicht.",
     "import_auth_failed": "Die Quelle hat das Token abgelehnt. Prüfen Sie es und seine Berechtigungen.",
     "import_source_failed": "Die Quelle ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut.",
-    "import_not_ready": "Dieser Import kann das in seinem aktuellen Zustand nicht."
+    "import_not_ready": "Dieser Import kann das in seinem aktuellen Zustand nicht.",
+    "calendar_in_use": "Dieser Kalender wird von einer SLA-Richtlinie verwendet. Ändern Sie zuerst die Richtlinie."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -154,7 +155,8 @@
       "roles": "Rollen",
       "audit": "Audit-Log",
       "import": "Import",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "sla": "SLA"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -339,7 +341,9 @@
         "request_received": "Neue Anfragen",
         "approval_requested": "Angeforderte Genehmigungen",
         "approval_decided": "Entschiedene Genehmigungen",
-        "request_resolved": "Erledigte Anfragen"
+        "request_resolved": "Erledigte Anfragen",
+        "sla_at_risk": "SLA gefährdet",
+        "sla_breached": "SLA verletzt"
       }
     },
     "tokens": {
@@ -721,7 +725,9 @@
       "request_received": "Neue Anfrage für Ihr Team: {item}",
       "request_status_changed": "{actor} hat {item} aktualisiert",
       "request_commented": "{actor} hat {item} kommentiert",
-      "issue_mentioned": "{actor} hat Sie in {item} erwähnt"
+      "issue_mentioned": "{actor} hat Sie in {item} erwähnt",
+      "sla_at_risk": "SLA gefährdet bei {item}",
+      "sla_breached": "SLA verletzt bei {item}"
     }
   },
   "tokens": {
@@ -1012,7 +1018,53 @@
       "request_status_changed": "Anfragestatus geändert",
       "request_commented": "Kommentar zu Anfrage",
       "approval_requested": "Genehmigung angefordert",
-      "approval_decided": "Genehmigung entschieden"
+      "approval_decided": "Genehmigung entschieden",
+      "sla_at_risk": "SLA gefährdet",
+      "sla_breached": "SLA verletzt"
+    }
+  },
+  "sla": {
+    "subtitle": "Reaktions- und Lösungsziele für Anfragen, gezählt in Arbeitszeit. Während auf die anfragende Person gewartet wird, steht die Uhr.",
+    "department": "Abteilung",
+    "calendars": "Arbeitszeiten",
+    "newCalendar": "Neuer Kalender",
+    "editCalendar": "Kalender bearbeiten",
+    "noCalendars": "Noch keine Kalender: Die Uhren laufen rund um die Uhr.",
+    "policies": "SLA-Richtlinien",
+    "newPolicy": "Neue Richtlinie",
+    "editPolicy": "Richtlinie bearbeiten",
+    "noPolicies": "Noch keine SLA-Richtlinien.",
+    "archive": "Archivieren",
+    "confirmArchivePolicy": "„{name}“ archivieren? Anfragetypen verlieren sie; laufende Anfragen behalten ihre Uhren.",
+    "name": "Name",
+    "timezone": "Zeitzone",
+    "from": "Von",
+    "to": "Bis",
+    "workingDays": "Arbeitstage",
+    "holidays": "Feiertage (ein Datum pro Zeile)",
+    "save": "Speichern",
+    "calendar": "Arbeitszeiten",
+    "allDay": "Rund um die Uhr",
+    "pauseDuringApproval": "Uhr anhalten, solange Genehmigungen ausstehen",
+    "firstResponseHours": "Erste Reaktion, Stunden",
+    "resolutionHours": "Lösung, Stunden",
+    "firstResponseFor": "Erste Reaktion bei {priority}",
+    "resolutionFor": "Lösung bei {priority}",
+    "targetsHint": "Leer lassen für kein Ziel. 0,5 = 30 Minuten.",
+    "policy": "SLA-Richtlinie",
+    "noPolicy": "Kein SLA",
+    "title": "SLA",
+    "metric": {
+      "firstResponse": "Erste Reaktion",
+      "resolution": "Lösung"
+    },
+    "state": {
+      "on_track": "Im Plan",
+      "at_risk": "Gefährdet",
+      "breached": "Verletzt",
+      "paused": "Pausiert",
+      "met": "Eingehalten",
+      "missed": "Verfehlt"
     }
   }
 }

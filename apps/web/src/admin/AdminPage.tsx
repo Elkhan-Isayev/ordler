@@ -11,6 +11,7 @@ import { MailSection } from './MailSection.js';
 import { TokensSection } from './TokensSection.js';
 import { RequestTypesSection } from './RequestTypesSection.js';
 import { RolesSection } from './RolesSection.js';
+import { SlaSection } from './SlaSection.js';
 import { MembersSection } from './MembersSection.js';
 import { UpdatesSection } from './UpdatesSection.js';
 import { WebhooksSection } from './WebhooksSection.js';
@@ -20,6 +21,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'members', permission: 'org.manage' },
   { id: 'roles', permission: 'role.create' },
   { id: 'requestTypes', permission: 'request_type.manage' },
+  { id: 'sla', permission: 'sla_policy.manage' },
   { id: 'authentication', permission: 'auth.manage' },
   { id: 'mail', permission: 'mail.manage' },
   { id: 'integrations', permission: 'team.update' },
@@ -65,6 +67,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'departments' && <DepartmentsSection />}
         {active === 'members' && <MembersSection currentMemberId={me.member.id} />}
         {active === 'requestTypes' && <RequestTypesSection />}
+        {active === 'sla' && <SlaSection />}
         {active === 'authentication' && <AuthSection />}
         {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
         {active === 'integrations' && <IntegrationsSection />}

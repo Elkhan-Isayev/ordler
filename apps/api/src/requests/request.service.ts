@@ -1,4 +1,5 @@
 import type { WebhookEmitter } from '../webhooks/webhook.service.js';
+import type { SlaService } from '../sla/sla.service.js';
 import { createHash } from 'node:crypto';
 import {
   can,
@@ -79,6 +80,8 @@ export interface RequestServiceDeps {
   channels?: TeamChannels;
   /** Outgoing webhooks (SPEC §10). */
   hooks?: WebhookEmitter;
+  /** SLA clocks (SPEC §6.5). */
+  sla?: SlaService;
   now?: () => Date;
 }
 
@@ -805,6 +808,7 @@ export class RequestService {
         // Every request starts pending; advance() releases it when no step is left.
         status: 'pending_approval',
         priority: input.priority,
+        slaPolicyId: input.type.slaPolicyId,
         createdAt: now,
         updatedAt: now,
       })
@@ -1141,6 +1145,9 @@ export class RequestService {
       .leftJoin(requestGroups, eq(requestGroups.id, requests.groupId))
       .where(where)
       .orderBy(newestFirst ? desc(requests.number) : asc(requests.number));
+    const badges = this.deps.sla
+      ? await this.deps.sla.badges(rows.map((r) => r.request))
+      : undefined;
     return rows.map((r) => ({
       id: r.request.id,
       identifier: formatRequestIdentifier(r.request.number),
@@ -1160,6 +1167,7 @@ export class RequestService {
         r.request.groupId && r.groupNumber
           ? { id: r.request.groupId, identifier: formatGroupIdentifier(r.groupNumber) }
           : null,
+      sla: badges?.get(r.request.id) ?? null,
       createdAt: r.request.createdAt.toISOString(),
       updatedAt: r.request.updatedAt.toISOString(),
     }));
@@ -1319,6 +1327,7 @@ export class RequestService {
           data: event.data as Record<string, unknown>,
           createdAt: event.createdAt.toISOString(),
         })),
+      slaClocks: (await this.deps.sla?.forRequest(row)) ?? null,
       linkedIssues: agent
         ? {
             kind: 'details',

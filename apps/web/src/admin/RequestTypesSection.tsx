@@ -7,6 +7,7 @@ import {
   type FormFieldType,
   type RequestTypeInput,
   type RequestTypeView,
+  type SlaPolicyView,
 } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,6 +47,7 @@ const emptyDraft = (teamId: string): Draft => ({
     targetTeamId: teamId,
     approvalSteps: [],
     allowRequesterApprovals: false,
+    slaPolicyId: null,
   },
 });
 
@@ -56,6 +58,7 @@ export function RequestTypesSection() {
   const [directory, setDirectory] = useState<DirectoryView>();
   const [departmentId, setDepartmentId] = useState('');
   const [types, setTypes] = useState<RequestTypeView[]>([]);
+  const [policies, setPolicies] = useState<SlaPolicyView[]>([]);
   const [draft, setDraft] = useState<Draft>();
   const [error, setError] = useState<string>();
 
@@ -74,6 +77,8 @@ export function RequestTypesSection() {
     if (!departmentId) return;
     try {
       setTypes(await api.departmentRequestTypes(departmentId));
+      // Managing types does not imply managing SLA; without it only the current policy shows.
+      setPolicies(await api.slaPolicies(departmentId).catch(() => []));
     } catch (failure) {
       setError(errorKey(failure));
     }
@@ -208,6 +213,33 @@ export function RequestTypesSection() {
               />
               {t('admin.requestTypes.allowRequesterApprovals')}
             </label>
+            <label className="flex flex-col gap-1 text-ink-muted">
+              {t('sla.policy')}
+              <select
+                value={draft.input.slaPolicyId ?? ''}
+                className={selectClass}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    input: { ...draft.input, slaPolicyId: e.target.value || null },
+                  })
+                }
+              >
+                <option value="">{t('sla.noPolicy')}</option>
+                {[
+                  ...policies,
+                  ...types
+                    .flatMap((type) => (type.slaPolicy ? [type.slaPolicy] : []))
+                    .filter((p) => !policies.some((known) => known.id === p.id)),
+                ]
+                  .filter((p, i, all) => all.findIndex((x) => x.id === p.id) === i)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
             <div className="flex gap-2">
               <button type="submit" className={buttonClass}>
                 {t('admin.auth.save')}
@@ -256,6 +288,7 @@ export function RequestTypesSection() {
                               rule,
                             })),
                             allowRequesterApprovals: type.allowRequesterApprovals,
+                            slaPolicyId: type.slaPolicy?.id ?? null,
                           },
                         })
                       }

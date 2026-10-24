@@ -73,6 +73,7 @@ export const ADMIN_ERROR_CODES = [
   'system_role',
   'role_in_use',
   'role_name_taken',
+  'calendar_in_use',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 

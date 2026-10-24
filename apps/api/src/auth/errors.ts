@@ -43,6 +43,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   system_role: 409,
   role_in_use: 409,
   role_name_taken: 409,
+  calendar_in_use: 409,
   mail_managed_by_env: 409,
   database_managed_by_env: 409,
   forbidden: 403,

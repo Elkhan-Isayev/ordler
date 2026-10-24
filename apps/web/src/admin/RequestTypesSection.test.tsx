@@ -16,6 +16,9 @@ describe('RequestTypesSection', () => {
       'GET /api/directory': () => ({ json: DIRECTORY }),
       [`GET /api/admin/departments/${DEPT_ID}/request-types`]: () => ({ json: [] }),
       [`POST /api/admin/departments/${DEPT_ID}/request-types`]: () => ({ status: 201, json: {} }),
+      [`GET /api/admin/departments/${DEPT_ID}/sla-policies`]: () => ({
+        json: [{ id: 'p1', name: 'Standard' }],
+      }),
     });
     await renderWithI18n(<RequestTypesSection />);
     await userEvent.click(await screen.findByRole('button', { name: '+ New request type' }));
@@ -34,6 +37,7 @@ describe('RequestTypesSection', () => {
       within(form).getByLabelText('Approver'),
       'requester_department_supervisor',
     );
+    await userEvent.selectOptions(within(form).getByLabelText('SLA policy'), 'p1');
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
@@ -53,6 +57,7 @@ describe('RequestTypesSection', () => {
       ],
       approvalSteps: [{ selector: { type: 'requester_department_supervisor' }, rule: 'any' }],
       allowRequesterApprovals: false,
+      slaPolicyId: 'p1',
     });
   });
 });

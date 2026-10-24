@@ -1,3 +1,4 @@
+import type { SlaService } from '../sla/sla.service.js';
 import {
   can,
   ORGANIZATION_SCOPE,
@@ -25,6 +26,7 @@ export class RequestTypeService {
   constructor(
     private readonly db: Db,
     private readonly access: AccessContextSource,
+    private readonly sla?: SlaService,
   ) {}
 
   async portals(memberId: string): Promise<PortalView[]> {
@@ -143,11 +145,13 @@ export class RequestTypeService {
         })),
       ),
       allowRequesterApprovals: row.allowRequesterApprovals,
+      slaPolicy: (await this.sla?.policyRef(row.slaPolicyId)) ?? null,
       archivedAt: row.archivedAt?.toISOString() ?? null,
     };
   }
 
   private async validate(departmentId: string, input: RequestTypeInput): Promise<void> {
+    await this.sla?.assertUsable(departmentId, input.slaPolicyId);
     const [team] = await this.db.select().from(teams).where(eq(teams.id, input.targetTeamId));
     // Requests always land in a team of the department that offers the type.
     if (!team || team.departmentId !== departmentId || team.archivedAt) {

@@ -123,7 +123,8 @@
     "project_not_in_team": "This project or milestone does not include this team.",
     "import_auth_failed": "The source rejected the token. Check it and its permissions.",
     "import_source_failed": "The source could not be reached or answered with an error. Try again later.",
-    "import_not_ready": "This import cannot do that in its current state."
+    "import_not_ready": "This import cannot do that in its current state.",
+    "calendar_in_use": "This calendar is used by an SLA policy. Change the policy first."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -154,7 +155,8 @@
       "roles": "Roles",
       "audit": "Audit log",
       "import": "Import",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "sla": "SLA"
     },
     "departments": {
       "title": "Departments and teams",
@@ -339,7 +341,9 @@
         "request_received": "New requests",
         "approval_requested": "Approvals requested",
         "approval_decided": "Approvals decided",
-        "request_resolved": "Requests resolved"
+        "request_resolved": "Requests resolved",
+        "sla_at_risk": "SLA at risk",
+        "sla_breached": "SLA breached"
       }
     },
     "tokens": {
@@ -721,7 +725,9 @@
       "request_received": "New request for your team: {item}",
       "request_status_changed": "{actor} updated {item}",
       "request_commented": "{actor} commented on {item}",
-      "issue_mentioned": "{actor} mentioned you in {item}"
+      "issue_mentioned": "{actor} mentioned you in {item}",
+      "sla_at_risk": "SLA at risk on {item}",
+      "sla_breached": "SLA breached on {item}"
     }
   },
   "tokens": {
@@ -1012,7 +1018,53 @@
       "request_status_changed": "Request status changed",
       "request_commented": "Request comment",
       "approval_requested": "Approval requested",
-      "approval_decided": "Approval decided"
+      "approval_decided": "Approval decided",
+      "sla_at_risk": "SLA at risk",
+      "sla_breached": "SLA breached"
+    }
+  },
+  "sla": {
+    "subtitle": "Response and resolution targets for requests, counted in working hours. Clocks pause while waiting for the requester.",
+    "department": "Department",
+    "calendars": "Working hours",
+    "newCalendar": "New calendar",
+    "editCalendar": "Edit calendar",
+    "noCalendars": "No calendars yet: clocks run around the clock.",
+    "policies": "SLA policies",
+    "newPolicy": "New policy",
+    "editPolicy": "Edit policy",
+    "noPolicies": "No SLA policies yet.",
+    "archive": "Archive",
+    "confirmArchivePolicy": "Archive “{name}”? Request types lose it; requests already running keep their clocks.",
+    "name": "Name",
+    "timezone": "Time zone",
+    "from": "From",
+    "to": "To",
+    "workingDays": "Working days",
+    "holidays": "Holidays (one date per line)",
+    "save": "Save",
+    "calendar": "Working hours",
+    "allDay": "Around the clock",
+    "pauseDuringApproval": "Pause the clock while approvals are pending",
+    "firstResponseHours": "First response, hours",
+    "resolutionHours": "Resolution, hours",
+    "firstResponseFor": "First response for {priority}",
+    "resolutionFor": "Resolution for {priority}",
+    "targetsHint": "Leave a field empty for no target. 0.5 = 30 minutes.",
+    "policy": "SLA policy",
+    "noPolicy": "No SLA",
+    "title": "SLA",
+    "metric": {
+      "firstResponse": "First response",
+      "resolution": "Resolution"
+    },
+    "state": {
+      "on_track": "On track",
+      "at_risk": "At risk",
+      "breached": "Breached",
+      "paused": "Paused",
+      "met": "Met",
+      "missed": "Missed"
     }
   }
 }

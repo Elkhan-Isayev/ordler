@@ -12,6 +12,8 @@ export const WEBHOOK_EVENTS = [
   'request.commented',
   'approval.requested',
   'approval.decided',
+  'sla.at_risk',
+  'sla.breached',
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number] | 'ping';
 

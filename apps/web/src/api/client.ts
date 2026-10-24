@@ -1,4 +1,8 @@
 import type {
+  CalendarInput,
+  CalendarView,
+  SlaPolicyInput,
+  SlaPolicyView,
   CreateWebhookInput,
   UpdateWebhookInput,
   WebhookDeliveryView,
@@ -223,6 +227,28 @@ export const api = {
     apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
   removeMilestone: (id: string) =>
     apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
+  calendars: (departmentId: string) =>
+    apiRequest<CalendarView[]>(`/api/admin/departments/${departmentId}/calendars`),
+  createCalendar: (departmentId: string, body: CalendarInput) =>
+    apiRequest<CalendarView>(`/api/admin/departments/${departmentId}/calendars`, {
+      method: 'POST',
+      body,
+    }),
+  updateCalendar: (id: string, body: CalendarInput) =>
+    apiRequest<CalendarView>(`/api/admin/calendars/${id}`, { method: 'PUT', body }),
+  archiveCalendar: (id: string) =>
+    apiRequest<void>(`/api/admin/calendars/${id}/archive`, { method: 'POST' }),
+  slaPolicies: (departmentId: string) =>
+    apiRequest<SlaPolicyView[]>(`/api/admin/departments/${departmentId}/sla-policies`),
+  createSlaPolicy: (departmentId: string, body: SlaPolicyInput) =>
+    apiRequest<SlaPolicyView>(`/api/admin/departments/${departmentId}/sla-policies`, {
+      method: 'POST',
+      body,
+    }),
+  updateSlaPolicy: (id: string, body: SlaPolicyInput) =>
+    apiRequest<SlaPolicyView>(`/api/admin/sla-policies/${id}`, { method: 'PUT', body }),
+  archiveSlaPolicy: (id: string) =>
+    apiRequest<void>(`/api/admin/sla-policies/${id}/archive`, { method: 'POST' }),
   webhooks: () => apiRequest<WebhookView[]>('/api/admin/webhooks'),
   createWebhook: (body: CreateWebhookInput) =>
     apiRequest<WebhookWithSecret>('/api/admin/webhooks', { method: 'POST', body }),

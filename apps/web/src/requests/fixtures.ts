@@ -31,6 +31,7 @@ export const HARDWARE: RequestTypeView = {
     { selector: { type: 'requester_department_supervisor' }, rule: 'any', names: {} },
   ],
   allowRequesterApprovals: true,
+  slaPolicy: null,
   archivedAt: null,
 };
 
@@ -75,6 +76,8 @@ export function request(overrides: Partial<RequestView> = {}): RequestView {
     requester: { id: 'm-ann', name: 'Ann Lee' },
     assignee: null,
     group: null,
+    sla: null,
+    slaClocks: null,
     createdAt: '2026-10-21T09:00:00.000Z',
     updatedAt: '2026-10-21T09:00:00.000Z',
     description: 'For the support team',

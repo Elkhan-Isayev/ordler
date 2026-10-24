@@ -24,6 +24,7 @@ describe('adminSections', () => {
     ]);
     expect(adminSections(['auth.manage'])).toEqual(['authentication']);
     expect(adminSections(['webhook.manage'])).toEqual(['webhooks']);
+    expect(adminSections(['sla_policy.manage'])).toEqual(['sla']);
     expect(adminSections(['team.update'])).toEqual(['integrations']);
     expect(adminSections(['mail.manage'])).toEqual(['mail']);
     expect(adminSections(['issue.read'])).toEqual([]);

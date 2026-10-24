@@ -49,7 +49,9 @@ export interface WebhookEmitter {
       | 'request.status_changed'
       | 'request.commented'
       | 'approval.requested'
-      | 'approval.decided',
+      | 'approval.decided'
+      | 'sla.at_risk'
+      | 'sla.breached',
     request: RequestRow,
     actorId: string | null,
     extra?: Record<string, unknown>,
@@ -269,7 +271,9 @@ export class WebhookService implements WebhookEmitter {
       | 'request.status_changed'
       | 'request.commented'
       | 'approval.requested'
-      | 'approval.decided',
+      | 'approval.decided'
+      | 'sla.at_risk'
+      | 'sla.breached',
     request: RequestRow,
     actorId: string | null,
     extra: Record<string, unknown> = {},

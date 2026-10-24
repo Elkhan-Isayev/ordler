@@ -152,6 +152,7 @@ async function startApplication(
     ctx.cycles.start(undefined, (message) => logger.warn(message));
     ctx.imports.startRunner(undefined, (message) => logger.warn(message));
     ctx.webhooks.startRunner();
+    ctx.sla.startRunner();
   }
   logger.log(`Listening on port ${config.port}`);
 }
