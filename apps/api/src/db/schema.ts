@@ -974,3 +974,21 @@ export const webhookDeliveries = pgTable(
     index('webhook_deliveries_endpoint_idx').on(t.endpointId, t.createdAt),
   ],
 );
+
+/** Idempotency-Key replays for the public REST API (SPEC §10), kept for a day. */
+export const apiIdempotencyKeys = pgTable(
+  'api_idempotency_keys',
+  {
+    tokenId: uuid('token_id').notNull(),
+    key: text('key').notNull(),
+    /** Method, path and body hash: the same key with another request is refused. */
+    requestHash: text('request_hash').notNull(),
+    statusCode: integer('status_code'),
+    response: jsonb('response'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tokenId, t.key] }),
+    index('api_idempotency_keys_created_idx').on(t.createdAt),
+  ],
+);

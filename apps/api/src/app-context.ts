@@ -94,6 +94,7 @@ export interface AppContext {
     testMail: RateLimiter;
     slackTest: RateLimiter;
     mcp: RateLimiter;
+    api: RateLimiter;
   };
 }
 
@@ -277,6 +278,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       slackTest: new RateLimiter(10, FIFTEEN_MINUTES),
       // SPEC §10.1: 120 MCP requests per minute per token.
       mcp: new RateLimiter(120, 60_000),
+      // Public REST API: 600 requests per minute per token.
+      api: new RateLimiter(600, 60_000),
     },
   };
 }

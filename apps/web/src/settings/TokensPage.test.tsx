@@ -38,6 +38,11 @@ describe('TokensPage', () => {
     await renderWithI18n(<TokensPage baseUrl="https://ordler.test" />);
     expect(await screen.findByText('No tokens yet.')).toBeInTheDocument();
     expect(screen.getByText('https://ordler.test/mcp')).toBeInTheDocument();
+    expect(screen.getByText('https://ordler.test/api/v1')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'OpenAPI description' })).toHaveAttribute(
+      'href',
+      '/api/v1/openapi.json',
+    );
     // Without an admin opt-in there is no "no expiry" choice.
     expect(screen.queryByRole('option', { name: 'No expiry' })).not.toBeInTheDocument();
 

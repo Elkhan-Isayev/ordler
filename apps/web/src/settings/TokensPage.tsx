@@ -173,6 +173,16 @@ export function TokensPage({ baseUrl = window.location.origin }: { baseUrl?: str
         <h3 className="text-sm font-semibold text-ink">{t('tokens.connect')}</h3>
         <p className="text-sm text-ink-muted">{t('tokens.connectHint')}</p>
         <code className="rounded-md bg-hover px-2 py-1 text-sm text-ink">{`${baseUrl}/mcp`}</code>
+        <p className="text-sm text-ink-muted">{t('tokens.restHint')}</p>
+        <code className="rounded-md bg-hover px-2 py-1 text-sm text-ink">{`${baseUrl}/api/v1`}</code>
+        <a
+          href="/api/v1/openapi.json"
+          target="_blank"
+          rel="noopener"
+          className="text-sm text-accent hover:underline"
+        >
+          {t('tokens.openApi')}
+        </a>
       </Panel>
       <Panel>
         <h3 className="text-sm font-semibold text-ink">{t('tokens.yours')}</h3>

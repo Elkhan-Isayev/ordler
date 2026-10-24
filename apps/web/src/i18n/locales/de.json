@@ -762,7 +762,9 @@
     },
     "expires": "läuft ab am {date}",
     "lastUsed": "zuletzt verwendet {date} von {ip}",
-    "neverUsed": "nie verwendet"
+    "neverUsed": "nie verwendet",
+    "restHint": "Dieselben Tokens funktionieren mit der REST-API: Senden Sie sie als \"Authorization: Bearer …\".",
+    "openApi": "OpenAPI-Beschreibung"
   },
   "search": {
     "title": "Suche",

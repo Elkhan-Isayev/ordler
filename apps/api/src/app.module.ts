@@ -17,6 +17,7 @@ import { InitiativesController } from './projects/initiatives.controller.js';
 import { ImportsController } from './imports/imports.controller.js';
 import { WebhooksController } from './webhooks/webhooks.controller.js';
 import { McpServer } from './mcp/mcp.server.js';
+import { PublicApi } from './api-v1/public-api.js';
 import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { RequestsController } from './requests/requests.controller.js';
@@ -77,4 +78,5 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   await instance.register(fastifyMultipart);
   await ctx.realtime.register(instance);
   new McpServer(ctx, ctx.version).register(instance);
+  new PublicApi(ctx).register(instance);
 }
