@@ -153,7 +153,8 @@
       "tokens": "Access tokens and MCP",
       "roles": "Roles",
       "audit": "Audit log",
-      "import": "Import"
+      "import": "Import",
+      "webhooks": "Webhooks"
     },
     "departments": {
       "title": "Departments and teams",
@@ -963,5 +964,53 @@
     "resume": "Resume",
     "cancel": "Cancel import",
     "close": "Close"
+  },
+  "webhooks": {
+    "subtitle": "Send signed HTTP POSTs to your systems when issues, requests and approvals change. Failed deliveries are retried for about two days.",
+    "secretOnce": "Signing secret for “{name}”. Copy it now: it is shown only once.",
+    "verifyHint": "Verify the Ordler-Signature header: t=TIMESTAMP,v1=HEX, where HEX is HMAC-SHA256 of \"TIMESTAMP.BODY\" with this secret.",
+    "done": "Done",
+    "empty": "No webhooks yet.",
+    "events": "Events",
+    "add": "Add a webhook",
+    "name": "Name",
+    "url": "Endpoint URL",
+    "scope": "For",
+    "create": "Create webhook",
+    "enabled": "Active",
+    "disabled": "Paused",
+    "lastDelivery": "Last delivered {when}",
+    "noDeliveries": "No deliveries yet",
+    "failures": "{count, plural, one {# failed delivery} other {# failed deliveries}} this week",
+    "save": "Save",
+    "editEvents": "Edit events",
+    "test": "Send test",
+    "disable": "Pause",
+    "enable": "Resume",
+    "rotate": "New secret",
+    "confirmRotate": "Create a new signing secret? The current one stops working immediately.",
+    "showLog": "Delivery log",
+    "hideLog": "Hide log",
+    "delete": "Delete",
+    "confirmDelete": "Delete the webhook “{name}” and its delivery log?",
+    "log": "Delivery log",
+    "status": {
+      "pending": "Pending",
+      "succeeded": "Delivered",
+      "failed": "Failed"
+    },
+    "attempts": "{count, plural, one {# attempt} other {# attempts}}",
+    "redeliver": "Send again",
+    "event": {
+      "issue_created": "Issue created",
+      "issue_updated": "Issue changed",
+      "issue_deleted": "Issue deleted",
+      "issue_commented": "Issue comment",
+      "request_created": "Request submitted",
+      "request_status_changed": "Request status changed",
+      "request_commented": "Request comment",
+      "approval_requested": "Approval requested",
+      "approval_decided": "Approval decided"
+    }
   }
 }

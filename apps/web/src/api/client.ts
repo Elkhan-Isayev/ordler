@@ -1,4 +1,9 @@
 import type {
+  CreateWebhookInput,
+  UpdateWebhookInput,
+  WebhookDeliveryView,
+  WebhookView,
+  WebhookWithSecret,
   ImportConfig,
   ImportConnectInput,
   ImportDryRun,
@@ -218,6 +223,23 @@ export const api = {
     apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
   removeMilestone: (id: string) =>
     apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
+  webhooks: () => apiRequest<WebhookView[]>('/api/admin/webhooks'),
+  createWebhook: (body: CreateWebhookInput) =>
+    apiRequest<WebhookWithSecret>('/api/admin/webhooks', { method: 'POST', body }),
+  updateWebhook: (id: string, body: UpdateWebhookInput) =>
+    apiRequest<WebhookView>(`/api/admin/webhooks/${id}`, { method: 'PATCH', body }),
+  deleteWebhook: (id: string) =>
+    apiRequest<void>(`/api/admin/webhooks/${id}`, { method: 'DELETE' }),
+  rotateWebhookSecret: (id: string) =>
+    apiRequest<WebhookWithSecret>(`/api/admin/webhooks/${id}/rotate-secret`, { method: 'POST' }),
+  testWebhook: (id: string) =>
+    apiRequest<WebhookDeliveryView>(`/api/admin/webhooks/${id}/test`, { method: 'POST' }),
+  webhookDeliveries: (id: string) =>
+    apiRequest<WebhookDeliveryView[]>(`/api/admin/webhooks/${id}/deliveries`),
+  redeliverWebhook: (deliveryId: string) =>
+    apiRequest<WebhookDeliveryView>(`/api/admin/webhooks/deliveries/${deliveryId}/redeliver`, {
+      method: 'POST',
+    }),
   imports: () => apiRequest<ImportRunView[]>('/api/admin/imports'),
   importRun: (id: string) => apiRequest<ImportRunView>(`/api/admin/imports/${id}`),
   connectImport: (body: ImportConnectInput) =>

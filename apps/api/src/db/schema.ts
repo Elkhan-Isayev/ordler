@@ -932,3 +932,45 @@ export const externalRefs = pgTable(
   },
   (t) => [primaryKey({ columns: [t.sourceKey, t.kind, t.externalId] })],
 );
+
+/** Outgoing webhooks (SPEC §10, ADR 0011): admin-configured endpoints with a signing secret. */
+export const webhookEndpoints = pgTable('webhook_endpoints', {
+  id: id(),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  /** Sealed with the instance key; needed in plain text to sign, so not a hash. */
+  secretEncrypted: text('secret_encrypted').notNull(),
+  events: jsonb('events').notNull().default([]),
+  scopeType: text('scope_type', { enum: ['organization', 'department', 'team'] }).notNull(),
+  scopeId: uuid('scope_id'),
+  enabled: boolean('enabled').notNull().default(true),
+  createdBy: uuid('created_by').references(() => members.id),
+  createdAt: createdAt(),
+});
+
+/** One event for one endpoint, retried with backoff; also the delivery log. */
+export const webhookDeliveries = pgTable(
+  'webhook_deliveries',
+  {
+    id: id(),
+    endpointId: uuid('endpoint_id')
+      .notNull()
+      .references(() => webhookEndpoints.id, { onDelete: 'cascade' }),
+    event: text('event').notNull(),
+    payload: jsonb('payload').notNull(),
+    status: text('status', { enum: ['pending', 'succeeded', 'failed'] })
+      .notNull()
+      .default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    responseStatus: integer('response_status'),
+    error: text('error'),
+    createdAt: createdAt(),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('webhook_deliveries_due_idx').on(t.status, t.nextAttemptAt),
+    index('webhook_deliveries_endpoint_idx').on(t.endpointId, t.createdAt),
+  ],
+);

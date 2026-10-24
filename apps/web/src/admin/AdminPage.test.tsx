@@ -23,6 +23,7 @@ describe('adminSections', () => {
       'updates',
     ]);
     expect(adminSections(['auth.manage'])).toEqual(['authentication']);
+    expect(adminSections(['webhook.manage'])).toEqual(['webhooks']);
     expect(adminSections(['team.update'])).toEqual(['integrations']);
     expect(adminSections(['mail.manage'])).toEqual(['mail']);
     expect(adminSections(['issue.read'])).toEqual([]);

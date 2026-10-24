@@ -7,7 +7,7 @@ departments (Jira Service Management-like requests with cross-department approva
   any feature work; use its glossary terms (Department, Team, Issue, Request, Approval step,
   Approver selector…) in code, tests and UI copy.
 - Architecture decisions: `docs/adr/` (0001 stack, 0002 on-prem single-tenant, 0003 AGPL
-  and distribution, 0004 authentication, 0005 updates, 0006 installer and data volume, 0007 realtime, 0008 attachments and rich text, 0009 personal tokens and MCP, 0010 import from Linear and Jira). Record any deviation or new major dependency as a new ADR.
+  and distribution, 0004 authentication, 0005 updates, 0006 installer and data volume, 0007 realtime, 0008 attachments and rich text, 0009 personal tokens and MCP, 0010 import from Linear and Jira, 0011 webhooks). Record any deviation or new major dependency as a new ADR.
 - The repository is public and AGPL-3.0: add only AGPL-compatible dependencies, and keep
   fixtures, tests and docs free of secrets and real company data.
 - Ordler ships on-premises only: one Docker image, Compose and Helm chart, PostgreSQL 18+

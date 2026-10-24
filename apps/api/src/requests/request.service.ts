@@ -1,3 +1,4 @@
+import type { WebhookEmitter } from '../webhooks/webhook.service.js';
 import { createHash } from 'node:crypto';
 import {
   can,
@@ -76,6 +77,8 @@ export interface RequestServiceDeps {
   notifier: Notifier;
   events?: EventBus;
   channels?: TeamChannels;
+  /** Outgoing webhooks (SPEC §10). */
+  hooks?: WebhookEmitter;
   now?: () => Date;
 }
 
@@ -130,6 +133,11 @@ export class RequestService {
       return id;
     });
 
+    await this.deps.hooks?.requestEvent(
+      'request.created',
+      await this.fresh(requestId),
+      actor.memberId,
+    );
     await this.advance(requestId, actor.memberId);
     await this.changed(requestId);
     return this.view(actor.memberId, requestId);
@@ -184,6 +192,9 @@ export class RequestService {
       return { groupId: group!.id, childIds: ids };
     });
 
+    for (const id of childIds) {
+      await this.deps.hooks?.requestEvent('request.created', await this.fresh(id), actor.memberId);
+    }
     await this.advanceGroup(groupId, childIds, actor.memberId);
     return this.groupView(actor.memberId, groupId);
   }
@@ -276,6 +287,10 @@ export class RequestService {
         stepId,
         decision: input.decision,
         comment: input.comment ?? null,
+      });
+      await this.deps.hooks?.requestEvent('approval.decided', subject, actor.memberId, {
+        step: { id: stepId, position: step.position, outcome: outcome ?? 'pending' },
+        decision: { decision: input.decision, comment: input.comment ?? null },
       });
       if (outcome === 'rejected') {
         await this.setStatus(subject, 'rejected', actor.memberId);
@@ -526,6 +541,9 @@ export class RequestService {
       throw new DomainError('forbidden');
     }
     await this.addComment(row.id, actor.memberId, input.body, input.internal);
+    await this.deps.hooks?.requestEvent('request.commented', row, actor.memberId, {
+      comment: { body: input.body, visibility: input.internal ? 'internal' : 'public' },
+    });
     // A requester's reply brings a waiting request back to the team.
     if (perspective.isRequester && !perspective.isAgent && row.status === 'waiting_for_requester') {
       await this.setStatus(row, 'in_progress', actor.memberId);
@@ -720,6 +738,9 @@ export class RequestService {
       })
       .where(eq(approvalSteps.id, step.id));
     await this.event(row.id, actorId, 'approval_requested', { stepId: step.id });
+    await this.deps.hooks?.requestEvent('approval.requested', row, actorId, {
+      step: { id: step.id, position: step.position, approverIds: approvers },
+    });
     this.toChannels(row, 'approval_requested');
     await this.deps.notifier.notify({
       recipients: approvers,
@@ -870,7 +891,12 @@ export class RequestService {
       })
       .where(eq(requests.id, row.id));
     await this.event(row.id, actorId, kind, { from: row.status, to: status });
+    const from = row.status;
     row.status = status;
+    row.updatedAt = now;
+    await this.deps.hooks?.requestEvent('request.status_changed', row, actorId, {
+      changes: { status: { from, to: status } },
+    });
   }
 
   private async event(

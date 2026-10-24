@@ -153,7 +153,8 @@
       "tokens": "Zugriffstoken und MCP",
       "roles": "Rollen",
       "audit": "Audit-Log",
-      "import": "Import"
+      "import": "Import",
+      "webhooks": "Webhooks"
     },
     "departments": {
       "title": "Abteilungen und Teams",
@@ -963,5 +964,53 @@
     "resume": "Fortsetzen",
     "cancel": "Import abbrechen",
     "close": "Schließen"
+  },
+  "webhooks": {
+    "subtitle": "Senden Sie signierte HTTP-POSTs an Ihre Systeme, wenn sich Issues, Anfragen und Genehmigungen ändern. Fehlgeschlagene Zustellungen werden etwa zwei Tage lang wiederholt.",
+    "secretOnce": "Signaturgeheimnis für „{name}“. Kopieren Sie es jetzt: Es wird nur einmal angezeigt.",
+    "verifyHint": "Prüfen Sie den Header Ordler-Signature: t=TIMESTAMP,v1=HEX, wobei HEX der HMAC-SHA256 von \"TIMESTAMP.BODY\" mit diesem Geheimnis ist.",
+    "done": "Fertig",
+    "empty": "Noch keine Webhooks.",
+    "events": "Ereignisse",
+    "add": "Webhook hinzufügen",
+    "name": "Name",
+    "url": "Endpunkt-URL",
+    "scope": "Für",
+    "create": "Webhook erstellen",
+    "enabled": "Aktiv",
+    "disabled": "Pausiert",
+    "lastDelivery": "Zuletzt zugestellt {when}",
+    "noDeliveries": "Noch keine Zustellungen",
+    "failures": "{count, plural, one {# fehlgeschlagene Zustellung} other {# fehlgeschlagene Zustellungen}} diese Woche",
+    "save": "Speichern",
+    "editEvents": "Ereignisse bearbeiten",
+    "test": "Test senden",
+    "disable": "Pausieren",
+    "enable": "Fortsetzen",
+    "rotate": "Neues Geheimnis",
+    "confirmRotate": "Ein neues Signaturgeheimnis erstellen? Das aktuelle funktioniert sofort nicht mehr.",
+    "showLog": "Zustellprotokoll",
+    "hideLog": "Protokoll ausblenden",
+    "delete": "Löschen",
+    "confirmDelete": "Den Webhook „{name}“ und sein Zustellprotokoll löschen?",
+    "log": "Zustellprotokoll",
+    "status": {
+      "pending": "Ausstehend",
+      "succeeded": "Zugestellt",
+      "failed": "Fehlgeschlagen"
+    },
+    "attempts": "{count, plural, one {# Versuch} other {# Versuche}}",
+    "redeliver": "Erneut senden",
+    "event": {
+      "issue_created": "Issue erstellt",
+      "issue_updated": "Issue geändert",
+      "issue_deleted": "Issue gelöscht",
+      "issue_commented": "Kommentar zu Issue",
+      "request_created": "Anfrage eingereicht",
+      "request_status_changed": "Anfragestatus geändert",
+      "request_commented": "Kommentar zu Anfrage",
+      "approval_requested": "Genehmigung angefordert",
+      "approval_decided": "Genehmigung entschieden"
+    }
   }
 }

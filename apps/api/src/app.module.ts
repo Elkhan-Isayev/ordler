@@ -15,6 +15,7 @@ import { CyclesController } from './cycles/cycles.controller.js';
 import { ProjectsController } from './projects/projects.controller.js';
 import { InitiativesController } from './projects/initiatives.controller.js';
 import { ImportsController } from './imports/imports.controller.js';
+import { WebhooksController } from './webhooks/webhooks.controller.js';
 import { McpServer } from './mcp/mcp.server.js';
 import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
@@ -54,6 +55,7 @@ export class AppModule {
         ProjectsController,
         InitiativesController,
         ImportsController,
+        WebhooksController,
         AdminRolesController,
       ],
       providers: [

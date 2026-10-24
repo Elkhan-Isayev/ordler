@@ -153,7 +153,8 @@
       "tokens": "Tokenlər və MCP",
       "roles": "Rollar",
       "audit": "Audit jurnalı",
-      "import": "İdxal"
+      "import": "İdxal",
+      "webhooks": "Vebhuklar"
     },
     "departments": {
       "title": "Departamentlər və komandalar",
@@ -963,5 +964,53 @@
     "resume": "Davam et",
     "cancel": "İdxalı dayandır",
     "close": "Bağla"
+  },
+  "webhooks": {
+    "subtitle": "Tapşırıqlar, sorğular və təsdiqlər dəyişəndə sistemlərinizə imzalanmış HTTP POST sorğuları göndərin. Uğursuz çatdırılmalar təxminən iki gün təkrarlanır.",
+    "secretOnce": "“{name}” üçün imza sirri. İndi kopyalayın: yalnız bir dəfə göstərilir.",
+    "verifyHint": "Ordler-Signature başlığını yoxlayın: t=TIMESTAMP,v1=HEX, burada HEX bu sirr ilə \"TIMESTAMP.BODY\" üçün HMAC-SHA256-dır.",
+    "done": "Hazırdır",
+    "empty": "Hələ vebhuk yoxdur.",
+    "events": "Hadisələr",
+    "add": "Vebhuk əlavə et",
+    "name": "Ad",
+    "url": "Qəbuledicinin URL-i",
+    "scope": "Kimin üçün",
+    "create": "Vebhuk yarat",
+    "enabled": "Aktiv",
+    "disabled": "Fasilədə",
+    "lastDelivery": "Son çatdırılma {when}",
+    "noDeliveries": "Hələ çatdırılma yoxdur",
+    "failures": "Bu həftə {count, plural, one {# uğursuz çatdırılma} other {# uğursuz çatdırılma}}",
+    "save": "Saxla",
+    "editEvents": "Hadisələri dəyiş",
+    "test": "Test göndər",
+    "disable": "Fasilə",
+    "enable": "Davam et",
+    "rotate": "Yeni sirr",
+    "confirmRotate": "Yeni imza sirri yaradılsın? Hazırkı dərhal işləməyi dayandıracaq.",
+    "showLog": "Çatdırılma jurnalı",
+    "hideLog": "Jurnalı gizlət",
+    "delete": "Sil",
+    "confirmDelete": "“{name}” vebhuku və onun çatdırılma jurnalı silinsin?",
+    "log": "Çatdırılma jurnalı",
+    "status": {
+      "pending": "Növbədə",
+      "succeeded": "Çatdırıldı",
+      "failed": "Çatdırılmadı"
+    },
+    "attempts": "{count, plural, one {# cəhd} other {# cəhd}}",
+    "redeliver": "Yenidən göndər",
+    "event": {
+      "issue_created": "Tapşırıq yaradıldı",
+      "issue_updated": "Tapşırıq dəyişdi",
+      "issue_deleted": "Tapşırıq silindi",
+      "issue_commented": "Tapşırığa şərh",
+      "request_created": "Sorğu göndərildi",
+      "request_status_changed": "Sorğunun statusu dəyişdi",
+      "request_commented": "Sorğuya şərh",
+      "approval_requested": "Təsdiq istənildi",
+      "approval_decided": "Təsdiq qərarı verildi"
+    }
   }
 }

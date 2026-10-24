@@ -13,6 +13,7 @@ import { RequestTypesSection } from './RequestTypesSection.js';
 import { RolesSection } from './RolesSection.js';
 import { MembersSection } from './MembersSection.js';
 import { UpdatesSection } from './UpdatesSection.js';
+import { WebhooksSection } from './WebhooksSection.js';
 
 const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'departments', permission: 'org.manage' },
@@ -24,6 +25,7 @@ const SECTIONS: Array<{ id: string; permission: Permission }> = [
   { id: 'integrations', permission: 'team.update' },
   { id: 'tokens', permission: 'org.manage' },
   { id: 'import', permission: 'org.manage' },
+  { id: 'webhooks', permission: 'webhook.manage' },
   { id: 'database', permission: 'org.manage' },
   { id: 'updates', permission: 'org.manage' },
   { id: 'audit', permission: 'org.audit.read' },
@@ -68,6 +70,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'integrations' && <IntegrationsSection />}
         {active === 'tokens' && <TokensSection />}
         {active === 'import' && <ImportSection />}
+        {active === 'webhooks' && <WebhooksSection />}
         {active === 'database' && (
           <DatabaseSection canEdit={me.organizationPermissions.includes('instance.manage')} />
         )}

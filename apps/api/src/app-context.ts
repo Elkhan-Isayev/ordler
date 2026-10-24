@@ -29,6 +29,7 @@ import { CycleService } from './cycles/cycle.service.js';
 import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
+import { WebhookService, type WebhookFetch } from './webhooks/webhook.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
@@ -80,6 +81,7 @@ export interface AppContext {
   projects: ProjectService;
   initiatives: InitiativeService;
   imports: ImportService;
+  webhooks: WebhookService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -126,6 +128,8 @@ export interface AppContextDeps {
   updatesFetch?: UpdateFetchFn;
   /** Linear and Jira clients for imports; replaced in tests. */
   importSources?: SourceFactory;
+  /** Outgoing webhook calls; replaced in tests. */
+  webhookFetch?: WebhookFetch;
 }
 
 export function createAppContext(deps: AppContextDeps): AppContext {
@@ -158,12 +162,21 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     log: (message) => console.warn(message),
     ...(deps.slackFetch ? { fetch: deps.slackFetch } : {}),
   });
+  const webhooks = new WebhookService({
+    db: deps.db,
+    box,
+    baseUrl: deps.baseUrl,
+    now,
+    log: (message) => console.warn(message),
+    ...(deps.webhookFetch ? { fetch: deps.webhookFetch } : {}),
+  });
   const issues = new IssueService({
     db: deps.db,
     access: teamAccess,
     events,
     notifier,
     channels: slack,
+    hooks: webhooks,
     now,
   });
   const projects = new ProjectService({ db: deps.db, access, teamAccess, issues, now });
@@ -221,6 +234,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       notifier,
       events,
       channels: slack,
+      hooks: webhooks,
       now,
     }),
     notifications,
@@ -232,6 +246,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
+    webhooks,
     imports: new ImportService({
       db: deps.db,
       box,

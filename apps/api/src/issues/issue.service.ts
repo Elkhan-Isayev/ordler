@@ -40,6 +40,7 @@ import {
 } from '../db/schema.js';
 import type { Notifier } from '../notifications/notifier.js';
 import type { ChannelItem } from '../notifications/slack.service.js';
+import type { WebhookEmitter } from '../webhooks/webhook.service.js';
 import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess, TeamPermissions } from './team-access.js';
 import { teamStatuses } from './workflows.js';
@@ -88,6 +89,8 @@ export interface IssueServiceDeps {
   events: EventBus;
   notifier?: Notifier;
   channels?: TeamChannels;
+  /** Outgoing webhooks (SPEC §10). */
+  hooks?: WebhookEmitter;
   now?: () => Date;
 }
 
@@ -193,6 +196,7 @@ export class IssueService {
   async remove(memberId: string, identifier: string, via?: string): Promise<void> {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
     if (!can.delete) throw new DomainError('forbidden');
+    const removed = await this.summary(issueId);
     await this.db
       .update(issues)
       .set({ archivedAt: this.now(), updatedAt: this.now() })
@@ -205,6 +209,7 @@ export class IssueService {
       after: { identifier: identifier.toUpperCase(), ...(via === undefined ? {} : { via }) },
     });
     await this.deps.events.publish({ type: 'issue.removed', teamId: team.id, issueId });
+    if (removed) await this.deps.hooks?.issueEvent('issue.deleted', removed, memberId);
   }
 
   /** Teams the member can read, for pickers such as a project's teams. */
@@ -411,6 +416,7 @@ export class IssueService {
       identifier: created.identifier,
     });
     this.toChannels(team.id, 'issue_created', created);
+    await this.deps.hooks?.issueEvent('issue.created', created, memberId);
     await this.notifyMentions(memberId, team, issueId, input.description);
     if (assigneeIds.length > 0) {
       await this.deps.notifier?.notify({
@@ -546,6 +552,17 @@ export class IssueService {
     });
     if (input.description !== undefined) {
       await this.notifyMentions(memberId, team, issueId, input.description, before!.description);
+    }
+    if (Object.keys(changes).length > 0) {
+      await this.deps.hooks?.issueEvent('issue.updated', updated, memberId, {
+        changes: Object.fromEntries(
+          // Descriptions are long; receivers fetch them if they care.
+          Object.entries(changes).map(([field, change]) => [
+            field,
+            field === 'description' ? { changed: true } : change,
+          ]),
+        ),
+      });
     }
     if (addedAssignees.length > 0) {
       this.toChannels(team.id, 'issue_assigned', updated);
@@ -973,17 +990,21 @@ export class IssueService {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
     if (!can.comment) throw new DomainError('forbidden');
     const now = this.now();
-    await this.db.transaction(async (tx) => {
-      await tx.insert(comments).values({
-        subjectType: 'issue',
-        subjectId: issueId,
-        authorId: memberId,
-        body,
-        createdAt: now,
-        updatedAt: now,
-      });
+    const commentId = await this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(comments)
+        .values({
+          subjectType: 'issue',
+          subjectId: issueId,
+          authorId: memberId,
+          body,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning({ id: comments.id });
       // Comments count as activity: boards sort and refresh by updatedAt.
       await tx.update(issues).set({ updatedAt: now }).where(eq(issues.id, issueId));
+      return row!.id;
     });
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
     const detail = await this.detailById(issueId, memberId);
@@ -991,6 +1012,9 @@ export class IssueService {
       identifier: detail.identifier,
     });
     this.toChannels(team.id, 'issue_commented', detail, body);
+    await this.deps.hooks?.issueEvent('issue.commented', detail, memberId, {
+      comment: { id: commentId, body, createdAt: now.toISOString() },
+    });
     // Watchers: whoever filed, owns or discussed the issue (SPEC §5.1).
     const [row] = await this.db
       .select({ createdBy: issues.createdBy })
