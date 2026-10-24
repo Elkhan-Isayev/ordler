@@ -863,5 +863,24 @@
     "issues": "Issues",
     "archive": "Archive",
     "confirmArchive": "Archive {name}? Its issues stay, they just leave the project."
+  },
+  "initiatives": {
+    "new": "New initiative",
+    "create": "Create",
+    "name": "Initiative name",
+    "empty": "No initiatives yet. They group projects under an objective.",
+    "owner": "Owner",
+    "noOwner": "No owner",
+    "status": {
+      "planned": "Planned",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "projectCount": "{count, plural, one {# project} other {# projects}}",
+    "descriptionPlaceholder": "What objective does this serve?",
+    "noProjects": "No projects yet.",
+    "addProject": "Add a project…",
+    "removeProject": "Remove {name}",
+    "confirmArchive": "Archive {name}? Its projects stay as they are."
   }
 }

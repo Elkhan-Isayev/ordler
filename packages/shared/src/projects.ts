@@ -97,3 +97,48 @@ export interface ProjectDetail extends ProjectSummary {
   issues: IssueSummary[];
   can: { edit: boolean; post: boolean };
 }
+
+// ---------------------------------------------------------------------------------------------
+// Initiatives (SPEC §5.2)
+// ---------------------------------------------------------------------------------------------
+
+export const INITIATIVE_STATUSES = ['planned', 'active', 'completed'] as const;
+export type InitiativeStatus = (typeof INITIATIVE_STATUSES)[number];
+
+export const initiativeInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  description: z.string().max(100_000).default(''),
+  status: z.enum(INITIATIVE_STATUSES).default('planned'),
+  ownerId: z.uuid().nullable().default(null),
+  targetDate: dateSchema.default(null),
+});
+export type InitiativeInput = z.input<typeof initiativeInputSchema>;
+export const updateInitiativeSchema = initiativeInputSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, 'empty_update');
+export const initiativeProjectsSchema = z.object({
+  projectIds: z
+    .array(z.uuid())
+    .max(100)
+    .transform((ids) => [...new Set(ids)]),
+});
+
+export interface InitiativeSummary {
+  id: string;
+  name: string;
+  status: InitiativeStatus;
+  owner: MemberRef | null;
+  targetDate: string | null;
+  /** Worst health among its live projects' latest updates (SPEC: on track / at risk / off track). */
+  health: ProjectHealth | null;
+  progress: ProjectProgress;
+  projectCount: number;
+  updatedAt: string;
+}
+
+export interface InitiativeDetail extends InitiativeSummary {
+  description: string;
+  /** Only projects the viewer can see. */
+  projects: ProjectSummary[];
+  can: { edit: boolean };
+}

@@ -9,6 +9,7 @@ import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
 import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
 import { CyclePage, CyclesPage } from './cycles/CyclePages.js';
+import { InitiativePage, InitiativesPage } from './projects/InitiativePages.js';
 import { ProjectPage } from './projects/ProjectPage.js';
 import { ProjectsPage } from './projects/ProjectsPage.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
@@ -35,6 +36,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const cyclesPage = /^\/teams\/([A-Za-z0-9]+)\/cycles(?:\/(current|upcoming))?\/?$/.exec(path);
   const cyclePage = /^\/cycles\/([0-9a-f-]{36})\/?$/.exec(path);
   const projectPage = /^\/projects\/([0-9a-f-]{36})\/?$/.exec(path);
+  const initiativePage = /^\/initiatives\/([0-9a-f-]{36})\/?$/.exec(path);
   const teamProjects = /^\/teams\/([A-Za-z0-9]+)\/projects\/?$/.exec(path);
   const teamRequests = /^\/teams\/([A-Za-z0-9]+)\/requests\/?$/.exec(path);
   const teamIntegrations = /^\/teams\/([A-Za-z0-9]+)\/settings\/?$/.exec(path);
@@ -99,6 +101,10 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
             teamKey={cyclesPage[1]!.toUpperCase()}
             filter={(cyclesPage[2] as 'current' | 'upcoming' | undefined) ?? 'all'}
           />
+        ) : path === '/initiatives' ? (
+          <InitiativesPage canCreate={me.organizationPermissions.includes('initiative.manage')} />
+        ) : initiativePage ? (
+          <InitiativePage key={initiativePage[1]} initiativeId={initiativePage[1]!} />
         ) : path === '/projects' ? (
           <ProjectsPage />
         ) : teamProjects ? (

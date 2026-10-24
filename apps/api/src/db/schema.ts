@@ -854,3 +854,35 @@ export const projectUpdates = pgTable(
   },
   (t) => [index('project_updates_project_idx').on(t.projectId, t.createdAt)],
 );
+
+/** Initiatives (SPEC §5.2): projects grouped under an organizational objective. */
+export const initiatives = pgTable('initiatives', {
+  id: id(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  status: text('status', { enum: ['planned', 'active', 'completed'] })
+    .notNull()
+    .default('planned'),
+  ownerId: uuid('owner_id').references(() => members.id),
+  targetDate: date('target_date'),
+  createdBy: uuid('created_by').references(() => members.id),
+  createdAt: createdAt(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
+});
+
+export const initiativeProjects = pgTable(
+  'initiative_projects',
+  {
+    initiativeId: uuid('initiative_id')
+      .notNull()
+      .references(() => initiatives.id),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id),
+  },
+  (t) => [
+    primaryKey({ columns: [t.initiativeId, t.projectId] }),
+    index('initiative_projects_project_idx').on(t.projectId),
+  ],
+);

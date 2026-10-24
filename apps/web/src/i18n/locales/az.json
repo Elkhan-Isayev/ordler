@@ -863,5 +863,24 @@
     "issues": "Tapşırıqlar",
     "archive": "Arxivlə",
     "confirmArchive": "{name} arxivlənsin? Tapşırıqlar qalır, sadəcə layihədən çıxır."
+  },
+  "initiatives": {
+    "new": "Yeni təşəbbüs",
+    "create": "Yarat",
+    "name": "Təşəbbüsün adı",
+    "empty": "Hələ təşəbbüs yoxdur. Onlar layihələri bir məqsəd altında birləşdirir.",
+    "owner": "Sahibi",
+    "noOwner": "Sahibsiz",
+    "status": {
+      "planned": "Planlaşdırılıb",
+      "active": "Aktiv",
+      "completed": "Tamamlanıb"
+    },
+    "projectCount": "{count, plural, one {# layihə} other {# layihə}}",
+    "descriptionPlaceholder": "Bu təşəbbüs hansı məqsədə xidmət edir?",
+    "noProjects": "Hələ layihə yoxdur.",
+    "addProject": "Layihə əlavə et…",
+    "removeProject": "{name} çıxar",
+    "confirmArchive": "{name} arxivlənsin? Layihələr olduğu kimi qalır."
   }
 }

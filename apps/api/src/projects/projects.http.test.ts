@@ -17,7 +17,7 @@ let roles: AdminRole[];
 const ids = {} as Record<'it' | 'fin' | 'help' | 'ops' | 'acc', string>;
 const people = {} as Record<'admin' | 'dev' | 'peer' | 'fin', { cookie: string; id: string }>;
 
-type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 function call(method: Method, url: string, cookie?: string, payload?: object) {
   return t.app.inject({
     method,
@@ -223,5 +223,96 @@ describe('readable teams', () => {
       (await call('GET', '/api/teams', cookie)).json<Array<{ key: string }>>().map((t) => t.key);
     expect(await keys(people.dev.cookie)).toEqual(['HELP', 'OPS']);
     expect(await keys(people.fin.cookie)).toEqual(['ACC']);
+  });
+});
+
+describe('initiatives (SPEC §5.2)', () => {
+  it('group visible projects, roll up health and progress, and are managed by initiative managers', async () => {
+    const a = (
+      await project(people.admin.cookie, { name: 'Office move', teamIds: [ids.help] })
+    ).json<ProjectDetail>();
+    const b = (
+      await project(people.admin.cookie, { name: 'New laptops', teamIds: [ids.ops] })
+    ).json<ProjectDetail>();
+    const hidden = (
+      await project(owner, { name: 'Payroll', teamIds: [ids.acc] })
+    ).json<ProjectDetail>();
+    await call('POST', `/api/projects/${a.id}/updates`, people.admin.cookie, {
+      health: 'on_track',
+      body: 'ok',
+    });
+    await call('POST', `/api/projects/${b.id}/updates`, people.admin.cookie, {
+      health: 'off_track',
+      body: 'late',
+    });
+    const done = (await call('GET', '/api/teams/HELP', owner))
+      .json<TeamView>()
+      .statuses.find((s) => s.key === 'done')!.id;
+    await call('POST', '/api/teams/HELP/issues', owner, {
+      title: 'Boxes',
+      projectId: a.id,
+      statusId: done,
+    });
+    await call('POST', '/api/teams/OPS/issues', owner, { title: 'Order', projectId: b.id });
+
+    // Only initiative managers (org admins and owners by default) create them.
+    expect(
+      (await call('POST', '/api/initiatives', people.admin.cookie, { name: 'Growth' })).statusCode,
+    ).toBe(403);
+    const created = (
+      await call('POST', '/api/initiatives', owner, {
+        name: 'Growth 2027',
+        ownerId: people.admin.id,
+      })
+    ).json<{ id: string }>();
+    await call('PUT', `/api/initiatives/${created.id}/projects`, owner, {
+      projectIds: [a.id, b.id, hidden.id],
+    });
+
+    // The owner may edit; everyone reads, seeing only projects they can see.
+    const asAdmin = (
+      await call('GET', `/api/initiatives/${created.id}`, people.admin.cookie)
+    ).json<{
+      projects: Array<{ name: string }>;
+      health: string;
+      progress: { total: number; completed: number };
+      can: { edit: boolean };
+    }>();
+    expect(asAdmin).toMatchObject({
+      health: 'off_track',
+      progress: { total: 2, completed: 1 },
+      can: { edit: true },
+    });
+    expect(asAdmin.projects.map((p) => p.name)).toEqual(['New laptops', 'Office move']);
+    const asFin = (await call('GET', `/api/initiatives/${created.id}`, people.fin.cookie)).json<{
+      projects: Array<{ name: string }>;
+      can: { edit: boolean };
+    }>();
+    expect(asFin.projects.map((p) => p.name)).toEqual(['Payroll']);
+    expect(asFin.can.edit).toBe(false);
+    expect(
+      (
+        await call('PATCH', `/api/initiatives/${created.id}`, people.fin.cookie, {
+          status: 'active',
+        })
+      ).statusCode,
+    ).toBe(403);
+
+    // Editing projects keeps the ones the editor cannot see.
+    await call('PUT', `/api/initiatives/${created.id}/projects`, people.admin.cookie, {
+      projectIds: [a.id],
+    });
+    const after = (await call('GET', `/api/initiatives/${created.id}`, owner)).json<{
+      projects: Array<{ name: string }>;
+    }>();
+    expect(after.projects.map((p) => p.name)).toEqual(['Office move', 'Payroll']);
+
+    expect(
+      (await call('GET', '/api/initiatives', people.dev.cookie)).json<unknown[]>(),
+    ).toHaveLength(1);
+    expect(
+      (await call('DELETE', `/api/initiatives/${created.id}`, people.admin.cookie)).statusCode,
+    ).toBe(204);
+    expect((await call('GET', '/api/initiatives', owner)).json()).toEqual([]);
   });
 });

@@ -863,5 +863,24 @@
     "issues": "Issues",
     "archive": "Archivieren",
     "confirmArchive": "{name} archivieren? Die Issues bleiben, sie verlassen nur das Projekt."
+  },
+  "initiatives": {
+    "new": "Neue Initiative",
+    "create": "Erstellen",
+    "name": "Name der Initiative",
+    "empty": "Noch keine Initiativen. Sie bündeln Projekte unter einem Ziel.",
+    "owner": "Verantwortlich",
+    "noOwner": "Niemand",
+    "status": {
+      "planned": "Geplant",
+      "active": "Aktiv",
+      "completed": "Abgeschlossen"
+    },
+    "projectCount": "{count, plural, one {# Projekt} other {# Projekte}}",
+    "descriptionPlaceholder": "Welchem Ziel dient diese Initiative?",
+    "noProjects": "Noch keine Projekte.",
+    "addProject": "Projekt hinzufügen…",
+    "removeProject": "{name} entfernen",
+    "confirmArchive": "{name} archivieren? Die Projekte bleiben unverändert."
   }
 }

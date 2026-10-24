@@ -38,6 +38,9 @@ import type {
   CreateIssueInput,
   CreateLabelInput,
   CycleDetail,
+  InitiativeDetail,
+  InitiativeInput,
+  InitiativeSummary,
   ProjectDetail,
   ProjectHealth,
   ProjectInput,
@@ -210,6 +213,19 @@ export const api = {
     apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
   removeMilestone: (id: string) =>
     apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
+  initiatives: () => apiRequest<InitiativeSummary[]>('/api/initiatives'),
+  initiative: (id: string) => apiRequest<InitiativeDetail>(`/api/initiatives/${id}`),
+  createInitiative: (body: InitiativeInput) =>
+    apiRequest<InitiativeDetail>('/api/initiatives', { method: 'POST', body }),
+  updateInitiative: (id: string, body: Partial<InitiativeInput>) =>
+    apiRequest<InitiativeDetail>(`/api/initiatives/${id}`, { method: 'PATCH', body }),
+  setInitiativeProjects: (id: string, projectIds: string[]) =>
+    apiRequest<InitiativeDetail>(`/api/initiatives/${id}/projects`, {
+      method: 'PUT',
+      body: { projectIds },
+    }),
+  archiveInitiative: (id: string) =>
+    apiRequest<void>(`/api/initiatives/${id}`, { method: 'DELETE' }),
   teamCycles: (key: string) =>
     apiRequest<TeamCycles>(`/api/teams/${encodeURIComponent(key)}/cycles`),
   updateCycleSettings: (key: string, body: CycleSettings) =>
