@@ -147,7 +147,10 @@ async function startApplication(
   await ensureAllTeamWorkflows(db);
   await events.start();
   readiness.markMigrated();
-  if (config.role !== 'web') ctx.updates.start();
+  if (config.role !== 'web') {
+    ctx.updates.start();
+    ctx.cycles.start(undefined, (message) => logger.warn(message));
+  }
   logger.log(`Listening on port ${config.port}`);
 }
 

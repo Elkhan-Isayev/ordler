@@ -9,6 +9,7 @@ import {
   type IssueEvent,
   type IssueField,
   type IssueSummary,
+  type CycleRef,
   type LabelRef,
   type MemberRef,
   type LabelView,
@@ -22,6 +23,7 @@ import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
 import {
   comments,
+  cycles,
   departments,
   issueAssignees,
   issueEvents,
@@ -57,7 +59,7 @@ export function likeEscape(text: string): string {
 // Assignees and labels are lists and are compared separately.
 const TRACKED: Array<
   Exclude<IssueField, 'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds'>
-> = ['title', 'description', 'statusId', 'priority', 'dueDate', 'parentId'];
+> = ['title', 'description', 'statusId', 'priority', 'dueDate', 'parentId', 'cycleId'];
 
 /** Slack channels of a team (SPEC §7.1); optional so tests can leave it out. */
 export interface TeamChannels {
@@ -106,6 +108,7 @@ export class IssueService {
       members: people,
       labels: await this.teamLabels(team.id),
       settings: { multipleAssignees: team.multipleAssignees },
+      cycles: await this.openCycles(team.id),
       can: {
         create: can.create,
         update: can.update,
@@ -304,6 +307,7 @@ export class IssueService {
     if (!statuses.some((s) => s.id === statusId)) throw new DomainError('status_not_in_workflow');
     await this.assertLabels(team.id, input.labelIds);
     if (input.parentId) await this.assertParent(team.id, input.parentId);
+    if (input.cycleId) await this.assertCycle(team.id, input.cycleId);
 
     // New sub-issues go last under their parent; read before the transaction holds the connection.
     const subOrder = input.parentId ? await this.nextSubOrder(input.parentId) : 0;
@@ -336,6 +340,7 @@ export class IssueService {
           sortOrder: (top?.min ?? 1) - 1,
           inTriage,
           parentId: input.parentId,
+          cycleId: input.cycleId,
           subOrder,
           createdBy: memberId,
           createdAt: now,
@@ -352,7 +357,8 @@ export class IssueService {
         issueId: row!.id,
         actorId: memberId,
         kind: 'created',
-        changes: {},
+        // The starting cycle is history too: burn-up charts count from it.
+        changes: input.cycleId ? { cycleId: { from: null, to: input.cycleId } } : {},
         viaToken: via ?? null,
         createdAt: now,
       });
@@ -404,6 +410,7 @@ export class IssueService {
       }
     }
     if (input.labelIds) await this.assertLabels(team.id, input.labelIds);
+    if (input.cycleId) await this.assertCycle(team.id, input.cycleId);
     if (input.parentId) await this.assertParent(team.id, input.parentId, issueId);
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
@@ -641,6 +648,7 @@ export class IssueService {
       labels: labelMap.get(issue.id) ?? [],
       parentId: issue.parentId,
       subOrder: issue.subOrder,
+      cycleId: issue.cycleId,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
@@ -755,6 +763,31 @@ export class IssueService {
       });
     }
     return recipients;
+  }
+
+  /** Current and upcoming cycles, so pickers never offer a finished one. */
+  private async openCycles(teamId: string): Promise<CycleRef[]> {
+    const today = this.now().toISOString().slice(0, 10);
+    const rows = await this.db
+      .select()
+      .from(cycles)
+      .where(and(eq(cycles.teamId, teamId), sql`${cycles.endsOn} >= ${today}`))
+      .orderBy(asc(cycles.startsOn));
+    return rows.map((c) => ({
+      id: c.id,
+      number: c.number,
+      name: c.name,
+      startsOn: c.startsOn,
+      endsOn: c.endsOn,
+      state: c.startsOn > today ? 'upcoming' : 'current',
+    }));
+  }
+
+  /** Only the team's own cycles that have not ended can take issues. */
+  private async assertCycle(teamId: string, cycleId: string): Promise<void> {
+    if (!(await this.openCycles(teamId)).some((c) => c.id === cycleId)) {
+      throw new DomainError('cycle_not_in_team');
+    }
   }
 
   private async nextSubOrder(parentId: string): Promise<number> {

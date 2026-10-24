@@ -41,6 +41,7 @@ export const createIssueSchema = z.object({
   labelIds: labelIdsSchema.default([]),
   /** Parent issue in the same team; makes this a sub-issue. */
   parentId: z.uuid().nullable().default(null),
+  cycleId: z.uuid().nullable().default(null),
 });
 /** What clients send; defaults fill the rest. */
 export type CreateIssueInput = z.input<typeof createIssueSchema>;
@@ -61,6 +62,7 @@ export const updateIssueSchema = z
     subOrder: z.number().finite(),
     labelIds: labelIdsSchema,
     parentId: z.uuid().nullable(),
+    cycleId: z.uuid().nullable(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
@@ -90,6 +92,7 @@ export const ISSUE_ERROR_CODES = [
   'status_in_use',
   'status_required',
   'single_assignee',
+  'cycle_not_in_team',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -142,6 +145,8 @@ export interface TeamView {
   /** Team labels and organization labels, by name. */
   labels: LabelView[];
   settings: { multipleAssignees: boolean };
+  /** Current and upcoming cycles, for pickers; empty when cycles are off. */
+  cycles: CycleRef[];
   /** What the viewer may do; the server checks every request again. */
   can: { create: boolean; update: boolean; assign: boolean; comment: boolean; delete: boolean };
 }
@@ -166,6 +171,7 @@ export interface IssueSummary {
   labels: LabelRef[];
   parentId: string | null;
   subOrder: number;
+  cycleId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -180,6 +186,7 @@ export type IssueField =
   | 'dueDate'
   | 'labelIds'
   | 'parentId'
+  | 'cycleId'
   | 'duplicateOf'
   | 'triage';
 
@@ -284,4 +291,56 @@ const MENTION = /\]\(\/people\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 /** Member ids mentioned in Markdown, each once, in order of appearance. */
 export function extractMentions(markdown: string): string[] {
   return [...new Set([...markdown.matchAll(MENTION)].map((match) => match[1]!))];
+}
+
+// ---------------------------------------------------------------------------------------------
+// Cycles (SPEC §5.2)
+// ---------------------------------------------------------------------------------------------
+
+export const cycleSettingsSchema = z.object({
+  enabled: z.boolean(),
+  weeks: z.number().int().min(1).max(8),
+  /** ISO weekday: 1 = Monday … 7 = Sunday. */
+  startDay: z.number().int().min(1).max(7),
+  cooldownWeeks: z.number().int().min(0).max(4),
+  upcoming: z.number().int().min(1).max(6),
+});
+export type CycleSettings = z.infer<typeof cycleSettingsSchema>;
+
+export const updateCycleSchema = z.object({ name: z.string().trim().max(80).nullable() });
+
+export type CycleState = 'past' | 'current' | 'upcoming';
+
+export interface CycleRef {
+  id: string;
+  number: number;
+  name: string | null;
+  startsOn: string;
+  endsOn: string;
+  state: CycleState;
+}
+
+export interface CycleView extends CycleRef {
+  /** Issues in the cycle now; scope grows when issues are added during the cycle. */
+  progress: { total: number; started: number; completed: number };
+}
+
+/** One day of the burn-up chart: scope and completed issues at the end of that day. */
+export interface BurnupPoint {
+  date: string;
+  scope: number;
+  completed: number;
+}
+
+export interface CycleDetail extends CycleView {
+  team: { id: string; key: string; name: string };
+  issues: IssueSummary[];
+  burnup: BurnupPoint[];
+  /** Issues added after the cycle started (scope change). */
+  addedAfterStart: number;
+}
+
+export interface TeamCycles {
+  settings: CycleSettings;
+  cycles: CycleView[];
 }

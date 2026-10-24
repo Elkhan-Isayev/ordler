@@ -15,6 +15,7 @@ import {
 } from './filters.js';
 import { IssueContextMenu, type MenuPosition } from './IssueContextMenu.js';
 import { NewIssueDialog } from './NewIssueDialog.js';
+import { cycleName } from '../cycles/format.js';
 import { selectClass, statusLabel } from './ui.js';
 import { useTeamIssues } from './useTeamIssues.js';
 
@@ -192,6 +193,22 @@ export function FilterBar({
           {team.labels.map((label) => (
             <option key={label.id} value={label.id}>
               {label.name}
+            </option>
+          ))}
+        </select>
+      )}
+      {team.cycles.length > 0 && (
+        <select
+          aria-label={t('cycles.cycle')}
+          value={filters.cycle ?? ''}
+          className={selectClass}
+          onChange={(event) => set('cycle', event.target.value)}
+        >
+          <option value="">{t('cycles.anyCycle')}</option>
+          <option value="none">{t('cycles.noCycle')}</option>
+          {team.cycles.map((cycle) => (
+            <option key={cycle.id} value={cycle.id}>
+              {cycleName(t, cycle)}
             </option>
           ))}
         </select>

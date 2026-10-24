@@ -37,6 +37,10 @@ import type {
   InviteResponse,
   CreateIssueInput,
   CreateLabelInput,
+  CycleDetail,
+  CycleSettings,
+  CycleView,
+  TeamCycles,
   IssueStatusCategory,
   WorkflowStatus,
   LabelView,
@@ -184,6 +188,16 @@ export const api = {
   team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
+  teamCycles: (key: string) =>
+    apiRequest<TeamCycles>(`/api/teams/${encodeURIComponent(key)}/cycles`),
+  updateCycleSettings: (key: string, body: CycleSettings) =>
+    apiRequest<TeamCycles>(`/api/teams/${encodeURIComponent(key)}/cycle-settings`, {
+      method: 'PUT',
+      body,
+    }),
+  cycle: (id: string) => apiRequest<CycleDetail>(`/api/cycles/${id}`),
+  renameCycle: (id: string, name: string | null) =>
+    apiRequest<CycleView>(`/api/cycles/${id}`, { method: 'PATCH', body: { name } }),
   addStatus: (key: string, body: { name: string; category: IssueStatusCategory }) =>
     apiRequest<WorkflowStatus[]>(`/api/teams/${encodeURIComponent(key)}/statuses`, {
       method: 'POST',

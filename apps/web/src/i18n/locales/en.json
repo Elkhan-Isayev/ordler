@@ -118,7 +118,8 @@
     "invalid_parent": "This issue cannot be the parent: it must be in the same team and not one of its sub-issues.",
     "status_in_use": "Issues still use this status. Move them first.",
     "status_required": "This status is required: it is the default or the last one of its category.",
-    "single_assignee": "This team allows one assignee per issue. An admin or team lead can allow several in team settings."
+    "single_assignee": "This team allows one assignee per issue. An admin or team lead can allow several in team settings.",
+    "cycle_not_in_team": "This cycle has ended or belongs to another team."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -478,7 +479,9 @@
       "parent": "moved under another issue",
       "parentRemoved": "detached from its parent",
       "duplicate": "marked as duplicate",
-      "assignees": "assignees → {to}"
+      "assignees": "assignees → {to}",
+      "cycle": "cycle → {to}",
+      "cycleRemoved": "removed from the cycle"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -776,5 +779,38 @@
     "deleteLabel": "Delete {name}",
     "multipleAssignees": "Several assignees per issue",
     "multipleAssigneesHint": "When off, every issue has at most one assignee."
+  },
+  "cycles": {
+    "cycle": "Cycle",
+    "numbered": "Cycle {number}",
+    "noCycle": "No cycle",
+    "anyCycle": "Any cycle",
+    "finished": "Finished cycle",
+    "state": {
+      "current": "Current",
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
+    "series": {
+      "scope": "Scope",
+      "completed": "Completed"
+    },
+    "burnupLabel": "Burn-up: {completed} of {scope} issues completed",
+    "showTable": "Show as table",
+    "date": "Date",
+    "notStarted": "The cycle has not started yet.",
+    "progress": "{completed} of {total} done · {percent}%",
+    "scopeChange": "{count, plural, one {# issue was} other {# issues were}} added after the cycle started.",
+    "openBoard": "Open on the board",
+    "settings": "Cycle settings",
+    "off": "Cycles are off for this team. A team lead can turn them on in Settings → Cycles.",
+    "enable": "Plan cycles for this team",
+    "length": "Length",
+    "startDay": "Starts on",
+    "cooldown": "Cooldown between cycles",
+    "noCooldown": "None",
+    "upcomingCount": "Upcoming cycles planned ahead",
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "rolloverHint": "When a cycle ends, its unfinished issues move to the next cycle automatically."
   }
 }

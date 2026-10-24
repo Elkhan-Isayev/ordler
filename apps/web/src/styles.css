@@ -18,6 +18,9 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --shadow-card: 0 1px 2px rgb(43 39 36 / 0.06), 0 4px 16px rgb(43 39 36 / 0.05);
+  /* Burn-up series, validated for colour-blind separation on the card surface. */
+  --color-chart-scope: #a8741f;
+  --color-chart-done: #7c4dcc;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -33,6 +36,8 @@
     --color-hover: #34302d;
     --color-accent: #9b5de5;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.25), 0 6px 20px rgb(0 0 0 / 0.18);
+    --color-chart-scope: #b07d32;
+    --color-chart-done: #9b5de5;
   }
 }
 

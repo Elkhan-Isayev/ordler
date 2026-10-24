@@ -11,6 +11,7 @@ import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/htt
 import { AdminDatabaseController } from './install/admin-database.controller.js';
 import { IssuesController } from './issues/issues.controller.js';
 import { AdminRolesController } from './admin/admin-roles.controller.js';
+import { CyclesController } from './cycles/cycles.controller.js';
 import { McpServer } from './mcp/mcp.server.js';
 import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
@@ -46,6 +47,7 @@ export class AppModule {
         RequestsController,
         NotificationsController,
         TokensController,
+        CyclesController,
         AdminRolesController,
       ],
       providers: [

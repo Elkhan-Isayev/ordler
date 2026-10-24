@@ -13,6 +13,7 @@ import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
+import { CyclePicker } from '../cycles/CyclePicker.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { PriorityIcon, selectClass, StatusIcon, statusLabel } from './ui.js';
 
@@ -58,6 +59,7 @@ export function NewIssueDialog({
   const [assignees, setAssignees] = useState<string[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
+  const [cycleId, setCycleId] = useState<string | null>(null);
   const [parentId, setParentId] = useState(parent?.id ?? '');
   const [createMore, setCreateMore] = useState(false);
   // Last issue created while the dialog stays open, so the person sees it worked.
@@ -95,6 +97,7 @@ export function NewIssueDialog({
       ...(labelIds.length > 0 ? { labelIds } : {}),
       ...(dueDate ? { dueDate } : {}),
       ...(parentId ? { parentId } : {}),
+      ...(cycleId ? { cycleId } : {}),
     });
     setBusy(false);
     if (!created) return;
@@ -240,6 +243,16 @@ export function NewIssueDialog({
                   ))}
                 </div>
               </details>
+            </Chip>
+          )}
+          {team.cycles.length > 0 && (
+            <Chip label={t('cycles.cycle')}>
+              <CyclePicker
+                team={team}
+                value={cycleId}
+                className={chipClass}
+                onChange={setCycleId}
+              />
             </Chip>
           )}
           <Chip label={t('issues.dueDate')}>

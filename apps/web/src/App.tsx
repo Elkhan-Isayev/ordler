@@ -8,6 +8,7 @@ import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
 import { TeamIssuesPage } from './issues/TeamIssuesPage.js';
+import { CyclePage, CyclesPage } from './cycles/CyclePages.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
 import { TriagePage } from './issues/TriagePage.js';
 import { NewRequestPage } from './requests/NewRequestPage.js';
@@ -29,6 +30,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const adminSection = /^\/admin(?:\/([a-z]+))?\/?$/.exec(path);
   const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
   const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
+  const cyclesPage = /^\/teams\/([A-Za-z0-9]+)\/cycles(?:\/(current|upcoming))?\/?$/.exec(path);
+  const cyclePage = /^\/cycles\/([0-9a-f-]{36})\/?$/.exec(path);
   const teamRequests = /^\/teams\/([A-Za-z0-9]+)\/requests\/?$/.exec(path);
   const teamIntegrations = /^\/teams\/([A-Za-z0-9]+)\/settings\/?$/.exec(path);
   const managedTeam = teamIntegrations
@@ -86,6 +89,14 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
             teamKey={teamPage[1]!.toUpperCase()}
             view={teamPage[2] === 'board' ? 'board' : 'list'}
           />
+        ) : cyclesPage ? (
+          <CyclesPage
+            key={path}
+            teamKey={cyclesPage[1]!.toUpperCase()}
+            filter={(cyclesPage[2] as 'current' | 'upcoming' | undefined) ?? 'all'}
+          />
+        ) : cyclePage ? (
+          <CyclePage key={cyclePage[1]} cycleId={cyclePage[1]!} />
         ) : triagePage ? (
           <TriagePage key={triagePage[1]} teamKey={triagePage[1]!.toUpperCase()} />
         ) : teamRequests ? (

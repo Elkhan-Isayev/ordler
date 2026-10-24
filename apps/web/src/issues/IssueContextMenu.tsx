@@ -6,6 +6,7 @@ import {
 } from '@ordler/shared';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cycleName } from '../cycles/format.js';
 import { assigneePatch } from './AssigneePicker.js';
 import { Avatar, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
 
@@ -15,7 +16,7 @@ export interface MenuPosition {
   y: number;
 }
 
-type Section = 'status' | 'priority' | 'assignee' | 'labels';
+type Section = 'status' | 'priority' | 'assignee' | 'labels' | 'cycle';
 
 const itemClass =
   'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink hover:bg-hover focus:bg-hover focus:outline-none';
@@ -187,6 +188,32 @@ export function IssueContextMenu({
             >
               <Avatar member={member} />
               {member.name}
+            </button>
+          )),
+        ])}
+      {team.can.update &&
+        team.cycles.length > 0 &&
+        submenu('cycle', t('cycles.cycle'), [
+          <button
+            key="none"
+            type="button"
+            role="menuitemradio"
+            aria-checked={!issue.cycleId}
+            className={itemClass}
+            onClick={() => apply({ cycleId: null })}
+          >
+            {t('cycles.noCycle')}
+          </button>,
+          ...team.cycles.map((cycle) => (
+            <button
+              key={cycle.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={issue.cycleId === cycle.id}
+              className={itemClass}
+              onClick={() => apply({ cycleId: cycle.id })}
+            >
+              {cycleName(t, cycle)}
             </button>
           )),
         ])}

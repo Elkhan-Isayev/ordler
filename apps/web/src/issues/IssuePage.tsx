@@ -20,6 +20,8 @@ import { useRealtime } from '../realtime/client.js';
 import { Link, navigate } from '../router.js';
 import { CommentComposer, CommentItem, formatWhen } from './Comments.js';
 import { AssigneePicker, assigneePatch } from './AssigneePicker.js';
+import { CyclePicker } from '../cycles/CyclePicker.js';
+import { cycleName } from '../cycles/format.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
@@ -285,6 +287,17 @@ export function IssuePage({ identifier }: { identifier: string }) {
               onError={(code) => setError(code)}
             />
           </Property>
+          {(team.cycles.length > 0 || issue.cycleId) && (
+            <Property label={t('cycles.cycle')}>
+              <CyclePicker
+                team={team}
+                value={issue.cycleId}
+                editable={canEdit}
+                className={quietSelectClass}
+                onChange={(cycleId) => void save({ cycleId })}
+              />
+            </Property>
+          )}
           <Property label={t('issues.dueDate')}>
             <DueDatePicker
               value={issue.dueDate}
@@ -351,6 +364,10 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
         return t('issues.event.labels', {
           to: (change.to as string[]).map((id) => labelName(t, team, id)).join(', ') || '—',
         });
+      case 'cycleId':
+        return change.to
+          ? t('issues.event.cycle', { to: cycleLabel(t, team, change.to) })
+          : t('issues.event.cycleRemoved');
       case 'parentId':
         return change.to ? t('issues.event.parent') : t('issues.event.parentRemoved');
     }
@@ -361,6 +378,11 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
 function statusName(t: TFunction, team: TeamView, id: unknown): string {
   const status = team.statuses.find((s) => s.id === id);
   return status ? statusLabel(t, status) : '—';
+}
+
+function cycleLabel(t: TFunction, team: TeamView, id: unknown): string {
+  const cycle = team.cycles.find((c) => c.id === id);
+  return cycle ? cycleName(t, cycle) : t('cycles.finished');
 }
 
 function labelName(t: TFunction, team: TeamView, id: string): string {

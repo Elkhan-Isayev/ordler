@@ -145,6 +145,19 @@ function labelIds(team: TeamView, names: string[]): string[] {
   });
 }
 
+/** "current", "next" or a cycle number, among the team's open cycles. */
+function cycleIdOf(team: TeamView, value: string): string {
+  const wanted = value.trim().toLowerCase();
+  const cycle =
+    wanted === 'current'
+      ? team.cycles.find((c) => c.state === 'current')
+      : wanted === 'next'
+        ? team.cycles.find((c) => c.state === 'upcoming')
+        : team.cycles.find((c) => String(c.number) === wanted);
+  if (!cycle) throw new DomainError('cycle_not_in_team');
+  return cycle.id;
+}
+
 function teamKeyOf(identifier: string): string {
   return identifier.split('-')[0]!.toUpperCase();
 }
@@ -287,6 +300,11 @@ const tools: ToolDefinition[] = [
         .describe('Several member names, for teams that allow multiple assignees'),
       labels: z.array(z.string().max(60)).max(20).optional().describe('Label names'),
       parent: identifierSchema.optional().describe('Parent issue identifier, for a sub-issue'),
+      cycle: z
+        .string()
+        .max(20)
+        .optional()
+        .describe('"current", "next", or a cycle number of the team'),
     }),
     async run(
       ctx,
@@ -301,6 +319,7 @@ const tools: ToolDefinition[] = [
         assignees?: string[];
         labels?: string[];
         parent?: string;
+        cycle?: string;
       },
     ) {
       const key = args.team.toUpperCase();
@@ -319,6 +338,7 @@ const tools: ToolDefinition[] = [
           dueDate: null,
           labelIds: labelIds(team, args.labels ?? []),
           parentId: args.parent ? (await ctx.issues.get(caller.memberId, args.parent)).id : null,
+          cycleId: args.cycle ? cycleIdOf(team, args.cycle) : null,
           ...(args.status ? { statusId: statusId(team, args.status) } : {}),
         },
         caller.tokenName,

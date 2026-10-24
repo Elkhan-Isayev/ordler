@@ -7,6 +7,7 @@ import {
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IntegrationsSection } from '../admin/IntegrationsSection.js';
+import { CycleSettingsPanel } from '../cycles/CycleSettingsPanel.js';
 import {
   buttonClass,
   ghostButtonClass,
@@ -254,6 +255,7 @@ export function TeamSettingsPage({ teamKey }: { teamKey: string }) {
           ))}
         </ul>
       </Panel>
+      <CycleSettingsPanel teamKey={team.key} />
       <IntegrationsSection team={{ id: team.id, name: team.name }} />
     </div>
   );

@@ -118,7 +118,8 @@
     "invalid_parent": "Dieses Issue kann nicht übergeordnet sein: Es muss im selben Team und darf kein eigenes Unter-Issue sein.",
     "status_in_use": "Issues verwenden diesen Status noch. Verschieben Sie sie zuerst.",
     "status_required": "Dieser Status ist erforderlich: Er ist der Standard oder der letzte seiner Kategorie.",
-    "single_assignee": "Dieses Team erlaubt eine zuständige Person pro Issue. Admins oder Teamleitungen können mehrere in den Teameinstellungen erlauben."
+    "single_assignee": "Dieses Team erlaubt eine zuständige Person pro Issue. Admins oder Teamleitungen können mehrere in den Teameinstellungen erlauben.",
+    "cycle_not_in_team": "Dieser Zyklus ist beendet oder gehört zu einem anderen Team."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -478,7 +479,9 @@
       "parent": "unter ein anderes Issue verschoben",
       "parentRemoved": "vom übergeordneten Issue gelöst",
       "duplicate": "als Duplikat markiert",
-      "assignees": "Zuständige → {to}"
+      "assignees": "Zuständige → {to}",
+      "cycle": "Zyklus → {to}",
+      "cycleRemoved": "aus dem Zyklus entfernt"
     },
     "viaToken": "{actor} über Token „{token}“",
     "filters": {
@@ -776,5 +779,38 @@
     "deleteLabel": "{name} löschen",
     "multipleAssignees": "Mehrere Zuständige pro Issue",
     "multipleAssigneesHint": "Wenn aus, hat jedes Issue höchstens eine zuständige Person."
+  },
+  "cycles": {
+    "cycle": "Zyklus",
+    "numbered": "Zyklus {number}",
+    "noCycle": "Kein Zyklus",
+    "anyCycle": "Jeder Zyklus",
+    "finished": "Abgeschlossener Zyklus",
+    "state": {
+      "current": "Aktuell",
+      "upcoming": "Kommende",
+      "past": "Vergangene"
+    },
+    "series": {
+      "scope": "Umfang",
+      "completed": "Erledigt"
+    },
+    "burnupLabel": "Burn-up: {completed} von {scope} Issues erledigt",
+    "showTable": "Als Tabelle anzeigen",
+    "date": "Datum",
+    "notStarted": "Der Zyklus hat noch nicht begonnen.",
+    "progress": "{completed} von {total} erledigt · {percent} %",
+    "scopeChange": "{count, plural, one {# Issue wurde} other {# Issues wurden}} nach Beginn des Zyklus hinzugefügt.",
+    "openBoard": "Auf dem Board öffnen",
+    "settings": "Zyklus-Einstellungen",
+    "off": "Zyklen sind für dieses Team aus. Eine Teamleitung kann sie unter Einstellungen → Zyklen einschalten.",
+    "enable": "Zyklen für dieses Team planen",
+    "length": "Dauer",
+    "startDay": "Beginnt am",
+    "cooldown": "Pause zwischen Zyklen",
+    "noCooldown": "Keine",
+    "upcomingCount": "Im Voraus geplante Zyklen",
+    "weeks": "{count, plural, one {# Woche} other {# Wochen}}",
+    "rolloverHint": "Endet ein Zyklus, wandern offene Issues automatisch in den nächsten."
   }
 }

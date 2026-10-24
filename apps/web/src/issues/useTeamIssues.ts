@@ -47,6 +47,7 @@ export function applyPatch(
     ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
     ...(patch.dueDate !== undefined ? { dueDate: patch.dueDate } : {}),
     ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
+    ...(patch.cycleId !== undefined ? { cycleId: patch.cycleId } : {}),
     assignees,
     assignee: assignees[0] ?? null,
   };

@@ -34,6 +34,24 @@ export const TEAM: TeamView = {
     { id: 'm-bob', name: 'Bob Stone' },
   ],
   settings: { multipleAssignees: false },
+  cycles: [
+    {
+      id: 'c-1',
+      number: 1,
+      name: null,
+      startsOn: '2026-10-19',
+      endsOn: '2026-11-01',
+      state: 'current',
+    },
+    {
+      id: 'c-2',
+      number: 2,
+      name: 'Launch',
+      startsOn: '2026-11-02',
+      endsOn: '2026-11-15',
+      state: 'upcoming',
+    },
+  ],
   labels: [
     { id: 'l-bug', name: 'Bug', color: '#e5484d', scope: 'team' },
     { id: 'l-sec', name: 'Security', color: '#3e63dd', scope: 'organization' },
@@ -62,6 +80,7 @@ export function issue(number: number, overrides: Partial<IssueSummary> = {}): Is
     labels: [],
     parentId: null,
     subOrder: 0,
+    cycleId: null,
     createdAt: '2026-10-18T09:00:00.000Z',
     updatedAt: '2026-10-18T09:00:00.000Z',
     ...overrides,

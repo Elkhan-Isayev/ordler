@@ -118,7 +118,8 @@
     "invalid_parent": "Bu tapşırıq ana ola bilməz: eyni komandada olmalı və onun alt tapşırığı olmamalıdır.",
     "status_in_use": "Bu status hələ tapşırıqlarda istifadə olunur. Əvvəlcə onları köçürün.",
     "status_required": "Bu status mütləqdir: defoltdur və ya kateqoriyasında sonuncudur.",
-    "single_assignee": "Bu komandada tapşırığın bir icraçısı olur. Admin və ya komanda rəhbəri komanda parametrlərində bir neçəsinə icazə verə bilər."
+    "single_assignee": "Bu komandada tapşırığın bir icraçısı olur. Admin və ya komanda rəhbəri komanda parametrlərində bir neçəsinə icazə verə bilər.",
+    "cycle_not_in_team": "Bu dövr bitib və ya başqa komandaya aiddir."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -478,7 +479,9 @@
       "parent": "başqa tapşırığın altına köçürüldü",
       "parentRemoved": "ana tapşırıqdan ayrıldı",
       "duplicate": "dublikat kimi qeyd edildi",
-      "assignees": "icraçılar → {to}"
+      "assignees": "icraçılar → {to}",
+      "cycle": "dövr → {to}",
+      "cycleRemoved": "dövrdən çıxarıldı"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -776,5 +779,38 @@
     "deleteLabel": "{name} sil",
     "multipleAssignees": "Tapşırıqda bir neçə icraçı",
     "multipleAssigneesHint": "Söndürüldükdə hər tapşırığın ən çox bir icraçısı olur."
+  },
+  "cycles": {
+    "cycle": "Dövr",
+    "numbered": "Dövr {number}",
+    "noCycle": "Dövrsüz",
+    "anyCycle": "İstənilən dövr",
+    "finished": "Bitmiş dövr",
+    "state": {
+      "current": "Cari",
+      "upcoming": "Növbəti",
+      "past": "Keçmiş"
+    },
+    "series": {
+      "scope": "Həcm",
+      "completed": "Hazır"
+    },
+    "burnupLabel": "Burn-up: {scope} tapşırıqdan {completed} hazırdır",
+    "showTable": "Cədvəl kimi göstər",
+    "date": "Tarix",
+    "notStarted": "Dövr hələ başlamayıb.",
+    "progress": "{total} tapşırıqdan {completed} hazırdır · {percent}%",
+    "scopeChange": "{count, plural, one {# tapşırıq} other {# tapşırıq}} dövr başlayandan sonra əlavə olunub.",
+    "openBoard": "Lövhədə aç",
+    "settings": "Dövr parametrləri",
+    "off": "Bu komanda üçün dövrlər söndürülüb. Komanda rəhbəri Parametrlər → Dövrlər bölməsində aça bilər.",
+    "enable": "Komanda üçün dövrləri planlaşdır",
+    "length": "Müddət",
+    "startDay": "Başlama günü",
+    "cooldown": "Dövrlər arası fasilə",
+    "noCooldown": "Fasiləsiz",
+    "upcomingCount": "Əvvəlcədən planlaşdırılan dövrlər",
+    "weeks": "{count, plural, one {# həftə} other {# həftə}}",
+    "rolloverHint": "Dövr bitəndə tamamlanmamış tapşırıqlar avtomatik növbəti dövrə keçir."
   }
 }

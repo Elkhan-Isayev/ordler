@@ -84,6 +84,14 @@ export const teams = pgTable(
     isPrivate: boolean('is_private').notNull().default(false),
     /** Issues may have several assignees (ClickUp-style); one by default. */
     multipleAssignees: boolean('multiple_assignees').notNull().default(false),
+    /** Cycles (SPEC §5.2): off until a team lead turns them on. */
+    cyclesEnabled: boolean('cycles_enabled').notNull().default(false),
+    cycleWeeks: integer('cycle_weeks').notNull().default(2),
+    /** ISO weekday the cycle starts on: 1 = Monday … 7 = Sunday. */
+    cycleStartDay: integer('cycle_start_day').notNull().default(1),
+    cycleCooldownWeeks: integer('cycle_cooldown_weeks').notNull().default(0),
+    /** How many future cycles are kept planned ahead. */
+    cycleUpcoming: integer('cycle_upcoming').notNull().default(2),
     /** Last issue number handed out; incremented under a row lock so numbers never repeat. */
     issueCounter: integer('issue_counter').notNull().default(0),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
@@ -365,6 +373,7 @@ export const issues = pgTable(
     sourceRequestId: uuid('source_request_id'),
     /** Parent issue in the same team (SPEC §5.1 sub-issues); any depth. */
     parentId: uuid('parent_id'),
+    cycleId: uuid('cycle_id'),
     /** Position among the parent's sub-issues; ties fall back to creation order. */
     subOrder: doublePrecision('sub_order').notNull().default(0),
     /** Closed in triage as a duplicate of this issue (SPEC §5.1 relations). */
@@ -379,6 +388,7 @@ export const issues = pgTable(
     index('issues_team_status_idx').on(t.teamId, t.statusId),
     index('issues_assignee_idx').on(t.assigneeId),
     index('issues_parent_idx').on(t.parentId),
+    index('issues_cycle_idx').on(t.cycleId),
   ],
 );
 
@@ -738,5 +748,27 @@ export const issueAssignees = pgTable(
   (t) => [
     primaryKey({ columns: [t.issueId, t.memberId] }),
     index('issue_assignees_member_idx').on(t.memberId),
+  ],
+);
+
+/** A team's time-boxed iteration (SPEC §5.2). Dates are calendar days, both inclusive. */
+export const cycles = pgTable(
+  'cycles',
+  {
+    id: id(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    number: integer('number').notNull(),
+    name: text('name'),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    /** Set once unfinished issues were rolled over to the next cycle. */
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('cycles_team_number_uq').on(t.teamId, t.number),
+    index('cycles_team_dates_idx').on(t.teamId, t.startsOn),
   ],
 );
