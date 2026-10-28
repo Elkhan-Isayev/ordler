@@ -11,7 +11,10 @@ let app: FastifyInstance;
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'ordler-web-'));
   mkdirSync(join(dir, 'assets'));
-  writeFileSync(join(dir, 'index.html'), '<!doctype html><div id="root"></div>');
+  writeFileSync(
+    join(dir, 'index.html'),
+    '<!doctype html><html><head></head><body><div id="root"></div></body></html>',
+  );
   writeFileSync(join(dir, 'assets', 'app-3f2a.js'), 'console.log(1)');
   writeFileSync(join(dir, 'favicon.svg'), '<svg/>');
   app = Fastify();
@@ -36,6 +39,30 @@ describe('registerWebAssets', () => {
     expect(page.statusCode).toBe(200);
     expect(page.headers['content-type']).toContain('text/html');
     expect(page.body).toContain('id="root"');
+  });
+
+  it('adds a link preview to the shell once setup is done', async () => {
+    const setup: { site?: { companyName: string; locale: 'en' } } = {};
+    await registerWebAssets(app, dir, {
+      baseUrl: 'https://ordler.test',
+      site: async () => setup.site,
+    });
+    expect((await app.inject({ url: '/requests/REQ-7' })).body).not.toContain('og:title');
+
+    setup.site = { companyName: 'Push30', locale: 'en' };
+    const page = await app.inject({ url: '/requests/REQ-7' });
+    expect(page.body).toContain('<meta property="og:title" content="REQ-7 · Push30" />');
+    expect(page.body).toContain('id="root"');
+  });
+
+  it('serves the plain shell when the preview lookup fails', async () => {
+    await registerWebAssets(app, dir, {
+      baseUrl: 'https://ordler.test',
+      site: () => Promise.reject(new Error('db down')),
+    });
+    const page = await app.inject({ url: '/issue/HELP-1' });
+    expect(page.statusCode).toBe(200);
+    expect(page.body).not.toContain('og:title');
   });
 
   it('keeps unknown API paths as JSON 404s', async () => {

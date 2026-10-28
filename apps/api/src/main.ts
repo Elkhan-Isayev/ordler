@@ -23,6 +23,7 @@ import {
 import { toPoolConfig } from './db/pool-config.js';
 import { DatabaseReadiness } from './db/readiness.js';
 import * as schema from './db/schema.js';
+import { cachedSite } from './http/link-preview.js';
 import { DEFAULT_WEB_DIR, registerWebAssets } from './http/web-assets.js';
 import { generateInstallToken, runInstaller } from './install/installer.js';
 import { ensureAllTeamWorkflows } from './issues/workflows.js';
@@ -113,7 +114,12 @@ async function startApplication(
     new FastifyAdapter({ trustProxy: true }),
   );
   await configureApp(app, ctx);
-  if (await registerWebAssets(app.getHttpAdapter().getInstance(), storage.webDir)) {
+  if (
+    await registerWebAssets(app.getHttpAdapter().getInstance(), storage.webDir, {
+      baseUrl: config.baseUrl,
+      site: cachedSite(db),
+    })
+  ) {
     logger.log(`Serving the web app from ${storage.webDir}`);
   }
   app.enableShutdownHooks();

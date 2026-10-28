@@ -425,6 +425,10 @@ installation, since every company runs its own Ordler.
 - **Channel subscriptions** move from raw webhook URLs to a channel picker.
 - **Link unfurls**: Ordler links pasted in Slack expand into a preview card for users who
   have linked accounts and may see the item; nothing is shown to others.
+- **Generic link previews**: for any other messenger (Teams, WhatsApp, Telegram…) the app
+  shell carries Open Graph tags with only the identifier from the URL, the company name and
+  the logo. Crawlers are anonymous, so titles, status and even whether the item exists are
+  never revealed.
 - **Message actions**: "Create request from message" and "Create issue from message"
   (opens an Ordler modal in Slack, prefilled with the message text and a link back).
 - Approvals stay in Ordler (§6.3): Slack messages for approvals carry only an
