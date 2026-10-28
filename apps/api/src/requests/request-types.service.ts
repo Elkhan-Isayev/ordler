@@ -8,8 +8,9 @@ import {
   type PortalView,
   type RequestTypeInput,
   type RequestTypeView,
+  type RoutingRule,
 } from '@ordler/shared';
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { writeAudit, type AuditActor } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
@@ -130,6 +131,19 @@ export class RequestTypeService {
       .from(teams)
       .where(eq(teams.id, row.targetTeamId));
     const steps = row.approvalSteps as Array<ApprovalStepInput & Partial<ApprovalStepConfig>>;
+    const rules = row.routingRules as RoutingRule[];
+    const ruleTeams =
+      rules.length > 0
+        ? await this.db
+            .select({ id: teams.id, key: teams.key, name: teams.name })
+            .from(teams)
+            .where(
+              inArray(
+                teams.id,
+                rules.map((r) => r.targetTeamId),
+              ),
+            )
+        : [];
     return {
       id: row.id,
       departmentId: row.departmentId,
@@ -139,12 +153,17 @@ export class RequestTypeService {
       category: row.category,
       fields: row.fields as FormField[],
       targetTeam: team!,
+      routingRules: rules.map((rule) => ({
+        ...rule,
+        team: ruleTeams.find((t) => t.id === rule.targetTeamId) ?? null,
+      })),
       approvalSteps: await Promise.all(
         steps.map(async (step) => ({
           ...step,
           // Types saved before timeouts existed have neither field.
           timeout: step.timeout ?? null,
           fallbackSelector: step.fallbackSelector ?? null,
+          condition: step.condition ?? null,
           names: await selectorNames(this.db, step.selector),
         })),
       ),
@@ -156,9 +175,15 @@ export class RequestTypeService {
 
   private async validate(departmentId: string, input: RequestTypeInput): Promise<void> {
     await this.sla?.assertUsable(departmentId, input.slaPolicyId);
-    const [team] = await this.db.select().from(teams).where(eq(teams.id, input.targetTeamId));
-    // Requests always land in a team of the department that offers the type.
-    if (!team || team.departmentId !== departmentId || team.archivedAt) {
+    // Requests always land in a team of the department that offers the type, by rule or not.
+    const teamIds = [
+      ...new Set([input.targetTeamId, ...input.routingRules.map((r) => r.targetTeamId)]),
+    ];
+    const found = await this.db.select().from(teams).where(inArray(teams.id, teamIds));
+    if (
+      found.length !== teamIds.length ||
+      found.some((team) => team.departmentId !== departmentId || team.archivedAt)
+    ) {
       throw new DomainError('validation_failed');
     }
     const selectors = input.approvalSteps.flatMap((step) =>

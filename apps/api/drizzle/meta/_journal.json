@@ -169,6 +169,13 @@
       "when": 1793182536854,
       "tag": "0023_approval_timeouts_delegation",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793228863166,
+      "tag": "0024_conditional_steps_routing",
+      "breakpoints": true
     }
   ]
 }

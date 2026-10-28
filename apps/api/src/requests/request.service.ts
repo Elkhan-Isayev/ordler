@@ -10,8 +10,12 @@ import {
   isFinalRequestStatus,
   ORGANIZATION_SCOPE,
   parseGroupIdentifier,
+  matchesCondition,
   parseRequestIdentifier,
+  routeRequest,
   validateFormData,
+  type FieldCondition,
+  type RoutingRule,
   type ApprovalDecisionInput,
   type ApprovalStepConfig,
   type ApprovalStepInput,
@@ -144,7 +148,7 @@ export class RequestService {
         groupId: null,
       });
       // Mandatory steps first, then the ones the requester added (SPEC §6.3 example).
-      await this.insertSteps(tx, { requestId: id }, [
+      await this.insertSteps(tx, { requestId: id }, formData, [
         ...(type.approvalSteps as ApprovalStepConfig[]).map((s) => ({
           ...s,
           origin: 'mandatory' as const,
@@ -188,6 +192,7 @@ export class RequestService {
       await this.insertSteps(
         tx,
         { groupId: group!.id },
+        {},
         input.extraApprovals.map((s) => ({ ...s, origin: 'requester_added' as const })),
       );
       const ids: string[] = [];
@@ -203,6 +208,7 @@ export class RequestService {
         await this.insertSteps(
           tx,
           { requestId: id },
+          forms[i]!,
           (type.approvalSteps as ApprovalStepConfig[]).map((s) => ({
             ...s,
             origin: 'mandatory' as const,
@@ -725,10 +731,13 @@ export class RequestService {
         title: input.title ?? row.title,
         description: input.description ?? row.description,
         formData,
+        // New answers may route elsewhere; nobody has picked the request up yet.
+        targetTeamId: await this.routedTeam(this.db, type!, formData),
         status: 'pending_approval',
         updatedAt: now,
       })
       .where(eq(requests.id, row.id));
+    await this.recheckConditions(row.id, formData);
     const [step] = await this.db
       .select()
       .from(approvalSteps)
@@ -1015,7 +1024,7 @@ export class RequestService {
         requesterId: actor.memberId,
         requesterDepartmentId: await this.requesterDepartment(tx, actor.memberId),
         targetDepartmentId: input.type.departmentId,
-        targetTeamId: input.type.targetTeamId,
+        targetTeamId: await this.routedTeam(tx, input.type, input.formData),
         title: input.title,
         description: input.description,
         formData: input.formData,
@@ -1051,26 +1060,78 @@ export class RequestService {
   private async insertSteps(
     tx: Tx,
     owner: { requestId: string } | { groupId: string },
+    formData: RequestFormData,
     steps: Array<
       ApprovalStepInput &
-        Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector'>> & {
+        Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector' | 'condition'>> & {
           origin: 'mandatory' | 'requester_added';
         }
     >,
   ): Promise<void> {
     if (steps.length === 0) return;
     await tx.insert(approvalSteps).values(
-      steps.map((step, position) => ({
-        ...owner,
-        position,
-        origin: step.origin,
-        selector: step.selector,
-        rule: step.rule,
-        // Only the receiving department sets timeouts; requester-added steps never time out.
-        timeout: step.origin === 'mandatory' ? (step.timeout ?? null) : null,
-        fallbackSelector: step.origin === 'mandatory' ? (step.fallbackSelector ?? null) : null,
-      })),
+      steps.map((step, position) => {
+        // Steps that do not apply stay visible as skipped, so the timeline explains itself.
+        const condition = step.origin === 'mandatory' ? (step.condition ?? null) : null;
+        return {
+          ...owner,
+          position,
+          origin: step.origin,
+          selector: step.selector,
+          rule: step.rule,
+          condition,
+          status:
+            condition && !matchesCondition(condition, formData)
+              ? ('skipped' as const)
+              : ('waiting' as const),
+          // Only the receiving department sets timeouts; requester-added steps never time out.
+          timeout: step.origin === 'mandatory' ? (step.timeout ?? null) : null,
+          fallbackSelector: step.origin === 'mandatory' ? (step.fallbackSelector ?? null) : null,
+        };
+      }),
     );
+  }
+
+  /**
+   * Edited answers can switch conditional steps on or off, but only steps that have not run:
+   * decided steps keep their outcome, so raising an amount after approval adds the new step.
+   */
+  private async recheckConditions(requestId: string, formData: RequestFormData): Promise<void> {
+    const steps = await this.db
+      .select()
+      .from(approvalSteps)
+      .where(
+        and(
+          eq(approvalSteps.requestId, requestId),
+          inArray(approvalSteps.status, ['waiting', 'skipped']),
+          isNotNull(approvalSteps.condition),
+        ),
+      );
+    for (const step of steps) {
+      const status = matchesCondition(step.condition as FieldCondition, formData)
+        ? 'waiting'
+        : 'skipped';
+      if (status !== step.status) {
+        await this.db.update(approvalSteps).set({ status }).where(eq(approvalSteps.id, step.id));
+      }
+    }
+  }
+
+  /** Routing rules pick the team (SPEC §6.1); an archived rule team falls back to the default. */
+  private async routedTeam(
+    db: Tx | Db,
+    type: typeof requestTypes.$inferSelect,
+    formData: RequestFormData,
+  ): Promise<string> {
+    const teamId = routeRequest(
+      { targetTeamId: type.targetTeamId, routingRules: type.routingRules as RoutingRule[] },
+      formData,
+    );
+    if (teamId === type.targetTeamId) return teamId;
+    const [team] = await db.select().from(teams).where(eq(teams.id, teamId));
+    return team && !team.archivedAt && team.departmentId === type.departmentId
+      ? teamId
+      : type.targetTeamId;
   }
 
   /** Instance-wide sequence; the upsert's row lock keeps numbers unique across replicas. */
@@ -1454,6 +1515,7 @@ export class RequestService {
             createdAt: decision.createdAt.toISOString(),
           })),
           timeout: (step.timeout as ApprovalTimeout | null) ?? null,
+          condition: (step.condition as FieldCondition | null) ?? null,
           escalatedAt: step.escalatedAt?.toISOString() ?? null,
           canDecide: decidesFor !== undefined,
           decidesFor:

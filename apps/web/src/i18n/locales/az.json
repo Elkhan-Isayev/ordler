@@ -316,7 +316,17 @@
         "select": "Seçim",
         "multi_select": "Çoxlu seçim",
         "checkbox": "Bayraqcıq"
-      }
+      },
+      "routing": "Yönləndirmə qaydaları",
+      "routingHint": "Komandanı ilk uyğun qayda seçir; heç biri uyğun gəlməsə, sorğu yuxarıdakı komandaya gedir.",
+      "ruleN": "Qayda {n}",
+      "ruleIf": "Əgər",
+      "ruleCondition": "{n} qaydasının şərti",
+      "ruleTeam": "{n} qaydasının komandası",
+      "removeRule": "{n} qaydasını sil",
+      "addRule": "Qayda əlavə et",
+      "rulesNeedField": "Cavaba görə yönləndirmək üçün forma sahəsi əlavə edin.",
+      "rulesCount": "{count, plural, one {# yönləndirmə qaydası} other {# yönləndirmə qaydası}}"
     },
     "integrations": {
       "title": "İnteqrasiyalar",
@@ -694,7 +704,8 @@
       "active": "Qərar gözləyir",
       "approved": "Təsdiqləndi",
       "rejected": "Rədd edildi",
-      "changes_requested": "Düzəliş tələb olunub"
+      "changes_requested": "Düzəliş tələb olunub",
+      "skipped": "Lazım deyil"
     },
     "decision": {
       "approve": "təsdiqlədi",
@@ -733,7 +744,8 @@
       "fallback": "Ehtiyat təsdiqləyənlər",
       "departmentAdmins": "Departament adminləri",
       "chosen": "Seçilmiş təsdiqləyənlər…"
-    }
+    },
+    "skippedNote": "Ötürüldü: formadakı cavablar bu addımın şərtinə uyğun gəlmir."
   },
   "inbox": {
     "empty": "Yeni heç nə yoxdur. Təyinatlar, təsdiqlər və cavablar burada görünəcək.",
@@ -1107,5 +1119,29 @@
     "from": "Başlanğıc",
     "to": "Son",
     "hint": "Tam günlər, daxil olmaqla. Təsdiqləriniz sizdə qalır, özünüz də qərar verə bilərsiniz."
+  },
+  "conditions": {
+    "field": "Sahə",
+    "operator": "Şərt",
+    "value": "Dəyər",
+    "visibility": "{n} sahəsi nə vaxt görünür",
+    "showAlways": "Həmişə göstər",
+    "stepCondition": "{n} addımı nə vaxt lazımdır",
+    "stepAlways": "Həmişə lazımdır",
+    "op": {
+      "in": "bunlardan biri",
+      "not_in": "bunlardan heç biri",
+      "eq": "=",
+      "gt": ">",
+      "gte": "≥",
+      "lt": "<",
+      "lte": "≤",
+      "checked": "işarələnib",
+      "unchecked": "işarələnməyib",
+      "set": "doldurulub",
+      "empty": "boşdur"
+    },
+    "showIf": "Göstər, əgər",
+    "stepIf": "Lazımdır, əgər"
   }
 }

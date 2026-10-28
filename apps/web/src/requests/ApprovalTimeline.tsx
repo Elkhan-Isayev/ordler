@@ -11,6 +11,7 @@ const STEP_STYLE: Record<ApprovalStepStatus, string> = {
   approved: 'border-emerald-500 text-emerald-700 dark:text-emerald-300',
   rejected: 'border-red-500 text-red-700 dark:text-red-300',
   changes_requested: 'border-amber-500 text-amber-700 dark:text-amber-300',
+  skipped: 'border-line text-ink-faint opacity-70',
 };
 
 /**
@@ -74,6 +75,9 @@ export function ApprovalTimeline({
                 </span>
               </p>
             ))}
+            {step.status === 'skipped' && (
+              <p className="text-xs text-ink-faint">{t('approvals.skippedNote')}</p>
+            )}
             {step.escalatedAt && step.status === 'active' && (
               <p className="text-xs text-amber-700 dark:text-amber-300">
                 {t('approvals.escalated')}

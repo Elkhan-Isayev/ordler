@@ -18,6 +18,105 @@ export const FORM_FIELD_TYPES = [
 ] as const;
 export type FormFieldType = (typeof FORM_FIELD_TYPES)[number];
 
+// ---------------------------------------------------------------------------------------------
+// Conditions (SPEC §6.1, §6.3): one field compared with a value, used for field visibility,
+// approval steps and routing rules.
+// ---------------------------------------------------------------------------------------------
+
+const fieldRef = z.string().regex(/^[a-z][a-z0-9_]{0,40}$/, 'field_id_invalid');
+const optionValues = z.array(z.string().trim().min(1).max(80)).min(1).max(50);
+
+export const CONDITION_OPS = [
+  'in',
+  'not_in',
+  'eq',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'checked',
+  'unchecked',
+  'set',
+  'empty',
+] as const;
+export type ConditionOp = (typeof CONDITION_OPS)[number];
+
+export const fieldConditionSchema = z.discriminatedUnion('op', [
+  /** select: is one of; multi_select: includes at least one of. */
+  z.object({ fieldId: fieldRef, op: z.literal('in'), values: optionValues }),
+  z.object({ fieldId: fieldRef, op: z.literal('not_in'), values: optionValues }),
+  z.object({ fieldId: fieldRef, op: z.enum(['eq', 'gt', 'gte', 'lt', 'lte']), value: z.number() }),
+  z.object({ fieldId: fieldRef, op: z.enum(['checked', 'unchecked', 'set', 'empty']) }),
+]);
+export type FieldCondition = z.infer<typeof fieldConditionSchema>;
+
+/** Which operators make sense for a field type; the editor offers exactly these. */
+export function conditionOpsFor(type: FormFieldType): ConditionOp[] {
+  switch (type) {
+    case 'select':
+    case 'multi_select':
+      return ['in', 'not_in', 'set', 'empty'];
+    case 'number':
+      return ['eq', 'gt', 'gte', 'lt', 'lte', 'set', 'empty'];
+    case 'checkbox':
+      return ['checked', 'unchecked'];
+    default:
+      return ['set', 'empty'];
+  }
+}
+
+/** The condition points at an existing field, with an operator and options that field has. */
+export function conditionFits(
+  condition: FieldCondition,
+  fields: ReadonlyArray<Pick<FormField, 'id' | 'type' | 'options'>>,
+): boolean {
+  const field = fields.find((f) => f.id === condition.fieldId);
+  if (!field || !conditionOpsFor(field.type).includes(condition.op)) return false;
+  if (condition.op === 'in' || condition.op === 'not_in') {
+    return condition.values.every((v) => field.options?.includes(v));
+  }
+  return true;
+}
+
+function isEmptyValue(value: FormValue | undefined): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0)
+  );
+}
+
+export function matchesCondition(condition: FieldCondition, data: RequestFormData): boolean {
+  const value = data[condition.fieldId];
+  switch (condition.op) {
+    case 'set':
+      return !isEmptyValue(value);
+    case 'empty':
+      return isEmptyValue(value);
+    case 'checked':
+      return value === true;
+    case 'unchecked':
+      return value !== true;
+    case 'in':
+    case 'not_in': {
+      const chosen = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+      const hit = chosen.some((v) => condition.values.includes(v));
+      return condition.op === 'in' ? hit : !hit;
+    }
+    default: {
+      if (typeof value !== 'number') return false;
+      const target = condition.value;
+      if (condition.op === 'eq') return value === target;
+      if (condition.op === 'gt') return value > target;
+      if (condition.op === 'gte') return value >= target;
+      if (condition.op === 'lt') return value < target;
+      return value <= target;
+    }
+  }
+}
+
 export const formFieldSchema = z
   .object({
     id: z.string().regex(/^[a-z][a-z0-9_]{0,40}$/, 'field_id_invalid'),
@@ -26,6 +125,8 @@ export const formFieldSchema = z
     required: z.boolean().default(false),
     help: z.string().trim().max(300).optional(),
     options: z.array(z.string().trim().min(1).max(80)).max(50).optional(),
+    /** Shown (and validated) only when an earlier field matches. */
+    visibleIf: fieldConditionSchema.optional(),
   })
   .refine(
     (field) =>
@@ -38,13 +139,51 @@ export type FormField = z.infer<typeof formFieldSchema>;
 export const formFieldsSchema = z
   .array(formFieldSchema)
   .max(40)
+  .refine((fields) => new Set(fields.map((f) => f.id)).size === fields.length, 'field_id_duplicate')
+  // Only earlier fields, so visibility can never loop.
   .refine(
-    (fields) => new Set(fields.map((f) => f.id)).size === fields.length,
-    'field_id_duplicate',
+    (fields) =>
+      fields.every((f, i) => !f.visibleIf || conditionFits(f.visibleIf, fields.slice(0, i))),
+    'condition_invalid',
   );
 
 export type FormValue = string | number | boolean | string[] | null;
 export type RequestFormData = Record<string, FormValue>;
+
+/**
+ * Answers as conditions see them while the form is being filled: hidden fields count as empty
+ * and number inputs may still hold their raw text. Mirrors validateFormData, so the browser
+ * shows exactly the fields and approvals the server will apply.
+ */
+export function conditionAnswers(
+  fields: readonly FormField[],
+  values: Record<string, unknown>,
+): { data: RequestFormData; visible: Set<string> } {
+  const data: RequestFormData = {};
+  const visible = new Set<string>();
+  for (const field of fields) {
+    if (field.visibleIf && !matchesCondition(field.visibleIf, data)) {
+      data[field.id] = null;
+      continue;
+    }
+    visible.add(field.id);
+    const raw = values[field.id];
+    data[field.id] =
+      field.type === 'number' && typeof raw === 'string'
+        ? raw.trim() === '' || !Number.isFinite(Number(raw))
+          ? null
+          : Number(raw)
+        : ((raw as FormValue | undefined) ?? null);
+  }
+  return { data, visible };
+}
+
+export function visibleFieldIds(
+  fields: readonly FormField[],
+  values: Record<string, unknown>,
+): Set<string> {
+  return conditionAnswers(fields, values).visible;
+}
 
 /**
  * Checks submitted values against a request type's form; shared so the browser shows the
@@ -58,6 +197,11 @@ export function validateFormData(
   const data: RequestFormData = {};
   const errors: Record<string, string> = {};
   for (const field of fields) {
+    // Hidden fields are neither required nor kept, so stale answers cannot steer approvals.
+    if (field.visibleIf && !matchesCondition(field.visibleIf, data)) {
+      data[field.id] = field.type === 'checkbox' ? false : null;
+      continue;
+    }
     const raw = input[field.id];
     const empty =
       raw === undefined ||
@@ -151,6 +295,8 @@ export const approvalStepConfigSchema = approvalStepInputSchema.extend({
   timeout: approvalTimeoutSchema.nullable().default(null),
   /** Who decides after an escalation; the approving department's admins when empty. */
   fallbackSelector: approverSelectorSchema.nullable().default(null),
+  /** The step runs only when the form matches; otherwise it is recorded as skipped. */
+  condition: fieldConditionSchema.nullable().default(null),
 });
 export type ApprovalStepConfig = z.infer<typeof approvalStepConfigSchema>;
 
@@ -170,7 +316,7 @@ export const approvalDecisionSchema = z
 export type ApprovalDecisionInput = z.infer<typeof approvalDecisionSchema>;
 
 export type ApprovalStepStatus =
-  'waiting' | 'active' | 'approved' | 'rejected' | 'changes_requested';
+  'waiting' | 'active' | 'approved' | 'rejected' | 'changes_requested' | 'skipped';
 
 export interface ApprovalDecisionView {
   id: string;
@@ -202,6 +348,7 @@ export interface ApprovalStepView {
   approvers: MemberRef[];
   decisions: ApprovalDecisionView[];
   timeout: ApprovalTimeout | null;
+  condition: FieldCondition | null;
   /** When the step went to its fallback approvers after the timeout. */
   escalatedAt: string | null;
   /** The viewer may decide this step now, themselves or as a delegate. */
@@ -216,18 +363,44 @@ export interface ApprovalStepView {
 
 const nameSchema = z.string().trim().min(1).max(120);
 
-export const requestTypeInputSchema = z.object({
-  name: nameSchema,
-  description: z.string().trim().max(2000).default(''),
-  category: z.string().trim().max(80).nullable().default(null),
-  fields: formFieldsSchema.default([]),
+/** First matching rule wins; requests that match none go to the default target team. */
+export const routingRuleSchema = z.object({
+  condition: fieldConditionSchema,
   targetTeamId: z.uuid(),
-  approvalSteps: z.array(approvalStepConfigSchema).max(10).default([]),
-  allowRequesterApprovals: z.boolean().default(false),
-  /** SLA policy of the same department (SPEC §6.5). */
-  slaPolicyId: z.uuid().nullable().default(null),
 });
+export type RoutingRule = z.infer<typeof routingRuleSchema>;
+
+export const requestTypeInputSchema = z
+  .object({
+    name: nameSchema,
+    description: z.string().trim().max(2000).default(''),
+    category: z.string().trim().max(80).nullable().default(null),
+    fields: formFieldsSchema.default([]),
+    targetTeamId: z.uuid(),
+    routingRules: z.array(routingRuleSchema).max(20).default([]),
+    approvalSteps: z.array(approvalStepConfigSchema).max(10).default([]),
+    allowRequesterApprovals: z.boolean().default(false),
+    /** SLA policy of the same department (SPEC §6.5). */
+    slaPolicyId: z.uuid().nullable().default(null),
+  })
+  .refine(
+    (type) =>
+      type.routingRules.every((r) => conditionFits(r.condition, type.fields)) &&
+      type.approvalSteps.every((s) => !s.condition || conditionFits(s.condition, type.fields)),
+    { message: 'condition_invalid', path: ['fields'] },
+  );
 export type RequestTypeInput = z.infer<typeof requestTypeInputSchema>;
+
+/** Where a request goes: the first rule whose condition matches, else the default team. */
+export function routeRequest(
+  type: { targetTeamId: string; routingRules: readonly RoutingRule[] },
+  data: RequestFormData,
+): string {
+  return (
+    type.routingRules.find((r) => matchesCondition(r.condition, data))?.targetTeamId ??
+    type.targetTeamId
+  );
+}
 
 export interface RequestTypeView {
   id: string;
@@ -238,6 +411,7 @@ export interface RequestTypeView {
   category: string | null;
   fields: FormField[];
   targetTeam: { id: string; key: string; name: string };
+  routingRules: Array<RoutingRule & { team: { id: string; key: string; name: string } | null }>;
   approvalSteps: Array<ApprovalStepConfig & { names: SelectorNames }>;
   allowRequesterApprovals: boolean;
   slaPolicy: { id: string; name: string } | null;

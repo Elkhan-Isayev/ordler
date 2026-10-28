@@ -6,6 +6,7 @@ import {
   type FormFieldType,
   type RequestTypeInput,
   type RequestTypeView,
+  type RoutingRule,
   type SlaPolicyView,
 } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
@@ -15,6 +16,7 @@ import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { selectClass } from '../issues/ui.js';
 import { ApprovalStepsEditor, selectorLabel } from '../requests/common.js';
+import { ConditionEditor, defaultCondition, pruneConditions } from '../requests/ConditionEditor.js';
 import { buttonClass, ghostButtonClass, inputClass, Panel, SectionHeader } from './common.js';
 
 /** A stable field id from its label; non-Latin labels fall back to field_N. */
@@ -44,6 +46,7 @@ const emptyDraft = (teamId: string): Draft => ({
     category: null,
     fields: [],
     targetTeamId: teamId,
+    routingRules: [],
     approvalSteps: [],
     allowRequesterApprovals: false,
     slaPolicyId: null,
@@ -96,8 +99,10 @@ export function RequestTypesSection() {
     if (!draft) return;
     setError(undefined);
     try {
-      if (draft.id) await api.updateRequestType(draft.id, draft.input);
-      else await api.createRequestType(departmentId, draft.input);
+      // Conditions left behind by edited fields go now, so saving is never blocked by them.
+      const input = pruneConditions(draft.input);
+      if (draft.id) await api.updateRequestType(draft.id, input);
+      else await api.createRequestType(departmentId, input);
       setDraft(undefined);
       await reload();
     } catch (failure) {
@@ -191,6 +196,14 @@ export function RequestTypesSection() {
               fields={draft.input.fields}
               onChange={(fields) => setDraft({ ...draft, input: { ...draft.input, fields } })}
             />
+            <RoutingRulesEditor
+              rules={draft.input.routingRules}
+              fields={draft.input.fields}
+              teams={teams}
+              onChange={(routingRules) =>
+                setDraft({ ...draft, input: { ...draft.input, routingRules } })
+              }
+            />
             <ApprovalStepsEditor
               steps={draft.input.approvalSteps}
               onChange={(approvalSteps) =>
@@ -198,6 +211,7 @@ export function RequestTypesSection() {
               }
               directory={directory}
               withTimeouts
+              conditionFields={draft.input.fields}
               label={t('admin.requestTypes.mandatoryApprovals')}
             />
             <label className="flex items-center gap-2 text-ink-muted">
@@ -265,7 +279,11 @@ export function RequestTypesSection() {
             <Panel>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-medium text-ink">{type.name}</span>
-                <span className="text-xs text-ink-faint">→ {type.targetTeam.name}</span>
+                <span className="text-xs text-ink-faint">
+                  → {type.targetTeam.name}
+                  {type.routingRules.length > 0 &&
+                    ` · ${t('admin.requestTypes.rulesCount', { count: type.routingRules.length })}`}
+                </span>
                 {type.archivedAt && (
                   <span className="text-xs text-ink-faint">{t('admin.departments.archived')}</span>
                 )}
@@ -283,12 +301,17 @@ export function RequestTypesSection() {
                             category: type.category,
                             fields: type.fields,
                             targetTeamId: type.targetTeam.id,
+                            routingRules: type.routingRules.map(({ condition, targetTeamId }) => ({
+                              condition,
+                              targetTeamId,
+                            })),
                             approvalSteps: type.approvalSteps.map(
-                              ({ selector, rule, timeout, fallbackSelector }) => ({
+                              ({ selector, rule, timeout, fallbackSelector, condition }) => ({
                                 selector,
                                 rule,
                                 timeout,
                                 fallbackSelector,
+                                condition,
                               }),
                             ),
                             allowRequesterApprovals: type.allowRequesterApprovals,
@@ -376,6 +399,16 @@ function FieldsEditor({
               onChange={(options) => update(index, { options })}
             />
           )}
+          {index > 0 && (
+            <ConditionEditor
+              fields={fields.slice(0, index)}
+              value={field.visibleIf}
+              onChange={(visibleIf) => update(index, { visibleIf: visibleIf ?? undefined })}
+              label={t('conditions.visibility', { n: index + 1 })}
+              noneLabel={t('conditions.showAlways')}
+              prefix={t('conditions.showIf')}
+            />
+          )}
           <label className="flex items-center gap-1 text-xs text-ink-muted">
             <input
               type="checkbox"
@@ -415,6 +448,86 @@ function FieldsEditor({
         >
           + {t('admin.requestTypes.addField')}
         </button>
+      </div>
+    </fieldset>
+  );
+}
+
+/** First matching rule picks the team (SPEC §6.1); the default team catches the rest. */
+function RoutingRulesEditor({
+  rules,
+  fields,
+  teams,
+  onChange,
+}: {
+  rules: RoutingRule[];
+  fields: FormField[];
+  teams: Array<{ id: string; name: string }>;
+  onChange: (rules: RoutingRule[]) => void;
+}) {
+  const { t } = useTranslation();
+  const update = (index: number, rule: RoutingRule) =>
+    onChange(rules.map((r, i) => (i === index ? rule : r)));
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="pb-1 text-xs font-medium text-ink-muted">
+        {t('admin.requestTypes.routing')}
+      </legend>
+      <p className="text-xs text-ink-faint">{t('admin.requestTypes.routingHint')}</p>
+      {rules.map((rule, index) => (
+        <div
+          key={index}
+          role="group"
+          aria-label={t('admin.requestTypes.ruleN', { n: index + 1 })}
+          className="flex flex-wrap items-center gap-2 text-xs text-ink-muted"
+        >
+          <span>{t('admin.requestTypes.ruleIf')}</span>
+          <ConditionEditor
+            fields={fields}
+            value={rule.condition}
+            onChange={(condition) => condition && update(index, { ...rule, condition })}
+            label={t('admin.requestTypes.ruleCondition', { n: index + 1 })}
+          />
+          <span>→</span>
+          <select
+            aria-label={t('admin.requestTypes.ruleTeam', { n: index + 1 })}
+            value={rule.targetTeamId}
+            onChange={(e) => update(index, { ...rule, targetTeamId: e.target.value })}
+            className={selectClass}
+          >
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={ghostButtonClass}
+            aria-label={t('admin.requestTypes.removeRule', { n: index + 1 })}
+            onClick={() => onChange(rules.filter((_, i) => i !== index))}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div>
+        {fields.length > 0 && teams.length > 0 ? (
+          <button
+            type="button"
+            className={ghostButtonClass}
+            onClick={() =>
+              onChange([
+                ...rules,
+                { condition: defaultCondition(fields[0]!), targetTeamId: teams[0]!.id },
+              ])
+            }
+          >
+            + {t('admin.requestTypes.addRule')}
+          </button>
+        ) : (
+          <span className="text-xs text-ink-faint">{t('admin.requestTypes.rulesNeedField')}</span>
+        )}
       </div>
     </fieldset>
   );

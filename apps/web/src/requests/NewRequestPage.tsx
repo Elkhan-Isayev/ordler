@@ -1,4 +1,6 @@
 import {
+  conditionAnswers,
+  matchesCondition,
   PRIORITIES,
   validateFormData,
   type ApprovalStepInput,
@@ -60,6 +62,13 @@ export function NewRequestPage({ typeIds }: { typeIds: string[] }) {
   }
 
   const canAddApprovals = types.every((type) => type.allowRequesterApprovals);
+  // Conditional steps follow the answers, so the requester sees who will really decide.
+  const applicable = types.flatMap((type) => {
+    const { data } = conditionAnswers(type.fields, values[type.id] ?? {});
+    return type.approvalSteps
+      .map((step, i) => ({ type, step, i }))
+      .filter(({ step }) => !step.condition || matchesCondition(step.condition, data));
+  });
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -186,21 +195,19 @@ export function NewRequestPage({ typeIds }: { typeIds: string[] }) {
         ),
       )}
 
-      {types.some((type) => type.approvalSteps.length > 0) && (
+      {applicable.length > 0 && (
         <section
           aria-label={t('requests.requiredApprovals')}
           className="flex flex-col gap-1 text-sm"
         >
           <h2 className="text-xs font-medium text-ink-muted">{t('requests.requiredApprovals')}</h2>
           <ol className="list-decimal pl-5 text-ink">
-            {types.flatMap((type) =>
-              type.approvalSteps.map((step, i) => (
-                <li key={`${type.id}-${i}`}>
-                  {selectorLabel(t, step.selector, step.names)}
-                  {isGroup && <span className="text-ink-faint"> · {type.departmentName}</span>}
-                </li>
-              )),
-            )}
+            {applicable.map(({ type, step, i }) => (
+              <li key={`${type.id}-${i}`}>
+                {selectorLabel(t, step.selector, step.names)}
+                {isGroup && <span className="text-ink-faint"> · {type.departmentName}</span>}
+              </li>
+            ))}
           </ol>
         </section>
       )}

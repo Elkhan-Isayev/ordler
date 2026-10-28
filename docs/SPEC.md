@@ -330,7 +330,7 @@ _Finance → Department Supervisor_. On submit:
 | Order             | Steps run **sequentially**; approvers inside one step decide **in parallel**.                                                                                                                                                           |
 | Origin            | `mandatory` (from request type, cannot be removed by requester) · `requester_added` (optional, if request type allows).                                                                                                                 |
 | Timeout           | Optional: after T business hours → reminder, then escalate to a fallback selector, or auto-reject.                                                                                                                                      |
-| Condition         | Optional: activate the step only if a field matches (e.g. `amount > 1000`).                                                                                                                                                             |
+| Condition         | Optional: activate the step only if a field matches (e.g. `amount > 1000`). A step whose condition does not match is kept as `skipped`, so the timeline shows it. Mandatory steps only.                                                |
 
 **Rules**
 
@@ -340,6 +340,13 @@ _Finance → Department Supervisor_. On submit:
 - Selectors are resolved **at step activation time**; the resolved approver list is stored
   on the step so later org changes do not silently change who may decide. Admins can
   re-resolve manually (audited).
+- **Conditions** (field visibility, step conditions, routing rules) compare one form field
+  with a value: choice fields by "is any / none of", numbers by `= > ≥ < ≤`, checkboxes by
+  checked, any field by filled/empty. Field visibility may only depend on earlier fields;
+  hidden fields are neither required nor stored. Steps are fixed at submit; on resubmit after
+  "changes requested" the edited answers re-check steps that have not run yet (decided steps
+  keep their outcome) and the routing. A routing rule whose team was archived falls back to
+  the default team.
 - **Delegation**: a member can set an out-of-office delegate for a date range; delegated
   decisions record both the delegate and the original approver.
 - Decisions: `approve`, `reject` (reason required), `request_changes` (comment required →

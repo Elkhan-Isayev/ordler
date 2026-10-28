@@ -9,11 +9,13 @@ import {
   type FormValue,
   type RequestStatus,
   type SelectorNames,
+  visibleFieldIds,
 } from '@ordler/shared';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ghostButtonClass, inputClass } from '../admin/common.js';
 import { selectClass } from '../issues/ui.js';
+import { ConditionEditor } from './ConditionEditor.js';
 
 const STATUS_STYLE: Record<RequestStatus, string> = {
   pending_approval: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
@@ -103,9 +105,11 @@ export function FormFields({
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
+  const visible = visibleFieldIds(fields, values);
   return (
     <div className="flex flex-col gap-3">
       {fields.map((field) => {
+        if (!visible.has(field.id)) return null;
         const value = values[field.id];
         const errorId = `field-${field.id}-error`;
         const described = errors[field.id]
@@ -255,14 +259,18 @@ export function FormAnswers({
             ? t('requests.yes')
             : t('requests.no')
           : String(value);
+  // Answers to fields the form hid were never stored; their labels would only confuse.
+  const visible = visibleFieldIds(fields, values);
   return (
     <dl className="grid grid-cols-[minmax(8rem,auto)_1fr] gap-x-4 gap-y-1 text-sm">
-      {fields.map((field) => (
-        <div key={field.id} className="contents">
-          <dt className="text-ink-muted">{field.label}</dt>
-          <dd className="text-ink">{show(values[field.id])}</dd>
-        </div>
-      ))}
+      {fields
+        .filter((field) => visible.has(field.id))
+        .map((field) => (
+          <div key={field.id} className="contents">
+            <dt className="text-ink-muted">{field.label}</dt>
+            <dd className="text-ink">{show(values[field.id])}</dd>
+          </div>
+        ))}
     </dl>
   );
 }
@@ -276,7 +284,7 @@ const SELECTOR_TYPES: ApproverSelector['type'][] = [
 
 /** Edits a list of approval steps; used by request type admins and by requesters. */
 type EditableStep = ApprovalStepInput &
-  Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector'>>;
+  Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector' | 'condition'>>;
 
 /** The selector dropdowns of one approver choice: kind, then role, department or person. */
 function SelectorFields({
@@ -367,6 +375,7 @@ export function ApprovalStepsEditor<T extends EditableStep>({
   directory,
   allowRequesterSupervisor = true,
   withTimeouts = false,
+  conditionFields,
   label,
 }: {
   steps: T[];
@@ -375,6 +384,8 @@ export function ApprovalStepsEditor<T extends EditableStep>({
   allowRequesterSupervisor?: boolean;
   /** Request types only: requesters cannot set timeouts on the steps they add. */
   withTimeouts?: boolean;
+  /** Request types only: the form fields a step may depend on. */
+  conditionFields?: FormField[];
   label: string;
 }) {
   const { t } = useTranslation();
@@ -440,6 +451,18 @@ export function ApprovalStepsEditor<T extends EditableStep>({
               ×
             </button>
           </div>
+          {conditionFields && conditionFields.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pl-5 text-xs text-ink-muted">
+              <ConditionEditor
+                fields={conditionFields}
+                value={step.condition}
+                onChange={(condition) => update(index, { ...step, condition })}
+                label={t('conditions.stepCondition', { n: index + 1 })}
+                noneLabel={t('conditions.stepAlways')}
+                prefix={t('conditions.stepIf')}
+              />
+            </div>
+          )}
           {withTimeouts && (
             <div className="flex flex-wrap items-center gap-2 pl-5 text-xs text-ink-muted">
               <select
@@ -528,6 +551,7 @@ export function ApprovalStepsEditor<T extends EditableStep>({
                   : defaultSelector('department_head'),
                 rule: 'any',
                 ...(withTimeouts ? { timeout: null, fallbackSelector: null } : {}),
+                ...(conditionFields ? { condition: null } : {}),
               } as T,
             ])
           }

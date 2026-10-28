@@ -316,7 +316,17 @@
         "select": "Choice",
         "multi_select": "Multiple choice",
         "checkbox": "Checkbox"
-      }
+      },
+      "routing": "Routing rules",
+      "routingHint": "The first matching rule picks the team; requests that match none go to the team above.",
+      "ruleN": "Rule {n}",
+      "ruleIf": "If",
+      "ruleCondition": "Condition of rule {n}",
+      "ruleTeam": "Team of rule {n}",
+      "removeRule": "Remove rule {n}",
+      "addRule": "Add rule",
+      "rulesNeedField": "Add a form field to route by its answer.",
+      "rulesCount": "{count, plural, one {# routing rule} other {# routing rules}}"
     },
     "integrations": {
       "title": "Integrations",
@@ -694,7 +704,8 @@
       "active": "Awaiting decision",
       "approved": "Approved",
       "rejected": "Rejected",
-      "changes_requested": "Changes requested"
+      "changes_requested": "Changes requested",
+      "skipped": "Not needed"
     },
     "decision": {
       "approve": "approved",
@@ -733,7 +744,8 @@
       "fallback": "Fallback approvers",
       "departmentAdmins": "Department admins",
       "chosen": "Chosen approvers…"
-    }
+    },
+    "skippedNote": "Skipped: the answers in the form do not meet this step's condition."
   },
   "inbox": {
     "empty": "Nothing new. Assignments, approvals and replies will show up here.",
@@ -1107,5 +1119,29 @@
     "from": "From",
     "to": "To",
     "hint": "Whole days, inclusive. You keep your approvals and can still decide yourself."
+  },
+  "conditions": {
+    "field": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "visibility": "When field {n} shows",
+    "showAlways": "Always shown",
+    "stepCondition": "When step {n} runs",
+    "stepAlways": "Always required",
+    "op": {
+      "in": "is any of",
+      "not_in": "is none of",
+      "eq": "=",
+      "gt": ">",
+      "gte": "≥",
+      "lt": "<",
+      "lte": "≤",
+      "checked": "is checked",
+      "unchecked": "is not checked",
+      "set": "is filled in",
+      "empty": "is empty"
+    },
+    "showIf": "Show if",
+    "stepIf": "Required if"
   }
 }

@@ -316,7 +316,17 @@
         "select": "Auswahl",
         "multi_select": "Mehrfachauswahl",
         "checkbox": "Kontrollkästchen"
-      }
+      },
+      "routing": "Routing-Regeln",
+      "routingHint": "Die erste passende Regel wählt das Team; Anfragen ohne Treffer gehen an das Team oben.",
+      "ruleN": "Regel {n}",
+      "ruleIf": "Wenn",
+      "ruleCondition": "Bedingung von Regel {n}",
+      "ruleTeam": "Team von Regel {n}",
+      "removeRule": "Regel {n} entfernen",
+      "addRule": "Regel hinzufügen",
+      "rulesNeedField": "Fügen Sie ein Formularfeld hinzu, um nach seiner Antwort zu routen.",
+      "rulesCount": "{count, plural, one {# Routing-Regel} other {# Routing-Regeln}}"
     },
     "integrations": {
       "title": "Integrationen",
@@ -694,7 +704,8 @@
       "active": "Wartet auf Entscheidung",
       "approved": "Genehmigt",
       "rejected": "Abgelehnt",
-      "changes_requested": "Änderungen angefordert"
+      "changes_requested": "Änderungen angefordert",
+      "skipped": "Nicht nötig"
     },
     "decision": {
       "approve": "genehmigt",
@@ -733,7 +744,8 @@
       "fallback": "Ersatz-Genehmigende",
       "departmentAdmins": "Abteilungsadmins",
       "chosen": "Ausgewählte Genehmigende…"
-    }
+    },
+    "skippedNote": "Übersprungen: Die Antworten im Formular erfüllen die Bedingung dieses Schritts nicht."
   },
   "inbox": {
     "empty": "Nichts Neues. Zuweisungen, Genehmigungen und Antworten erscheinen hier.",
@@ -1107,5 +1119,29 @@
     "from": "Von",
     "to": "Bis",
     "hint": "Ganze Tage, einschließlich. Ihre Genehmigungen bleiben Ihre, Sie können weiterhin selbst entscheiden."
+  },
+  "conditions": {
+    "field": "Feld",
+    "operator": "Operator",
+    "value": "Wert",
+    "visibility": "Wann Feld {n} erscheint",
+    "showAlways": "Immer anzeigen",
+    "stepCondition": "Wann Schritt {n} nötig ist",
+    "stepAlways": "Immer nötig",
+    "op": {
+      "in": "ist eines von",
+      "not_in": "ist keines von",
+      "eq": "=",
+      "gt": ">",
+      "gte": "≥",
+      "lt": "<",
+      "lte": "≤",
+      "checked": "ist angehakt",
+      "unchecked": "ist nicht angehakt",
+      "set": "ist ausgefüllt",
+      "empty": "ist leer"
+    },
+    "showIf": "Anzeigen, wenn",
+    "stepIf": "Nötig, wenn"
   }
 }

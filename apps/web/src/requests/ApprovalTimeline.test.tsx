@@ -53,4 +53,22 @@ describe('ApprovalTimeline delegation and timeouts', () => {
     expect(screen.getByText(/^Escalated/)).toBeInTheDocument();
     expect(screen.queryByText('Escalates after 8 business hours')).not.toBeInTheDocument();
   });
+
+  it('marks a step whose condition the form does not meet as not needed', async () => {
+    await renderWithI18n(
+      <ApprovalTimeline
+        onDecide={noop}
+        steps={[
+          step({
+            status: 'skipped',
+            approvers: [],
+            condition: { fieldId: 'amount', op: 'gt', value: 1000 },
+          }),
+        ]}
+      />,
+    );
+    expect(screen.getByRole('listitem', { name: 'Step 1' })).toHaveTextContent('Not needed');
+    expect(screen.getByText(/^Skipped: the answers/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Approve' })).not.toBeInTheDocument();
+  });
 });

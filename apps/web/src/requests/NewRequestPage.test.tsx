@@ -58,6 +58,66 @@ describe('NewRequestPage', () => {
     });
   });
 
+  it('shows a conditional field only when the earlier answer matches', async () => {
+    const laptop = {
+      ...HARDWARE,
+      fields: [
+        ...HARDWARE.fields,
+        {
+          id: 'model',
+          label: 'Model',
+          type: 'text' as const,
+          required: true,
+          visibleIf: { fieldId: 'item', op: 'in' as const, values: ['Laptop'] },
+        },
+      ],
+    };
+    const calls = mockApi({
+      ...base,
+      [`GET /api/request-types/${HARDWARE.id}`]: () => ({ json: laptop }),
+      'POST /api/requests': () => ({ status: 201, json: request() }),
+    });
+    await renderWithI18n(<NewRequestPage typeIds={[HARDWARE.id]} />);
+    await userEvent.type(await screen.findByLabelText('Title'), 'Laptop');
+    expect(screen.queryByLabelText(/^Model/)).not.toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText(/^Item/), 'Laptop');
+    await userEvent.type(screen.getByLabelText(/^Quantity/), '1');
+    expect(screen.getByLabelText(/^Model/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Submit request' }));
+    expect(await screen.findByText('Required.')).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByLabelText(/^Item/), 'Headset');
+    expect(screen.queryByLabelText(/^Model/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Submit request' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+  });
+
+  it('lists a conditional approval only while the answers call for it', async () => {
+    const big = {
+      ...HARDWARE,
+      approvalSteps: [
+        ...HARDWARE.approvalSteps,
+        {
+          selector: { type: 'user' as const, memberId: 'm-fin' },
+          rule: 'any' as const,
+          timeout: null,
+          fallbackSelector: null,
+          condition: { fieldId: 'quantity', op: 'gt' as const, value: 10 },
+          names: { member: 'Fiona Finance' },
+        },
+      ],
+    };
+    mockApi({ ...base, [`GET /api/request-types/${HARDWARE.id}`]: () => ({ json: big }) });
+    await renderWithI18n(<NewRequestPage typeIds={[HARDWARE.id]} />);
+    const approvals = await screen.findByRole('region', { name: 'Required approvals' });
+    expect(approvals).not.toHaveTextContent('Fiona Finance');
+    await userEvent.type(screen.getByLabelText(/^Quantity/), '20');
+    expect(approvals).toHaveTextContent('Fiona Finance');
+    await userEvent.clear(screen.getByLabelText(/^Quantity/));
+    await userEvent.type(screen.getByLabelText(/^Quantity/), '5');
+    expect(approvals).not.toHaveTextContent('Fiona Finance');
+  });
+
   it('sends one request to several departments', async () => {
     const calls = mockApi({
       ...base,

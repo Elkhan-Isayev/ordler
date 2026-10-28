@@ -494,7 +494,9 @@ export const requestTypes = pgTable(
     targetTeamId: uuid('target_team_id')
       .notNull()
       .references(() => teams.id),
-    /** Mandatory approval steps, in order: [{ selector, rule }]. */
+    /** [{ condition, targetTeamId }]; the first match overrides targetTeamId (SPEC §6.1). */
+    routingRules: jsonb('routing_rules').notNull().default([]),
+    /** Mandatory approval steps, in order: [{ selector, rule, timeout, condition }]. */
     approvalSteps: jsonb('approval_steps').notNull().default([]),
     allowRequesterApprovals: boolean('allow_requester_approvals').notNull().default(false),
     /** SLA targets for requests of this type (SPEC §6.5); none when null. */
@@ -585,7 +587,7 @@ export const approvalSteps = pgTable(
       .notNull()
       .default('any'),
     status: text('status', {
-      enum: ['waiting', 'active', 'approved', 'rejected', 'changes_requested'],
+      enum: ['waiting', 'active', 'approved', 'rejected', 'changes_requested', 'skipped'],
     })
       .notNull()
       .default('waiting'),
@@ -598,6 +600,8 @@ export const approvalSteps = pgTable(
     /** { hours, action } copied from the request type (SPEC §6.3); null: no timeout. */
     timeout: jsonb('timeout'),
     fallbackSelector: jsonb('fallback_selector'),
+    /** Copied from the request type; re-checked on resubmit while the step has not run. */
+    condition: jsonb('condition'),
     remindedAt: timestamp('reminded_at', { withTimezone: true }),
     escalatedAt: timestamp('escalated_at', { withTimezone: true }),
   },
