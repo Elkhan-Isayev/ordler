@@ -330,7 +330,7 @@ _Finance → Department Supervisor_. On submit:
 | Order             | Steps run **sequentially**; approvers inside one step decide **in parallel**.                                                                                                                                                           |
 | Origin            | `mandatory` (from request type, cannot be removed by requester) · `requester_added` (optional, if request type allows).                                                                                                                 |
 | Timeout           | Optional: after T business hours → reminder, then escalate to a fallback selector, or auto-reject.                                                                                                                                      |
-| Condition         | Optional: activate the step only if a field matches (e.g. `amount > 1000`). A step whose condition does not match is kept as `skipped`, so the timeline shows it. Mandatory steps only.                                                |
+| Condition         | Optional: activate the step only if a field matches (e.g. `amount > 1000`). A step whose condition does not match is kept as `skipped`, so the timeline shows it. Mandatory steps only.                                                 |
 
 **Rules**
 
