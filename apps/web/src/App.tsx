@@ -32,7 +32,7 @@ import { Link, usePathname } from './router.js';
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
   const { t } = useTranslation();
   const path = usePathname();
-  const adminSection = /^\/admin(?:\/([a-z]+))?\/?$/.exec(path);
+  const adminSection = /^\/admin(?:\/([A-Za-z]+))?\/?$/.exec(path);
   const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
   const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
   const cyclesPage = /^\/teams\/([A-Za-z0-9]+)\/cycles(?:\/(current|upcoming))?\/?$/.exec(path);

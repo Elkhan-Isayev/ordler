@@ -1,7 +1,9 @@
+import type { MeResponse } from '@ordler/shared';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App.js';
+import { navigate } from './router.js';
 import { ME, mockApi } from './test/api-mock.js';
 import { fakeRealtime } from './test/realtime-fake.js';
 import { renderWithI18n } from './test/render.js';
@@ -29,6 +31,20 @@ describe('App', () => {
     await renderWithI18n(<App me={ME} onSignOut={onSignOut} />);
     await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(onSignOut).toHaveBeenCalledOnce();
+  });
+
+  it('opens admin sections whose id is camelCase', async () => {
+    navigate('/admin/requestTypes');
+    const me: MeResponse = {
+      ...ME,
+      organizationPermissions: ['org.manage', 'request_type.manage'],
+    };
+    await renderWithI18n(<App me={me} onSignOut={vi.fn()} />);
+    expect(screen.getByRole('link', { name: 'Request types' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    navigate('/');
   });
 
   it('shows unread and approval badges and refreshes them live', async () => {
