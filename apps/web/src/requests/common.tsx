@@ -1,11 +1,14 @@
-import type {
-  ApprovalStepInput,
-  ApproverSelector,
-  DirectoryView,
-  FormField,
-  FormValue,
-  RequestStatus,
-  SelectorNames,
+import {
+  APPROVAL_TIMEOUT_ACTIONS,
+  type ApprovalStepConfig,
+  type ApprovalStepInput,
+  type ApprovalTimeoutAction,
+  type ApproverSelector,
+  type DirectoryView,
+  type FormField,
+  type FormValue,
+  type RequestStatus,
+  type SelectorNames,
 } from '@ordler/shared';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -272,17 +275,106 @@ const SELECTOR_TYPES: ApproverSelector['type'][] = [
 ];
 
 /** Edits a list of approval steps; used by request type admins and by requesters. */
-export function ApprovalStepsEditor({
+type EditableStep = ApprovalStepInput &
+  Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector'>>;
+
+/** The selector dropdowns of one approver choice: kind, then role, department or person. */
+function SelectorFields({
+  selector,
+  onChange,
+  directory,
+  allowRequesterSupervisor,
+  defaultSelector,
+}: {
+  selector: ApproverSelector;
+  onChange: (selector: ApproverSelector) => void;
+  directory: DirectoryView;
+  allowRequesterSupervisor: boolean;
+  defaultSelector: (type: ApproverSelector['type']) => ApproverSelector;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <select
+        aria-label={t('approvals.approverType')}
+        value={selector.type}
+        onChange={(event) =>
+          onChange(defaultSelector(event.target.value as ApproverSelector['type']))
+        }
+        className={selectClass}
+      >
+        {SELECTOR_TYPES.filter(
+          (type) => allowRequesterSupervisor || type !== 'requester_department_supervisor',
+        ).map((type) => (
+          <option key={type} value={type}>
+            {t(`approvals.type.${type}`)}
+          </option>
+        ))}
+      </select>
+      {selector.type === 'role' && (
+        <select
+          aria-label={t('approvals.role')}
+          value={selector.roleId}
+          onChange={(event) => onChange({ ...selector, roleId: event.target.value })}
+          className={selectClass}
+        >
+          {directory.roles
+            .filter((r) => r.key !== 'owner' && r.key !== 'guest' && r.key !== 'viewer')
+            .map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.key ? t(`admin.roles.${r.key}`, { defaultValue: r.name }) : r.name}
+              </option>
+            ))}
+        </select>
+      )}
+      {(selector.type === 'role' || selector.type === 'department_head') && (
+        <select
+          aria-label={t('approvals.department')}
+          value={selector.departmentId}
+          onChange={(event) =>
+            onChange({ ...selector, departmentId: event.target.value } as ApproverSelector)
+          }
+          className={selectClass}
+        >
+          {directory.departments.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      )}
+      {selector.type === 'user' && (
+        <select
+          aria-label={t('approvals.person')}
+          value={selector.memberId}
+          onChange={(event) => onChange({ type: 'user', memberId: event.target.value })}
+          className={selectClass}
+        >
+          {directory.members.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+      )}
+    </>
+  );
+}
+
+export function ApprovalStepsEditor<T extends EditableStep>({
   steps,
   onChange,
   directory,
   allowRequesterSupervisor = true,
+  withTimeouts = false,
   label,
 }: {
-  steps: ApprovalStepInput[];
-  onChange: (steps: ApprovalStepInput[]) => void;
+  steps: T[];
+  onChange: (steps: T[]) => void;
   directory: DirectoryView;
   allowRequesterSupervisor?: boolean;
+  /** Request types only: requesters cannot set timeouts on the steps they add. */
+  withTimeouts?: boolean;
   label: string;
 }) {
   const { t } = useTranslation();
@@ -306,7 +398,7 @@ export function ApprovalStepsEditor({
     }
   }
 
-  const update = (index: number, step: ApprovalStepInput) =>
+  const update = (index: number, step: T) =>
     onChange(steps.map((s, i) => (i === index ? step : s)));
 
   return (
@@ -317,109 +409,110 @@ export function ApprovalStepsEditor({
           key={index}
           role="group"
           aria-label={t('approvals.stepN', { n: index + 1 })}
-          className="flex flex-wrap items-center gap-2 text-sm"
+          className="flex flex-col gap-1"
         >
-          <span className="text-ink-faint">{index + 1}.</span>
-          <select
-            aria-label={t('approvals.approverType')}
-            value={step.selector.type}
-            onChange={(event) =>
-              update(index, {
-                ...step,
-                selector: defaultSelector(event.target.value as ApproverSelector['type']),
-              })
-            }
-            className={selectClass}
-          >
-            {SELECTOR_TYPES.filter(
-              (type) => allowRequesterSupervisor || type !== 'requester_department_supervisor',
-            ).map((type) => (
-              <option key={type} value={type}>
-                {t(`approvals.type.${type}`)}
-              </option>
-            ))}
-          </select>
-          {step.selector.type === 'role' && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-ink-faint">{index + 1}.</span>
+            <SelectorFields
+              selector={step.selector}
+              onChange={(selector) => update(index, { ...step, selector })}
+              directory={directory}
+              allowRequesterSupervisor={allowRequesterSupervisor}
+              defaultSelector={defaultSelector}
+            />
             <select
-              aria-label={t('approvals.role')}
-              value={step.selector.roleId}
+              aria-label={t('approvals.rule')}
+              value={step.rule}
               onChange={(event) =>
-                update(index, {
-                  ...step,
-                  selector: {
-                    ...(step.selector as Extract<ApproverSelector, { type: 'role' }>),
-                    roleId: event.target.value,
-                  },
-                })
+                update(index, { ...step, rule: event.target.value as ApprovalStepInput['rule'] })
               }
               className={selectClass}
             >
-              {directory.roles
-                .filter((r) => r.key !== 'owner' && r.key !== 'guest' && r.key !== 'viewer')
-                .map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.key ? t(`admin.roles.${r.key}`, { defaultValue: r.name }) : r.name}
+              <option value="any">{t('approvals.ruleAny')}</option>
+              <option value="all">{t('approvals.ruleAll')}</option>
+            </select>
+            <button
+              type="button"
+              className={ghostButtonClass}
+              aria-label={t('approvals.removeStep', { n: index + 1 })}
+              onClick={() => onChange(steps.filter((_, i) => i !== index))}
+            >
+              ×
+            </button>
+          </div>
+          {withTimeouts && (
+            <div className="flex flex-wrap items-center gap-2 pl-5 text-xs text-ink-muted">
+              <select
+                aria-label={t('approvals.timeout.label')}
+                value={step.timeout?.action ?? ''}
+                onChange={(event) => {
+                  const action = event.target.value as ApprovalTimeoutAction | '';
+                  update(index, {
+                    ...step,
+                    timeout: action ? { hours: step.timeout?.hours ?? 24, action } : null,
+                    fallbackSelector:
+                      action === 'escalate' ? (step.fallbackSelector ?? null) : null,
+                  });
+                }}
+                className={selectClass}
+              >
+                <option value="">{t('approvals.timeout.none')}</option>
+                {APPROVAL_TIMEOUT_ACTIONS.map((action) => (
+                  <option key={action} value={action}>
+                    {t(`approvals.timeout.${action}`)}
                   </option>
                 ))}
-            </select>
+              </select>
+              {step.timeout && (
+                <label className="flex items-center gap-1">
+                  {t('approvals.timeout.after')}
+                  <input
+                    type="number"
+                    min={0.25}
+                    step={0.25}
+                    value={step.timeout.hours}
+                    aria-label={t('approvals.timeout.hours')}
+                    onChange={(event) =>
+                      update(index, {
+                        ...step,
+                        timeout: { ...step.timeout!, hours: Number(event.target.value) },
+                      })
+                    }
+                    className={`${selectClass} w-20`}
+                  />
+                  {t('approvals.timeout.businessHours')}
+                </label>
+              )}
+              {step.timeout?.action === 'escalate' && (
+                <span className="flex flex-wrap items-center gap-1">
+                  {t('approvals.timeout.escalateTo')}
+                  <select
+                    aria-label={t('approvals.timeout.fallback')}
+                    value={step.fallbackSelector ? 'custom' : ''}
+                    onChange={(event) =>
+                      update(index, {
+                        ...step,
+                        fallbackSelector: event.target.value ? defaultSelector('user') : null,
+                      })
+                    }
+                    className={selectClass}
+                  >
+                    <option value="">{t('approvals.timeout.departmentAdmins')}</option>
+                    <option value="custom">{t('approvals.timeout.chosen')}</option>
+                  </select>
+                  {step.fallbackSelector && (
+                    <SelectorFields
+                      selector={step.fallbackSelector}
+                      onChange={(fallbackSelector) => update(index, { ...step, fallbackSelector })}
+                      directory={directory}
+                      allowRequesterSupervisor={allowRequesterSupervisor}
+                      defaultSelector={defaultSelector}
+                    />
+                  )}
+                </span>
+              )}
+            </div>
           )}
-          {(step.selector.type === 'role' || step.selector.type === 'department_head') && (
-            <select
-              aria-label={t('approvals.department')}
-              value={step.selector.departmentId}
-              onChange={(event) =>
-                update(index, {
-                  ...step,
-                  selector: {
-                    ...step.selector,
-                    departmentId: event.target.value,
-                  } as ApproverSelector,
-                })
-              }
-              className={selectClass}
-            >
-              {directory.departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          )}
-          {step.selector.type === 'user' && (
-            <select
-              aria-label={t('approvals.person')}
-              value={step.selector.memberId}
-              onChange={(event) =>
-                update(index, { ...step, selector: { type: 'user', memberId: event.target.value } })
-              }
-              className={selectClass}
-            >
-              {directory.members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <select
-            aria-label={t('approvals.rule')}
-            value={step.rule}
-            onChange={(event) =>
-              update(index, { ...step, rule: event.target.value as ApprovalStepInput['rule'] })
-            }
-            className={selectClass}
-          >
-            <option value="any">{t('approvals.ruleAny')}</option>
-            <option value="all">{t('approvals.ruleAll')}</option>
-          </select>
-          <button
-            type="button"
-            className={ghostButtonClass}
-            aria-label={t('approvals.removeStep', { n: index + 1 })}
-            onClick={() => onChange(steps.filter((_, i) => i !== index))}
-          >
-            ×
-          </button>
         </div>
       ))}
       <div>
@@ -434,7 +527,8 @@ export function ApprovalStepsEditor({
                   ? { type: 'role', roleId: supervisorRole.id, departmentId: firstDepartment }
                   : defaultSelector('department_head'),
                 rule: 'any',
-              },
+                ...(withTimeouts ? { timeout: null, fallbackSelector: null } : {}),
+              } as T,
             ])
           }
         >

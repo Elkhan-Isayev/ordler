@@ -339,6 +339,10 @@ export function describeRequestEvent(t: TFunction, event: RequestEventView): str
       });
     case 'resubmitted':
       return t('requests.event.resubmitted', { actor });
+    case 'approval_escalated':
+      return t('requests.event.escalated');
+    case 'approval_timed_out':
+      return t('requests.event.timedOut');
     default:
       return to
         ? t('requests.event.status', { actor, status: t(`requests.status.${to}`) })

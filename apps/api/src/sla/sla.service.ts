@@ -203,6 +203,17 @@ export class SlaService {
     }
   }
 
+  /** Business hours of a request type's SLA policy; approval timeouts count in them too. */
+  async calendarForType(requestTypeId: string): Promise<BusinessCalendar | null> {
+    const [row] = await this.db
+      .select({ calendar: businessCalendars })
+      .from(requestTypes)
+      .innerJoin(slaPolicies, eq(slaPolicies.id, requestTypes.slaPolicyId))
+      .innerJoin(businessCalendars, eq(businessCalendars.id, slaPolicies.calendarId))
+      .where(eq(requestTypes.id, requestTypeId));
+    return row ? toCalendar(row.calendar) : null;
+  }
+
   async policyRef(policyId: string | null): Promise<{ id: string; name: string } | null> {
     if (!policyId) return null;
     const [row] = await this.db

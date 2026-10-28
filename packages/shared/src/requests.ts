@@ -132,6 +132,28 @@ export const approvalStepInputSchema = z.object({
 });
 export type ApprovalStepInput = z.infer<typeof approvalStepInputSchema>;
 
+export const APPROVAL_TIMEOUT_ACTIONS = ['remind', 'escalate', 'reject'] as const;
+export type ApprovalTimeoutAction = (typeof APPROVAL_TIMEOUT_ACTIONS)[number];
+
+/**
+ * What happens when nobody decides in time (SPEC §6.3), in business hours of the request
+ * type's SLA calendar (around the clock without one). `escalate` and `reject` remind the
+ * approvers halfway first.
+ */
+export const approvalTimeoutSchema = z.object({
+  hours: z.number().min(0.25).max(2000),
+  action: z.enum(APPROVAL_TIMEOUT_ACTIONS),
+});
+export type ApprovalTimeout = z.infer<typeof approvalTimeoutSchema>;
+
+/** Mandatory steps of a request type may also time out and escalate; requester-added ones may not. */
+export const approvalStepConfigSchema = approvalStepInputSchema.extend({
+  timeout: approvalTimeoutSchema.nullable().default(null),
+  /** Who decides after an escalation; the approving department's admins when empty. */
+  fallbackSelector: approverSelectorSchema.nullable().default(null),
+});
+export type ApprovalStepConfig = z.infer<typeof approvalStepConfigSchema>;
+
 export const APPROVAL_DECISIONS = ['approve', 'reject', 'request_changes'] as const;
 export type ApprovalDecisionKind = (typeof APPROVAL_DECISIONS)[number];
 
@@ -153,6 +175,8 @@ export type ApprovalStepStatus =
 export interface ApprovalDecisionView {
   id: string;
   approver: MemberRef | null;
+  /** Set when a delegate decided for an approver who is out of office. */
+  onBehalfOf: MemberRef | null;
   decision: ApprovalDecisionKind;
   comment: string | null;
   createdAt: string;
@@ -177,8 +201,13 @@ export interface ApprovalStepView {
   status: ApprovalStepStatus;
   approvers: MemberRef[];
   decisions: ApprovalDecisionView[];
-  /** The viewer may decide this step now. */
+  timeout: ApprovalTimeout | null;
+  /** When the step went to its fallback approvers after the timeout. */
+  escalatedAt: string | null;
+  /** The viewer may decide this step now, themselves or as a delegate. */
   canDecide: boolean;
+  /** Set when the viewer would decide as someone's delegate. */
+  decidesFor: MemberRef | null;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -193,7 +222,7 @@ export const requestTypeInputSchema = z.object({
   category: z.string().trim().max(80).nullable().default(null),
   fields: formFieldsSchema.default([]),
   targetTeamId: z.uuid(),
-  approvalSteps: z.array(approvalStepInputSchema).max(10).default([]),
+  approvalSteps: z.array(approvalStepConfigSchema).max(10).default([]),
   allowRequesterApprovals: z.boolean().default(false),
   /** SLA policy of the same department (SPEC §6.5). */
   slaPolicyId: z.uuid().nullable().default(null),
@@ -209,7 +238,7 @@ export interface RequestTypeView {
   category: string | null;
   fields: FormField[];
   targetTeam: { id: string; key: string; name: string };
-  approvalSteps: Array<ApprovalStepInput & { names: SelectorNames }>;
+  approvalSteps: Array<ApprovalStepConfig & { names: SelectorNames }>;
   allowRequesterApprovals: boolean;
   slaPolicy: { id: string; name: string } | null;
   archivedAt: string | null;
@@ -386,6 +415,26 @@ export interface PendingApproval {
   request: Pick<RequestSummary, 'identifier' | 'title' | 'requester' | 'department'> | null;
   group: { identifier: string; title: string } | null;
   activatedAt: string;
+  /** The approver this member stands in for, when it is delegated. */
+  onBehalfOf: MemberRef | null;
+}
+
+/** Out of office (SPEC §6.3): someone else decides my approvals between two dates. */
+export const delegationInputSchema = z
+  .object({
+    delegateId: z.uuid(),
+    startsOn: z.iso.date(),
+    endsOn: z.iso.date(),
+  })
+  .refine((d) => d.endsOn >= d.startsOn, { message: 'end_before_start', path: ['endsOn'] });
+export type DelegationInput = z.infer<typeof delegationInputSchema>;
+
+export interface DelegationView {
+  id: string;
+  delegate: MemberRef;
+  startsOn: string;
+  endsOn: string;
+  active: boolean;
 }
 
 export const REQUEST_ERROR_CODES = [
@@ -394,6 +443,7 @@ export const REQUEST_ERROR_CODES = [
   'not_an_approver',
   'already_decided',
   'step_not_active',
+  'delegation_overlap',
   'invalid_transition',
   'session_required',
   'request_type_archived',

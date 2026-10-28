@@ -124,7 +124,8 @@
     "import_auth_failed": "The source rejected the token. Check it and its permissions.",
     "import_source_failed": "The source could not be reached or answered with an error. Try again later.",
     "import_not_ready": "This import cannot do that in its current state.",
-    "calendar_in_use": "This calendar is used by an SLA policy. Change the policy first."
+    "calendar_in_use": "This calendar is used by an SLA policy. Change the policy first.",
+    "delegation_overlap": "You already have a delegate for some of these days."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -658,7 +659,9 @@
       "assigned": "{actor} changed the assignee",
       "priority": "{actor}: priority → {priority}",
       "issueLinked": "{actor} linked {issue}",
-      "resubmitted": "{actor} resubmitted with changes"
+      "resubmitted": "{actor} resubmitted with changes",
+      "escalated": "Approval escalated after the timeout",
+      "timedOut": "Rejected: nobody decided in time"
     }
   },
   "approvals": {
@@ -706,6 +709,28 @@
       "requester_department_supervisor": "Supervisor of the requester's department",
       "role": "{role} · {department}",
       "department_head": "Head of {department}"
+    },
+    "onBehalfOf": "for {name}",
+    "escalated": "Escalated: the fallback approvers were added after the timeout.",
+    "decidingFor": "You decide as the delegate of {name}.",
+    "timeoutNote": {
+      "remind": "Reminder after {hours} business hours",
+      "escalate": "Escalates after {hours} business hours",
+      "reject": "Rejected automatically after {hours} business hours"
+    },
+    "timeout": {
+      "label": "When nobody decides",
+      "none": "No timeout",
+      "remind": "Remind",
+      "escalate": "Escalate",
+      "reject": "Reject automatically",
+      "after": "after",
+      "hours": "Hours",
+      "businessHours": "business hours",
+      "escalateTo": "to",
+      "fallback": "Fallback approvers",
+      "departmentAdmins": "Department admins",
+      "chosen": "Chosen approvers…"
     }
   },
   "inbox": {
@@ -727,7 +752,8 @@
       "request_commented": "{actor} commented on {item}",
       "issue_mentioned": "{actor} mentioned you in {item}",
       "sla_at_risk": "SLA at risk on {item}",
-      "sla_breached": "SLA breached on {item}"
+      "sla_breached": "SLA breached on {item}",
+      "approval_reminder": "Reminder: your approval is waiting on {item}"
     }
   },
   "tokens": {
@@ -1066,5 +1092,18 @@
       "met": "Met",
       "missed": "Missed"
     }
+  },
+  "outOfOffice": {
+    "title": "Out of office",
+    "settings": "Settings",
+    "subtitle": "Name a colleague who decides your approvals while you are away. Decisions show both of you.",
+    "none": "No delegation planned.",
+    "active": "Active now",
+    "remove": "Remove",
+    "add": "Add delegate",
+    "delegate": "Delegate",
+    "from": "From",
+    "to": "To",
+    "hint": "Whole days, inclusive. You keep your approvals and can still decide yourself."
   }
 }

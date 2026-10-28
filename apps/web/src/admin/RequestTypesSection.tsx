@@ -1,7 +1,6 @@
 import {
   FORM_FIELD_TYPES,
   type AdminDepartment,
-  type ApprovalStepInput,
   type DirectoryView,
   type FormField,
   type FormFieldType,
@@ -194,10 +193,11 @@ export function RequestTypesSection() {
             />
             <ApprovalStepsEditor
               steps={draft.input.approvalSteps}
-              onChange={(approvalSteps: ApprovalStepInput[]) =>
+              onChange={(approvalSteps) =>
                 setDraft({ ...draft, input: { ...draft.input, approvalSteps } })
               }
               directory={directory}
+              withTimeouts
               label={t('admin.requestTypes.mandatoryApprovals')}
             />
             <label className="flex items-center gap-2 text-ink-muted">
@@ -283,10 +283,14 @@ export function RequestTypesSection() {
                             category: type.category,
                             fields: type.fields,
                             targetTeamId: type.targetTeam.id,
-                            approvalSteps: type.approvalSteps.map(({ selector, rule }) => ({
-                              selector,
-                              rule,
-                            })),
+                            approvalSteps: type.approvalSteps.map(
+                              ({ selector, rule, timeout, fallbackSelector }) => ({
+                                selector,
+                                rule,
+                                timeout,
+                                fallbackSelector,
+                              }),
+                            ),
                             allowRequesterApprovals: type.allowRequesterApprovals,
                             slaPolicyId: type.slaPolicy?.id ?? null,
                           },

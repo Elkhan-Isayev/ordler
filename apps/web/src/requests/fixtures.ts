@@ -28,7 +28,13 @@ export const HARDWARE: RequestTypeView = {
   ],
   targetTeam: { id: 't-help', key: 'HELP', name: 'Helpdesk' },
   approvalSteps: [
-    { selector: { type: 'requester_department_supervisor' }, rule: 'any', names: {} },
+    {
+      selector: { type: 'requester_department_supervisor' },
+      rule: 'any',
+      timeout: null,
+      fallbackSelector: null,
+      names: {},
+    },
   ],
   allowRequesterApprovals: true,
   slaPolicy: null,
@@ -58,7 +64,10 @@ export function step(overrides: Partial<ApprovalStepView> = {}): ApprovalStepVie
     status: 'active',
     approvers: [{ id: 'm-boss', name: 'Cora Boss' }],
     decisions: [],
+    timeout: null,
+    escalatedAt: null,
     canDecide: false,
+    decidesFor: null,
     ...overrides,
   };
 }

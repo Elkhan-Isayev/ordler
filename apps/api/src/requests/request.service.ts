@@ -1,5 +1,6 @@
 import type { WebhookEmitter } from '../webhooks/webhook.service.js';
 import type { SlaService } from '../sla/sla.service.js';
+import type { DelegationService } from '../approvals/delegation.service.js';
 import { createHash } from 'node:crypto';
 import {
   can,
@@ -12,7 +13,9 @@ import {
   parseRequestIdentifier,
   validateFormData,
   type ApprovalDecisionInput,
+  type ApprovalStepConfig,
   type ApprovalStepInput,
+  type ApprovalTimeout,
   type ApprovalStepView,
   type ApproverSelector,
   type CreateRequestGroupInput,
@@ -30,7 +33,18 @@ import {
   type ResubmitRequestInput,
   type Scope,
 } from '@ordler/shared';
-import { aliasedTable, and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
+import {
+  aliasedTable,
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 import { writeAudit } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
@@ -55,7 +69,8 @@ import type { EventBus } from '../realtime/event-bus.js';
 import type { TeamAccess } from '../issues/team-access.js';
 import type { Notifier } from '../notifications/notifier.js';
 import type { AccessContextSource } from '../rbac/permission.guard.js';
-import { resolveApprovers, selectorNames } from './approvers.js';
+import { escalationApprovers, resolveApprovers, selectorNames } from './approvers.js';
+import { businessMs, type BusinessCalendar } from '../sla/business-time.js';
 
 type RequestRow = typeof requests.$inferSelect;
 type StepRow = typeof approvalSteps.$inferSelect;
@@ -63,6 +78,7 @@ type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
 const requester = aliasedTable(members, 'requester');
 const assignee = aliasedTable(members, 'assignee');
+const absent = aliasedTable(members, 'absent');
 
 /** Who is asking: a signed-in session, or a personal token (which may never decide approvals). */
 export interface Actor {
@@ -80,8 +96,10 @@ export interface RequestServiceDeps {
   channels?: TeamChannels;
   /** Outgoing webhooks (SPEC §10). */
   hooks?: WebhookEmitter;
-  /** SLA clocks (SPEC §6.5). */
+  /** SLA clocks (SPEC §6.5); also the calendar approval timeouts count in. */
   sla?: SlaService;
+  /** Out-of-office delegation of approvals (SPEC §6.3). */
+  delegations?: DelegationService;
   now?: () => Date;
 }
 
@@ -127,7 +145,7 @@ export class RequestService {
       });
       // Mandatory steps first, then the ones the requester added (SPEC §6.3 example).
       await this.insertSteps(tx, { requestId: id }, [
-        ...(type.approvalSteps as ApprovalStepInput[]).map((s) => ({
+        ...(type.approvalSteps as ApprovalStepConfig[]).map((s) => ({
           ...s,
           origin: 'mandatory' as const,
         })),
@@ -185,7 +203,7 @@ export class RequestService {
         await this.insertSteps(
           tx,
           { requestId: id },
-          (type.approvalSteps as ApprovalStepInput[]).map((s) => ({
+          (type.approvalSteps as ApprovalStepConfig[]).map((s) => ({
             ...s,
             origin: 'mandatory' as const,
           })),
@@ -216,7 +234,11 @@ export class RequestService {
     if (!/^[0-9a-f-]{36}$/.test(stepId)) throw new DomainError('not_found');
     const [step] = await this.db.select().from(approvalSteps).where(eq(approvalSteps.id, stepId));
     if (!step) throw new DomainError('not_found');
-    if (!step.resolvedApproverIds.includes(actor.memberId)) {
+    // Themselves, and approvers who are out of office and named this member their delegate.
+    const identities = [actor.memberId, ...(await this.delegatorsOf(actor.memberId))].filter((id) =>
+      step.resolvedApproverIds.includes(id),
+    );
+    if (identities.length === 0) {
       // Hide steps of requests the member cannot see at all.
       if (!(await this.canSeeStep(actor.memberId, step))) throw new DomainError('not_found');
       throw new DomainError('not_an_approver');
@@ -236,8 +258,10 @@ export class RequestService {
     if (requesterId === actor.memberId) throw new DomainError('not_an_approver');
 
     const decided = await this.decisionsSinceActivation(step);
-    if (decided.some((d) => d.approverId === actor.memberId))
-      throw new DomainError('already_decided');
+    const decidedFor = (id: string) => decided.some((d) => (d.onBehalfOfId ?? d.approverId) === id);
+    const effective = identities.find((id) => id !== requesterId && !decidedFor(id));
+    if (!effective) throw new DomainError('already_decided');
+    const onBehalfOfId = effective === actor.memberId ? null : effective;
 
     const snapshot = subject
       ? snapshotHash(subject)
@@ -246,6 +270,7 @@ export class RequestService {
     await this.db.insert(approvalDecisions).values({
       stepId,
       approverId: actor.memberId,
+      onBehalfOfId,
       decision: input.decision,
       comment: input.comment ?? null,
       snapshotHash: snapshot,
@@ -259,13 +284,17 @@ export class RequestService {
       // "snapshotSha256", not "...Hash": audit redaction hides keys that look like secrets.
       after: {
         stepId,
+        ...(onBehalfOfId ? { onBehalfOfId } : {}),
         decision: input.decision,
         comment: input.comment ?? null,
         snapshotSha256: snapshot,
       },
     });
 
-    const approvals = [...decided, { approverId: actor.memberId, decision: input.decision }];
+    const approvals = [
+      ...decided.map((d) => ({ approverId: d.onBehalfOfId ?? d.approverId, decision: d.decision })),
+      { approverId: effective, decision: input.decision },
+    ];
     const outcome =
       input.decision === 'reject'
         ? 'rejected'
@@ -345,20 +374,26 @@ export class RequestService {
   }
 
   async pendingApprovals(memberId: string): Promise<PendingApproval[]> {
+    const identities = [memberId, ...(await this.delegatorsOf(memberId))];
     const steps = await this.db
       .select()
       .from(approvalSteps)
       .where(
         and(
           eq(approvalSteps.status, 'active'),
-          sql`${memberId}::uuid = any(${approvalSteps.resolvedApproverIds})`,
+          sql`${approvalSteps.resolvedApproverIds} && ${`{${identities.join(',')}}`}::uuid[]`,
         ),
       )
       .orderBy(asc(approvalSteps.activatedAt));
     const result: PendingApproval[] = [];
     for (const step of steps) {
-      if ((await this.decisionsSinceActivation(step)).some((d) => d.approverId === memberId))
-        continue;
+      const decided = await this.decisionsSinceActivation(step);
+      const forId = identities.find(
+        (id) =>
+          step.resolvedApproverIds.includes(id) &&
+          !decided.some((d) => (d.onBehalfOfId ?? d.approverId) === id),
+      );
+      if (!forId) continue;
       const names = await selectorNames(this.db, step.selector as ApproverSelector);
       let request: PendingApproval['request'] = null;
       let group: PendingApproval['group'] = null;
@@ -386,9 +421,188 @@ export class RequestService {
         request,
         group,
         activatedAt: (step.activatedAt ?? new Date(0)).toISOString(),
+        onBehalfOf: forId === memberId ? null : await this.memberRef(forId),
       });
     }
     return result;
+  }
+
+  private async delegatorsOf(memberId: string): Promise<string[]> {
+    return this.deps.delegations ? this.deps.delegations.delegatorsOf(memberId) : [];
+  }
+
+  private async memberRef(id: string): Promise<{ id: string; name: string }> {
+    const [row] = await this.db
+      .select({ id: members.id, name: members.name })
+      .from(members)
+      .where(eq(members.id, id));
+    return row ?? { id, name: '' };
+  }
+
+  /** Approvers plus today's stand-ins of those who are out of office. */
+  private async withDelegates(approvers: string[]): Promise<string[]> {
+    const delegates = this.deps.delegations
+      ? await this.deps.delegations.delegatesOf(approvers)
+      : new Map<string, string>();
+    return [...new Set([...approvers, ...delegates.values()])];
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Approval timeouts (SPEC §6.3)
+  // -------------------------------------------------------------------------------------------
+
+  private timeoutTimer: NodeJS.Timeout | undefined;
+
+  startTimeouts(intervalMs = 60_000, log?: (message: string) => void): void {
+    const run = () =>
+      void this.tickApprovalTimeouts().catch((error: unknown) =>
+        log?.(`Approval timeouts failed: ${String(error)}`),
+      );
+    run();
+    this.timeoutTimer = setInterval(run, intervalMs);
+    this.timeoutTimer.unref();
+  }
+
+  stopTimeouts(): void {
+    clearInterval(this.timeoutTimer);
+  }
+
+  /**
+   * Reminds, escalates or rejects active steps that waited too long, counted in the request
+   * type's business hours. Each step is claimed with a conditional update, so replicas never
+   * act twice.
+   */
+  async tickApprovalTimeouts(): Promise<number> {
+    const rows = await this.db
+      .select({ step: approvalSteps, request: requests })
+      .from(approvalSteps)
+      .innerJoin(requests, eq(requests.id, approvalSteps.requestId))
+      .where(
+        and(
+          eq(approvalSteps.status, 'active'),
+          isNotNull(approvalSteps.timeout),
+          isNull(approvalSteps.escalatedAt),
+        ),
+      );
+    const calendars = new Map<string, BusinessCalendar | null>();
+    const now = this.now();
+    let acted = 0;
+    for (const { step, request } of rows) {
+      const timeout = step.timeout as ApprovalTimeout;
+      if (!calendars.has(request.requestTypeId)) {
+        calendars.set(
+          request.requestTypeId,
+          (await this.deps.sla?.calendarForType(request.requestTypeId)) ?? null,
+        );
+      }
+      const elapsed = businessMs(
+        calendars.get(request.requestTypeId)!,
+        (step.activatedAt ?? now).getTime(),
+        now.getTime(),
+      );
+      const limit = timeout.hours * 3_600_000;
+      if (timeout.action === 'remind') {
+        if (elapsed >= limit && (await this.remind(step, request))) acted++;
+      } else if (elapsed >= limit) {
+        const done =
+          timeout.action === 'escalate'
+            ? await this.escalate(step, request)
+            : await this.rejectOnTimeout(step, request);
+        if (done) acted++;
+      } else if (elapsed >= limit / 2 && !step.remindedAt) {
+        if (await this.remind(step, request)) acted++;
+      }
+    }
+    return acted;
+  }
+
+  private async remind(step: StepRow, request: RequestRow): Promise<boolean> {
+    const claimed = await this.db
+      .update(approvalSteps)
+      .set({ remindedAt: this.now() })
+      .where(and(eq(approvalSteps.id, step.id), isNull(approvalSteps.remindedAt)))
+      .returning({ id: approvalSteps.id });
+    if (claimed.length === 0) return false;
+    const decided = await this.decisionsSinceActivation(step);
+    const waiting = step.resolvedApproverIds.filter(
+      (id) => !decided.some((d) => (d.onBehalfOfId ?? d.approverId) === id),
+    );
+    await this.deps.notifier.notify({
+      recipients: await this.withDelegates(waiting),
+      kind: 'approval_reminder',
+      actorId: null,
+      subject: { type: 'request', id: request.id },
+      data: { stepId: step.id },
+    });
+    return true;
+  }
+
+  private async escalate(step: StepRow, request: RequestRow): Promise<boolean> {
+    const added = await escalationApprovers(
+      this.db,
+      step.selector as ApproverSelector,
+      (step.fallbackSelector as ApproverSelector | null) ?? null,
+      {
+        requesterId: request.requesterId ?? '',
+        requesterDepartmentId: request.requesterDepartmentId,
+        targetDepartmentId: request.targetDepartmentId,
+      },
+    );
+    // The original approvers may still decide; the fallback ones join them.
+    const approvers = [...new Set([...step.resolvedApproverIds, ...added])];
+    const claimed = await this.db
+      .update(approvalSteps)
+      .set({ escalatedAt: this.now(), resolvedApproverIds: approvers })
+      .where(
+        and(
+          eq(approvalSteps.id, step.id),
+          eq(approvalSteps.status, 'active'),
+          isNull(approvalSteps.escalatedAt),
+        ),
+      )
+      .returning({ id: approvalSteps.id });
+    if (claimed.length === 0) return false;
+    const fresh = added.filter((id) => !step.resolvedApproverIds.includes(id));
+    await this.event(request.id, null, 'approval_escalated', {
+      stepId: step.id,
+      approverIds: fresh,
+    });
+    await this.deps.notifier.notify({
+      recipients: await this.withDelegates(fresh),
+      kind: 'approval_requested',
+      actorId: null,
+      subject: { type: 'request', id: request.id },
+      data: { stepId: step.id, escalated: true },
+    });
+    await this.deps.hooks?.requestEvent('approval.requested', request, null, {
+      step: { id: step.id, position: step.position, approverIds: approvers, escalated: true },
+    });
+    await this.changed(request.id);
+    return true;
+  }
+
+  /** Not a decision: nobody decided, so no approval_decisions row is written (append-only, human-only). */
+  private async rejectOnTimeout(step: StepRow, request: RequestRow): Promise<boolean> {
+    const now = this.now();
+    const claimed = await this.db
+      .update(approvalSteps)
+      .set({ status: 'rejected', completedAt: now, escalatedAt: now })
+      .where(and(eq(approvalSteps.id, step.id), eq(approvalSteps.status, 'active')))
+      .returning({ id: approvalSteps.id });
+    if (claimed.length === 0) return false;
+    await this.event(request.id, null, 'approval_timed_out', { stepId: step.id });
+    await writeAudit(this.db, {
+      actor: { type: 'system' },
+      action: 'approval.timed_out',
+      targetType: 'request',
+      targetId: request.id,
+      after: { stepId: step.id },
+    });
+    await this.setStatus(request, 'rejected', null);
+    await this.notifyRequester(request, 'request_rejected', null, { reason: 'timeout' });
+    this.toChannels(await this.fresh(request.id), 'approval_decided');
+    await this.changed(request.id);
+    return true;
   }
 
   // -------------------------------------------------------------------------------------------
@@ -746,7 +960,7 @@ export class RequestService {
     });
     this.toChannels(row, 'approval_requested');
     await this.deps.notifier.notify({
-      recipients: approvers,
+      recipients: await this.withDelegates(approvers),
       kind: 'approval_requested',
       actorId,
       subject: { type: 'request', id: row.id },
@@ -770,7 +984,7 @@ export class RequestService {
       .set({ status: 'active', resolvedApproverIds: approvers, activatedAt: this.now() })
       .where(eq(approvalSteps.id, step.id));
     await this.deps.notifier.notify({
-      recipients: approvers,
+      recipients: await this.withDelegates(approvers),
       kind: 'approval_requested',
       actorId,
       subject: { type: 'request_group', id: group.id },
@@ -837,7 +1051,12 @@ export class RequestService {
   private async insertSteps(
     tx: Tx,
     owner: { requestId: string } | { groupId: string },
-    steps: Array<ApprovalStepInput & { origin: 'mandatory' | 'requester_added' }>,
+    steps: Array<
+      ApprovalStepInput &
+        Partial<Pick<ApprovalStepConfig, 'timeout' | 'fallbackSelector'>> & {
+          origin: 'mandatory' | 'requester_added';
+        }
+    >,
   ): Promise<void> {
     if (steps.length === 0) return;
     await tx.insert(approvalSteps).values(
@@ -847,6 +1066,9 @@ export class RequestService {
         origin: step.origin,
         selector: step.selector,
         rule: step.rule,
+        // Only the receiving department sets timeouts; requester-added steps never time out.
+        timeout: step.origin === 'mandatory' ? (step.timeout ?? null) : null,
+        fallbackSelector: step.origin === 'mandatory' ? (step.fallbackSelector ?? null) : null,
       })),
     );
   }
@@ -881,7 +1103,7 @@ export class RequestService {
   private async setStatus(
     row: RequestRow,
     status: RequestStatus,
-    actorId: string,
+    actorId: string | null,
     kind: string = 'status_changed',
   ): Promise<void> {
     const now = this.now();
@@ -935,7 +1157,7 @@ export class RequestService {
       | 'request_changes_requested'
       | 'approval_decided'
       | 'request_status_changed',
-    actorId: string,
+    actorId: string | null,
     data: Record<string, unknown>,
   ) {
     if (!row.requesterId || row.requesterId === actorId) return;
@@ -1070,7 +1292,8 @@ export class RequestService {
       .select({ ids: approvalSteps.resolvedApproverIds })
       .from(approvalSteps)
       .where(sql`(${sql.join(owners, sql` or `)})`);
-    return steps.some((s) => s.ids.includes(memberId));
+    const identities = [memberId, ...(await this.delegatorsOf(memberId))];
+    return steps.some((s) => s.ids.some((id) => identities.includes(id)));
   }
 
   private async has(memberId: string, permission: Permission, scope: Scope): Promise<boolean> {
@@ -1184,6 +1407,7 @@ export class RequestService {
       .from(approvalSteps)
       .where(where)
       .orderBy(asc(approvalSteps.position));
+    const identities = [memberId, ...(await this.delegatorsOf(memberId))];
     return Promise.all(
       steps.map(async (step) => {
         const approverIds = step.resolvedApproverIds;
@@ -1194,12 +1418,21 @@ export class RequestService {
               .where(inArray(members.id, approverIds))
           : [];
         const decisions = await this.db
-          .select({ decision: approvalDecisions, name: members.name })
+          .select({ decision: approvalDecisions, name: members.name, forName: absent.name })
           .from(approvalDecisions)
           .leftJoin(members, eq(members.id, approvalDecisions.approverId))
+          .leftJoin(absent, eq(absent.id, approvalDecisions.onBehalfOfId))
           .where(eq(approvalDecisions.stepId, step.id))
           .orderBy(asc(approvalDecisions.createdAt));
         const current = await this.decisionsSinceActivation(step);
+        const decidesFor =
+          step.status === 'active' && memberId !== requesterId
+            ? identities.find(
+                (id) =>
+                  approverIds.includes(id) &&
+                  !current.some((d) => (d.onBehalfOfId ?? d.approverId) === id),
+              )
+            : undefined;
         return {
           id: step.id,
           position: step.position,
@@ -1210,18 +1443,23 @@ export class RequestService {
           rule: step.rule,
           status: step.status,
           approvers: people,
-          decisions: decisions.map(({ decision, name }) => ({
+          decisions: decisions.map(({ decision, name, forName }) => ({
             id: decision.id,
             approver: { id: decision.approverId, name: name ?? '' },
+            onBehalfOf: decision.onBehalfOfId
+              ? { id: decision.onBehalfOfId, name: forName ?? '' }
+              : null,
             decision: decision.decision,
             comment: decision.comment,
             createdAt: decision.createdAt.toISOString(),
           })),
-          canDecide:
-            step.status === 'active' &&
-            approverIds.includes(memberId) &&
-            memberId !== requesterId &&
-            !current.some((d) => d.approverId === memberId),
+          timeout: (step.timeout as ApprovalTimeout | null) ?? null,
+          escalatedAt: step.escalatedAt?.toISOString() ?? null,
+          canDecide: decidesFor !== undefined,
+          decidesFor:
+            decidesFor && decidesFor !== memberId
+              ? (people.find((p) => p.id === decidesFor) ?? (await this.memberRef(decidesFor)))
+              : null,
         };
       }),
     );

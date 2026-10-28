@@ -60,6 +60,12 @@ export function ApprovalTimeline({
                 <span className="font-medium">
                   {decision.approver?.name ?? t('issues.someone')}
                 </span>
+                {decision.onBehalfOf && (
+                  <span className="text-ink-muted">
+                    {' '}
+                    {t('approvals.onBehalfOf', { name: decision.onBehalfOf.name })}
+                  </span>
+                )}
                 : {t(`approvals.decision.${decision.decision}`)}
                 {decision.comment && <span className="text-ink-muted"> — {decision.comment}</span>}
                 <span className="text-ink-faint">
@@ -68,6 +74,21 @@ export function ApprovalTimeline({
                 </span>
               </p>
             ))}
+            {step.escalatedAt && step.status === 'active' && (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {t('approvals.escalated')}
+              </p>
+            )}
+            {step.timeout && step.status === 'active' && !step.escalatedAt && (
+              <p className="text-xs text-ink-faint">
+                {t(`approvals.timeoutNote.${step.timeout.action}`, { hours: step.timeout.hours })}
+              </p>
+            )}
+            {step.decidesFor && (
+              <p className="text-xs text-ink-muted">
+                {t('approvals.decidingFor', { name: step.decidesFor.name })}
+              </p>
+            )}
             {step.canDecide && (
               <DecisionForm
                 onDecide={(decision) => onDecide(step.id, decision)}

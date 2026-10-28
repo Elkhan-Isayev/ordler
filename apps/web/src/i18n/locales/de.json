@@ -124,7 +124,8 @@
     "import_auth_failed": "Die Quelle hat das Token abgelehnt. Prüfen Sie es und seine Berechtigungen.",
     "import_source_failed": "Die Quelle ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut.",
     "import_not_ready": "Dieser Import kann das in seinem aktuellen Zustand nicht.",
-    "calendar_in_use": "Dieser Kalender wird von einer SLA-Richtlinie verwendet. Ändern Sie zuerst die Richtlinie."
+    "calendar_in_use": "Dieser Kalender wird von einer SLA-Richtlinie verwendet. Ändern Sie zuerst die Richtlinie.",
+    "delegation_overlap": "Für einige dieser Tage haben Sie bereits eine Vertretung."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -658,7 +659,9 @@
       "assigned": "{actor}: Zuständigkeit geändert",
       "priority": "{actor}: Priorität → {priority}",
       "issueLinked": "{actor}: {issue} verknüpft",
-      "resubmitted": "{actor}: mit Änderungen erneut gesendet"
+      "resubmitted": "{actor}: mit Änderungen erneut gesendet",
+      "escalated": "Genehmigung nach Fristablauf eskaliert",
+      "timedOut": "Abgelehnt: niemand hat rechtzeitig entschieden"
     }
   },
   "approvals": {
@@ -706,6 +709,28 @@
       "requester_department_supervisor": "Vorgesetzte der Abteilung des Antragstellers",
       "role": "{role} · {department}",
       "department_head": "Leitung {department}"
+    },
+    "onBehalfOf": "für {name}",
+    "escalated": "Eskaliert: Nach Ablauf der Frist wurden die Ersatz-Genehmigenden hinzugefügt.",
+    "decidingFor": "Sie entscheiden als Vertretung von {name}.",
+    "timeoutNote": {
+      "remind": "Erinnerung nach {hours} Arbeitsstunden",
+      "escalate": "Eskalation nach {hours} Arbeitsstunden",
+      "reject": "Automatische Ablehnung nach {hours} Arbeitsstunden"
+    },
+    "timeout": {
+      "label": "Wenn niemand entscheidet",
+      "none": "Keine Frist",
+      "remind": "Erinnern",
+      "escalate": "Eskalieren",
+      "reject": "Automatisch ablehnen",
+      "after": "nach",
+      "hours": "Stunden",
+      "businessHours": "Arbeitsstunden",
+      "escalateTo": "an",
+      "fallback": "Ersatz-Genehmigende",
+      "departmentAdmins": "Abteilungsadmins",
+      "chosen": "Ausgewählte Genehmigende…"
     }
   },
   "inbox": {
@@ -727,7 +752,8 @@
       "request_commented": "{actor} hat {item} kommentiert",
       "issue_mentioned": "{actor} hat Sie in {item} erwähnt",
       "sla_at_risk": "SLA gefährdet bei {item}",
-      "sla_breached": "SLA verletzt bei {item}"
+      "sla_breached": "SLA verletzt bei {item}",
+      "approval_reminder": "Erinnerung: Ihre Genehmigung für {item} steht aus"
     }
   },
   "tokens": {
@@ -1066,5 +1092,18 @@
       "met": "Eingehalten",
       "missed": "Verfehlt"
     }
+  },
+  "outOfOffice": {
+    "title": "Abwesenheit",
+    "settings": "Einstellungen",
+    "subtitle": "Benennen Sie eine Kollegin oder einen Kollegen, die bzw. der Ihre Genehmigungen während Ihrer Abwesenheit entscheidet. Entscheidungen zeigen Sie beide.",
+    "none": "Keine Vertretung geplant.",
+    "active": "Jetzt aktiv",
+    "remove": "Entfernen",
+    "add": "Vertretung hinzufügen",
+    "delegate": "Vertretung",
+    "from": "Von",
+    "to": "Bis",
+    "hint": "Ganze Tage, einschließlich. Ihre Genehmigungen bleiben Ihre, Sie können weiterhin selbst entscheiden."
   }
 }

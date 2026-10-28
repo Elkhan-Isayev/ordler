@@ -1,4 +1,6 @@
 import type {
+  DelegationInput,
+  DelegationView,
   CalendarInput,
   CalendarView,
   SlaPolicyInput,
@@ -227,6 +229,11 @@ export const api = {
     apiRequest<ProjectDetail>(`/api/projects/${id}/milestones`, { method: 'POST', body }),
   removeMilestone: (id: string) =>
     apiRequest<ProjectDetail>(`/api/milestones/${id}`, { method: 'DELETE' }),
+  delegations: () => apiRequest<DelegationView[]>('/api/me/delegations'),
+  createDelegation: (body: DelegationInput) =>
+    apiRequest<DelegationView[]>('/api/me/delegations', { method: 'POST', body }),
+  revokeDelegation: (id: string) =>
+    apiRequest<void>(`/api/me/delegations/${id}`, { method: 'DELETE' }),
   calendars: (departmentId: string) =>
     apiRequest<CalendarView[]>(`/api/admin/departments/${departmentId}/calendars`),
   createCalendar: (departmentId: string, body: CalendarInput) =>

@@ -162,6 +162,11 @@ export function ApprovalsPage() {
                 <span className="text-xs text-ink-faint">
                   {selectorLabel(t, item.selector, item.names)}
                 </span>
+                {item.onBehalfOf && (
+                  <span className="rounded-full bg-hover px-2 py-0.5 text-xs text-ink-muted">
+                    {t('approvals.onBehalfOf', { name: item.onBehalfOf.name })}
+                  </span>
+                )}
                 <span className="text-xs text-ink-faint">
                   {formatWhen(item.activatedAt, i18n.language)}
                 </span>

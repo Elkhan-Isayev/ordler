@@ -595,6 +595,11 @@ export const approvalSteps = pgTable(
       .default(sql`'{}'::uuid[]`),
     activatedAt: timestamp('activated_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),
+    /** { hours, action } copied from the request type (SPEC §6.3); null: no timeout. */
+    timeout: jsonb('timeout'),
+    fallbackSelector: jsonb('fallback_selector'),
+    remindedAt: timestamp('reminded_at', { withTimezone: true }),
+    escalatedAt: timestamp('escalated_at', { withTimezone: true }),
   },
   (t) => [
     index('approval_steps_request_idx').on(t.requestId),
@@ -616,6 +621,8 @@ export const approvalDecisions = pgTable(
       .references(() => members.id),
     decision: text('decision', { enum: ['approve', 'reject', 'request_changes'] }).notNull(),
     comment: text('comment'),
+    /** The approver a delegate decided for; `approver_id` is always the human who clicked. */
+    onBehalfOfId: uuid('on_behalf_of_id').references(() => members.id),
     /** SHA-256 of the request content the approver saw. */
     snapshotHash: text('snapshot_hash').notNull(),
     createdAt: createdAt(),
@@ -1027,3 +1034,25 @@ export const slaPolicies = pgTable('sla_policies', {
   archivedAt: timestamp('archived_at', { withTimezone: true }),
   createdAt: createdAt(),
 });
+
+/** Out-of-office delegation of approvals between two dates, inclusive (SPEC §6.3). */
+export const approvalDelegations = pgTable(
+  'approval_delegations',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id),
+    delegateId: uuid('delegate_id')
+      .notNull()
+      .references(() => members.id),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    createdAt: createdAt(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('approval_delegations_member_idx').on(t.memberId),
+    index('approval_delegations_delegate_idx').on(t.delegateId),
+  ],
+);

@@ -124,7 +124,8 @@
     "import_auth_failed": "Mənbə tokeni rədd etdi. Tokeni və onun icazələrini yoxlayın.",
     "import_source_failed": "Mənbəyə qoşulmaq mümkün olmadı və ya xəta ilə cavab verdi. Sonra yenidən cəhd edin.",
     "import_not_ready": "Bu idxal hazırkı vəziyyətində bunu edə bilməz.",
-    "calendar_in_use": "Bu təqvim SLA siyasətində istifadə olunur. Əvvəlcə siyasəti dəyişin."
+    "calendar_in_use": "Bu təqvim SLA siyasətində istifadə olunur. Əvvəlcə siyasəti dəyişin.",
+    "delegation_overlap": "Bu günlərin bəziləri üçün artıq əvəzediciniz var."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -658,7 +659,9 @@
       "assigned": "{actor}: icraçı dəyişdirildi",
       "priority": "{actor}: prioritet → {priority}",
       "issueLinked": "{actor}: {issue} əlaqələndirildi",
-      "resubmitted": "{actor}: düzəlişlərlə yenidən göndərildi"
+      "resubmitted": "{actor}: düzəlişlərlə yenidən göndərildi",
+      "escalated": "Təsdiq vaxt bitdikdən sonra eskalasiya edildi",
+      "timedOut": "Rədd edildi: heç kim vaxtında qərar vermədi"
     }
   },
   "approvals": {
@@ -706,6 +709,28 @@
       "requester_department_supervisor": "Müraciətçinin şöbə rəhbəri",
       "role": "{role} · {department}",
       "department_head": "{department} şöbəsinin müdiri"
+    },
+    "onBehalfOf": "{name} əvəzinə",
+    "escalated": "Eskalasiya edildi: vaxt bitdikdən sonra ehtiyat təsdiqləyənlər əlavə olundu.",
+    "decidingFor": "{name} əvəzedicisi kimi qərar verirsiniz.",
+    "timeoutNote": {
+      "remind": "{hours} iş saatından sonra xatırlatma",
+      "escalate": "{hours} iş saatından sonra eskalasiya",
+      "reject": "{hours} iş saatından sonra avtomatik rədd"
+    },
+    "timeout": {
+      "label": "Heç kim qərar verməsə",
+      "none": "Vaxt limiti yoxdur",
+      "remind": "Xatırlat",
+      "escalate": "Eskalasiya et",
+      "reject": "Avtomatik rədd et",
+      "after": "sonra",
+      "hours": "Saat",
+      "businessHours": "iş saatı",
+      "escalateTo": "kimə",
+      "fallback": "Ehtiyat təsdiqləyənlər",
+      "departmentAdmins": "Departament adminləri",
+      "chosen": "Seçilmiş təsdiqləyənlər…"
     }
   },
   "inbox": {
@@ -727,7 +752,8 @@
       "request_commented": "{actor} {item} üzrə şərh yazdı",
       "issue_mentioned": "{actor} sizi {item} tapşırığında qeyd etdi",
       "sla_at_risk": "{item} üzrə SLA risk altında",
-      "sla_breached": "{item} üzrə SLA pozuldu"
+      "sla_breached": "{item} üzrə SLA pozuldu",
+      "approval_reminder": "Xatırlatma: {item} təsdiqinizi gözləyir"
     }
   },
   "tokens": {
@@ -1066,5 +1092,18 @@
       "met": "Yerinə yetirildi",
       "missed": "Gecikdi"
     }
+  },
+  "outOfOffice": {
+    "title": "Yoxluq",
+    "settings": "Parametrlər",
+    "subtitle": "Siz olmayanda təsdiqlərinizə qərar verəcək həmkarı təyin edin. Qərarda hər ikiniz göstərilir.",
+    "none": "Əvəzetmə planlaşdırılmayıb.",
+    "active": "İndi aktivdir",
+    "remove": "Sil",
+    "add": "Əvəzedici əlavə et",
+    "delegate": "Əvəzedici",
+    "from": "Başlanğıc",
+    "to": "Son",
+    "hint": "Tam günlər, daxil olmaqla. Təsdiqləriniz sizdə qalır, özünüz də qərar verə bilərsiniz."
   }
 }

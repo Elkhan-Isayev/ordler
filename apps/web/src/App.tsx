@@ -24,6 +24,8 @@ import {
   TeamRequestsPage,
 } from './requests/RequestLists.js';
 import { RequestPage } from './requests/RequestPage.js';
+import { OutOfOfficePage } from './settings/OutOfOfficePage.js';
+import { SettingsTabs } from './settings/SettingsTabs.js';
 import { TokensPage } from './settings/TokensPage.js';
 import { Link, usePathname } from './router.js';
 
@@ -135,7 +137,15 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
         ) : groupPage ? (
           <RequestGroupPage key={groupPage[1]} identifier={groupPage[1]!.toUpperCase()} />
         ) : path === '/settings/tokens' ? (
-          <TokensPage />
+          <div className="flex flex-col">
+            <SettingsTabs path={path} />
+            <TokensPage />
+          </div>
+        ) : path === '/settings/out-of-office' ? (
+          <div className="flex flex-col">
+            <SettingsTabs path={path} />
+            <OutOfOfficePage memberId={me.member.id} />
+          </div>
         ) : path === '/inbox' ? (
           <InboxPage memberId={me.member.id} />
         ) : path === '/my-requests' ? (

@@ -17,6 +17,7 @@ import { InitiativesController } from './projects/initiatives.controller.js';
 import { ImportsController } from './imports/imports.controller.js';
 import { WebhooksController } from './webhooks/webhooks.controller.js';
 import { SlaController } from './sla/sla.controller.js';
+import { DelegationsController } from './approvals/delegations.controller.js';
 import { McpServer } from './mcp/mcp.server.js';
 import { PublicApi } from './api-v1/public-api.js';
 import { TokensController } from './tokens/tokens.controller.js';
@@ -59,6 +60,7 @@ export class AppModule {
         ImportsController,
         WebhooksController,
         SlaController,
+        DelegationsController,
         AdminRolesController,
       ],
       providers: [

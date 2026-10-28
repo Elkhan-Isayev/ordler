@@ -143,3 +143,26 @@ export async function selectorNames(db: Db, selector: ApproverSelector): Promise
       return {};
   }
 }
+
+/**
+ * Who decides after a timeout escalation (SPEC §6.3): the step's fallback selector, or the
+ * admins of the approving department; never the requester.
+ */
+export async function escalationApprovers(
+  db: Db,
+  selector: ApproverSelector,
+  fallback: ApproverSelector | null,
+  ctx: ResolveContext,
+): Promise<string[]> {
+  if (fallback) return resolveApprovers(db, fallback, ctx);
+  const admin = await systemRoleId(db, 'department_admin');
+  const admins = admin
+    ? (await roleHolders(db, admin, fallbackDepartment(selector, ctx))).filter(
+        (id) => id !== ctx.requesterId,
+      )
+    : [];
+  return admins.length > 0
+    ? admins
+    : // Nobody to escalate to: the department_admin fallback of resolveApprovers ends at Owners.
+      resolveApprovers(db, { type: 'user', memberId: ctx.requesterId }, ctx);
+}

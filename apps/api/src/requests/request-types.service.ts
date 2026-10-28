@@ -2,6 +2,7 @@ import type { SlaService } from '../sla/sla.service.js';
 import {
   can,
   ORGANIZATION_SCOPE,
+  type ApprovalStepConfig,
   type ApprovalStepInput,
   type FormField,
   type PortalView,
@@ -128,7 +129,7 @@ export class RequestTypeService {
       .select({ id: teams.id, key: teams.key, name: teams.name })
       .from(teams)
       .where(eq(teams.id, row.targetTeamId));
-    const steps = row.approvalSteps as ApprovalStepInput[];
+    const steps = row.approvalSteps as Array<ApprovalStepInput & Partial<ApprovalStepConfig>>;
     return {
       id: row.id,
       departmentId: row.departmentId,
@@ -141,6 +142,9 @@ export class RequestTypeService {
       approvalSteps: await Promise.all(
         steps.map(async (step) => ({
           ...step,
+          // Types saved before timeouts existed have neither field.
+          timeout: step.timeout ?? null,
+          fallbackSelector: step.fallbackSelector ?? null,
           names: await selectorNames(this.db, step.selector),
         })),
       ),
@@ -157,7 +161,10 @@ export class RequestTypeService {
     if (!team || team.departmentId !== departmentId || team.archivedAt) {
       throw new DomainError('validation_failed');
     }
-    for (const { selector } of input.approvalSteps) {
+    const selectors = input.approvalSteps.flatMap((step) =>
+      step.fallbackSelector ? [step.selector, step.fallbackSelector] : [step.selector],
+    );
+    for (const selector of selectors) {
       if (selector.type === 'user') {
         const [m] = await this.db
           .select({ id: members.id })

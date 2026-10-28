@@ -102,7 +102,21 @@ describe('form definitions', () => {
     expect(parsed.approvalSteps[0]).toEqual({
       selector: { type: 'requester_department_supervisor' },
       rule: 'any',
+      timeout: null,
+      fallbackSelector: null,
     });
+  });
+
+  it('accepts step timeouts within bounds only', () => {
+    const step = (timeout: object) =>
+      requestTypeInputSchema.safeParse({
+        name: 'Access',
+        targetTeamId: '01a13d37-d040-7000-b257-000000000001',
+        approvalSteps: [{ selector: { type: 'requester_department_supervisor' }, timeout }],
+      }).success;
+    expect(step({ hours: 8, action: 'escalate' })).toBe(true);
+    expect(step({ hours: 0, action: 'remind' })).toBe(false);
+    expect(step({ hours: 8, action: 'ignore' })).toBe(false);
   });
 });
 

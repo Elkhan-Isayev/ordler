@@ -15,6 +15,7 @@ export const NOTIFICATION_KINDS = [
   'request_commented',
   'sla_at_risk',
   'sla_breached',
+  'approval_reminder',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

@@ -37,6 +37,10 @@ describe('RequestTypesSection', () => {
       within(form).getByLabelText('Approver'),
       'requester_department_supervisor',
     );
+    await userEvent.selectOptions(within(form).getByLabelText('When nobody decides'), 'escalate');
+    const hours = within(form).getByLabelText('Hours');
+    await userEvent.clear(hours);
+    await userEvent.type(hours, '8');
     await userEvent.selectOptions(within(form).getByLabelText('SLA policy'), 'p1');
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
@@ -55,7 +59,14 @@ describe('RequestTypesSection', () => {
           options: ['Headset', 'Laptop'],
         },
       ],
-      approvalSteps: [{ selector: { type: 'requester_department_supervisor' }, rule: 'any' }],
+      approvalSteps: [
+        {
+          selector: { type: 'requester_department_supervisor' },
+          rule: 'any',
+          timeout: { hours: 8, action: 'escalate' },
+          fallbackSelector: null,
+        },
+      ],
       allowRequesterApprovals: false,
       slaPolicyId: 'p1',
     });

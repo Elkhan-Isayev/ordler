@@ -162,6 +162,13 @@
       "when": 1792877577433,
       "tag": "0022_sla",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793182536854,
+      "tag": "0023_approval_timeouts_delegation",
+      "breakpoints": true
     }
   ]
 }

@@ -31,6 +31,7 @@ import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
 import { WebhookService, type WebhookFetch } from './webhooks/webhook.service.js';
 import { SlaService } from './sla/sla.service.js';
+import { DelegationService } from './approvals/delegation.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
@@ -84,6 +85,7 @@ export interface AppContext {
   imports: ImportService;
   webhooks: WebhookService;
   sla: SlaService;
+  delegations: DelegationService;
   audit: AuditService;
   version: string | undefined;
   events: EventBus;
@@ -173,6 +175,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     log: (message) => console.warn(message),
     ...(deps.webhookFetch ? { fetch: deps.webhookFetch } : {}),
   });
+  const delegations = new DelegationService(deps.db, now);
   const sla = new SlaService({
     db: deps.db,
     access,
@@ -248,6 +251,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       channels: slack,
       hooks: webhooks,
       sla,
+      delegations,
       now,
     }),
     notifications,
@@ -261,6 +265,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
     webhooks,
     sla,
+    delegations,
     imports: new ImportService({
       db: deps.db,
       box,
