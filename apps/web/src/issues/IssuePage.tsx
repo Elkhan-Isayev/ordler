@@ -13,6 +13,7 @@ import type { TFunction } from 'i18next';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
+import { copyText } from '../components/clipboard.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
@@ -147,6 +148,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
           </Fragment>
         ))}
         <span className="text-ink">{issue.identifier}</span>
+        <CopyButtons identifier={issue.identifier} />
         {team.can.delete && (
           <button
             type="button"
@@ -321,6 +323,69 @@ export function IssuePage({ identifier }: { identifier: string }) {
         </aside>
       </div>
     </div>
+  );
+}
+
+/** Linear-style quick copy of the identifier and the issue URL. */
+function CopyButtons({ identifier }: { identifier: string }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState<'id' | 'link' | null>(null);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(null), 1500);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  const copy = async (what: 'id' | 'link') => {
+    const text = what === 'id' ? identifier : `${window.location.origin}/issue/${identifier}`;
+    if (await copyText(text)) setCopied(what);
+  };
+  const button = 'rounded-md p-1 text-ink-muted hover:bg-hover hover:text-ink';
+  return (
+    <span className="flex items-center gap-0.5">
+      <button
+        type="button"
+        className={button}
+        aria-label={t('issues.menu.copyId')}
+        title={t('issues.menu.copyId')}
+        onClick={() => void copy('id')}
+      >
+        <svg
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden="true"
+        >
+          <rect x="5" y="5" width="8.5" height="8.5" rx="1.5" />
+          <path d="M3 10.5V3.5A1 1 0 0 1 4 2.5h6.5" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className={button}
+        aria-label={t('issues.menu.copyLink')}
+        title={t('issues.menu.copyLink')}
+        onClick={() => void copy('link')}
+      >
+        <svg
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden="true"
+        >
+          <path d="M6.5 9.5a2.5 2.5 0 0 0 3.5 0l2.5-2.5a2.5 2.5 0 0 0-3.5-3.5l-.75.75" />
+          <path d="M9.5 6.5a2.5 2.5 0 0 0-3.5 0L3.5 9a2.5 2.5 0 0 0 3.5 3.5l.75-.75" />
+        </svg>
+      </button>
+      <span role="status" className="text-xs text-ink-muted">
+        {copied && t(copied === 'id' ? 'issues.copiedId' : 'issues.copiedLink')}
+      </span>
+    </span>
   );
 }
 

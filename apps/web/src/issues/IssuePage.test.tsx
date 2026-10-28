@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
@@ -30,6 +30,51 @@ describe('IssuePage', () => {
     );
     expect(screen.getByLabelText('Status')).toHaveValue('s-todo');
     expect(screen.getByText(/Ann Lee created the issue/)).toBeInTheDocument();
+  });
+
+  it('copies the identifier and the link from the header', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    mockApi({
+      'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+    });
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy ID' }));
+    expect(writeText).toHaveBeenLastCalledWith('HELP-7');
+    expect(await screen.findByRole('status')).toHaveTextContent('ID copied');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    expect(writeText).toHaveBeenLastCalledWith(`${window.location.origin}/issue/HELP-7`);
+    expect(await screen.findByRole('status')).toHaveTextContent('Link copied');
+  });
+
+  it('falls back to the copy command when the clipboard API is unavailable', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    const execCommand = vi.fn(() => true);
+    document.execCommand = execCommand;
+    mockApi({
+      'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+    });
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy link' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Link copied');
+    expect(execCommand).toHaveBeenCalledWith('copy');
+  });
+
+  it('stays quiet when copying is blocked entirely', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    document.execCommand = vi.fn(() => false);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    mockApi({
+      'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+    });
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy ID' }));
+    await waitFor(() => expect(writeText).toHaveBeenCalled());
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('saves property changes', async () => {

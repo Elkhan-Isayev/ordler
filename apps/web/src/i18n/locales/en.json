@@ -527,6 +527,8 @@
     },
     "duplicateOf": "Duplicate of",
     "delete": "Delete",
+    "copiedId": "ID copied",
+    "copiedLink": "Link copied",
     "confirmDelete": "Delete {identifier}? It disappears from boards and search; administrators keep it in the database and audit log.",
     "assignees": {
       "edit": "Edit assignees",

@@ -1,4 +1,5 @@
 import type { AdminDepartment, AdminMember, AdminRole, InviteResponse } from '@ordler/shared';
+import { copyText } from '../components/clipboard.js';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
@@ -167,10 +168,7 @@ function InviteLink({ email, url, emailed }: { email: string; url: string; email
           type="button"
           className={buttonClass}
           onClick={() => {
-            void navigator.clipboard
-              ?.writeText(url)
-              .then(() => setCopied(true))
-              .catch(() => undefined);
+            void copyText(url).then((ok) => ok && setCopied(true));
           }}
         >
           {copied ? t('admin.members.copied') : t('admin.members.copy')}

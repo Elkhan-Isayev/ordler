@@ -5,6 +5,7 @@ import {
   type TokenScope,
   type TokenSettings,
 } from '@ordler/shared';
+import { copyText } from '../components/clipboard.js';
 import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -159,7 +160,7 @@ export function TokensPage({ baseUrl = window.location.origin }: { baseUrl?: str
             <button
               type="button"
               className={ghostButtonClass}
-              onClick={() => void navigator.clipboard?.writeText(secret)}
+              onClick={() => void copyText(secret)}
             >
               {t('tokens.copy')}
             </button>

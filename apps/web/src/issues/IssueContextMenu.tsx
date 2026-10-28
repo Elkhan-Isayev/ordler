@@ -4,6 +4,7 @@ import {
   type TeamView,
   type UpdateIssueInput,
 } from '@ordler/shared';
+import { copyText } from '../components/clipboard.js';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cycleName } from '../cycles/format.js';
@@ -70,7 +71,7 @@ export function IssueContextMenu({
 
   const url = `${window.location.origin}/issue/${issue.identifier}`;
   const copy = (text: string) => {
-    void navigator.clipboard?.writeText(text);
+    void copyText(text);
     onClose();
   };
   const assigned = issue.assignees.map((a) => a.id);

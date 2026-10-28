@@ -527,6 +527,8 @@
     },
     "duplicateOf": "Dublikatıdır:",
     "delete": "Sil",
+    "copiedId": "ID kopyalandı",
+    "copiedLink": "Keçid kopyalandı",
     "confirmDelete": "{identifier} silinsin? Tapşırıq lövhələrdən və axtarışdan yox olacaq; verilənlər bazasında və audit jurnalında qalacaq.",
     "assignees": {
       "edit": "İcraçıları dəyiş",
