@@ -94,9 +94,20 @@ describe('TeamIssuesPage', () => {
   });
 
   it('drops issues deleted by other people', async () => {
-    mockApi(base());
+    // Like the real server, later list requests no longer return the deleted issue, so a
+    // reload that lands after the event (slow CI) cannot bring it back.
+    let deleted = false;
+    mockApi({
+      ...base(),
+      'GET /api/teams/HELP/issues': () => ({
+        json: deleted
+          ? [issue(1, { statusId: 's-progress' })]
+          : base()['GET /api/teams/HELP/issues']().json,
+      }),
+    });
     await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
     await screen.findByText('Issue 2');
+    deleted = true;
     act(() => realtime.push({ type: 'issue.removed', issueId: 'i2', teamId: TEAM.id }));
     await waitFor(() => expect(screen.queryByText('Issue 2')).not.toBeInTheDocument());
     expect(screen.getByText('Issue 1')).toBeInTheDocument();
