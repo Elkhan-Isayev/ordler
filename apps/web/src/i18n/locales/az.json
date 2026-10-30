@@ -555,7 +555,8 @@
     "dueDatePick": "Son tarix",
     "dueDateClear": "Son tarixi sil",
     "createMoreHint": "Yaratdıqdan sonra pəncərə açıq qalır: status, icraçılar, etiketlər və ana tapşırıq saxlanılır, bir neçə tapşırığı ardıcıl əlavə edə bilərsiniz.",
-    "createdKeepOpen": "{identifier} yaradıldı. Növbətini əlavə edin."
+    "createdKeepOpen": "{identifier} yaradıldı. Növbətini əlavə edin.",
+    "timeline": "Zaman xətti"
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -1143,5 +1144,32 @@
     },
     "showIf": "Göstər, əgər",
     "stepIf": "Lazımdır, əgər"
+  },
+  "views": {
+    "picker": "Saxlanmış görünüş",
+    "allIssues": "Bütün tapşırıqlar",
+    "personalName": "{name} (şəxsi)",
+    "saveChanges": "Dəyişiklikləri saxla",
+    "saveAs": "Görünüş kimi saxla",
+    "save": "Saxla",
+    "name": "Görünüşün adı",
+    "shareWithTeam": "Komanda ilə paylaş",
+    "shared": "Ümumi",
+    "personal": "Şəxsi",
+    "empty": "Hələ saxlanmış görünüş yoxdur. Komandanın tapşırıqlarını filtrləyin və «Görünüş kimi saxla» seçin.",
+    "filterCount": "{count, plural, =0 {Filtr yoxdur} one {# filtr} other {# filtr}}",
+    "delete": "{name} görünüşünü sil",
+    "confirmDelete": "«{name}» görünüşü silinsin?",
+    "layout": {
+      "list": "Siyahı",
+      "board": "Lövhə",
+      "timeline": "Zaman xətti"
+    }
+  },
+  "timeline": {
+    "empty": "Tarixli heç nə yoxdur.",
+    "issueDates": "{start} – {end}",
+    "noDueDate": "Son tarix yoxdur",
+    "undatedProjects": "{count, plural, one {# layihənin tarixi yoxdur} other {# layihənin tarixi yoxdur}}"
   }
 }

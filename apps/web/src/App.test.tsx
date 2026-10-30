@@ -3,6 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App.js';
+import { TEAM } from './issues/fixtures.js';
 import { navigate } from './router.js';
 import { ME, mockApi } from './test/api-mock.js';
 import { fakeRealtime } from './test/realtime-fake.js';
@@ -41,6 +42,24 @@ describe('App', () => {
     };
     await renderWithI18n(<App me={me} onSignOut={vi.fn()} />);
     expect(screen.getByRole('link', { name: 'Request types' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    navigate('/');
+  });
+
+  it('routes to the views page and the timeline layout', async () => {
+    mockApi({
+      'GET /api/views': () => ({ json: [] }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+      'GET /api/teams/HELP/issues': () => ({ json: [] }),
+      'GET /api/teams/HELP/views': () => ({ json: [] }),
+    });
+    navigate('/views');
+    await renderWithI18n(<App me={ME} onSignOut={vi.fn()} />);
+    expect(await screen.findByRole('heading', { name: 'Views' })).toBeInTheDocument();
+    navigate('/teams/HELP/timeline');
+    expect(await screen.findByRole('link', { name: 'Timeline' })).toHaveAttribute(
       'aria-current',
       'page',
     );

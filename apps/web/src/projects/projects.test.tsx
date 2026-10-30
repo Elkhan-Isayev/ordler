@@ -63,6 +63,27 @@ describe('ProjectsPage', () => {
     expect(within(row).getByText('75%')).toBeInTheDocument();
   });
 
+  it('shows dated projects on a timeline and counts the undated ones', async () => {
+    mockApi({
+      'GET /api/projects': () => ({
+        json: [
+          { ...SUMMARY, startDate: '2026-11-02' },
+          { ...SUMMARY, id: 'p-2', name: 'Someday', targetDate: null },
+        ],
+      }),
+    });
+    await renderWithI18n(<ProjectsPage />);
+    await screen.findByRole('link', { name: /Office move/ });
+    await userEvent.click(screen.getByRole('button', { name: 'Timeline' }));
+    const timeline = screen.getByRole('region', { name: 'Timeline' });
+    expect(
+      within(timeline).getByRole('link', { name: 'Office move: Nov 2, 2026 – Dec 1, 2026' }),
+    ).toHaveAttribute('href', '/projects/p-1');
+    expect(within(timeline).queryByText('Someday')).not.toBeInTheDocument();
+    expect(screen.getByText('1 project has no dates')).toBeInTheDocument();
+    expect(window.location.search).toBe('?layout=timeline');
+  });
+
   it('creates a project for the chosen teams and opens it', async () => {
     const calls = mockApi({
       'GET /api/projects': () => ({ json: [] }),

@@ -18,3 +18,4 @@ export * from './projects.js';
 export * from './imports.js';
 export * from './webhooks.js';
 export * from './sla.js';
+export * from './views.js';

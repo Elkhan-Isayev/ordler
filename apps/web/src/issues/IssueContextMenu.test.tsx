@@ -64,7 +64,14 @@ describe('IssueContextMenu', () => {
 
   it('hides actions the member may not take', async () => {
     const { result } = open({
-      can: { create: false, update: false, assign: false, comment: false, delete: false },
+      can: {
+        create: false,
+        update: false,
+        assign: false,
+        comment: false,
+        delete: false,
+        shareViews: false,
+      },
     });
     await result;
     expect(screen.queryByRole('menuitem', { name: /Status/ })).not.toBeInTheDocument();

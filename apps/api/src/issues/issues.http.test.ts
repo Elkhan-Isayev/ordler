@@ -110,6 +110,7 @@ describe('team issues', () => {
       assign: true,
       comment: true,
       delete: true,
+      shareViews: true,
     });
   });
 
@@ -228,6 +229,7 @@ describe('issue permissions', () => {
       assign: false,
       comment: false,
       delete: false,
+      shareViews: false,
     });
     expect((await call('GET', '/api/issues/HELP-1', viewer.cookie)).statusCode).toBe(200);
     expect(

@@ -155,7 +155,15 @@ export interface TeamView {
   /** Active projects that include this team, with their milestones, for pickers. */
   projects: Array<{ id: string; name: string; milestones: Array<{ id: string; name: string }> }>;
   /** What the viewer may do; the server checks every request again. */
-  can: { create: boolean; update: boolean; assign: boolean; comment: boolean; delete: boolean };
+  can: {
+    create: boolean;
+    update: boolean;
+    assign: boolean;
+    comment: boolean;
+    delete: boolean;
+    /** Saving views everyone in the team sees (`view.create_shared`). */
+    shareViews: boolean;
+  };
 }
 
 export interface IssueSummary {

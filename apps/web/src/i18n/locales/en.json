@@ -555,7 +555,8 @@
     "dueDatePick": "Due date",
     "dueDateClear": "Clear due date",
     "createMoreHint": "After creating, the dialog stays open with status, assignees, labels and parent kept, so you can add several issues in a row.",
-    "createdKeepOpen": "{identifier} created. Add the next one."
+    "createdKeepOpen": "{identifier} created. Add the next one.",
+    "timeline": "Timeline"
   },
   "editor": {
     "toolbar": "Formatting",
@@ -1143,5 +1144,32 @@
     },
     "showIf": "Show if",
     "stepIf": "Required if"
+  },
+  "views": {
+    "picker": "Saved view",
+    "allIssues": "All issues",
+    "personalName": "{name} (personal)",
+    "saveChanges": "Save changes",
+    "saveAs": "Save as view",
+    "save": "Save",
+    "name": "View name",
+    "shareWithTeam": "Share with the team",
+    "shared": "Shared",
+    "personal": "Personal",
+    "empty": "No saved views yet. Filter a team's issues and choose \"Save as view\".",
+    "filterCount": "{count, plural, =0 {No filters} one {# filter} other {# filters}}",
+    "delete": "Delete view {name}",
+    "confirmDelete": "Delete the view \"{name}\"?",
+    "layout": {
+      "list": "List",
+      "board": "Board",
+      "timeline": "Timeline"
+    }
+  },
+  "timeline": {
+    "empty": "Nothing with dates to show.",
+    "issueDates": "{start} – {end}",
+    "noDueDate": "No due date",
+    "undatedProjects": "{count, plural, one {# project has no dates} other {# projects have no dates}}"
   }
 }

@@ -12,6 +12,7 @@ import { buttonClass, ghostButtonClass } from '../admin/common.js';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
+import { Timeline } from '../components/Timeline.js';
 import { DueDatePicker } from '../issues/DueDatePicker.js';
 import { AvatarStack, selectClass } from '../issues/ui.js';
 import { Link, navigate } from '../router.js';
@@ -73,6 +74,19 @@ export function ProjectsPage({ teamKey }: { teamKey?: string }) {
   const [projects, setProjects] = useState<ProjectSummary[]>();
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
+  const [timeline, setTimeline] = useState(
+    () => new URLSearchParams(window.location.search).get('layout') === 'timeline',
+  );
+
+  function showTimeline(next: boolean) {
+    setTimeline(next);
+    // Kept in the address bar so the timeline can be shared or reloaded.
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${next ? '?layout=timeline' : ''}`,
+    );
+  }
 
   const reload = useCallback(() => {
     api
@@ -96,6 +110,28 @@ export function ProjectsPage({ teamKey }: { teamKey?: string }) {
           {teamKey ? `${teamKey} · ` : ''}
           {t('nav.projects')}
         </h1>
+        <nav aria-label={t('issues.layout')} className="flex gap-1">
+          {(
+            [
+              [false, t('issues.list')],
+              [true, t('issues.timeline')],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={timeline === value}
+              onClick={() => showTimeline(value)}
+              className={`rounded-md px-2 py-1 text-sm ${
+                timeline === value
+                  ? 'bg-hover text-ink'
+                  : 'text-ink-muted hover:bg-hover hover:text-ink'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
         <button
           type="button"
           className={`${buttonClass} ml-auto flex items-center gap-1`}
@@ -113,7 +149,30 @@ export function ProjectsPage({ teamKey }: { teamKey?: string }) {
       {projects?.length === 0 && (
         <p className="p-8 text-center text-sm text-ink-muted">{t('projects.empty')}</p>
       )}
-      <ul>
+      {timeline && projects && projects.length > 0 && (
+        <Timeline
+          label={t('issues.timeline')}
+          items={projects
+            .filter((project) => project.targetDate ?? project.startDate)
+            .map((project) => ({
+              id: project.id,
+              href: `/projects/${project.id}`,
+              label: project.name,
+              start: project.targetDate ? project.startDate : null,
+              end: (project.targetDate ?? project.startDate)!,
+              done: project.status === 'completed' || project.status === 'canceled',
+              title: `${date(project.startDate)} – ${date(project.targetDate)}`,
+            }))}
+        />
+      )}
+      {timeline && projects?.some((project) => !project.targetDate && !project.startDate) && (
+        <p className="border-t border-line px-4 py-2 text-xs text-ink-faint">
+          {t('timeline.undatedProjects', {
+            count: projects.filter((project) => !project.targetDate && !project.startDate).length,
+          })}
+        </p>
+      )}
+      <ul hidden={timeline}>
         {projects?.map((project) => (
           <li key={project.id} className="border-b border-line">
             <Link

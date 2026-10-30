@@ -61,6 +61,9 @@ import type {
   ProjectHealth,
   ProjectInput,
   ProjectSummary,
+  SavedView,
+  ViewInput,
+  ViewUpdate,
   CycleSettings,
   CycleView,
   TeamCycles,
@@ -213,6 +216,18 @@ export const api = {
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
   readableTeams: () =>
     apiRequest<Array<{ id: string; key: string; name: string; department: string }>>('/api/teams'),
+  views: (teamKey?: string) =>
+    apiRequest<SavedView[]>(
+      teamKey ? `/api/teams/${encodeURIComponent(teamKey)}/views` : '/api/views',
+    ),
+  createView: (teamKey: string, body: ViewInput) =>
+    apiRequest<SavedView>(`/api/teams/${encodeURIComponent(teamKey)}/views`, {
+      method: 'POST',
+      body,
+    }),
+  updateView: (id: string, body: ViewUpdate) =>
+    apiRequest<SavedView>(`/api/views/${id}`, { method: 'PATCH', body }),
+  deleteView: (id: string) => apiRequest<void>(`/api/views/${id}`, { method: 'DELETE' }),
   projects: (teamKey?: string) =>
     apiRequest<ProjectSummary[]>(
       teamKey ? `/api/teams/${encodeURIComponent(teamKey)}/projects` : '/api/projects',

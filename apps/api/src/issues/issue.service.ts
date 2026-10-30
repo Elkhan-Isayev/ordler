@@ -135,6 +135,7 @@ export class IssueService {
         assign: can.assign,
         comment: can.comment,
         delete: can.delete,
+        shareViews: can.shareViews,
       },
     };
   }
@@ -625,6 +626,7 @@ export class IssueService {
         deleteAnyComment: false,
         manage: false,
         delete: false,
+        shareViews: false,
       };
     return this.deps.access.forTeam(memberId, team);
   }

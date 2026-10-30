@@ -1060,3 +1060,24 @@ export const approvalDelegations = pgTable(
     index('approval_delegations_delegate_idx').on(t.delegateId),
   ],
 );
+
+/** Saved views (SPEC glossary "View"): issue filters and a layout over one team. */
+export const savedViews = pgTable(
+  'saved_views',
+  {
+    id: id(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    ownerId: uuid('owner_id').references(() => members.id),
+    name: text('name').notNull(),
+    layout: text('layout', { enum: ['list', 'board', 'timeline'] })
+      .notNull()
+      .default('list'),
+    filters: jsonb('filters').notNull().default({}),
+    shared: boolean('shared').notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('saved_views_team_idx').on(t.teamId), index('saved_views_owner_idx').on(t.ownerId)],
+);

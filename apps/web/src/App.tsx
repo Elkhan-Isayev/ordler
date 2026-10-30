@@ -12,6 +12,7 @@ import { CyclePage, CyclesPage } from './cycles/CyclePages.js';
 import { InitiativePage, InitiativesPage } from './projects/InitiativePages.js';
 import { ProjectPage } from './projects/ProjectPage.js';
 import { ProjectsPage } from './projects/ProjectsPage.js';
+import { ViewsPage } from './issues/ViewsPage.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
 import { TriagePage } from './issues/TriagePage.js';
 import { NewRequestPage } from './requests/NewRequestPage.js';
@@ -29,16 +30,19 @@ import { SettingsTabs } from './settings/SettingsTabs.js';
 import { TokensPage } from './settings/TokensPage.js';
 import { Link, usePathname } from './router.js';
 
+const LAYOUTS = { issues: 'list', board: 'board', timeline: 'timeline' } as const;
+
 export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }) {
   const { t } = useTranslation();
   const path = usePathname();
   const adminSection = /^\/admin(?:\/([A-Za-z]+))?\/?$/.exec(path);
-  const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board)\/?$/.exec(path);
+  const teamPage = /^\/teams\/([A-Za-z0-9]+)\/(issues|board|timeline)\/?$/.exec(path);
   const triagePage = /^\/teams\/([A-Za-z0-9]+)\/triage\/?$/.exec(path);
   const cyclesPage = /^\/teams\/([A-Za-z0-9]+)\/cycles(?:\/(current|upcoming))?\/?$/.exec(path);
   const cyclePage = /^\/cycles\/([0-9a-f-]{36})\/?$/.exec(path);
   const projectPage = /^\/projects\/([0-9a-f-]{36})\/?$/.exec(path);
   const initiativePage = /^\/initiatives\/([0-9a-f-]{36})\/?$/.exec(path);
+  const teamViews = /^\/teams\/([A-Za-z0-9]+)\/views\/?$/.exec(path);
   const teamProjects = /^\/teams\/([A-Za-z0-9]+)\/projects\/?$/.exec(path);
   const teamRequests = /^\/teams\/([A-Za-z0-9]+)\/requests\/?$/.exec(path);
   const teamIntegrations = /^\/teams\/([A-Za-z0-9]+)\/settings\/?$/.exec(path);
@@ -95,7 +99,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <TeamIssuesPage
             key={teamPage[1]}
             teamKey={teamPage[1]!.toUpperCase()}
-            view={teamPage[2] === 'board' ? 'board' : 'list'}
+            view={LAYOUTS[teamPage[2] as keyof typeof LAYOUTS]}
           />
         ) : cyclesPage ? (
           <CyclesPage
@@ -107,6 +111,10 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <InitiativesPage canCreate={me.organizationPermissions.includes('initiative.manage')} />
         ) : initiativePage ? (
           <InitiativePage key={initiativePage[1]} initiativeId={initiativePage[1]!} />
+        ) : path === '/views' ? (
+          <ViewsPage />
+        ) : teamViews ? (
+          <ViewsPage key={teamViews[1]} teamKey={teamViews[1]!.toUpperCase()} />
         ) : path === '/projects' ? (
           <ProjectsPage />
         ) : teamProjects ? (

@@ -15,6 +15,8 @@ export interface TeamPermissions {
   delete: boolean;
   /** Team settings: labels, workflow (team.update). */
   manage: boolean;
+  /** Saving and editing the team's shared views (view.create_shared). */
+  shareViews: boolean;
 }
 
 /**
@@ -49,6 +51,7 @@ export class TeamAccess {
       deleteAnyComment: read && has('comment.delete_any'),
       delete: read && has('issue.delete'),
       manage: read && has('team.update'),
+      shareViews: read && has('view.create_shared'),
     };
   }
 

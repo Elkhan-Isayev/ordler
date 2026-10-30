@@ -12,6 +12,7 @@ import { AdminDatabaseController } from './install/admin-database.controller.js'
 import { IssuesController } from './issues/issues.controller.js';
 import { AdminRolesController } from './admin/admin-roles.controller.js';
 import { CyclesController } from './cycles/cycles.controller.js';
+import { ViewsController } from './views/views.controller.js';
 import { ProjectsController } from './projects/projects.controller.js';
 import { InitiativesController } from './projects/initiatives.controller.js';
 import { ImportsController } from './imports/imports.controller.js';
@@ -55,6 +56,7 @@ export class AppModule {
         NotificationsController,
         TokensController,
         CyclesController,
+        ViewsController,
         ProjectsController,
         InitiativesController,
         ImportsController,

@@ -259,6 +259,12 @@ Your departments
   assign (`A`), status (`S`), priority (`P`), label (`L`), navigation (`G` then `I`/`P`/…).
 - List, board (kanban) and timeline layouts for issues and projects.
 - Grouping, sorting, filtering by any field; filters serializable to URL and savable as Views.
+- **Views**: a View stores one team's filters and layout. A personal view is visible to and
+  editable by its owner only; a shared view is visible to everyone who can read the team and
+  is created, edited, published or deleted only with `view.create_shared`. Changes to shared
+  views are audited. The workspace Views page lists every view the member can see.
+- **Timeline**: issues with a due date are bars from creation to the due date, the rest are
+  listed below; projects are bars from start to target date (a marker when only one is set).
 - Optimistic updates; real-time sync of changes from other users (< 1 s).
 - Light / dark theme, follows OS by default.
 - Full-text search across issues, requests, comments, projects (permission-filtered).

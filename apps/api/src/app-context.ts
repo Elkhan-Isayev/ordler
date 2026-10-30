@@ -26,6 +26,7 @@ import { RolesService } from './members/roles.service.js';
 import { LabelService } from './issues/label.service.js';
 import { WorkflowService } from './issues/workflow.service.js';
 import { CycleService } from './cycles/cycle.service.js';
+import { ViewService } from './views/view.service.js';
 import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
@@ -80,6 +81,7 @@ export interface AppContext {
   labels: LabelService;
   workflow: WorkflowService;
   cycles: CycleService;
+  views: ViewService;
   projects: ProjectService;
   initiatives: InitiativeService;
   imports: ImportService;
@@ -261,6 +263,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     labels: new LabelService(deps.db, access, teamAccess),
     workflow: new WorkflowService(deps.db, teamAccess, events),
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
+    views: new ViewService(deps.db, teamAccess, now),
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
     webhooks,

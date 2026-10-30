@@ -1,38 +1,38 @@
-import { PRIORITIES, type Priority, type TeamView } from '@ordler/shared';
+import { PRIORITIES, type Priority, type TeamView, type ViewLayout } from '@ordler/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClass, ghostButtonClass } from '../admin/common.js';
 import { FormError } from '../auth/form.js';
-import { Link } from '../router.js';
+import { Link, navigate } from '../router.js';
 import { IssueBoard } from './IssueBoard.js';
 import { IssueList } from './IssueList.js';
-import {
-  activeFilterCount,
-  applyFilters,
-  parseFilters,
-  serializeFilters,
-  type IssueFilters,
-} from './filters.js';
+import { IssueTimeline } from './IssueTimeline.js';
+import { layoutHref, ViewPicker } from './SavedViews.js';
+import { activeFilterCount, applyFilters, parseFilters, type IssueFilters } from './filters.js';
 import { IssueContextMenu, type MenuPosition } from './IssueContextMenu.js';
 import { NewIssueDialog } from './NewIssueDialog.js';
 import { cycleName } from '../cycles/format.js';
 import { selectClass, statusLabel } from './ui.js';
 import { useTeamIssues } from './useTeamIssues.js';
 
-export type IssueView = 'list' | 'board';
-
-/** A team's issues as a list (/teams/KEY/issues) or a board (/teams/KEY/board). */
-export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: IssueView }) {
+/**
+ * A team's issues as a list (/teams/KEY/issues), a board (/teams/KEY/board) or a timeline
+ * (/teams/KEY/timeline); `?view=` names the saved view the filters came from.
+ */
+export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: ViewLayout }) {
   const { t } = useTranslation();
   const { team, issues, error, update, create, remove } = useTeamIssues(teamKey);
   const [menu, setMenu] = useState<MenuPosition>();
   const [creating, setCreating] = useState<{ statusId?: string } | undefined>();
   const [filters, setFilters] = useState<IssueFilters>(() => parseFilters(window.location.search));
+  const [viewId, setViewId] = useState(
+    () => new URLSearchParams(window.location.search).get('view') ?? undefined,
+  );
 
   function changeFilters(next: IssueFilters) {
     setFilters(next);
     // Keeps the filtered view in the address bar so it can be shared or reloaded.
-    window.history.replaceState(null, '', `${window.location.pathname}${serializeFilters(next)}`);
+    window.history.replaceState(null, '', layoutHref(teamKey, view, next, viewId));
   }
 
   if (!team) {
@@ -47,9 +47,9 @@ export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: Issue
     );
   }
 
-  const tab = (target: IssueView, label: string) => (
+  const tab = (target: ViewLayout, label: string) => (
     <Link
-      href={`/teams/${team.key}/${target === 'list' ? 'issues' : 'board'}${serializeFilters(filters)}`}
+      href={layoutHref(team.key, target, filters, viewId)}
       aria-current={view === target ? 'page' : undefined}
       className={`rounded-md px-2 py-1 text-sm ${
         view === target ? 'bg-hover text-ink' : 'text-ink-muted hover:bg-hover hover:text-ink'
@@ -69,7 +69,19 @@ export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: Issue
         <nav aria-label={t('issues.layout')} className="flex gap-1">
           {tab('list', t('issues.list'))}
           {tab('board', t('issues.board'))}
+          {tab('timeline', t('issues.timeline'))}
         </nav>
+        <ViewPicker
+          team={team}
+          layout={view}
+          filters={filters}
+          viewId={viewId}
+          onOpen={(saved) => {
+            setFilters(saved?.filters ?? {});
+            setViewId(saved?.id);
+            navigate(layoutHref(team.key, saved?.layout ?? view, saved?.filters ?? {}, saved?.id));
+          }}
+        />
         {team.can.create && (
           <button
             type="button"
@@ -86,7 +98,9 @@ export function TeamIssuesPage({ teamKey, view }: { teamKey: string; view: Issue
           <FormError message={t(error)} />
         </div>
       )}
-      {view === 'board' ? (
+      {view === 'timeline' ? (
+        <IssueTimeline issues={applyFilters(issues, filters)} />
+      ) : view === 'board' ? (
         <IssueBoard
           team={team}
           issues={applyFilters(issues, filters)}
