@@ -217,6 +217,55 @@ describe('projects (SPEC §5.2)', () => {
   });
 });
 
+describe('partial updates', () => {
+  it('keep the project fields a change leaves out', async () => {
+    const p = (
+      await project(people.admin.cookie, {
+        name: 'Office move',
+        description: 'New floor',
+        status: 'in_progress',
+        leadId: people.dev.id,
+        memberIds: [people.dev.id],
+        startDate: '2026-11-02',
+        targetDate: '2026-12-01',
+        teamIds: [ids.help],
+      })
+    ).json<ProjectDetail>();
+    const renamed = await call('PATCH', `/api/projects/${p.id}`, people.admin.cookie, {
+      name: 'Office relocation',
+    });
+    expect(renamed.json<ProjectDetail>()).toMatchObject({
+      name: 'Office relocation',
+      description: 'New floor',
+      status: 'in_progress',
+      lead: { id: people.dev.id },
+      startDate: '2026-11-02',
+      targetDate: '2026-12-01',
+    });
+    expect(renamed.json<ProjectDetail>().members.map((m) => m.id)).toContain(people.dev.id);
+  });
+
+  it('keep the initiative fields a change leaves out', async () => {
+    const created = (
+      await call('POST', '/api/initiatives', owner, {
+        name: 'Growth',
+        description: 'Grow',
+        status: 'active',
+        targetDate: '2027-01-15',
+      })
+    ).json<{ id: string }>();
+    const renamed = await call('PATCH', `/api/initiatives/${created.id}`, owner, {
+      name: 'Expansion',
+    });
+    expect(renamed.json()).toMatchObject({
+      name: 'Expansion',
+      description: 'Grow',
+      status: 'active',
+      targetDate: '2027-01-15',
+    });
+  });
+});
+
 describe('readable teams', () => {
   it('lists only teams the member can read', async () => {
     const keys = async (cookie: string) =>

@@ -16,26 +16,32 @@ export type ProjectHealth = (typeof PROJECT_HEALTH)[number];
 
 const dateSchema = z.iso.date().nullable();
 
-export const projectInputSchema = z.object({
+const unique = (ids: string[]) => [...new Set(ids)];
+
+// Field rules without defaults, so a partial update never resets what it leaves out.
+const projectFields = {
   name: z.string().trim().min(1).max(120),
-  description: z.string().max(100_000).default(''),
-  status: z.enum(PROJECT_STATUSES).default('planned'),
-  leadId: z.uuid().nullable().default(null),
+  description: z.string().max(100_000),
+  status: z.enum(PROJECT_STATUSES),
+  leadId: z.uuid().nullable(),
+  startDate: dateSchema,
+  targetDate: dateSchema,
+  teamIds: z.array(z.uuid()).min(1).max(20).transform(unique),
+  memberIds: z.array(z.uuid()).max(200).transform(unique),
+};
+
+export const projectInputSchema = z.object({
+  ...projectFields,
+  description: projectFields.description.default(''),
+  status: projectFields.status.default('planned'),
+  leadId: projectFields.leadId.default(null),
   startDate: dateSchema.default(null),
   targetDate: dateSchema.default(null),
-  teamIds: z
-    .array(z.uuid())
-    .min(1)
-    .max(20)
-    .transform((ids) => [...new Set(ids)]),
-  memberIds: z
-    .array(z.uuid())
-    .max(200)
-    .default([])
-    .transform((ids) => [...new Set(ids)]),
+  memberIds: z.array(z.uuid()).max(200).default([]).transform(unique),
 });
 export type ProjectInput = z.input<typeof projectInputSchema>;
-export const updateProjectSchema = projectInputSchema
+export const updateProjectSchema = z
+  .object(projectFields)
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
 
@@ -105,15 +111,24 @@ export interface ProjectDetail extends ProjectSummary {
 export const INITIATIVE_STATUSES = ['planned', 'active', 'completed'] as const;
 export type InitiativeStatus = (typeof INITIATIVE_STATUSES)[number];
 
-export const initiativeInputSchema = z.object({
+const initiativeFields = {
   name: z.string().trim().min(1).max(120),
-  description: z.string().max(100_000).default(''),
-  status: z.enum(INITIATIVE_STATUSES).default('planned'),
-  ownerId: z.uuid().nullable().default(null),
+  description: z.string().max(100_000),
+  status: z.enum(INITIATIVE_STATUSES),
+  ownerId: z.uuid().nullable(),
+  targetDate: dateSchema,
+};
+
+export const initiativeInputSchema = z.object({
+  ...initiativeFields,
+  description: initiativeFields.description.default(''),
+  status: initiativeFields.status.default('planned'),
+  ownerId: initiativeFields.ownerId.default(null),
   targetDate: dateSchema.default(null),
 });
 export type InitiativeInput = z.input<typeof initiativeInputSchema>;
-export const updateInitiativeSchema = initiativeInputSchema
+export const updateInitiativeSchema = z
+  .object(initiativeFields)
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
 export const initiativeProjectsSchema = z.object({
