@@ -60,7 +60,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 |     | Feature                                                                                                                                                          |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📨  | **Service portals** per department; one request can go to several departments at once                                                                            |
-| ✉️  | **Email-in**: members email a request type's address and get a request with attachments and a threaded confirmation                                             |
+| ✉️  | **Email-in**: members email a request type's address and get a request with attachments and a threaded confirmation                                              |
 | 🧩  | **Dynamic forms**: text, number, date, choice and checkbox fields; fields shown only when an earlier answer matches                                              |
 | 🧭  | **Routing rules**: "Item is Laptop → Infrastructure", first match wins, default team otherwise                                                                   |
 | ✍️  | **Approval chains**: sequential steps, any/all rules, approvers by person, role in a department, department head or the requester's supervisor; no self-approval |
