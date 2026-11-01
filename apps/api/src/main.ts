@@ -7,6 +7,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
 import { createAppContext } from './app-context.js';
+import { startSlackSocket } from './slack/slack-runtime.js';
 import { AppModule, configureApp } from './app.module.js';
 import { DataDir } from './config/data-dir.js';
 import { describeConfig, loadConfig, type AppConfig, type DatabaseConfig } from './config/env.js';
@@ -161,6 +162,7 @@ async function startApplication(
     ctx.sla.startRunner();
     ctx.requests.startTimeouts(undefined, (message) => logger.warn(message));
     ctx.emailIn.startRunner();
+    startSlackSocket(ctx.slackApp, ctx.slackApi, { log: (message) => logger.warn(message) });
   }
   logger.log(`Listening on port ${config.port}`);
 }

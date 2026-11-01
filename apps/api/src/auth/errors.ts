@@ -48,6 +48,8 @@ const STATUS: Record<DomainErrorCode, number> = {
   template_invalid: 400,
   template_unknown_variable: 400,
   template_missing_variable: 400,
+  slack_not_configured: 409,
+  slack_rejected: 422,
   database_managed_by_env: 409,
   forbidden: 403,
   token_expiry_too_long: 400,

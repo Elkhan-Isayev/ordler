@@ -66,13 +66,26 @@ export const SLACK_EVENTS = [
 ] as const;
 export type SlackEvent = (typeof SLACK_EVENTS)[number];
 
-export const chatSubscriptionInputSchema = z.object({
-  teamId: z.uuid(),
-  name: z.string().trim().min(1).max(120),
-  /** Slack incoming webhook URL; write-only. */
-  webhookUrl: z.url({ protocol: /^https$/ }).max(500),
-  events: z.array(z.enum(SLACK_EVENTS)).min(1),
-});
+export const chatSubscriptionInputSchema = z
+  .object({
+    teamId: z.uuid(),
+    name: z.string().trim().min(1).max(120),
+    /** Slack incoming webhook URL (level 1); write-only. */
+    webhookUrl: z
+      .url({ protocol: /^https$/ })
+      .max(500)
+      .optional(),
+    /** A channel picked through the connected Slack app (level 2), instead of a webhook. */
+    channelId: z
+      .string()
+      .regex(/^[CG][A-Z0-9]{2,30}$/)
+      .optional(),
+    events: z.array(z.enum(SLACK_EVENTS)).min(1),
+  })
+  .refine((input) => Boolean(input.webhookUrl) !== Boolean(input.channelId), {
+    message: 'webhook_or_channel',
+    path: ['webhookUrl'],
+  });
 export type ChatSubscriptionInput = z.infer<typeof chatSubscriptionInputSchema>;
 
 /** The webhook URL is never returned; only its host, to recognise it. */
@@ -80,7 +93,10 @@ export interface ChatSubscriptionView {
   id: string;
   team: { id: string; key: string; name: string };
   name: string;
+  /** Webhook host for level 1 subscriptions; empty for app channels. */
   host: string;
+  /** `#name` of an app channel; null for webhooks. */
+  channel: { id: string; name: string } | null;
   events: SlackEvent[];
   createdAt: string;
 }

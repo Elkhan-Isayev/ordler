@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Req } fro
 import { chatSubscriptionInputSchema, markNotificationsSchema } from '@ordler/shared';
 import type { AppContext } from '../app-context.js';
 import { APP_CONTEXT, enforceLimit, parseBody, type OrdlerRequest } from '../http/http.js';
+import { DomainError } from '../auth/errors.js';
 import { Authenticated } from '../rbac/permission.guard.js';
 
 /**
@@ -38,6 +39,15 @@ export class NotificationsController {
   @Post('integrations/slack')
   slackCreate(@Body() body: unknown, @Req() request: OrdlerRequest) {
     return this.ctx.slack.create(request.member!.id, parseBody(chatSubscriptionInputSchema, body));
+  }
+
+  /** Public channels for the subscription picker, once the Slack app is connected. */
+  @Get('integrations/slack/channels')
+  async slackChannels(@Req() request: OrdlerRequest) {
+    if (!(await this.ctx.slack.managesAnyTeam(request.member!.id))) {
+      throw new DomainError('forbidden');
+    }
+    return this.ctx.slackApp.channels();
   }
 
   @Delete('integrations/slack/:id')

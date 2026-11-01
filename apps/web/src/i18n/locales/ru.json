@@ -131,7 +131,9 @@
     "template_invalid": "В тексте шаблона синтаксическая ошибка. Проверьте, что все скобки закрыты.",
     "template_unknown_variable": "В шаблоне есть подстановка, которой нет у этого письма.",
     "template_missing_variable": "В шаблоне не хватает обязательной подстановки.",
-    "email_address_taken": "Этот email-адрес уже занят другим типом запроса."
+    "email_address_taken": "Этот email-адрес уже занят другим типом запроса.",
+    "slack_not_configured": "Приложение Slack ещё не настроено полностью.",
+    "slack_rejected": "Slack отклонил токен. Проверьте, что он скопирован целиком."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -421,7 +423,11 @@
         "request_resolved": "Запросы решены",
         "sla_at_risk": "SLA под угрозой",
         "sla_breached": "SLA нарушен"
-      }
+      },
+      "deliverTo": "Куда отправлять",
+      "target_channel": "Канал приложения Slack",
+      "target_webhook": "Входящий вебхук",
+      "channel": "Канал"
     },
     "tokens": {
       "title": "Токены доступа и MCP",
@@ -465,6 +471,36 @@
       "before": "До",
       "after": "После",
       "more": "Показать старше"
+    },
+    "slackApp": {
+      "title": "Приложение Slack",
+      "subtitle": "Личные сообщения, выбор канала, превью ссылок и «Создать задачу/запрос» из любого сообщения Slack.",
+      "step1": "Создайте приложение Slack из манифеста на api.slack.com/apps.",
+      "showManifest": "Показать манифест",
+      "manifest": "Манифест приложения",
+      "step2": "Установите его в рабочее пространство и вставьте сюда bot token, app-level token (connections:write), client ID и secret.",
+      "step3": "Сотрудники привязывают Slack в «Настройки → Slack».",
+      "workspace": "Пространство: {name}",
+      "noWorkspace": "Не подключено",
+      "connection_connected": "Сокет подключён",
+      "connection_connecting": "Подключение…",
+      "connection_disconnected": "Сокет отключён",
+      "linked": "{count, plural, one {привязан # сотрудник} few {привязаны # сотрудника} many {привязано # сотрудников} other {привязано # сотрудника}}",
+      "enabled": "Включено",
+      "mode": "Подключение",
+      "mode_socket": "Socket Mode (публичный адрес не нужен)",
+      "mode_http": "HTTPS Request URL",
+      "botToken": "Bot token (xoxb-…)",
+      "appToken": "App-level token (xapp-…)",
+      "signingSecret": "Signing secret",
+      "clientSecret": "Client secret",
+      "clientId": "Client ID",
+      "clientHint": "Client ID и secret нужны, чтобы сотрудники привязали аккаунты (Sign in with Slack).",
+      "redirectUrl": "Redirect URL",
+      "requestUrl": "Request URL (события, интерактивность)",
+      "save": "Сохранить приложение Slack",
+      "saved": "Сохранено",
+      "disconnect": "Отключить"
     }
   },
   "invite": {
@@ -1237,5 +1273,15 @@
     "issueDates": "{start} – {end}",
     "noDueDate": "Без срока",
     "undatedProjects": "{count, plural, one {# проект без дат} few {# проекта без дат} many {# проектов без дат} other {# проекта без дат}}"
+  },
+  "slack": {
+    "title": "Slack",
+    "subtitle": "Получайте Inbox в Slack и создавайте задачи и запросы прямо из Slack.",
+    "unavailable": "Администратор ещё не подключил приложение Slack.",
+    "linkedTo": "Привязано к {workspace}.",
+    "directMessages": "Присылать события Inbox личными сообщениями",
+    "unlink": "Отвязать Slack",
+    "link": "Привязать Slack ({workspace})",
+    "linkedNotice": "Аккаунт Slack привязан."
   }
 }

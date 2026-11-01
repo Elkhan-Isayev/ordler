@@ -27,6 +27,7 @@ import {
 import { RequestPage } from './requests/RequestPage.js';
 import { OutOfOfficePage } from './settings/OutOfOfficePage.js';
 import { SettingsTabs } from './settings/SettingsTabs.js';
+import { SlackPage } from './settings/SlackPage.js';
 import { TokensPage } from './settings/TokensPage.js';
 import { Link, usePathname } from './router.js';
 
@@ -153,6 +154,11 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <div className="flex flex-col">
             <SettingsTabs path={path} />
             <OutOfOfficePage memberId={me.member.id} />
+          </div>
+        ) : path === '/settings/slack' ? (
+          <div className="flex flex-col">
+            <SettingsTabs path={path} />
+            <SlackPage />
           </div>
         ) : path === '/inbox' ? (
           <InboxPage memberId={me.member.id} />

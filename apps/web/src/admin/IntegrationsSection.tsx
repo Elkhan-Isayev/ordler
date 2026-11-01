@@ -2,6 +2,7 @@ import {
   SLACK_EVENTS,
   type AdminDepartment,
   type ChatSubscriptionView,
+  type SlackChannel,
   type SlackEvent,
 } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
@@ -31,6 +32,9 @@ export function IntegrationsSection({ team: only }: { team?: { id: string; name:
   const [departments, setDepartments] = useState<AdminDepartment[]>([]);
   const [error, setError] = useState<string>();
   const [tested, setTested] = useState<Record<string, string>>({});
+  // Public channels of the connected Slack app; empty means webhooks only.
+  const [channels, setChannels] = useState<SlackChannel[]>([]);
+  const [target, setTarget] = useState<'channel' | 'webhook'>('webhook');
 
   const reload = useCallback(async () => {
     try {
@@ -41,6 +45,9 @@ export function IntegrationsSection({ team: only }: { team?: { id: string; name:
       ]);
       setSubscriptions(only ? subs.filter((sub) => sub.team.id === only.id) : subs);
       setDepartments(depts);
+      const found = await api.slackChannels().catch(() => []);
+      setChannels(found);
+      if (found.length > 0) setTarget('channel');
     } catch (failure) {
       setError(t(errorKey(failure)));
     }
@@ -60,7 +67,9 @@ export function IntegrationsSection({ team: only }: { team?: { id: string; name:
       await api.createSlackSubscription({
         teamId: String(form.get('teamId') ?? ''),
         name: String(form.get('name') ?? '').trim(),
-        webhookUrl: String(form.get('webhookUrl') ?? '').trim(),
+        ...(target === 'channel'
+          ? { channelId: String(form.get('channelId') ?? '') }
+          : { webhookUrl: String(form.get('webhookUrl') ?? '').trim() }),
         events,
       });
       clearSecretField(element, 'webhookUrl');
@@ -122,7 +131,7 @@ export function IntegrationsSection({ team: only }: { team?: { id: string; name:
             <li key={sub.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
               <span className="font-medium text-ink">{sub.name}</span>
               <span className="text-ink-muted">
-                {sub.team.name} · {sub.host}
+                {sub.team.name} · {sub.channel ? `#${sub.channel.name}` : sub.host}
               </span>
               <span className="text-xs text-ink-faint">
                 {sub.events.map((e) => t(`admin.integrations.events.${e}`)).join(', ')}
@@ -182,18 +191,47 @@ export function IntegrationsSection({ team: only }: { team?: { id: string; name:
               />
             </label>
           </div>
-          <label className={labelClass}>
-            {t('admin.integrations.webhookUrl')}
-            <input
-              name="webhookUrl"
-              type="url"
-              required
-              autoComplete="off"
-              placeholder="https://hooks.slack.com/services/…"
-              className={inputClass}
-            />
-            <span className="text-ink-faint">{t('admin.integrations.webhookHint')}</span>
-          </label>
+          {channels.length > 0 && (
+            <fieldset className="flex flex-wrap gap-4 text-xs text-ink-muted">
+              <legend className="mb-1">{t('admin.integrations.deliverTo')}</legend>
+              {(['channel', 'webhook'] as const).map((option) => (
+                <label key={option} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="target"
+                    checked={target === option}
+                    onChange={() => setTarget(option)}
+                  />
+                  {t(`admin.integrations.target_${option}`)}
+                </label>
+              ))}
+            </fieldset>
+          )}
+          {target === 'channel' ? (
+            <label className={labelClass}>
+              {t('admin.integrations.channel')}
+              <select name="channelId" required className={inputClass}>
+                {channels.map((channel) => (
+                  <option key={channel.id} value={channel.id}>
+                    #{channel.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <label className={labelClass}>
+              {t('admin.integrations.webhookUrl')}
+              <input
+                name="webhookUrl"
+                type="url"
+                required
+                autoComplete="off"
+                placeholder="https://hooks.slack.com/services/…"
+                className={inputClass}
+              />
+              <span className="text-ink-faint">{t('admin.integrations.webhookHint')}</span>
+            </label>
+          )}
           <fieldset className="flex flex-wrap gap-x-4 gap-y-2">
             <legend className="mb-1 text-xs text-ink-muted">
               {t('admin.integrations.eventsLabel')}

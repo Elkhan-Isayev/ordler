@@ -25,6 +25,8 @@ import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { RequestsController } from './requests/requests.controller.js';
 import { EmailInController } from './email-in/email-in.controller.js';
+import { AdminSlackAppController, MySlackController } from './slack/slack.controller.js';
+import { registerSlackHttp } from './slack/slack-http.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
 import { InvitesController } from './members/invites.controller.js';
@@ -51,6 +53,8 @@ export class AppModule {
         InvitesController,
         AdminMailController,
         EmailInController,
+        AdminSlackAppController,
+        MySlackController,
         AdminDatabaseController,
         IssuesController,
         AttachmentsController,
@@ -87,4 +91,5 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   await ctx.realtime.register(instance);
   new McpServer(ctx, ctx.version).register(instance);
   new PublicApi(ctx).register(instance);
+  registerSlackHttp(instance, ctx.slackApp);
 }

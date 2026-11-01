@@ -39,6 +39,8 @@ import { DelegationService } from './approvals/delegation.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
+import { SlackApi, type SlackHttp } from './slack/slack-api.js';
+import { SlackAppService } from './slack/slack-app.service.js';
 import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
 import { LocalEventBus, type EventBus } from './realtime/event-bus.js';
@@ -81,6 +83,8 @@ export interface AppContext {
   emailIn: EmailInService;
   notifications: NotificationService;
   slack: SlackService;
+  slackApp: SlackAppService;
+  slackApi: SlackApi;
   tokens: TokenService;
   roles: RolesService;
   labels: LabelService;
@@ -138,6 +142,10 @@ export interface AppContextDeps {
   /** Discovery, token and key-set calls for Microsoft and generic OIDC; replaced in tests. */
   oidcFetch?: FetchFn;
   oidcJwks?: (uri: string) => JWTVerifyGetKey;
+  /** Slack Web API calls of the Slack app; replaced in tests. */
+  slackHttp?: SlackHttp;
+  /** Verifies Sign in with Slack ID tokens; replaced in tests. */
+  slackJwks?: JWTVerifyGetKey;
   /** IMAP connections for email-in; replaced in tests. */
   mailboxConnector?: MailboxConnector;
   version?: string | undefined;
@@ -163,11 +171,14 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const events = deps.events ?? new LocalEventBus();
   const access = new DbAccessContext(deps.db);
   const teamAccess = new TeamAccess(deps.db, access);
+  // Built after the services it calls; notifications and channels reach it lazily.
+  const slackRef: { app?: SlackAppService } = {};
   const notifications = new NotificationService({
     db: deps.db,
     mail,
     events,
     baseUrl: deps.baseUrl,
+    directMessages: () => slackRef.app,
     log: (message) => console.warn(message),
   });
   const notifier = deps.notifier ?? notifications;
@@ -176,6 +187,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     box,
     access,
     baseUrl: deps.baseUrl,
+    app: () => slackRef.app,
     log: (message) => console.warn(message),
     ...(deps.slackFetch ? { fetch: deps.slackFetch } : {}),
   });
@@ -211,6 +223,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const attachmentMaxBytes = deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024;
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
   const sessions = new SessionService(deps.db, sessionTtlMs, now);
+  const requestTypes = new RequestTypeService(deps.db, access, sla);
+  const slackApi = new SlackApi(deps.slackHttp);
   const requests = new RequestService({
     db: deps.db,
     access,
@@ -224,6 +238,19 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     delegations,
     now,
   });
+  const slackApp = new SlackAppService({
+    db: deps.db,
+    box,
+    baseUrl: deps.baseUrl,
+    issues,
+    requests,
+    requestTypes,
+    api: slackApi,
+    now,
+    log: (message) => console.warn(message),
+    ...(deps.slackJwks ? { jwks: deps.slackJwks } : {}),
+  });
+  slackRef.app = slackApp;
 
   return {
     db: deps.db,
@@ -274,7 +301,9 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     mail,
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     issues,
-    requestTypes: new RequestTypeService(deps.db, access, sla),
+    requestTypes,
+    slackApp,
+    slackApi,
     requests,
     emailIn: new EmailInService({
       db: deps.db,

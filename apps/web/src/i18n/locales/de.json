@@ -131,7 +131,9 @@
     "template_invalid": "Der Vorlagentext enthält einen Syntaxfehler. Prüfen Sie, ob alle Klammern geschlossen sind.",
     "template_unknown_variable": "Die Vorlage verwendet einen Platzhalter, den diese E-Mail nicht kennt.",
     "template_missing_variable": "In der Vorlage fehlt ein Pflicht-Platzhalter.",
-    "email_address_taken": "Ein anderer Anfragetyp verwendet diese E-Mail-Adresse bereits."
+    "email_address_taken": "Ein anderer Anfragetyp verwendet diese E-Mail-Adresse bereits.",
+    "slack_not_configured": "Die Slack-App ist noch nicht vollständig eingerichtet.",
+    "slack_rejected": "Slack hat das Token abgelehnt. Prüfen Sie, ob es vollständig kopiert wurde."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -421,7 +423,11 @@
         "request_resolved": "Erledigte Anfragen",
         "sla_at_risk": "SLA gefährdet",
         "sla_breached": "SLA verletzt"
-      }
+      },
+      "deliverTo": "Senden an",
+      "target_channel": "Kanal der Slack-App",
+      "target_webhook": "Eingehender Webhook",
+      "channel": "Kanal"
     },
     "tokens": {
       "title": "Zugriffstoken und MCP",
@@ -465,6 +471,36 @@
       "before": "Vorher",
       "after": "Nachher",
       "more": "Ältere laden"
+    },
+    "slackApp": {
+      "title": "Slack-App",
+      "subtitle": "Persönliche Nachrichten, Kanalauswahl, Link-Vorschauen und „Aufgabe/Anfrage anlegen“ aus jeder Slack-Nachricht.",
+      "step1": "Legen Sie unter api.slack.com/apps eine Slack-App aus dem Manifest an.",
+      "showManifest": "Manifest anzeigen",
+      "manifest": "App-Manifest",
+      "step2": "Installieren Sie sie im Workspace und tragen Sie hier Bot-Token, App-Level-Token (connections:write) sowie Client-ID und Secret ein.",
+      "step3": "Mitglieder verknüpfen ihr Slack-Konto unter Einstellungen → Slack.",
+      "workspace": "Workspace: {name}",
+      "noWorkspace": "Nicht verbunden",
+      "connection_connected": "Socket verbunden",
+      "connection_connecting": "Verbinde…",
+      "connection_disconnected": "Socket getrennt",
+      "linked": "{count, plural, one {# Mitglied verknüpft} other {# Mitglieder verknüpft}}",
+      "enabled": "Aktiv",
+      "mode": "Verbindung",
+      "mode_socket": "Socket Mode (keine öffentliche URL nötig)",
+      "mode_http": "HTTPS-Request-URLs",
+      "botToken": "Bot-Token (xoxb-…)",
+      "appToken": "App-Level-Token (xapp-…)",
+      "signingSecret": "Signing Secret",
+      "clientSecret": "Client-Secret",
+      "clientId": "Client-ID",
+      "clientHint": "Mit Client-ID und Secret können Mitglieder ihre Konten verknüpfen (Sign in with Slack).",
+      "redirectUrl": "Redirect-URL",
+      "requestUrl": "Request-URLs (Events, Interaktivität)",
+      "save": "Slack-App speichern",
+      "saved": "Gespeichert",
+      "disconnect": "Trennen"
     }
   },
   "invite": {
@@ -1237,5 +1273,15 @@
     "issueDates": "{start} – {end}",
     "noDueDate": "Ohne Fälligkeitsdatum",
     "undatedProjects": "{count, plural, one {# Projekt ohne Datum} other {# Projekte ohne Datum}}"
+  },
+  "slack": {
+    "title": "Slack",
+    "subtitle": "Erhalten Sie Ihren Posteingang als Slack-Nachrichten und legen Sie Aufgaben und Anfragen aus Slack an.",
+    "unavailable": "Ihr Administrator hat die Slack-App noch nicht verbunden.",
+    "linkedTo": "Verknüpft mit {workspace}.",
+    "directMessages": "Ereignisse meines Posteingangs als Direktnachrichten senden",
+    "unlink": "Slack trennen",
+    "link": "Slack-Konto verknüpfen ({workspace})",
+    "linkedNotice": "Ihr Slack-Konto ist verknüpft."
   }
 }

@@ -35,6 +35,13 @@ export interface ChannelItem {
 }
 
 const AAD = 'chat_subscription:target';
+
+/** Posting through the connected Slack app (level 2) instead of an incoming webhook. */
+export interface ChannelPoster {
+  channelName(channelId: string): Promise<string | undefined>;
+  /** Returns whether Slack accepted the message. */
+  postToChannel(channelId: string, message: object): Promise<boolean>;
+}
 const MAX_ATTEMPTS = 3;
 
 /** Slack mrkdwn needs &, < and > escaped; everything else is plain text. */
@@ -55,6 +62,8 @@ export class SlackService {
       box: SecretBox;
       access: AccessContextSource;
       baseUrl: string;
+      /** The Slack app, once configured; resolved lazily because it is built later. */
+      app?: () => ChannelPoster | undefined;
       fetch?: FetchFn;
       sleep?: (ms: number) => Promise<void>;
       log?: (message: string) => void;
@@ -81,12 +90,20 @@ export class SlackService {
       .where(eq(teams.id, input.teamId));
     if (!team) throw new DomainError('not_found');
     if (!(await this.canManage(memberId, team.id))) throw new DomainError('forbidden');
+    let channel: { id: string; name: string } | undefined;
+    if (input.channelId) {
+      const name = await this.deps.app?.()?.channelName(input.channelId);
+      if (!name) throw new DomainError('not_found');
+      channel = { id: input.channelId, name };
+    }
     const [row] = await this.deps.db
       .insert(chatSubscriptions)
       .values({
         teamId: team.id,
         name: input.name,
-        targetEncrypted: this.deps.box.encrypt(input.webhookUrl, AAD),
+        targetEncrypted: input.webhookUrl ? this.deps.box.encrypt(input.webhookUrl, AAD) : null,
+        channelId: channel?.id ?? null,
+        channelName: channel?.name ?? null,
         events: [...new Set(input.events)],
         createdBy: memberId,
       })
@@ -100,7 +117,7 @@ export class SlackService {
       after: {
         teamId: team.id,
         name: input.name,
-        host: new URL(input.webhookUrl).host,
+        ...(input.webhookUrl ? { host: new URL(input.webhookUrl).host } : { channel }),
         events: input.events,
       },
     });
@@ -129,9 +146,12 @@ export class SlackService {
       .from(teams)
       .where(eq(teams.id, sub.teamId));
     const locale = await this.locale();
-    const status = await this.post(this.url(sub), {
-      text: formatEmailMessage(locale, 'slackTest', { team: team?.name ?? '' }),
-    });
+    const message = { text: formatEmailMessage(locale, 'slackTest', { team: team?.name ?? '' }) };
+    if (sub.channelId) {
+      const sent = (await this.deps.app?.()?.postToChannel(sub.channelId, message)) ?? false;
+      return { sent, status: sent ? 200 : 502 };
+    }
+    const status = await this.post(this.url(sub), message);
     return { sent: status >= 200 && status < 300, status };
   }
 
@@ -157,7 +177,17 @@ export class SlackService {
       );
     if (subs.length === 0) return;
     const message = this.message(await this.locale(), event, item);
-    await Promise.all(subs.map((sub) => this.post(this.url(sub), message)));
+    const app = this.deps.app?.();
+    await Promise.all(
+      subs.map(async (sub) => {
+        if (sub.channelId) {
+          // A channel subscription without a working app stays quiet rather than failing others.
+          if (app) await app.postToChannel(sub.channelId, message);
+          return;
+        }
+        await this.post(this.url(sub), message);
+      }),
+    );
   }
 
   /** Block Kit: what happened, the item, its state and a plain link button. */
@@ -226,7 +256,7 @@ export class SlackService {
   }
 
   private url(sub: typeof chatSubscriptions.$inferSelect): string {
-    const url = this.deps.box.decrypt(sub.targetEncrypted, AAD);
+    const url = sub.targetEncrypted ? this.deps.box.decrypt(sub.targetEncrypted, AAD) : undefined;
     if (!url) throw new Error('Cannot decrypt the Slack webhook (encryption key changed?)');
     return url;
   }
@@ -239,6 +269,13 @@ export class SlackService {
       .where(eq(chatSubscriptions.id, id));
     if (!sub) throw new DomainError('not_found');
     return sub;
+  }
+
+  /** Whether the member may manage the subscriptions of at least one team. */
+  async managesAnyTeam(memberId: string): Promise<boolean> {
+    const rows = await this.deps.db.select({ id: teams.id }).from(teams);
+    for (const team of rows) if (await this.canManage(memberId, team.id)) return true;
+    return false;
   }
 
   /** Team leads, department admins and org admins (team.update covers all of them). */
@@ -262,12 +299,14 @@ export class SlackService {
     sub: typeof chatSubscriptions.$inferSelect,
     team: { id: string; key: string; name: string },
   ): ChatSubscriptionView {
-    const url = this.deps.box.decrypt(sub.targetEncrypted, AAD);
+    const url = sub.targetEncrypted ? this.deps.box.decrypt(sub.targetEncrypted, AAD) : undefined;
     return {
       id: sub.id,
       team,
       name: sub.name,
       host: url ? new URL(url).host : '',
+      channel:
+        sub.channelId && sub.channelName ? { id: sub.channelId, name: sub.channelName } : null,
       events: sub.events as SlackEvent[],
       createdAt: sub.createdAt.toISOString(),
     };

@@ -446,6 +446,11 @@ installation, since every company runs its own Ordler.
   (opens an Ordler modal in Slack, prefilled with the message text and a link back).
 - Approvals stay in Ordler (§6.3): Slack messages for approvals carry only an
   **Open in Ordler** button; deciding requires a signed-in Ordler session.
+- Implementation notes (ADR 0013): the app is configured in Admin → Integrations → Slack app
+  (organization admins); members link in Settings → Slack through Sign in with Slack, pinned
+  to the connected workspace, and can turn DMs off. DMs mirror every Inbox event. The channel
+  picker offers public channels only. Unfurls and "create from message" act as the linked
+  member; unlinked Slack users only get a hint to link.
 
 **Rules**
 

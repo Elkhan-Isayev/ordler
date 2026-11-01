@@ -47,6 +47,20 @@ export const EMAIL_MESSAGES = {
     slackEvent:
       '{kind, select, issue_created {New issue} issue_status_changed {Status changed} issue_assigned {Assigned} issue_commented {New comment} request_received {New request} approval_requested {Approval requested} approval_decided {Approval decided} request_resolved {Request resolved} sla_at_risk {SLA at risk} sla_breached {SLA breached} other {Update}}',
     slackTest: 'Ordler is connected to this channel for {team}.',
+    slackCreateIssue: 'Create issue',
+    slackCreateRequest: 'Create request',
+    slackTeam: 'Team',
+    slackRequestType: 'Request type',
+    slackTitle: 'Title',
+    slackDescription: 'Description',
+    slackSubmit: 'Create',
+    slackCancel: 'Cancel',
+    slackLinkFirst: 'Link your Slack account in Ordler first: {url}',
+    slackCreated: '{item} created: {title}',
+    slackNothingToCreate: 'There is nothing you can create here yet.',
+    slackFromSlack: 'From Slack: {url}',
+    slackCreateFailed:
+      '{reason, select, form_invalid {This request type needs its form. Use the portal in Ordler.} forbidden {You may not create this here.} other {Ordler could not create it.}}',
   },
   ru: {
     otpSubject: '{code} — ваш код входа в {company}',
@@ -73,6 +87,20 @@ export const EMAIL_MESSAGES = {
     slackEvent:
       '{kind, select, issue_created {Новая задача} issue_status_changed {Изменён статус} issue_assigned {Назначена} issue_commented {Новый комментарий} request_received {Новый запрос} approval_requested {Нужно согласование} approval_decided {Решение по согласованию} request_resolved {Запрос решён} sla_at_risk {SLA под угрозой} sla_breached {SLA нарушен} other {Обновление}}',
     slackTest: 'Ordler подключён к этому каналу для команды {team}.',
+    slackCreateIssue: 'Создать задачу',
+    slackCreateRequest: 'Создать запрос',
+    slackTeam: 'Команда',
+    slackRequestType: 'Тип запроса',
+    slackTitle: 'Название',
+    slackDescription: 'Описание',
+    slackSubmit: 'Создать',
+    slackCancel: 'Отмена',
+    slackLinkFirst: 'Сначала привяжите Slack в настройках Ordler: {url}',
+    slackCreated: '{item} создан(а): {title}',
+    slackNothingToCreate: 'Здесь пока нечего создать.',
+    slackFromSlack: 'Из Slack: {url}',
+    slackCreateFailed:
+      '{reason, select, form_invalid {Для этого типа запроса нужна форма. Создайте его в портале Ordler.} forbidden {Вам нельзя создавать это здесь.} other {Ordler не смог это создать.}}',
   },
   de: {
     otpSubject: '{code} ist dein Anmeldecode für {company}',
@@ -99,6 +127,20 @@ export const EMAIL_MESSAGES = {
     slackEvent:
       '{kind, select, issue_created {Neue Aufgabe} issue_status_changed {Status geändert} issue_assigned {Zugewiesen} issue_commented {Neuer Kommentar} request_received {Neue Anfrage} approval_requested {Genehmigung angefragt} approval_decided {Genehmigung entschieden} request_resolved {Anfrage gelöst} sla_at_risk {SLA gefährdet} sla_breached {SLA verletzt} other {Aktualisierung}}',
     slackTest: 'Ordler ist für {team} mit diesem Kanal verbunden.',
+    slackCreateIssue: 'Aufgabe anlegen',
+    slackCreateRequest: 'Anfrage anlegen',
+    slackTeam: 'Team',
+    slackRequestType: 'Anfragetyp',
+    slackTitle: 'Titel',
+    slackDescription: 'Beschreibung',
+    slackSubmit: 'Anlegen',
+    slackCancel: 'Abbrechen',
+    slackLinkFirst: 'Verknüpfen Sie zuerst Ihr Slack-Konto in Ordler: {url}',
+    slackCreated: '{item} angelegt: {title}',
+    slackNothingToCreate: 'Hier können Sie noch nichts anlegen.',
+    slackFromSlack: 'Aus Slack: {url}',
+    slackCreateFailed:
+      '{reason, select, form_invalid {Dieser Anfragetyp braucht sein Formular. Nutzen Sie das Portal in Ordler.} forbidden {Sie dürfen das hier nicht anlegen.} other {Ordler konnte es nicht anlegen.}}',
   },
   az: {
     otpSubject: '{code} — {company} üçün giriş kodunuz',
@@ -125,6 +167,20 @@ export const EMAIL_MESSAGES = {
     slackEvent:
       '{kind, select, issue_created {Yeni tapşırıq} issue_status_changed {Status dəyişdi} issue_assigned {Təyin edildi} issue_commented {Yeni şərh} request_received {Yeni müraciət} approval_requested {Təsdiq istənildi} approval_decided {Təsdiq qərarı} request_resolved {Müraciət həll edildi} sla_at_risk {SLA risk altında} sla_breached {SLA pozuldu} other {Yeniləmə}}',
     slackTest: 'Ordler {team} komandası üçün bu kanala qoşulub.',
+    slackCreateIssue: 'Tapşırıq yarat',
+    slackCreateRequest: 'Müraciət yarat',
+    slackTeam: 'Komanda',
+    slackRequestType: 'Müraciət növü',
+    slackTitle: 'Başlıq',
+    slackDescription: 'Təsvir',
+    slackSubmit: 'Yarat',
+    slackCancel: 'Ləğv et',
+    slackLinkFirst: 'Əvvəlcə Slack hesabınızı Ordler-də bağlayın: {url}',
+    slackCreated: '{item} yaradıldı: {title}',
+    slackNothingToCreate: 'Burada hələ yarada biləcəyiniz heç nə yoxdur.',
+    slackFromSlack: 'Slack-dan: {url}',
+    slackCreateFailed:
+      '{reason, select, form_invalid {Bu müraciət növü üçün form lazımdır. Ordler portalından istifadə edin.} forbidden {Bunu burada yaratmağa icazəniz yoxdur.} other {Ordler bunu yarada bilmədi.}}',
   },
 } satisfies Record<Locale, Record<string, string>>;
 

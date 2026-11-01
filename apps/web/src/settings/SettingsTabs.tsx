@@ -4,6 +4,7 @@ import { Link } from '../router.js';
 const TABS = [
   { href: '/settings/tokens', key: 'tokens.title' },
   { href: '/settings/out-of-office', key: 'outOfOffice.title' },
+  { href: '/settings/slack', key: 'slack.title' },
 ] as const;
 
 /** Personal settings pages, side by side. */

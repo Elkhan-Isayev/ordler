@@ -80,6 +80,10 @@ import type {
   Locale,
   EmailTemplateView,
   InboundEmailView,
+  SlackAppView,
+  SlackChannel,
+  SlackLinkView,
+  UpdateSlackAppInput,
   InboxPollResult,
   InboxSettingsView,
   UpdateInboxSettingsInput,
@@ -439,6 +443,15 @@ export const api = {
   inboxCounts: () => apiRequest<InboxCounts>('/api/me/counts'),
   markNotifications: (body: { ids?: string[]; read: boolean }) =>
     apiRequest<InboxCounts>('/api/me/notifications/mark', { method: 'POST', body }),
+  slackChannels: () => apiRequest<SlackChannel[]>('/api/integrations/slack/channels'),
+  slackApp: () => apiRequest<SlackAppView>('/api/admin/slack-app'),
+  updateSlackApp: (body: UpdateSlackAppInput) =>
+    apiRequest<SlackAppView>('/api/admin/slack-app', { method: 'PUT', body }),
+  slackManifest: () => apiRequest<object>('/api/admin/slack-app/manifest'),
+  mySlack: () => apiRequest<SlackLinkView>('/api/me/slack'),
+  updateMySlack: (directMessages: boolean) =>
+    apiRequest<SlackLinkView>('/api/me/slack', { method: 'PATCH', body: { directMessages } }),
+  unlinkSlack: () => apiRequest<void>('/api/me/slack', { method: 'DELETE' }),
   slackSubscriptions: () => apiRequest<ChatSubscriptionView[]>('/api/integrations/slack'),
   createSlackSubscription: (body: ChatSubscriptionInput) =>
     apiRequest<ChatSubscriptionView>('/api/integrations/slack', { method: 'POST', body }),
@@ -511,6 +524,9 @@ export const api = {
   acceptInvite: (body: { token: string; name: string; password: string }) =>
     apiRequest<MeResponse>('/api/invites/accept', { method: 'POST', body }),
 };
+
+/** Full-page navigation to Sign in with Slack, which links the account and comes back. */
+export const SLACK_LINK_URL = '/api/me/slack/start';
 
 /** Full-page navigation: the API redirects to the identity provider. */
 export function oauthStartUrl(kind: OAuthStrategyKind): string {

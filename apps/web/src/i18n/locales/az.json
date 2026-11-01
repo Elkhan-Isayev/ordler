@@ -131,7 +131,9 @@
     "template_invalid": "Şablon mətnində sintaksis xətası var. Bütün mötərizələrin bağlandığını yoxlayın.",
     "template_unknown_variable": "Şablonda bu məktubda olmayan əvəzləmə istifadə olunub.",
     "template_missing_variable": "Şablonda məcburi əvəzləmə çatışmır.",
-    "email_address_taken": "Bu e-poçt ünvanını artıq başqa müraciət növü istifadə edir."
+    "email_address_taken": "Bu e-poçt ünvanını artıq başqa müraciət növü istifadə edir.",
+    "slack_not_configured": "Slack tətbiqi hələ tam qurulmayıb.",
+    "slack_rejected": "Slack tokeni rədd etdi. Onun tam köçürüldüyünü yoxlayın."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -421,7 +423,11 @@
         "request_resolved": "Həll olunmuş sorğular",
         "sla_at_risk": "SLA risk altında",
         "sla_breached": "SLA pozuldu"
-      }
+      },
+      "deliverTo": "Hara göndərilsin",
+      "target_channel": "Slack tətbiqinin kanalı",
+      "target_webhook": "Daxil olan webhook",
+      "channel": "Kanal"
     },
     "tokens": {
       "title": "Giriş tokenləri və MCP",
@@ -465,6 +471,36 @@
       "before": "Əvvəl",
       "after": "Sonra",
       "more": "Köhnələri göstər"
+    },
+    "slackApp": {
+      "title": "Slack tətbiqi",
+      "subtitle": "Şəxsi mesajlar, kanal seçimi, link önbaxışları və istənilən Slack mesajından «Tapşırıq/müraciət yarat».",
+      "step1": "api.slack.com/apps ünvanında manifestdən Slack tətbiqi yaradın.",
+      "showManifest": "Manifesti göstər",
+      "manifest": "Tətbiq manifesti",
+      "step2": "Onu iş məkanına quraşdırın, sonra bot token, app-level token (connections:write), client ID və secret-i bura yapışdırın.",
+      "step3": "Əməkdaşlar Slack hesabını «Ayarlar → Slack» bölməsində bağlayır.",
+      "workspace": "İş məkanı: {name}",
+      "noWorkspace": "Qoşulmayıb",
+      "connection_connected": "Soket qoşulub",
+      "connection_connecting": "Qoşulur…",
+      "connection_disconnected": "Soket ayrılıb",
+      "linked": "{count, plural, one {# əməkdaş bağlanıb} other {# əməkdaş bağlanıb}}",
+      "enabled": "Aktivdir",
+      "mode": "Qoşulma",
+      "mode_socket": "Socket Mode (ictimai ünvan lazım deyil)",
+      "mode_http": "HTTPS Request URL-ləri",
+      "botToken": "Bot token (xoxb-…)",
+      "appToken": "App-level token (xapp-…)",
+      "signingSecret": "Signing secret",
+      "clientSecret": "Client secret",
+      "clientId": "Client ID",
+      "clientHint": "Client ID və secret əməkdaşlara hesablarını bağlamağa imkan verir (Sign in with Slack).",
+      "redirectUrl": "Redirect URL",
+      "requestUrl": "Request URL-ləri (hadisələr, interaktivlik)",
+      "save": "Slack tətbiqini saxla",
+      "saved": "Saxlanıldı",
+      "disconnect": "Ayır"
     }
   },
   "invite": {
@@ -1237,5 +1273,15 @@
     "issueDates": "{start} – {end}",
     "noDueDate": "Son tarix yoxdur",
     "undatedProjects": "{count, plural, one {# layihənin tarixi yoxdur} other {# layihənin tarixi yoxdur}}"
+  },
+  "slack": {
+    "title": "Slack",
+    "subtitle": "Inbox-u Slack mesajları kimi alın və Slack-dan tapşırıq və müraciətlər yaradın.",
+    "unavailable": "Administrator hələ Slack tətbiqini qoşmayıb.",
+    "linkedTo": "{workspace} ilə bağlıdır.",
+    "directMessages": "Inbox hadisələrimi şəxsi mesaj kimi göndər",
+    "unlink": "Slack-ı ayır",
+    "link": "Slack hesabını bağla ({workspace})",
+    "linkedNotice": "Slack hesabınız bağlandı."
   }
 }

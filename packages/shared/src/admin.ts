@@ -77,6 +77,8 @@ export const ADMIN_ERROR_CODES = [
   'template_invalid',
   'template_unknown_variable',
   'template_missing_variable',
+  'slack_not_configured',
+  'slack_rejected',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 

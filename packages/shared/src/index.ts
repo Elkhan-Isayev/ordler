@@ -20,3 +20,4 @@ export * from './webhooks.js';
 export * from './sla.js';
 export * from './views.js';
 export * from './email-in.js';
+export * from './slack-app.js';

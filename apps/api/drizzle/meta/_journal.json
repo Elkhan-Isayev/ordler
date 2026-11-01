@@ -197,6 +197,13 @@
       "when": 1793500109708,
       "tag": "0027_email_in",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793500688996,
+      "tag": "0028_slack_app",
+      "breakpoints": true
     }
   ]
 }

@@ -42,11 +42,27 @@ interface Subject {
   path: string;
 }
 
+/** One Inbox event as it is shown outside Ordler, e.g. in a Slack DM. */
+export interface DirectMessage {
+  kind: NotificationKind;
+  actor: string | null;
+  identifier: string;
+  title: string;
+  path: string;
+}
+
+/** Personal Slack DMs (SPEC §7.1); skips members who have not linked an account. */
+export interface DirectMessenger {
+  send(memberIds: string[], message: DirectMessage): Promise<void>;
+}
+
 export interface NotificationServiceDeps {
   db: Db;
   mail: Pick<MailService, 'isConfigured' | 'send'>;
   events: EventBus;
   baseUrl: string;
+  /** Set once the Slack app exists; resolved lazily because the app needs this service. */
+  directMessages?: () => DirectMessenger | undefined;
   log?: (message: string) => void;
 }
 
@@ -82,12 +98,43 @@ export class NotificationService implements Notifier {
     await this.deps.events.publish({ type: 'member.inbox', memberIds: recipients });
 
     if (EMAILED_KINDS.has(input.kind)) {
-      const job = this.email(recipients, input).catch((error: unknown) =>
-        this.deps.log?.(`Notification email failed: ${(error as Error).message}`),
-      );
-      this.pending.add(job);
-      void job.finally(() => this.pending.delete(job));
+      this.background(this.email(recipients, input), 'Notification email');
     }
+    const messenger = this.deps.directMessages?.();
+    if (messenger) this.background(this.direct(messenger, recipients, input), 'Slack DM');
+  }
+
+  private background(job: Promise<void>, what: string): void {
+    const tracked = job.catch((error: unknown) =>
+      this.deps.log?.(`${what} failed: ${(error as Error).message}`),
+    );
+    this.pending.add(tracked);
+    void tracked.finally(() => this.pending.delete(tracked));
+  }
+
+  /** Every Inbox event, so a linked member can follow Ordler from Slack alone. */
+  private async direct(
+    messenger: DirectMessenger,
+    recipients: string[],
+    input: NotificationInput,
+  ): Promise<void> {
+    const subject = (
+      await this.subjects([{ subjectType: input.subject.type, subjectId: input.subject.id }])
+    ).get(input.subject.id);
+    if (!subject) return;
+    const [actor] = input.actorId
+      ? await this.deps.db
+          .select({ name: members.name })
+          .from(members)
+          .where(eq(members.id, input.actorId))
+      : [];
+    await messenger.send(recipients, {
+      kind: input.kind,
+      actor: actor?.name ?? null,
+      identifier: subject.identifier,
+      title: subject.title,
+      path: subject.path,
+    });
   }
 
   /** Waits for background emails; used by tests and graceful shutdown. */

@@ -131,7 +131,9 @@
     "template_invalid": "The template text has a syntax error. Check that every brace is closed.",
     "template_unknown_variable": "The template uses a placeholder this email does not have.",
     "template_missing_variable": "The template leaves out a required placeholder.",
-    "email_address_taken": "Another request type already uses this email address."
+    "email_address_taken": "Another request type already uses this email address.",
+    "slack_not_configured": "The Slack app is not fully configured yet.",
+    "slack_rejected": "Slack rejected the token. Check that it was copied completely."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -421,7 +423,11 @@
         "request_resolved": "Requests resolved",
         "sla_at_risk": "SLA at risk",
         "sla_breached": "SLA breached"
-      }
+      },
+      "deliverTo": "Deliver to",
+      "target_channel": "Channel of the Slack app",
+      "target_webhook": "Incoming webhook",
+      "channel": "Channel"
     },
     "tokens": {
       "title": "Access tokens and MCP",
@@ -465,6 +471,36 @@
       "before": "Before",
       "after": "After",
       "more": "Load older"
+    },
+    "slackApp": {
+      "title": "Slack app",
+      "subtitle": "Personal DMs, a channel picker, link previews and \"Create issue/request\" from any Slack message.",
+      "step1": "Create a Slack app from the manifest at api.slack.com/apps.",
+      "showManifest": "Show manifest",
+      "manifest": "App manifest",
+      "step2": "Install it to your workspace, then copy the bot token, the app-level token (connections:write) and the client ID and secret here.",
+      "step3": "Members link their Slack account in Settings → Slack.",
+      "workspace": "Workspace: {name}",
+      "noWorkspace": "Not connected",
+      "connection_connected": "Socket connected",
+      "connection_connecting": "Connecting…",
+      "connection_disconnected": "Socket disconnected",
+      "linked": "{count, plural, one {# member linked} other {# members linked}}",
+      "enabled": "Enabled",
+      "mode": "Connection",
+      "mode_socket": "Socket Mode (no public URL needed)",
+      "mode_http": "HTTPS request URLs",
+      "botToken": "Bot token (xoxb-…)",
+      "appToken": "App-level token (xapp-…)",
+      "signingSecret": "Signing secret",
+      "clientSecret": "Client secret",
+      "clientId": "Client ID",
+      "clientHint": "Client ID and secret let members link their accounts (Sign in with Slack).",
+      "redirectUrl": "Redirect URL",
+      "requestUrl": "Request URLs (events, interactivity)",
+      "save": "Save Slack app",
+      "saved": "Saved",
+      "disconnect": "Disconnect"
     }
   },
   "invite": {
@@ -1237,5 +1273,15 @@
     "issueDates": "{start} – {end}",
     "noDueDate": "No due date",
     "undatedProjects": "{count, plural, one {# project has no dates} other {# projects have no dates}}"
+  },
+  "slack": {
+    "title": "Slack",
+    "subtitle": "Get your Inbox as Slack messages and create issues and requests from Slack.",
+    "unavailable": "Your administrator has not connected the Slack app yet.",
+    "linkedTo": "Linked to {workspace}.",
+    "directMessages": "Send my Inbox events as direct messages",
+    "unlink": "Unlink Slack",
+    "link": "Link Slack account ({workspace})",
+    "linkedNotice": "Your Slack account is linked."
   }
 }

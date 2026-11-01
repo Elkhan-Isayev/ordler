@@ -745,12 +745,48 @@ export const chatSubscriptions = pgTable(
       .notNull()
       .references(() => teams.id),
     name: text('name').notNull(),
-    targetEncrypted: text('target_encrypted').notNull(),
+    /** Sealed webhook URL (level 1); null for a channel of the Slack app (level 2). */
+    targetEncrypted: text('target_encrypted'),
+    channelId: text('channel_id'),
+    channelName: text('channel_name'),
     events: text('events').array().notNull(),
     createdBy: uuid('created_by').references(() => members.id),
     createdAt: createdAt(),
   },
   (t) => [index('chat_subscriptions_team_idx').on(t.teamId)],
+);
+
+/** The Ordler Slack app of this installation (SPEC §7.1, level 2); one row. */
+export const slackApp = pgTable('slack_app', {
+  id: integer('id').primaryKey().default(1),
+  enabled: boolean('enabled').notNull().default(false),
+  mode: text('mode', { enum: ['socket', 'http'] })
+    .notNull()
+    .default('socket'),
+  /** Sealed JSON: bot token, app-level token, signing secret, client secret. */
+  secretsEncrypted: text('secrets_encrypted'),
+  clientId: text('client_id'),
+  workspaceId: text('workspace_id'),
+  workspaceName: text('workspace_name'),
+  botUserId: text('bot_user_id'),
+  lastError: text('last_error'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid('updated_by').references(() => members.id),
+});
+
+/** A member's Slack account, linked through Sign in with Slack (SPEC §7.1). */
+export const slackLinks = pgTable(
+  'slack_links',
+  {
+    memberId: uuid('member_id')
+      .primaryKey()
+      .references(() => members.id),
+    workspaceId: text('workspace_id').notNull(),
+    slackUserId: text('slack_user_id').notNull(),
+    directMessages: boolean('direct_messages').notNull().default(true),
+    linkedAt: createdAt(),
+  },
+  (t) => [uniqueIndex('slack_links_user_uq').on(t.workspaceId, t.slackUserId)],
 );
 
 /** Personal access tokens (SPEC §10.1): only a SHA-256 of the secret is stored. */

@@ -8,6 +8,7 @@ import { DepartmentsSection } from './DepartmentsSection.js';
 import { ImportSection } from './ImportSection.js';
 import { IntegrationsSection } from './IntegrationsSection.js';
 import { MailSection } from './MailSection.js';
+import { SlackAppPanel } from './SlackAppPanel.js';
 import { TokensSection } from './TokensSection.js';
 import { RequestTypesSection } from './RequestTypesSection.js';
 import { RolesSection } from './RolesSection.js';
@@ -70,7 +71,12 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'sla' && <SlaSection />}
         {active === 'authentication' && <AuthSection />}
         {active === 'mail' && <MailSection defaultTestRecipient={me.member.email} />}
-        {active === 'integrations' && <IntegrationsSection />}
+        {active === 'integrations' && (
+          <div className="flex flex-col gap-4">
+            {me.organizationPermissions.includes('org.manage') && <SlackAppPanel />}
+            <IntegrationsSection />
+          </div>
+        )}
         {active === 'tokens' && <TokensSection />}
         {active === 'import' && <ImportSection />}
         {active === 'webhooks' && <WebhooksSection />}

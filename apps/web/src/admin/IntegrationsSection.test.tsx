@@ -14,11 +14,45 @@ const SUB: ChatSubscriptionView = {
   team: { id: 't1', key: 'HELP', name: 'Helpdesk' },
   name: '#helpdesk',
   host: 'hooks.slack.com',
+  channel: null,
   events: ['issue_created'],
   createdAt: '2026-10-20T09:00:00Z',
 };
 
 describe('IntegrationsSection', () => {
+  it('picks a channel of the connected Slack app instead of a webhook', async () => {
+    const appSub = { ...SUB, host: '', channel: { id: 'C01HELP', name: 'helpdesk' } };
+    let subs: ChatSubscriptionView[] = [];
+    const calls = mockApi({
+      'GET /api/integrations/slack': () => ({ json: subs }),
+      'GET /api/integrations/slack/channels': () => ({
+        json: [
+          { id: 'C01HELP', name: 'helpdesk' },
+          { id: 'C02OPS', name: 'ops' },
+        ],
+      }),
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      'POST /api/integrations/slack': () => {
+        subs = [appSub];
+        return { status: 201, json: appSub };
+      },
+    });
+    await renderWithI18n(<IntegrationsSection />);
+    const channel = await screen.findByLabelText('Channel');
+    expect(screen.queryByLabelText(/Incoming webhook URL/)).toBeNull();
+    await userEvent.selectOptions(channel, 'C02OPS');
+    await userEvent.type(screen.getByLabelText('Channel name'), 'Ops');
+    await userEvent.click(screen.getByRole('button', { name: 'Connect a channel' }));
+    const post = await vi.waitFor(() => {
+      const found = calls.find((c) => c.method === 'POST');
+      if (!found) throw new Error('not yet');
+      return found;
+    });
+    expect(post.body).toMatchObject({ channelId: 'C02OPS' });
+    expect(post.body).not.toHaveProperty('webhookUrl');
+    expect(await screen.findByText('Helpdesk · #helpdesk')).toBeInTheDocument();
+  });
+
   it('connects a channel with a write-only webhook URL', async () => {
     let subs: ChatSubscriptionView[] = [];
     const calls = mockApi({
