@@ -199,7 +199,7 @@ export const authStrategies = pgTable(
   'auth_strategies',
   {
     id: id(),
-    kind: text('kind', { enum: ['local', 'email_otp', 'google'] }).notNull(),
+    kind: text('kind', { enum: ['local', 'email_otp', 'google', 'microsoft', 'oidc'] }).notNull(),
     enabled: boolean('enabled').notNull().default(false),
     position: integer('position').notNull().default(0),
     displayName: text('display_name'),

@@ -4,6 +4,7 @@ import {
   otpVerifySchema,
   passwordSignInSchema,
   type AuthStrategyKind,
+  type OAuthStrategyKind,
 } from '@ordler/shared';
 import type { FastifyReply } from 'fastify';
 import type { AppContext } from '../app-context.js';
@@ -21,7 +22,10 @@ import { DomainError } from './errors.js';
 import { OAUTH_STATE_COOKIE } from './google.js';
 import { SESSION_COOKIE } from './sessions.js';
 
-const OAUTH_COOKIE_PATH = '/api/auth/google';
+// Scoped to one provider so parallel sign-in attempts in two tabs do not clobber each other.
+function oauthCookiePath(kind: OAuthStrategyKind): string {
+  return `/api/auth/${kind}`;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -77,21 +81,7 @@ export class AuthController {
   @Public()
   @Get('google/start')
   async googleStart(@Res() reply: FastifyReply) {
-    try {
-      const { url, stateCookie } = await this.ctx.google.start();
-      await reply
-        .header(
-          'set-cookie',
-          serializeCookie(OAUTH_STATE_COOKIE, stateCookie, {
-            secure: this.ctx.secureCookies,
-            path: OAUTH_COOKIE_PATH,
-            maxAgeSeconds: 600,
-          }),
-        )
-        .redirect(url, 302);
-    } catch (error) {
-      await this.redirectWithError(reply, error);
-    }
+    await this.oauthStart('google', reply);
   }
 
   /** Google redirects the browser here; errors go back to the sign-in page as `?auth_error=`. */
@@ -103,28 +93,41 @@ export class AuthController {
     @Req() request: OrdlerRequest,
     @Res() reply: FastifyReply,
   ) {
-    const stateCookie = parseCookies(request.headers.cookie)[OAUTH_STATE_COOKIE];
-    const clearState = clearCookie(OAUTH_STATE_COOKIE, {
-      secure: this.ctx.secureCookies,
-      path: OAUTH_COOKIE_PATH,
-    });
-    try {
-      const memberId = await this.ctx.google.callback({
-        ...(code ? { code } : {}),
-        ...(state ? { state } : {}),
-        ...(stateCookie ? { stateCookie } : {}),
-      });
-      const { token } = await this.ctx.sessions.create(memberId, 'google', {
-        ip: request.ip,
-        userAgent: request.headers['user-agent'] ?? null,
-      });
-      await reply
-        .header('set-cookie', [clearState, sessionCookie(this.ctx, token)])
-        .redirect(`${this.ctx.baseUrl}/`, 302);
-    } catch (error) {
-      reply.header('set-cookie', clearState);
-      await this.redirectWithError(reply, error);
-    }
+    await this.oauthCallback('google', { code, state }, request, reply);
+  }
+
+  @Public()
+  @Get('microsoft/start')
+  async microsoftStart(@Res() reply: FastifyReply) {
+    await this.oauthStart('microsoft', reply);
+  }
+
+  @Public()
+  @Get('microsoft/callback')
+  async microsoftCallback(
+    @Query('code') code: string | undefined,
+    @Query('state') state: string | undefined,
+    @Req() request: OrdlerRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    await this.oauthCallback('microsoft', { code, state }, request, reply);
+  }
+
+  @Public()
+  @Get('oidc/start')
+  async oidcStart(@Res() reply: FastifyReply) {
+    await this.oauthStart('oidc', reply);
+  }
+
+  @Public()
+  @Get('oidc/callback')
+  async oidcCallback(
+    @Query('code') code: string | undefined,
+    @Query('state') state: string | undefined,
+    @Req() request: OrdlerRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    await this.oauthCallback('oidc', { code, state }, request, reply);
   }
 
   @Authenticated()
@@ -148,6 +151,59 @@ export class AuthController {
     });
     reply.header('set-cookie', sessionCookie(this.ctx, token));
     return loadMe(this.ctx.db, memberId);
+  }
+
+  private async oauthStart(kind: OAuthStrategyKind, reply: FastifyReply): Promise<void> {
+    try {
+      const { url, stateCookie } =
+        kind === 'google' ? await this.ctx.google.start() : await this.ctx.oidc.start(kind);
+      await reply
+        .header(
+          'set-cookie',
+          serializeCookie(OAUTH_STATE_COOKIE, stateCookie, {
+            secure: this.ctx.secureCookies,
+            path: oauthCookiePath(kind),
+            maxAgeSeconds: 600,
+          }),
+        )
+        .redirect(url, 302);
+    } catch (error) {
+      await this.redirectWithError(reply, error);
+    }
+  }
+
+  private async oauthCallback(
+    kind: OAuthStrategyKind,
+    query: { code: string | undefined; state: string | undefined },
+    request: OrdlerRequest,
+    reply: FastifyReply,
+  ): Promise<void> {
+    const stateCookie = parseCookies(request.headers.cookie)[OAUTH_STATE_COOKIE];
+    const clearState = clearCookie(OAUTH_STATE_COOKIE, {
+      secure: this.ctx.secureCookies,
+      path: oauthCookiePath(kind),
+    });
+    const input = {
+      ...(query.code ? { code: query.code } : {}),
+      ...(query.state ? { state: query.state } : {}),
+      ...(stateCookie ? { stateCookie } : {}),
+    };
+    try {
+      const memberId =
+        kind === 'google'
+          ? await this.ctx.google.callback(input)
+          : await this.ctx.oidc.callback(kind, input);
+      const { token } = await this.ctx.sessions.create(memberId, kind, {
+        ip: request.ip,
+        userAgent: request.headers['user-agent'] ?? null,
+      });
+      await reply
+        .header('set-cookie', [clearState, sessionCookie(this.ctx, token)])
+        .redirect(`${this.ctx.baseUrl}/`, 302);
+    } catch (error) {
+      reply.header('set-cookie', clearState);
+      await this.redirectWithError(reply, error);
+    }
   }
 
   private async redirectWithError(reply: FastifyReply, error: unknown): Promise<void> {

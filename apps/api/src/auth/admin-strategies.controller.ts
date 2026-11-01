@@ -30,7 +30,12 @@ export class AdminStrategiesController {
       strategies.map(async (strategy) => ({
         ...strategy,
         usable: await this.ctx.strategies.isUsable(strategy),
-        callbackUrl: strategy.kind === 'google' ? this.ctx.google.redirectUri : null,
+        callbackUrl:
+          strategy.kind === 'google'
+            ? this.ctx.google.redirectUri
+            : strategy.kind === 'microsoft' || strategy.kind === 'oidc'
+              ? this.ctx.oidc.redirectUri(strategy.kind)
+              : null,
       })),
     );
   }

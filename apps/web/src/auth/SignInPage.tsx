@@ -1,7 +1,7 @@
 import type { MeResponse, PublicStrategy } from '@ordler/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api, GOOGLE_START_URL } from '../api/client.js';
+import { api, oauthStartUrl } from '../api/client.js';
 import { errorKey, isKnownErrorCode } from './errors.js';
 import { Card, FormError, PrimaryButton, TextField } from './form.js';
 
@@ -45,13 +45,15 @@ export function SignInPage({
       case 'email_otp':
         return <OtpForm key="email_otp" onSignedIn={onSignedIn} onError={setError} />;
       case 'google':
+      case 'microsoft':
+      case 'oidc':
         return (
           <a
-            key="google"
-            href={GOOGLE_START_URL}
+            key={strategy.kind}
+            href={oauthStartUrl(strategy.kind)}
             className="rounded-md border border-line px-3 py-2 text-center text-sm font-medium text-ink hover:bg-hover"
           >
-            {strategy.displayName ?? t('auth.google')}
+            {strategy.displayName ?? t(`auth.${strategy.kind}`)}
           </a>
         );
     }

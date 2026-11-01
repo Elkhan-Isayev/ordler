@@ -60,7 +60,9 @@
     "google": "Mit Google fortfahren",
     "noStrategies": "Anmeldung ist nicht verfügbar. Wende dich an deinen Administrator.",
     "signOut": "Abmelden",
-    "loading": "Wird geladen…"
+    "loading": "Wird geladen…",
+    "microsoft": "Mit Microsoft fortfahren",
+    "oidc": "Mit Single Sign-On fortfahren"
   },
   "errors": {
     "invalid_credentials": "E-Mail oder Passwort ist falsch.",
@@ -235,11 +237,26 @@
       "clientId": "Client-ID",
       "clientSecret": "Client-Secret",
       "secretSet": "Gespeichert. Gib einen neuen Wert ein, um ihn zu ersetzen.",
-      "callbackUrl": "Redirect-URI für die Google Cloud Console",
       "needsMail": "SMTP muss eingerichtet sein.",
       "needsGoogle": "Client-ID und Secret erforderlich.",
       "save": "Speichern",
-      "saved": "Gespeichert"
+      "saved": "Gespeichert",
+      "kind_microsoft": "Microsoft Entra ID",
+      "kind_oidc": "OpenID Connect (SSO)",
+      "callbackUrl_google": "Redirect-URI für die Google Cloud Console",
+      "callbackUrl_microsoft": "Redirect-URI für die Entra-App-Registrierung (Plattform Web)",
+      "callbackUrl_oidc": "Redirect-URI zum Eintragen beim Identitätsanbieter",
+      "tenantId": "Mandanten-ID",
+      "tenantIdHint": "Verzeichnis-(Mandanten-)ID oder eine verifizierte Domain. Mehrinstanzenwerte wie common sind nicht erlaubt.",
+      "issuerUrl": "Issuer-URL",
+      "issuerUrlHint": "Ordler liest /.well-known/openid-configuration von dieser Adresse.",
+      "scopes": "Scopes",
+      "emailClaim": "Claim für E-Mail",
+      "nameClaim": "Claim für Namen",
+      "requireVerifiedEmail": "email_verified vom Anbieter verlangen",
+      "requireVerifiedEmailHint": "Nur ausschalten, wenn der Anbieter nie email_verified sendet und alle seine Adressen Ihrem Unternehmen gehören.",
+      "needsMicrosoft": "Mandanten-ID, Client-ID und Secret erforderlich.",
+      "needsOidc": "Issuer-URL, Client-ID und Secret erforderlich."
     },
     "updates": {
       "title": "Updates",

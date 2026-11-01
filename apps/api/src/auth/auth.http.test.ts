@@ -310,3 +310,71 @@ describe('Google sign-in redirects', () => {
     expect(start.headers.location).toBe(`${TEST_BASE_URL}/?auth_error=strategy_disabled`);
   });
 });
+
+describe('Microsoft and OIDC sign-in redirects', () => {
+  const tenant = 'company.onmicrosoft.com';
+  const issuer = `https://login.microsoftonline.com/${tenant}/v2.0`;
+
+  beforeEach(async () => {
+    await t.close();
+    t = await createTestApp({
+      oidcFetch: async (url) =>
+        url === `${issuer}/.well-known/openid-configuration`
+          ? Response.json({
+              issuer: 'https://login.microsoftonline.com/0000-tenant-guid/v2.0',
+              authorization_endpoint: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
+              token_endpoint: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+              jwks_uri: 'https://login.microsoftonline.com/common/discovery/v2.0/keys',
+            })
+          : new Response('not found', { status: 404 }),
+    });
+  });
+
+  it('redirects to the tenant with a state cookie scoped to Microsoft', async () => {
+    const cookie = await setupOwner();
+    const patch = await inject({
+      method: 'PATCH',
+      url: '/api/admin/auth/strategies/microsoft',
+      payload: {
+        enabled: true,
+        config: { clientId: 'cid', tenantId: tenant },
+        secrets: { clientSecret: 's' },
+      },
+      cookie,
+    });
+    expect(patch.statusCode).toBe(200);
+    const response = await inject({ method: 'GET', url: '/api/auth/microsoft/start' });
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toMatch(
+      /^https:\/\/login\.microsoftonline\.com\/company\.onmicrosoft\.com\/oauth2\/v2\.0\/authorize\?/,
+    );
+    expect(response.headers['set-cookie']).toContain('Path=/api/auth/microsoft');
+
+    const strategies = await inject({ method: 'GET', url: '/api/auth/strategies' });
+    expect(strategies.json()).toContainEqual({ kind: 'microsoft', displayName: null });
+  });
+
+  it('rejects a multi-tenant endpoint as the tenant', async () => {
+    const cookie = await setupOwner();
+    const response = await inject({
+      method: 'PATCH',
+      url: '/api/admin/auth/strategies/microsoft',
+      payload: { config: { tenantId: 'common' } },
+      cookie,
+    });
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('shows the callback URL and sends a disabled provider back with an error', async () => {
+    const cookie = await setupOwner();
+    const list = await inject({ method: 'GET', url: '/api/admin/auth/strategies', cookie });
+    expect(list.json()).toContainEqual(
+      expect.objectContaining({
+        kind: 'oidc',
+        callbackUrl: `${TEST_BASE_URL}/api/auth/oidc/callback`,
+      }),
+    );
+    const start = await inject({ method: 'GET', url: '/api/auth/oidc/start' });
+    expect(start.headers.location).toBe(`${TEST_BASE_URL}/?auth_error=strategy_disabled`);
+  });
+});

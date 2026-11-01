@@ -1,6 +1,7 @@
 import { DEFAULT_ATTACHMENT_MAX_MB } from '@ordler/shared';
 import type { JWTVerifyGetKey } from 'jose';
 import { GoogleAuthService, type FetchFn } from './auth/google.js';
+import { OidcAuthService } from './auth/oidc.js';
 import { DEFAULT_OTP_POLICY, OtpService, type OtpPolicy } from './auth/otp.js';
 import { PasswordAuthService } from './auth/password-auth.js';
 import { RateLimiter } from './auth/rate-limiter.js';
@@ -65,6 +66,7 @@ export interface AppContext {
   passwordAuth: PasswordAuthService;
   otp: OtpService;
   google: GoogleAuthService;
+  oidc: OidcAuthService;
   updates: UpdateService;
   org: OrgService;
   members: AdminMembersService;
@@ -130,6 +132,9 @@ export interface AppContextDeps {
   otpPolicy?: OtpPolicy;
   googleFetch?: FetchFn;
   googleJwks?: JWTVerifyGetKey;
+  /** Discovery, token and key-set calls for Microsoft and generic OIDC; replaced in tests. */
+  oidcFetch?: FetchFn;
+  oidcJwks?: (uri: string) => JWTVerifyGetKey;
   version?: string | undefined;
   updateCheck?: { enabled: boolean; repository: string };
   updatesFetch?: UpdateFetchFn;
@@ -222,6 +227,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       now,
       ...(deps.googleFetch ? { fetch: deps.googleFetch } : {}),
       ...(deps.googleJwks ? { jwks: deps.googleJwks } : {}),
+    }),
+    oidc: new OidcAuthService({
+      db: deps.db,
+      strategies,
+      box,
+      baseUrl: deps.baseUrl,
+      now,
+      ...(deps.oidcFetch ? { fetch: deps.oidcFetch } : {}),
+      ...(deps.oidcJwks ? { jwks: deps.oidcJwks } : {}),
     }),
     updates: new UpdateService({
       db: deps.db,

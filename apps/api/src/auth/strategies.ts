@@ -1,9 +1,10 @@
 import {
   AUTH_STRATEGY_KINDS,
+  isOAuthStrategy,
   type AuthStrategyKind,
   type UpdateAuthStrategyInput,
 } from '@ordler/shared';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { writeAudit, type AuditActor } from '../audit/audit.js';
 import type { SecretBox } from '../crypto/secret-box.js';
 import type { Db } from '../db/client.js';
@@ -14,6 +15,12 @@ import { DomainError } from './errors.js';
 export interface StrategyConfig {
   clientId?: string;
   hostedDomain?: string | null;
+  tenantId?: string;
+  issuerUrl?: string;
+  scopes?: string;
+  emailClaim?: string;
+  nameClaim?: string;
+  requireVerifiedEmail?: boolean;
 }
 
 interface StrategySecrets {
@@ -39,6 +46,8 @@ const DEFAULTS: Record<AuthStrategyKind, { enabled: boolean; position: number }>
   local: { enabled: true, position: 0 },
   email_otp: { enabled: false, position: 1 },
   google: { enabled: false, position: 2 },
+  microsoft: { enabled: false, position: 3 },
+  oidc: { enabled: false, position: 4 },
 };
 
 type Row = typeof authStrategies.$inferSelect;
@@ -55,7 +64,7 @@ export class StrategyService {
     private readonly mail: MailStatus,
   ) {}
 
-  /** Creates the three Phase 1 strategies once; local sign-in starts enabled for the first Owner. */
+  /** Creates every strategy row once (new kinds appear on upgrade); local sign-in starts enabled for the first Owner. */
   async ensureDefaults(): Promise<void> {
     await this.db
       .insert(authStrategies)
@@ -89,8 +98,10 @@ export class StrategyService {
   async isUsable(strategy: AuthStrategy): Promise<boolean> {
     if (!strategy.enabled) return false;
     if (strategy.kind === 'email_otp') return this.mail.isConfigured();
-    if (strategy.kind === 'google')
-      return Boolean(strategy.config.clientId && strategy.hasClientSecret);
+    const hasClient = Boolean(strategy.config.clientId && strategy.hasClientSecret);
+    if (strategy.kind === 'google') return hasClient;
+    if (strategy.kind === 'microsoft') return hasClient && Boolean(strategy.config.tenantId);
+    if (strategy.kind === 'oidc') return hasClient && Boolean(strategy.config.issuerUrl);
     return true;
   }
 
@@ -194,11 +205,16 @@ export class StrategyService {
           .where(eq(memberPasswords.memberId, memberId));
         if (password) return;
       }
-      if (strategy.kind === 'google') {
+      if (isOAuthStrategy(strategy.kind)) {
         const [identity] = await this.db
           .select({ id: memberIdentities.id })
           .from(memberIdentities)
-          .where(eq(memberIdentities.memberId, memberId));
+          .where(
+            and(
+              eq(memberIdentities.memberId, memberId),
+              eq(memberIdentities.strategyKind, strategy.kind),
+            ),
+          );
         if (identity) return;
       }
     }

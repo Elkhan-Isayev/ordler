@@ -78,6 +78,8 @@ import type {
   MailSettingsView,
   MeResponse,
   PublicStrategy,
+  AuthStrategyKind,
+  OAuthStrategyKind,
   SetupStatusResponse,
   TestMailResult,
   UpdateAuthStrategyInput,
@@ -482,11 +484,14 @@ export const api = {
     apiRequest<MeResponse>('/api/invites/accept', { method: 'POST', body }),
 };
 
-export const GOOGLE_START_URL = '/api/auth/google/start';
+/** Full-page navigation: the API redirects to the identity provider. */
+export function oauthStartUrl(kind: OAuthStrategyKind): string {
+  return `/api/auth/${kind}/start`;
+}
 
 /** Admin view of a sign-in strategy; secrets are never included, only whether one is set. */
 export interface AdminStrategy {
-  kind: 'local' | 'email_otp' | 'google';
+  kind: AuthStrategyKind;
   enabled: boolean;
   usable: boolean;
   position: number;
@@ -494,7 +499,16 @@ export interface AdminStrategy {
   allowSelfRegistration: boolean;
   allowedDomains: string[];
   defaultRoleId: string | null;
-  config: { clientId?: string; hostedDomain?: string | null };
+  config: {
+    clientId?: string;
+    hostedDomain?: string | null;
+    tenantId?: string;
+    issuerUrl?: string;
+    scopes?: string;
+    emailClaim?: string;
+    nameClaim?: string;
+    requireVerifiedEmail?: boolean;
+  };
   hasClientSecret: boolean;
   callbackUrl: string | null;
 }

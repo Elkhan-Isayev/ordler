@@ -26,6 +26,8 @@ describe('StrategyService', () => {
       ['local', true],
       ['email_otp', false],
       ['google', false],
+      ['microsoft', false],
+      ['oidc', false],
     ]);
     expect((await strategies.usable()).map((s) => s.kind)).toEqual(['local']);
   });
@@ -122,6 +124,34 @@ describe('StrategyService', () => {
       .values({ memberId: ownerId, strategyKind: 'google', providerSubject: 'sub-1' });
     const updated = await strategies.update('local', { enabled: false }, actor(), 'local');
     expect(updated.enabled).toBe(false);
+  });
+
+  it('counts only an identity from the provider that stays enabled', async () => {
+    const strategies = await strategiesFor(db);
+    await strategies.update(
+      'microsoft',
+      {
+        enabled: true,
+        config: { clientId: 'id', tenantId: 'company.onmicrosoft.com' },
+        secrets: { clientSecret: 's' },
+      },
+      actor(),
+      'local',
+    );
+    // A Google identity does not let the owner sign in through Microsoft.
+    await db
+      .insert(memberIdentities)
+      .values({ memberId: ownerId, strategyKind: 'google', providerSubject: 'sub-1' });
+    await expect(
+      strategies.update('local', { enabled: false }, actor(), 'local'),
+    ).rejects.toMatchObject({ code: 'lockout_prevented' });
+
+    await db
+      .insert(memberIdentities)
+      .values({ memberId: ownerId, strategyKind: 'microsoft', providerSubject: 'entra-1' });
+    expect((await strategies.update('local', { enabled: false }, actor(), 'local')).enabled).toBe(
+      false,
+    );
   });
 
   it('allows disabling local when email OTP stays available', async () => {

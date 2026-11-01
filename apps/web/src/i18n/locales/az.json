@@ -60,7 +60,9 @@
     "google": "Google ilə davam et",
     "noStrategies": "Giriş mümkün deyil. Administratorla əlaqə saxlayın.",
     "signOut": "Çıxış",
-    "loading": "Yüklənir…"
+    "loading": "Yüklənir…",
+    "microsoft": "Microsoft ilə davam et",
+    "oidc": "Vahid giriş (SSO) ilə davam et"
   },
   "errors": {
     "invalid_credentials": "E-poçt və ya şifrə yanlışdır.",
@@ -235,11 +237,26 @@
       "clientId": "Client ID",
       "clientSecret": "Client secret",
       "secretSet": "Saxlanılıb. Əvəz etmək üçün yeni dəyər daxil edin.",
-      "callbackUrl": "Google Cloud Console üçün Redirect URI",
       "needsMail": "SMTP qurulmalıdır.",
       "needsGoogle": "Client ID və secret lazımdır.",
       "save": "Yadda saxla",
-      "saved": "Saxlanıldı"
+      "saved": "Saxlanıldı",
+      "kind_microsoft": "Microsoft Entra ID",
+      "kind_oidc": "OpenID Connect (SSO)",
+      "callbackUrl_google": "Google Cloud Console üçün Redirect URI",
+      "callbackUrl_microsoft": "Entra tətbiq qeydiyyatı üçün Redirect URI (Web platforması)",
+      "callbackUrl_oidc": "Kimlik provayderində qeyd ediləcək Redirect URI",
+      "tenantId": "Tenant ID",
+      "tenantIdHint": "Kataloq (tenant) ID-si və ya təsdiqlənmiş domen. common kimi çox-tenantlı dəyərlərə icazə verilmir.",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHint": "Ordler /.well-known/openid-configuration faylını bu ünvandan oxuyur.",
+      "scopes": "Scopes",
+      "emailClaim": "E-poçt claim-i",
+      "nameClaim": "Ad claim-i",
+      "requireVerifiedEmail": "Provayderdən email_verified tələb et",
+      "requireVerifiedEmailHint": "Yalnız provayder heç vaxt email_verified göndərmirsə və onun bütün ünvanları şirkətinizə məxsusdursa söndürün.",
+      "needsMicrosoft": "Tenant ID, client ID və secret lazımdır.",
+      "needsOidc": "Issuer URL, client ID və secret lazımdır."
     },
     "updates": {
       "title": "Yeniləmələr",

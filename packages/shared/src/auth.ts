@@ -1,9 +1,38 @@
 import { z } from 'zod';
 import { SUPPORTED_LOCALES } from './locales.js';
 
-/** Sign-in strategies available in Phase 1 (SPEC §8.1). */
-export const AUTH_STRATEGY_KINDS = ['local', 'email_otp', 'google'] as const;
+/** Sign-in strategies (SPEC §8.1). */
+export const AUTH_STRATEGY_KINDS = ['local', 'email_otp', 'google', 'microsoft', 'oidc'] as const;
 export type AuthStrategyKind = (typeof AUTH_STRATEGY_KINDS)[number];
+
+/** Strategies that redirect to an identity provider and come back to a callback URL. */
+export const OAUTH_STRATEGY_KINDS = ['google', 'microsoft', 'oidc'] as const;
+export type OAuthStrategyKind = (typeof OAUTH_STRATEGY_KINDS)[number];
+
+export function isOAuthStrategy(kind: AuthStrategyKind): kind is OAuthStrategyKind {
+  return (OAUTH_STRATEGY_KINDS as readonly string[]).includes(kind);
+}
+
+/** Multi-tenant Entra endpoints accept any tenant, so an outsider could claim a member's email. */
+const SHARED_ENTRA_TENANTS = ['common', 'organizations', 'consumers'];
+
+/** A directory (tenant) GUID or a verified domain such as `company.onmicrosoft.com`. */
+export const entraTenantSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9.-]{1,253}$/, 'invalid_tenant')
+  .refine((value) => !SHARED_ENTRA_TENANTS.includes(value), 'tenant_must_be_specific');
+
+export const oidcIssuerSchema = z
+  .url({ protocol: /^https$/ })
+  .max(512)
+  .transform((value) => value.replace(/\/+$/, ''));
+
+const claimNameSchema = z
+  .string()
+  .trim()
+  .regex(/^[\w:./-]{1,100}$/, 'invalid_claim');
 
 export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 256;
@@ -70,6 +99,20 @@ export const updateAuthStrategySchema = z
     config: z.object({
       clientId: z.string().trim().min(1).max(512).optional(),
       hostedDomain: emailDomainSchema.nullable().optional(),
+      /** Microsoft Entra ID: the directory to accept sign-ins from. */
+      tenantId: entraTenantSchema.optional(),
+      /** Generic OIDC: issuer whose `/.well-known/openid-configuration` is discovered. */
+      issuerUrl: oidcIssuerSchema.optional(),
+      scopes: z
+        .string()
+        .trim()
+        .regex(/^[\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*$/, 'invalid_scopes')
+        .max(512)
+        .optional(),
+      emailClaim: claimNameSchema.optional(),
+      nameClaim: claimNameSchema.optional(),
+      /** Off only for providers that never send `email_verified` but vouch for every address. */
+      requireVerifiedEmail: z.boolean().optional(),
     }),
     /** Write-only: present to set or replace, never returned by the API. */
     secrets: z.object({ clientSecret: z.string().min(1).max(512).optional() }),

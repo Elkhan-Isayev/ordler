@@ -25,6 +25,26 @@ describe('SignInPage', () => {
     expect(screen.queryByRole('form', { name: 'Email me a sign-in code' })).not.toBeInTheDocument();
   });
 
+  it('links Microsoft and single sign-on to their start URLs, using the admin label', async () => {
+    mockApi({
+      'GET /api/auth/strategies': () => ({
+        json: [
+          { kind: 'microsoft', displayName: null },
+          { kind: 'oidc', displayName: 'Company SSO' },
+        ],
+      }),
+    });
+    await renderWithI18n(<SignInPage onSignedIn={vi.fn()} />);
+    expect(await screen.findByRole('link', { name: 'Continue with Microsoft' })).toHaveAttribute(
+      'href',
+      '/api/auth/microsoft/start',
+    );
+    expect(screen.getByRole('link', { name: 'Company SSO' })).toHaveAttribute(
+      'href',
+      '/api/auth/oidc/start',
+    );
+  });
+
   it('signs in with a password', async () => {
     const calls = mockApi({
       'GET /api/auth/strategies': strategies('local'),

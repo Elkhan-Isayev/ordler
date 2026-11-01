@@ -60,7 +60,9 @@
     "google": "Continue with Google",
     "noStrategies": "Sign-in is not available. Contact your administrator.",
     "signOut": "Sign out",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "microsoft": "Continue with Microsoft",
+    "oidc": "Continue with single sign-on"
   },
   "errors": {
     "invalid_credentials": "Wrong email or password.",
@@ -235,11 +237,26 @@
       "clientId": "Client ID",
       "clientSecret": "Client secret",
       "secretSet": "Saved. Enter a new value to replace it.",
-      "callbackUrl": "Redirect URI for Google Cloud Console",
       "needsMail": "Needs SMTP to be configured.",
       "needsGoogle": "Needs a client ID and secret.",
       "save": "Save",
-      "saved": "Saved"
+      "saved": "Saved",
+      "kind_microsoft": "Microsoft Entra ID",
+      "kind_oidc": "OpenID Connect (SSO)",
+      "callbackUrl_google": "Redirect URI for Google Cloud Console",
+      "callbackUrl_microsoft": "Redirect URI for the Entra app registration (Web platform)",
+      "callbackUrl_oidc": "Redirect URI to register with your identity provider",
+      "tenantId": "Tenant ID",
+      "tenantIdHint": "Directory (tenant) ID or a verified domain. Multi-tenant values such as common are not allowed.",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHint": "Ordler reads /.well-known/openid-configuration from this address.",
+      "scopes": "Scopes",
+      "emailClaim": "Email claim",
+      "nameClaim": "Name claim",
+      "requireVerifiedEmail": "Require email_verified from the provider",
+      "requireVerifiedEmailHint": "Turn off only if the provider never sends email_verified and every address it issues belongs to your company.",
+      "needsMicrosoft": "Needs a tenant ID, client ID and secret.",
+      "needsOidc": "Needs an issuer URL, client ID and secret."
     },
     "updates": {
       "title": "Updates",

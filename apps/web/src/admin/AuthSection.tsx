@@ -1,4 +1,4 @@
-import type { AdminRole } from '@ordler/shared';
+import { isOAuthStrategy, type AdminRole, type AuthStrategyKind } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, type AdminStrategy } from '../api/client.js';
@@ -51,6 +51,8 @@ function StrategyCard({
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const title = t(`admin.auth.kind_${strategy.kind}`);
+  const oauth = isOAuthStrategy(strategy.kind);
+  const field = (name: string) => `${strategy.kind}-${name}`;
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,9 +69,9 @@ function StrategyCard({
           .map((domain) => domain.trim())
           .filter(Boolean),
         defaultRoleId: String(form.get('defaultRoleId') ?? '') || null,
-        ...(strategy.kind === 'google'
+        ...(oauth
           ? {
-              config: { clientId: String(form.get('clientId') ?? '').trim() || undefined },
+              config: providerConfig(strategy.kind, form),
               // Write-only: an empty field keeps the stored secret.
               ...(secret ? { secrets: { clientSecret: secret } } : {}),
             }
@@ -89,7 +91,11 @@ function StrategyCard({
       ? t('admin.auth.needsMail')
       : strategy.kind === 'google'
         ? t('admin.auth.needsGoogle')
-        : undefined;
+        : strategy.kind === 'microsoft'
+          ? t('admin.auth.needsMicrosoft')
+          : strategy.kind === 'oidc'
+            ? t('admin.auth.needsOidc')
+            : undefined;
 
   return (
     <Panel>
@@ -103,8 +109,29 @@ function StrategyCard({
         </div>
         {unusableHint && <p className="text-xs text-ink-faint">{unusableHint}</p>}
 
-        {strategy.kind === 'google' && (
+        {oauth && (
           <div className="grid gap-2 sm:grid-cols-2">
+            {strategy.kind === 'microsoft' && (
+              <HintedInput
+                id={field('tenant')}
+                name="tenantId"
+                label={t('admin.auth.tenantId')}
+                hint={t('admin.auth.tenantIdHint')}
+                defaultValue={strategy.config.tenantId ?? ''}
+                wide
+              />
+            )}
+            {strategy.kind === 'oidc' && (
+              <HintedInput
+                id={field('issuer')}
+                name="issuerUrl"
+                label={t('admin.auth.issuerUrl')}
+                hint={t('admin.auth.issuerUrlHint')}
+                defaultValue={strategy.config.issuerUrl ?? ''}
+                placeholder="https://sso.company.com/realms/main"
+                wide
+              />
+            )}
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
               {t('admin.auth.clientId')}
               <input
@@ -133,9 +160,54 @@ function StrategyCard({
                 </span>
               )}
             </div>
+            {strategy.kind === 'oidc' && (
+              <>
+                <label className="flex flex-col gap-1 text-xs text-ink-muted sm:col-span-2">
+                  {t('admin.auth.scopes')}
+                  <input
+                    name="scopes"
+                    defaultValue={strategy.config.scopes ?? ''}
+                    placeholder="openid email profile"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs text-ink-muted">
+                  {t('admin.auth.emailClaim')}
+                  <input
+                    name="emailClaim"
+                    defaultValue={strategy.config.emailClaim ?? ''}
+                    placeholder="email"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs text-ink-muted">
+                  {t('admin.auth.nameClaim')}
+                  <input
+                    name="nameClaim"
+                    defaultValue={strategy.config.nameClaim ?? ''}
+                    placeholder="name"
+                    className={inputClass}
+                  />
+                </label>
+                <div className="flex flex-col gap-1 text-xs text-ink-muted sm:col-span-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="requireVerifiedEmail"
+                      defaultChecked={strategy.config.requireVerifiedEmail !== false}
+                      aria-describedby={field('verified-hint')}
+                    />
+                    {t('admin.auth.requireVerifiedEmail')}
+                  </label>
+                  <span id={field('verified-hint')} className="text-ink-faint">
+                    {t('admin.auth.requireVerifiedEmailHint')}
+                  </span>
+                </div>
+              </>
+            )}
             {strategy.callbackUrl && (
               <label className="flex flex-col gap-1 text-xs text-ink-muted sm:col-span-2">
-                {t('admin.auth.callbackUrl')}
+                {t(`admin.auth.callbackUrl_${strategy.kind}`)}
                 <input
                   readOnly
                   value={strategy.callbackUrl}
@@ -202,5 +274,59 @@ function StrategyCard({
         </div>
       </form>
     </Panel>
+  );
+}
+
+/** Only the fields of this provider; blanks are left out so stored values stay. */
+function providerConfig(kind: AuthStrategyKind, form: FormData) {
+  const text = (name: string) => String(form.get(name) ?? '').trim() || undefined;
+  return {
+    clientId: text('clientId'),
+    ...(kind === 'microsoft' ? { tenantId: text('tenantId') } : {}),
+    ...(kind === 'oidc'
+      ? {
+          issuerUrl: text('issuerUrl'),
+          scopes: text('scopes'),
+          emailClaim: text('emailClaim'),
+          nameClaim: text('nameClaim'),
+          requireVerifiedEmail: form.get('requireVerifiedEmail') === 'on',
+        }
+      : {}),
+  };
+}
+
+function HintedInput({
+  id,
+  name,
+  label,
+  hint,
+  defaultValue,
+  placeholder,
+  wide,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  hint: string;
+  defaultValue: string;
+  placeholder?: string;
+  wide?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col gap-1 text-xs text-ink-muted ${wide ? 'sm:col-span-2' : ''}`}>
+      <label className="flex flex-col gap-1">
+        {label}
+        <input
+          name={name}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          aria-describedby={id}
+          className={inputClass}
+        />
+      </label>
+      <span id={id} className="text-ink-faint">
+        {hint}
+      </span>
+    </div>
   );
 }

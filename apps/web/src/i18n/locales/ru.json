@@ -60,7 +60,9 @@
     "google": "Войти через Google",
     "noStrategies": "Вход недоступен. Обратитесь к администратору.",
     "signOut": "Выйти",
-    "loading": "Загрузка…"
+    "loading": "Загрузка…",
+    "microsoft": "Войти через Microsoft",
+    "oidc": "Войти через единый вход (SSO)"
   },
   "errors": {
     "invalid_credentials": "Неверная почта или пароль.",
@@ -235,11 +237,26 @@
       "clientId": "Client ID",
       "clientSecret": "Client secret",
       "secretSet": "Сохранён. Введите новое значение, чтобы заменить.",
-      "callbackUrl": "Redirect URI для Google Cloud Console",
       "needsMail": "Нужна настройка SMTP.",
       "needsGoogle": "Нужны client ID и secret.",
       "save": "Сохранить",
-      "saved": "Сохранено"
+      "saved": "Сохранено",
+      "kind_microsoft": "Microsoft Entra ID",
+      "kind_oidc": "OpenID Connect (SSO)",
+      "callbackUrl_google": "Redirect URI для Google Cloud Console",
+      "callbackUrl_microsoft": "Redirect URI для регистрации приложения в Entra (платформа Web)",
+      "callbackUrl_oidc": "Redirect URI, который нужно указать у провайдера",
+      "tenantId": "Tenant ID",
+      "tenantIdHint": "ID каталога (tenant) или подтверждённый домен. Мультитенантные значения вроде common не допускаются.",
+      "issuerUrl": "Issuer URL",
+      "issuerUrlHint": "Ordler читает /.well-known/openid-configuration по этому адресу.",
+      "scopes": "Scopes",
+      "emailClaim": "Claim с email",
+      "nameClaim": "Claim с именем",
+      "requireVerifiedEmail": "Требовать email_verified от провайдера",
+      "requireVerifiedEmailHint": "Отключайте, только если провайдер не передаёт email_verified, а все его адреса принадлежат вашей компании.",
+      "needsMicrosoft": "Нужны tenant ID, client ID и secret.",
+      "needsOidc": "Нужны issuer URL, client ID и secret."
     },
     "updates": {
       "title": "Обновления",

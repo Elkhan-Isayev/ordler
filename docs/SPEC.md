@@ -497,8 +497,8 @@ admin sets.
 | Email + password (local)      | 1     | Password policy (min length, complexity, breach check), require email verification.                                |
 | Email OTP (passwordless code) | 1     | Code length (6), TTL (10 min), max attempts (5), resend cooldown (60 s). Requires a configured mail server (§8.2). |
 | Google                        | 1     | Client ID, client secret, allowed Google Workspace domain (`hd`) — optional.                                       |
-| Microsoft Entra ID            | 2     | Tenant ID, client ID, client secret.                                                                               |
-| Generic OIDC                  | 2     | Issuer URL (discovery), client ID/secret, scopes, claim mapping (email, name, groups).                             |
+| Microsoft Entra ID            | 2     | Tenant ID (single tenant; `common`/`organizations` refused), client ID, client secret.                             |
+| Generic OIDC                  | 2     | Issuer URL (discovery), client ID/secret, scopes, claim mapping (email, name), require `email_verified`.           |
 | SAML 2.0                      | 3     | IdP metadata URL/XML, entity ID, certificate, attribute mapping.                                                   |
 | LDAP / Active Directory       | 3     | URL, bind DN/credentials, search base, filter, TLS.                                                                |
 
@@ -519,7 +519,10 @@ admin sets.
   currently signed in with unless another enabled strategy is linked to their account
   (prevents lock-out). Last-resort recovery: `ordler admin enable-local-auth` CLI (§16.4).
 - One member can link several identities (password + Google); identities are matched by
-  **verified** email only.
+  **verified** email only. Entra ID addresses count as verified because sign-in is pinned to
+  one tenant (an `xms_edov: false` claim still rejects); generic OIDC needs
+  `email_verified: true` unless the admin turns that requirement off for the provider.
+- Mapping IdP groups to Ordler roles is not part of Phase 2 (SCIM in Phase 3 covers it).
 - Secrets (client secrets, SMTP password) are encrypted at rest, write-only in the UI
   (shown as `••••`), never returned by the API, never logged.
 - Every change to strategies is recorded in the audit log (secrets redacted).

@@ -100,4 +100,23 @@ describe('updateAuthStrategySchema', () => {
       allowedDomains: ['company.com'],
     });
   });
+
+  it('accepts a specific Entra tenant and rejects shared endpoints', () => {
+    expect(
+      updateAuthStrategySchema.parse({ config: { tenantId: 'Company.onmicrosoft.com' } }),
+    ).toEqual({ config: { tenantId: 'company.onmicrosoft.com' } });
+    for (const tenantId of ['common', 'organizations', 'consumers']) {
+      expect(updateAuthStrategySchema.safeParse({ config: { tenantId } }).success).toBe(false);
+    }
+  });
+
+  it('requires an HTTPS issuer and trims its trailing slash', () => {
+    expect(
+      updateAuthStrategySchema.parse({ config: { issuerUrl: 'https://sso.company.test/realm/' } }),
+    ).toEqual({ config: { issuerUrl: 'https://sso.company.test/realm' } });
+    expect(
+      updateAuthStrategySchema.safeParse({ config: { issuerUrl: 'http://sso.company.test' } })
+        .success,
+    ).toBe(false);
+  });
 });
