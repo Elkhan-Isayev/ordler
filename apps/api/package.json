@@ -19,6 +19,7 @@
     "@fastify/multipart": "10.1.2",
     "@fastify/static": "10.1.4",
     "@fastify/websocket": "11.3.1",
+    "@formatjs/icu-messageformat-parser": "2.11.4",
     "@nestjs/common": "11.2.7",
     "@nestjs/core": "11.2.7",
     "@nestjs/platform-fastify": "11.2.7",
@@ -37,7 +38,6 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.10",
-    "@formatjs/icu-messageformat-parser": "2.11.4",
     "@modelcontextprotocol/sdk": "1.32.1",
     "@nestjs/testing": "11.2.7",
     "@swc/core": "1.16.18",
