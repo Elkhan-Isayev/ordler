@@ -53,13 +53,14 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🔁  | **Cycles** with automatic rollover and burn-up; **projects** with milestones and status updates; **initiatives** grouping projects |
 | 🗂   | **Team settings**: workflow editor, labels, Slack channels                                                                         |
 | 🖼   | **Rich text**: formatting, pasted screenshots and files, Mermaid diagrams; files live in PostgreSQL                                |
-| 🔎  | **Search** with Ctrl/Cmd+K; one-click **copy ID / copy link** on every issue                                                       |
+| 🔎  | **Search** with Ctrl/Cmd+K; one-click **copy ID / copy link**; **saved views** (personal or shared) and a **timeline**             |
 
 ### Requests between departments (service-desk-style)
 
 |     | Feature                                                                                                                                                          |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📨  | **Service portals** per department; one request can go to several departments at once                                                                            |
+| ✉️  | **Email-in**: members email a request type's address and get a request with attachments and a threaded confirmation                                             |
 | 🧩  | **Dynamic forms**: text, number, date, choice and checkbox fields; fields shown only when an earlier answer matches                                              |
 | 🧭  | **Routing rules**: "Item is Laptop → Infrastructure", first match wins, default team otherwise                                                                   |
 | ✍️  | **Approval chains**: sequential steps, any/all rules, approvers by person, role in a department, department head or the requester's supervisor; no self-approval |
@@ -70,26 +71,26 @@ and a service desk for requests between departments. Ordler is both, in one plac
 
 ### Platform
 
-|     | Feature                                                                                                                       |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google; per-method self-registration and domain allow-lists     |
-| 🛡️  | **RBAC**: permission catalog, system and custom roles at organization, department or team scope; deny-by-default API          |
-| ⚡  | **Live updates** in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                    |
-| 🔔  | **Inbox, email and Slack notifications**, in each member's language                                                           |
-| 🔌  | **Public REST API v1** with OpenAPI 3.1, cursor pagination and idempotency keys                                               |
-| 🪝  | **Webhooks**: HMAC-signed, ordered per endpoint, retried for 24 hours, with a delivery log                                    |
-| 🤖  | **MCP server** with personal access tokens, so AI agents work as you (and never approve for you)                              |
-| 📦  | **Import from Linear and Jira** by API token, with dry run, pause and safe re-runs                                            |
-| 🔗  | **Link previews** in Teams, WhatsApp, Telegram and others, showing only the item number and company name                      |
-| 🧾  | **Audit log**, read-only and append-only                                                                                      |
-| 🌍  | **Four languages**: English, Русский, Deutsch, Azərbaycanca                                                                   |
-| 🧱  | **Data-safe upgrades**: one-transaction migrations, destructive-SQL guard, downgrade protection, in-app release notifications |
+|     | Feature                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔐  | **Sign-in your way**: email + password, email one-time codes, Google, Microsoft Entra ID, any OpenID Connect provider; self-registration and domain allow-lists |
+| 🛡️  | **RBAC**: permission catalog, system and custom roles at organization, department or team scope; deny-by-default API                                            |
+| ⚡  | **Live updates** in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                                      |
+| 🔔  | **Inbox, email and Slack notifications** in each member's language; **editable email templates** per language                                                   |
+| 💬  | **Slack app**: personal DMs, channel picker, link previews, "Create issue/request" from any message; Socket Mode, no public URL                                 |
+| 🔌  | **Public REST API v1** with OpenAPI 3.1, cursor pagination and idempotency keys                                                                                 |
+| 🪝  | **Webhooks**: HMAC-signed, ordered per endpoint, retried for 24 hours, with a delivery log                                                                      |
+| 🤖  | **MCP server** with OAuth sign-in or personal access tokens, so AI agents work as you (and never approve for you)                                               |
+| 📦  | **Import from Linear and Jira** by API token, with dry run, pause and safe re-runs                                                                              |
+| 🔗  | **Link previews** in Teams, WhatsApp, Telegram and others, showing only the item number and company name                                                        |
+| 🧾  | **Audit log**, read-only and append-only                                                                                                                        |
+| 🌍  | **Four languages**: English, Русский, Deutsch, Azərbaycanca                                                                                                     |
+| 🧱  | **Data-safe upgrades**: one-transaction migrations, destructive-SQL guard, downgrade protection, in-app release notifications                                   |
 
 ### Planned
 
-Saved views and timeline, email-in requests, editable email templates, Slack app (DMs,
-unfurls, message actions), Microsoft Entra ID and generic OIDC sign-in, MCP OAuth,
-Microsoft Teams notifications. See the [roadmap](docs/SPEC.md#14-delivery-phases).
+SAML, LDAP and SCIM, Microsoft Teams notifications, analytics dashboards, automations. See
+the [roadmap](docs/SPEC.md#14-delivery-phases).
 
 ## Screenshots
 
@@ -167,7 +168,7 @@ in a shorter form.
 | ----------------- | -------------------------------------------------------------------------------------------------------- |
 | Image             | `ghcr.io/elkhan-isayev/ordler:<version>` (amd64, arm64), non-root user `1000`, read-only root filesystem |
 | Helm chart        | `oci://ghcr.io/elkhan-isayev/charts/ordler`, chart version = app version                                 |
-| Releases          | <https://github.com/Elkhan-Isayev/ordler/releases>; pin an exact version, e.g. `0.3.1`                   |
+| Releases          | <https://github.com/Elkhan-Isayev/ordler/releases>; pin an exact version, e.g. `0.4.0`                   |
 | Port              | `3000` (HTTP); UI, REST API, WebSocket and MCP all on this one port                                      |
 | Health            | `GET /healthz` liveness, `GET /readyz` readiness (checks the database)                                   |
 | Only dependency   | PostgreSQL **18 or newer**, one empty database (AWS RDS, Azure, Cloud SQL or self-hosted)                |
@@ -185,7 +186,9 @@ in a shorter form.
       of at least 60 s (see [Network](#network))
 - [ ] **SMTP relay** for invitations, sign-in codes and notifications (can be added after install)
 - [ ] **Secrets store** for the database password and the encryption key
-- [ ] Optional: a **Google OAuth client** for "Sign in with Google"
+- [ ] Optional: a **Google OAuth client**, a **Microsoft Entra app registration** or an
+      **OIDC client** for single sign-on
+- [ ] Optional: an **IMAP mailbox** for email-in and a **Slack app** (Ordler shows its manifest)
 
 ### Network
 
@@ -215,6 +218,9 @@ nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
 | `accounts.google.com`, `oauth2.googleapis.com` | 443       | Only with Google sign-in                                                           |
 | `api.github.com`                               | 443       | Daily release check for the admin update banner; `UPDATE_CHECK=false` turns it off |
 | `hooks.slack.com`                              | 443       | Only with Slack channel notifications                                              |
+| `slack.com`, `wss-*.slack.com`                 | 443       | Only with the Slack app (Web API and Socket Mode)                                  |
+| `login.microsoftonline.com`, your OIDC issuer  | 443       | Only with Microsoft or OIDC sign-in                                                |
+| IMAP server                                    | 993 / 143 | Only with email-in                                                                 |
 | Your webhook endpoints                         | 443       | Only with webhooks configured by admins                                            |
 | `api.linear.app`, your Jira site               | 443       | Only while an admin runs an import                                                 |
 
@@ -287,7 +293,7 @@ extraEnv:
 
 ```bash
 curl -sO https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-helm install ordler oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.3.1 \
+helm install ordler oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.4.0 \
   -n ordler -f values.yaml --set-file database.sslCa=global-bundle.pem
 kubectl -n ordler rollout status deploy/ordler
 ```
@@ -302,7 +308,7 @@ curl -O https://raw.githubusercontent.com/Elkhan-Isayev/ordler/main/deploy/docke
 export BASE_URL=https://tasks.company.com
 export DATABASE_URL='postgres://ordler:<password>@db.company.com:5432/ordler'
 export DB_SSL=require
-export ORDLER_IMAGE=ghcr.io/elkhan-isayev/ordler:0.3.1
+export ORDLER_IMAGE=ghcr.io/elkhan-isayev/ordler:0.4.0
 docker compose up -d
 ```
 
@@ -405,7 +411,7 @@ Full reference: [SPEC §16.2](docs/SPEC.md#162-configuration-environment-variabl
 **Why:** a self-hosted tool for team tasks and for requests between departments, with
 approvals (replaces <current tool or spreadsheets>).
 **Docs:** https://github.com/Elkhan-Isayev/ordler#deploy-in-your-company
-**Version:** 0.3.1 (pinned; image ghcr.io/elkhan-isayev/ordler:0.3.1)
+**Version:** 0.4.0 (pinned; image ghcr.io/elkhan-isayev/ordler:0.4.0)
 
 ### What is needed
 
@@ -417,13 +423,16 @@ approvals (replaces <current tool or spreadsheets>).
 - SMTP relay `<smtp.company.com:587>`, sender `<tasks@company.com>`
 - Outbound HTTPS to `api.github.com` (release check), or set `UPDATE_CHECK=false`
 - Optional: Google OAuth client, redirect URI `https://<tasks.company.com>/api/auth/google/callback`
+- Optional: Microsoft Entra app registration (single tenant), redirect URI
+  `https://<tasks.company.com>/api/auth/microsoft/callback`
+- Optional: IMAP mailbox `<requests@company.com>` for email-in, outbound access to the IMAP server
 
 ### Steps
 
 - [ ] Create database and user (`CREATE USER ordler …; CREATE DATABASE ordler OWNER ordler;`)
 - [ ] Create secrets `ordler-db` (DB password) and `ordler-key` (`openssl rand -base64 32`)
 - [ ] Add `ordler-key` to the secrets backup
-- [ ] Install the Helm chart `oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.3.1`
+- [ ] Install the Helm chart `oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.4.0`
       with `baseUrl`, `database.*`, `encryptionKey.existingSecret`, `ingress.*`, SMTP env
       (example values in the README)
 - [ ] Enable daily database backups / snapshots with <retention>
