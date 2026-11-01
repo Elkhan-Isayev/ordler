@@ -18,6 +18,8 @@ export default defineConfig({
       // ws: the realtime channel (/api/realtime) is a WebSocket.
       '/api': { target: process.env.ORDLER_API_URL ?? 'http://localhost:3000', ws: true },
       '/mcp': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
+      // OAuth discovery for MCP clients (ADR 0014).
+      '/.well-known/oauth-': process.env.ORDLER_API_URL ?? 'http://localhost:3000',
     },
   },
   test: {

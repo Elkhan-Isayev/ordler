@@ -149,10 +149,13 @@ function TemplateEditor({
             {`{${name}}`}
           </code>
         ))}
-        {template.required.length > 0 &&
-          t('admin.mail.templates.required', {
-            names: template.required.map((name) => `{${name}}`).join(', '),
-          })}
+        {template.required.length > 0 && (
+          <span className="ml-1">
+            {t('admin.mail.templates.required', {
+              names: template.required.map((name) => `{${name}}`).join(', '),
+            })}
+          </span>
+        )}
       </p>
       <label className={labelClass}>
         {t('admin.mail.templates.subject')}
