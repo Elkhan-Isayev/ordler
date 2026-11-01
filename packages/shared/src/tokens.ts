@@ -37,6 +37,8 @@ export interface PersonalTokenView {
   lastUsedIp: string | null;
   revokedAt: string | null;
   createdAt: string;
+  /** Name of the MCP client an OAuth grant was given to; null for tokens made by hand. */
+  app: string | null;
   /** Set in the admin listing. */
   member?: { id: string; name: string };
 }
@@ -47,5 +49,5 @@ export interface CreatedToken {
   view: PersonalTokenView;
 }
 
-export const TOKEN_ERROR_CODES = ['token_expiry_too_long'] as const;
+export const TOKEN_ERROR_CODES = ['token_expiry_too_long', 'oauth_invalid_request'] as const;
 export type TokenErrorCode = (typeof TOKEN_ERROR_CODES)[number];

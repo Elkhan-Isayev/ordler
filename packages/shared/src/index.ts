@@ -21,3 +21,4 @@ export * from './sla.js';
 export * from './views.js';
 export * from './email-in.js';
 export * from './slack-app.js';
+export * from './oauth.js';

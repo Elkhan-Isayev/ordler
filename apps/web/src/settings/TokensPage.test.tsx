@@ -21,6 +21,7 @@ function token(overrides: Partial<PersonalTokenView> = {}): PersonalTokenView {
     lastUsedIp: null,
     revokedAt: null,
     createdAt: '2026-10-21T09:00:00.000Z',
+    app: null,
     ...overrides,
   };
 }

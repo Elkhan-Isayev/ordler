@@ -81,6 +81,8 @@ import type {
   EmailTemplateView,
   InboundEmailView,
   SlackAppView,
+  OAuthConsentView,
+  OAuthDecision,
   SlackChannel,
   SlackLinkView,
   UpdateSlackAppInput,
@@ -443,6 +445,10 @@ export const api = {
   inboxCounts: () => apiRequest<InboxCounts>('/api/me/counts'),
   markNotifications: (body: { ids?: string[]; read: boolean }) =>
     apiRequest<InboxCounts>('/api/me/notifications/mark', { method: 'POST', body }),
+  oauthConsent: (query: Record<string, string>) =>
+    apiRequest<OAuthConsentView>(`/api/oauth/consent?${new URLSearchParams(query).toString()}`),
+  oauthDecide: (body: OAuthDecision) =>
+    apiRequest<{ redirect: string }>('/api/oauth/consent', { method: 'POST', body }),
   slackChannels: () => apiRequest<SlackChannel[]>('/api/integrations/slack/channels'),
   slackApp: () => apiRequest<SlackAppView>('/api/admin/slack-app'),
   updateSlackApp: (body: UpdateSlackAppInput) =>

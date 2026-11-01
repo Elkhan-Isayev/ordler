@@ -81,10 +81,16 @@ export class McpServer {
     const secret = /^Bearer\s+(\S+)$/i.exec(header)?.[1];
     const token = secret ? await this.ctx.tokens.resolve(secret, request.ip) : undefined;
     if (!token) {
-      return reply
-        .status(401)
-        .header('www-authenticate', 'Bearer realm="ordler"')
-        .send({ error: 'invalid_token' });
+      return (
+        reply
+          .status(401)
+          // Points OAuth-capable MCP clients at the authorization server (MCP authorization).
+          .header(
+            'www-authenticate',
+            `Bearer realm="ordler", resource_metadata="${this.ctx.oauth.resourceMetadataUrl}"`,
+          )
+          .send({ error: 'invalid_token' })
+      );
     }
     if (!(await this.ctx.tokens.settings()).mcpEnabled) {
       return reply.status(403).send({ error: 'mcp_disabled' });

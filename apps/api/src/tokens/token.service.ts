@@ -1,5 +1,7 @@
 import {
   can,
+  OAUTH_ACCESS_PREFIX,
+  OAUTH_REFRESH_PREFIX,
   ORGANIZATION_SCOPE,
   PERSONAL_TOKEN_PREFIX,
   type CreatedToken,
@@ -9,7 +11,7 @@ import {
   type TokenScope,
   type TokenSettings,
 } from '@ordler/shared';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { writeAudit } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import { randomToken, sha256 } from '../crypto/tokens.js';
@@ -21,6 +23,18 @@ import type { AccessContextSource, MemberAccess } from '../rbac/permission.guard
 const VISIBLE_CHARS = 4;
 /** last_used_at only needs minute-level accuracy; avoids a write per MCP call. */
 const TOUCH_INTERVAL_MS = 60_000;
+/** OAuth access tokens live an hour; clients refresh them (OAuth 2.1). */
+export const OAUTH_ACCESS_TTL_S = 3600;
+/** A grant lasts this long at most, or less when the admin caps token lifetimes. */
+const OAUTH_GRANT_DAYS = 90;
+
+export interface OAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  scopes: TokenScope[];
+  tokenId: string;
+}
 
 export interface ResolvedToken {
   tokenId: string;
@@ -146,9 +160,108 @@ export class TokenService {
     });
   }
 
+  /**
+   * An OAuth grant for an MCP client (SPEC §10.1): stored like a personal token, so it is
+   * listed, revocable and audited the same way, with a rotating refresh token.
+   */
+  async createOAuthGrant(
+    memberId: string,
+    client: { id: string; name: string },
+    scopes: TokenScope[],
+  ): Promise<OAuthTokens> {
+    const access = await this.access.load(memberId);
+    if (!holdsAnywhere(access, 'token.create_personal')) throw new DomainError('forbidden');
+    const settings = await this.settings();
+    const days = Math.min(OAUTH_GRANT_DAYS, settings.maxExpiryDays);
+    const accessToken = `${OAUTH_ACCESS_PREFIX}${randomToken()}`;
+    const refreshToken = `${OAUTH_REFRESH_PREFIX}${randomToken()}`;
+    const now = this.now();
+    const [row] = await this.db
+      .insert(personalTokens)
+      .values({
+        memberId,
+        name: client.name,
+        prefix: accessToken.slice(0, OAUTH_ACCESS_PREFIX.length + VISIBLE_CHARS),
+        tokenHash: sha256(accessToken),
+        scopes,
+        expiresAt: new Date(now.getTime() + OAUTH_ACCESS_TTL_S * 1000),
+        oauthClientId: client.id,
+        refreshHash: sha256(refreshToken),
+        refreshExpiresAt: new Date(now.getTime() + days * 86_400_000),
+      })
+      .returning();
+    await writeAudit(this.db, {
+      actor: { type: 'member', id: memberId },
+      action: 'oauth_grant.created',
+      targetType: 'personal_token',
+      targetId: row!.id,
+      after: { app: client.name, clientId: client.id, scopes },
+    });
+    return { accessToken, refreshToken, expiresIn: OAUTH_ACCESS_TTL_S, scopes, tokenId: row!.id };
+  }
+
+  /** Swaps a refresh token for new tokens; the old pair stops working (rotation). */
+  async refreshOAuthGrant(
+    refreshToken: string,
+    clientId: string,
+  ): Promise<OAuthTokens | undefined> {
+    if (!refreshToken.startsWith(OAUTH_REFRESH_PREFIX)) return undefined;
+    const [found] = await this.db
+      .select({ token: personalTokens, status: members.status })
+      .from(personalTokens)
+      .innerJoin(members, eq(members.id, personalTokens.memberId))
+      .where(eq(personalTokens.refreshHash, sha256(refreshToken)));
+    const now = this.now();
+    if (
+      !found ||
+      found.status !== 'active' ||
+      found.token.revokedAt ||
+      found.token.oauthClientId !== clientId ||
+      !found.token.refreshExpiresAt ||
+      found.token.refreshExpiresAt <= now
+    ) {
+      return undefined;
+    }
+    const accessToken = `${OAUTH_ACCESS_PREFIX}${randomToken()}`;
+    const nextRefresh = `${OAUTH_REFRESH_PREFIX}${randomToken()}`;
+    await this.db
+      .update(personalTokens)
+      .set({
+        prefix: accessToken.slice(0, OAUTH_ACCESS_PREFIX.length + VISIBLE_CHARS),
+        tokenHash: sha256(accessToken),
+        expiresAt: new Date(now.getTime() + OAUTH_ACCESS_TTL_S * 1000),
+        refreshHash: sha256(nextRefresh),
+      })
+      .where(eq(personalTokens.id, found.token.id));
+    return {
+      accessToken,
+      refreshToken: nextRefresh,
+      expiresIn: OAUTH_ACCESS_TTL_S,
+      scopes: found.token.scopes as TokenScope[],
+      tokenId: found.token.id,
+    };
+  }
+
+  /** Revokes a grant without a member actor, e.g. when its authorization code is replayed. */
+  async revokeGrant(tokenId: string): Promise<void> {
+    await this.db
+      .update(personalTokens)
+      .set({ revokedAt: this.now() })
+      .where(and(eq(personalTokens.id, tokenId), isNull(personalTokens.revokedAt)));
+    await writeAudit(this.db, {
+      actor: { type: 'system' },
+      action: 'oauth_grant.revoked',
+      targetType: 'personal_token',
+      targetId: tokenId,
+      after: { reason: 'authorization_code_replayed' },
+    });
+  }
+
   /** The token behind an `Authorization: Bearer` header, if it is still valid. */
   async resolve(secret: string, ip?: string): Promise<ResolvedToken | undefined> {
-    if (!secret.startsWith(PERSONAL_TOKEN_PREFIX)) return undefined;
+    if (!secret.startsWith(PERSONAL_TOKEN_PREFIX) && !secret.startsWith(OAUTH_ACCESS_PREFIX)) {
+      return undefined;
+    }
     const [found] = await this.db
       .select({ token: personalTokens, status: members.status })
       .from(personalTokens)
@@ -190,11 +303,13 @@ export class TokenService {
       name: row.name,
       prefix: row.prefix,
       scopes: row.scopes as TokenScope[],
-      expiresAt: row.expiresAt?.toISOString() ?? null,
+      // A grant's access token turns over hourly; what matters to people is the grant's end.
+      expiresAt: (row.oauthClientId ? row.refreshExpiresAt : row.expiresAt)?.toISOString() ?? null,
       lastUsedAt: row.lastUsedAt?.toISOString() ?? null,
       lastUsedIp: row.lastUsedIp,
       revokedAt: row.revokedAt?.toISOString() ?? null,
       createdAt: row.createdAt.toISOString(),
+      app: row.oauthClientId ? row.name : null,
     };
   }
 }

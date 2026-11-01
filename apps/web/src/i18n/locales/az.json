@@ -133,7 +133,8 @@
     "template_missing_variable": "Şablonda məcburi əvəzləmə çatışmır.",
     "email_address_taken": "Bu e-poçt ünvanını artıq başqa müraciət növü istifadə edir.",
     "slack_not_configured": "Slack tətbiqi hələ tam qurulmayıb.",
-    "slack_rejected": "Slack tokeni rədd etdi. Onun tam köçürüldüyünü yoxlayın."
+    "slack_rejected": "Slack tokeni rədd etdi. Onun tam köçürüldüyünü yoxlayın.",
+    "oauth_invalid_request": "Bu avtorizasiya linki etibarsızdır. Qoşulmanı tətbiqdən yenidən başladın."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -913,7 +914,8 @@
     "lastUsed": "son istifadə {date}, {ip}",
     "neverUsed": "istifadə olunmayıb",
     "restHint": "Eyni tokenlər REST API ilə də işləyir: onları \"Authorization: Bearer …\" başlığında göndərin.",
-    "openApi": "OpenAPI təsviri"
+    "openApi": "OpenAPI təsviri",
+    "connectedApp": "Qoşulmuş tətbiq"
   },
   "search": {
     "title": "Axtarış",
@@ -1283,5 +1285,14 @@
     "unlink": "Slack-ı ayır",
     "link": "Slack hesabını bağla ({workspace})",
     "linkedNotice": "Slack hesabınız bağlandı."
+  },
+  "oauth": {
+    "title": "Ordler-ə girişə icazə ver",
+    "asks": "{client} Ordler-də sizin adınızdan işləmək istəyir.",
+    "redirect": "Qərar verdikdən sonra {host} ünvanına qayıdacaqsınız.",
+    "scopes": "Tətbiq bunları edə biləcək",
+    "warning": "Yalnız bu tətbiqi indicə özünüz qoşmusunuzsa icazə verin. Girişi istənilən vaxt «Ayarlar → Giriş tokenləri» bölməsində ləğv edə bilərsiniz.",
+    "allow": "İcazə ver",
+    "deny": "Rədd et"
   }
 }

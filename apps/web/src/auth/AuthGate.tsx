@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client.js';
 import { App } from '../App.js';
 import { DatabaseSetupPage } from '../database/DatabaseSetupPage.js';
+import { OAuthConsentPage } from '../oauth/OAuthConsentPage.js';
 import { navigate } from '../router.js';
 import { AcceptInvitePage } from './AcceptInvitePage.js';
 import { errorKey } from './errors.js';
@@ -143,6 +144,10 @@ export function AuthGate({
         />
       );
     case 'app':
+      // An MCP client sent the member here; it is a page of its own, not part of the app.
+      if (window.location.pathname === '/oauth/authorize') {
+        return <OAuthConsentPage search={window.location.search} />;
+      }
       return <App me={state.me} onSignOut={signOut} />;
   }
 }

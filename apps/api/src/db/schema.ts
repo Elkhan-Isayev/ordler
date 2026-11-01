@@ -756,6 +756,32 @@ export const chatSubscriptions = pgTable(
   (t) => [index('chat_subscriptions_team_idx').on(t.teamId)],
 );
 
+/** MCP clients registered through dynamic client registration (RFC 7591); public clients. */
+export const oauthClients = pgTable('oauth_clients', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  redirectUris: text('redirect_uris').array().notNull(),
+  createdAt: createdAt(),
+});
+
+/** Authorization codes: single use, five minutes, bound to the PKCE challenge. */
+export const oauthCodes = pgTable('oauth_codes', {
+  codeHash: text('code_hash').primaryKey(),
+  clientId: text('client_id')
+    .notNull()
+    .references(() => oauthClients.id),
+  memberId: uuid('member_id')
+    .notNull()
+    .references(() => members.id),
+  redirectUri: text('redirect_uri').notNull(),
+  codeChallenge: text('code_challenge').notNull(),
+  scopes: text('scopes').array().notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  /** The grant the code was exchanged for; revoked if the code is replayed. */
+  tokenId: uuid('token_id'),
+});
+
 /** The Ordler Slack app of this installation (SPEC §7.1, level 2); one row. */
 export const slackApp = pgTable('slack_app', {
   id: integer('id').primaryKey().default(1),
@@ -806,10 +832,15 @@ export const personalTokens = pgTable(
     lastUsedIp: text('last_used_ip'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     revokedBy: uuid('revoked_by').references(() => members.id),
+    /** Set for OAuth grants to MCP clients: the token is a short-lived access token. */
+    oauthClientId: text('oauth_client_id'),
+    refreshHash: text('refresh_hash'),
+    refreshExpiresAt: timestamp('refresh_expires_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [
     uniqueIndex('personal_tokens_hash_uq').on(t.tokenHash),
+    uniqueIndex('personal_tokens_refresh_uq').on(t.refreshHash),
     index('personal_tokens_member_idx').on(t.memberId, t.createdAt),
   ],
 );

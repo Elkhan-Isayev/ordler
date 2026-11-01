@@ -204,6 +204,13 @@
       "when": 1793500688996,
       "tag": "0028_slack_app",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793501440636,
+      "tag": "0029_mcp_oauth",
+      "breakpoints": true
     }
   ]
 }

@@ -49,6 +49,11 @@ export function TokenRow({
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
       <span className="font-medium text-ink">{token.name}</span>
+      {token.app && (
+        <span className="rounded bg-hover px-1.5 text-xs text-ink-muted">
+          {t('tokens.connectedApp')}
+        </span>
+      )}
       {showMember && token.member && <span className="text-ink-muted">{token.member.name}</span>}
       <code className="text-xs text-ink-faint">{token.prefix}…</code>
       <span className="text-xs text-ink-muted">

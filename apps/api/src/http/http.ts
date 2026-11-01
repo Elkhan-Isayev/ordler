@@ -10,6 +10,7 @@ import type { AppContext } from '../app-context.js';
 import { DomainError } from '../auth/errors.js';
 import { SESSION_COOKIE } from '../auth/sessions.js';
 import type { AuthorizedRequest } from '../rbac/permission.guard.js';
+import { OAUTH_PUBLIC_POSTS } from '../oauth/oauth-http.js';
 import { parseCookies, serializeCookie } from './cookies.js';
 
 export const APP_CONTEXT = Symbol('APP_CONTEXT');
@@ -74,7 +75,8 @@ export function registerRequestHooks(
   const allowedOrigin = new URL(ctx.baseUrl).origin;
 
   instance.addHook('onRequest', async (request, reply) => {
-    if (STATE_CHANGING.has(request.method)) {
+    // OAuth token and registration calls carry no cookies, so a foreign origin cannot forge them.
+    if (STATE_CHANGING.has(request.method) && !OAUTH_PUBLIC_POSTS.has(request.url.split('?')[0]!)) {
       const origin = request.headers.origin;
       if (origin && origin !== allowedOrigin) {
         await reply.status(403).send({ error: 'forbidden_origin' });

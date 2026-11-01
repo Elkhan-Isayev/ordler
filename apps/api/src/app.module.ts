@@ -27,6 +27,8 @@ import { RequestsController } from './requests/requests.controller.js';
 import { EmailInController } from './email-in/email-in.controller.js';
 import { AdminSlackAppController, MySlackController } from './slack/slack.controller.js';
 import { registerSlackHttp } from './slack/slack-http.js';
+import { OAuthConsentController } from './oauth/oauth.controller.js';
+import { registerOAuthHttp } from './oauth/oauth-http.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
 import { InvitesController } from './members/invites.controller.js';
@@ -55,6 +57,7 @@ export class AppModule {
         EmailInController,
         AdminSlackAppController,
         MySlackController,
+        OAuthConsentController,
         AdminDatabaseController,
         IssuesController,
         AttachmentsController,
@@ -92,4 +95,5 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   new McpServer(ctx, ctx.version).register(instance);
   new PublicApi(ctx).register(instance);
   registerSlackHttp(instance, ctx.slackApp);
+  registerOAuthHttp(instance, ctx.oauth, ctx.limits.oauthRegister);
 }

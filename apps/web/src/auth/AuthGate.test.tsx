@@ -72,6 +72,39 @@ describe('AuthGate', () => {
     realtime.reset();
   });
 
+  it('signs in, then shows the MCP consent page instead of the app', async () => {
+    const search = '?response_type=code&client_id=oc_1';
+    window.history.replaceState(null, '', `/oauth/authorize${search}`);
+    let signedIn = false;
+    mockApi({
+      'GET /api/setup/status': () => ({ json: { setupRequired: false } }),
+      'GET /api/me': () =>
+        signedIn ? { json: ME } : { status: 401, json: { error: 'unauthorized' } },
+      'GET /api/auth/strategies': () => ({ json: [{ kind: 'local', displayName: null }] }),
+      'POST /api/auth/password': () => {
+        signedIn = true;
+        return { json: ME };
+      },
+      [`GET /api/oauth/consent?${new URLSearchParams(search).toString()}`]: () => ({
+        json: {
+          client: { id: 'oc_1', name: 'Cursor' },
+          redirectHost: 'localhost',
+          scopes: ['read'],
+        },
+      }),
+    });
+    await renderWithI18n(<AuthGate browserLocale="en" />);
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(
+      screen.getByLabelText('Password', { selector: 'input' }),
+      'secret-password',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(
+      await screen.findByText('Cursor хочет работать в Ordler от вашего имени.'),
+    ).toBeInTheDocument();
+  });
+
   it('opens the app in the workspace language and signs out', async () => {
     const calls = mockApi({
       'GET /api/setup/status': () => ({ json: { setupRequired: false } }),

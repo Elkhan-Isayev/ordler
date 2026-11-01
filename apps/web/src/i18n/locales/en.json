@@ -133,7 +133,8 @@
     "template_missing_variable": "The template leaves out a required placeholder.",
     "email_address_taken": "Another request type already uses this email address.",
     "slack_not_configured": "The Slack app is not fully configured yet.",
-    "slack_rejected": "Slack rejected the token. Check that it was copied completely."
+    "slack_rejected": "Slack rejected the token. Check that it was copied completely.",
+    "oauth_invalid_request": "This authorization link is not valid. Start the connection again from your app."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -913,7 +914,8 @@
     "lastUsed": "last used {date} from {ip}",
     "neverUsed": "never used",
     "restHint": "The same tokens work with the REST API: send them as \"Authorization: Bearer …\".",
-    "openApi": "OpenAPI description"
+    "openApi": "OpenAPI description",
+    "connectedApp": "Connected app"
   },
   "search": {
     "title": "Search",
@@ -1283,5 +1285,14 @@
     "unlink": "Unlink Slack",
     "link": "Link Slack account ({workspace})",
     "linkedNotice": "Your Slack account is linked."
+  },
+  "oauth": {
+    "title": "Allow access to Ordler",
+    "asks": "{client} wants to work in Ordler as you.",
+    "redirect": "After you decide, you go back to {host}.",
+    "scopes": "It will be able to",
+    "warning": "Only allow this if you just connected this app yourself. You can revoke it any time in Settings → Access tokens.",
+    "allow": "Allow",
+    "deny": "Deny"
   }
 }

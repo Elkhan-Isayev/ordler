@@ -39,6 +39,7 @@ import { DelegationService } from './approvals/delegation.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
+import { OAuthService } from './oauth/oauth.service.js';
 import { SlackApi, type SlackHttp } from './slack/slack-api.js';
 import { SlackAppService } from './slack/slack-app.service.js';
 import { TeamAccess } from './issues/team-access.js';
@@ -85,6 +86,7 @@ export interface AppContext {
   slack: SlackService;
   slackApp: SlackAppService;
   slackApi: SlackApi;
+  oauth: OAuthService;
   tokens: TokenService;
   roles: RolesService;
   labels: LabelService;
@@ -109,6 +111,7 @@ export interface AppContext {
     testMail: RateLimiter;
     slackTest: RateLimiter;
     mcp: RateLimiter;
+    oauthRegister: RateLimiter;
     api: RateLimiter;
   };
 }
@@ -172,6 +175,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const access = new DbAccessContext(deps.db);
   const teamAccess = new TeamAccess(deps.db, access);
   // Built after the services it calls; notifications and channels reach it lazily.
+  const tokens = new TokenService(deps.db, access, now);
   const slackRef: { app?: SlackAppService } = {};
   const notifications = new NotificationService({
     db: deps.db,
@@ -318,7 +322,8 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     }),
     notifications,
     slack,
-    tokens: new TokenService(deps.db, access, now),
+    tokens,
+    oauth: new OAuthService({ db: deps.db, tokens, access, baseUrl: deps.baseUrl, now }),
     roles: new RolesService(deps.db, access),
     labels: new LabelService(deps.db, access, teamAccess),
     workflow: new WorkflowService(deps.db, teamAccess, events),
@@ -359,6 +364,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
       slackTest: new RateLimiter(10, FIFTEEN_MINUTES),
       // SPEC §10.1: 120 MCP requests per minute per token.
       mcp: new RateLimiter(120, 60_000),
+      oauthRegister: new RateLimiter(20, 60 * 60_000),
       // Public REST API: 600 requests per minute per token.
       api: new RateLimiter(600, 60_000),
     },

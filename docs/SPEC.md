@@ -622,7 +622,11 @@ access, but self-service: **every member creates tokens for themselves**.
 - Endpoint `POST /mcp` on the Ordler base URL, MCP Streamable HTTP transport, token in the
   `Authorization: Bearer` header. Requires `mcp.use` and the MCP switch enabled in admin.
 - OAuth 2.1 authorization for MCP clients that support it (no copy-paste of tokens),
-  Phase 2.
+  Phase 2 (ADR 0014): discovery through protected resource and authorization server
+  metadata, dynamic client registration, consent at `/oauth/authorize` where the member may
+  narrow the scopes, PKCE (S256) codes, one-hour access tokens and rotating refresh tokens.
+  Each grant appears in Settings → Access tokens as a connected app and is revoked like any
+  token.
 - The agent acts **as the member**: every tool call goes through the same RBAC, visibility
   rules and validation as the UI; a token can never do more than its owner, and scopes can
   only narrow that.

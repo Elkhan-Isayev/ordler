@@ -52,6 +52,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   slack_rejected: 422,
   database_managed_by_env: 409,
   forbidden: 403,
+  oauth_invalid_request: 400,
   token_expiry_too_long: 400,
   status_not_in_workflow: 400,
   assignee_not_in_team: 400,

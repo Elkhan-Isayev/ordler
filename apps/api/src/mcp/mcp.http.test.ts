@@ -271,7 +271,9 @@ describe('MCP endpoint guards', () => {
   it('needs a valid bearer token and a same-site or absent Origin', async () => {
     const missing = await t.app.inject({ method: 'POST', url: '/mcp', payload: {} });
     expect(missing.statusCode).toBe(401);
-    expect(missing.headers['www-authenticate']).toBe('Bearer realm="ordler"');
+    expect(missing.headers['www-authenticate']).toBe(
+      'Bearer realm="ordler", resource_metadata="https://ordler.test/.well-known/oauth-protected-resource/mcp"',
+    );
     // A browser session cookie is not enough.
     const cookie = await t.app.inject({
       method: 'POST',
