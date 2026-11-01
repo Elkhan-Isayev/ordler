@@ -39,7 +39,13 @@ export interface MailSettingsView {
 export type TestMailResult = { sent: true } | { sent: false; error: string };
 
 /** Emails an admin can reword per locale (SPEC §8.2); the rest stay built in. */
-export const EMAIL_TEMPLATE_KEYS = ['otp', 'invite', 'notification'] as const;
+export const EMAIL_TEMPLATE_KEYS = [
+  'otp',
+  'invite',
+  'notification',
+  'email_in_received',
+  'email_in_rejected',
+] as const;
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
 
 /** ICU MessageFormat text; variables are checked against the template on the server. */

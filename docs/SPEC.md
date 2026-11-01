@@ -554,7 +554,7 @@ on email are shown as unavailable and admins see a banner.
 - Email templates (OTP, invite, verification, password reset, notification digest) are
   localized into every supported language (§11.1), sent in the recipient's language; branding (logo, colors) taken from organization settings.
 - Editable templates (Phase 2): Admin → Mail → Email templates rewords the sign-in code,
-  invitation and notification emails per language (subject and text, ICU MessageFormat with
+  invitation, notification and email-in reply emails per language (subject and text, ICU MessageFormat with
   the template's placeholders). Text that does not parse, uses an unknown placeholder or drops
   a required one (`{code}`, `{url}`) is refused on save; preview renders sample values; reset
   returns to the built-in text. Changes are audited. Notification emails keep the built-in
@@ -581,7 +581,14 @@ target_id, before, after, ip, user_agent, created_at`. Append-only; no update/de
   idempotency keys for POST, rate limiting per key.
 - **Webhooks** for issue, request, approval, SLA, comment events; HMAC-signed, retries with
   exponential backoff, delivery log.
-- Email-in: create a request by emailing a department address (Phase 2).
+- Email-in: create a request by emailing a department address (Phase 2, ADR 0012). Ordler
+  reads one IMAP mailbox (Admin → Mail → Incoming mail) every minute; each request type may
+  have an email address, and a message from an active member to that address (To, Cc or
+  Delivered-To) is submitted as that member's request of that type, with attachments linked.
+  The member gets a confirmation (editable template) threaded under their email. Types with
+  required form fields, archived types and members who may not submit get a reply with the
+  portal link instead. Unknown senders, unknown addresses and automatic messages are logged
+  without a reply. Each Message-ID is handled once.
 - Slack: channel notifications via incoming webhooks (Phase 1); Slack app with DMs, unfurls
   and message actions (Phase 2), see §7.1. Microsoft Teams notifications (Phase 3).
 - Git provider links (branch/PR mention → issue) (Phase 3).
@@ -1026,7 +1033,7 @@ with PostgreSQL as the only mandatory external service.
 - Upgrades: change image tag; semver; migrations forward-only; release notes list breaking
   config changes. Downgrade = restore DB backup.
 - Logs to stdout (JSON); optional OpenTelemetry exporter.
-- No outbound internet access required at runtime (except configured SMTP/OAuth providers).
+- No outbound internet access required at runtime (except configured SMTP, IMAP and OAuth providers).
 
 ### 16.5 Updates and data safety
 

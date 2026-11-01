@@ -50,6 +50,7 @@ const emptyDraft = (teamId: string): Draft => ({
     approvalSteps: [],
     allowRequesterApprovals: false,
     slaPolicyId: null,
+    emailAddress: null,
   },
 });
 
@@ -254,6 +255,27 @@ export function RequestTypesSection() {
                   ))}
               </select>
             </label>
+            <div className="flex flex-col gap-1 text-ink-muted">
+              <label className="flex flex-col gap-1">
+                {t('admin.requestTypes.emailAddress')}
+                <input
+                  type="email"
+                  value={draft.input.emailAddress ?? ''}
+                  placeholder="it-help@company.com"
+                  aria-describedby="request-type-email-hint"
+                  className={inputClass}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      input: { ...draft.input, emailAddress: e.target.value.trim() || null },
+                    })
+                  }
+                />
+              </label>
+              <span id="request-type-email-hint" className="text-xs text-ink-faint">
+                {t('admin.requestTypes.emailAddressHint')}
+              </span>
+            </div>
             <div className="flex gap-2">
               <button type="submit" className={buttonClass}>
                 {t('admin.auth.save')}
@@ -316,6 +338,7 @@ export function RequestTypesSection() {
                             ),
                             allowRequesterApprovals: type.allowRequesterApprovals,
                             slaPolicyId: type.slaPolicy?.id ?? null,
+                            emailAddress: type.emailAddress,
                           },
                         })
                       }

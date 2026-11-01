@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { emailSchema } from './auth.js';
 import type { MemberRef } from './issues.js';
 import type { RequestSlaView, SlaBadge } from './sla.js';
 import { PRIORITIES, type Priority } from './status.js';
@@ -382,6 +383,11 @@ export const requestTypeInputSchema = z
     allowRequesterApprovals: z.boolean().default(false),
     /** SLA policy of the same department (SPEC §6.5). */
     slaPolicyId: z.uuid().nullable().default(null),
+    /**
+     * Email-in address (SPEC §7). Optional, not defaulted: clients that predate it keep the
+     * stored address instead of clearing it on save.
+     */
+    emailAddress: emailSchema.nullable().optional(),
   })
   .refine(
     (type) =>
@@ -415,6 +421,8 @@ export interface RequestTypeView {
   approvalSteps: Array<ApprovalStepConfig & { names: SelectorNames }>;
   allowRequesterApprovals: boolean;
   slaPolicy: { id: string; name: string } | null;
+  /** Email-in address that creates requests of this type; null when there is none. */
+  emailAddress: string | null;
   archivedAt: string | null;
 }
 
@@ -621,6 +629,7 @@ export const REQUEST_ERROR_CODES = [
   'invalid_transition',
   'session_required',
   'request_type_archived',
+  'email_address_taken',
 ] as const;
 export type RequestErrorCode = (typeof REQUEST_ERROR_CODES)[number];
 

@@ -115,6 +115,8 @@ describe('Admin → Email templates', () => {
       'otp',
       'invite',
       'notification',
+      'email_in_received',
+      'email_in_rejected',
     ]);
 
     const preview = await call('POST', '/api/admin/mail/templates/otp/ru/preview', owner, custom);

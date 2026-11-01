@@ -5,6 +5,10 @@ export interface MailMessage {
   to: string;
   subject: string;
   text: string;
+  /** Threads an automatic reply under the message it answers. */
+  inReplyTo?: string;
+  /** e.g. `Auto-Submitted: auto-replied`, so other robots do not answer back (RFC 3834). */
+  headers?: Record<string, string>;
 }
 
 export interface Mailer {
@@ -30,7 +34,11 @@ export const smtpTransport: TransportFactory = (config) => {
   });
   return {
     send: async (message) => {
-      await transport.sendMail({ from: config.from, ...message });
+      await transport.sendMail({
+        from: config.from,
+        ...message,
+        ...(message.inReplyTo ? { references: message.inReplyTo } : {}),
+      });
     },
   };
 };

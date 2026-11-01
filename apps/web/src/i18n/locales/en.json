@@ -130,7 +130,8 @@
     "delegation_overlap": "You already have a delegate for some of these days.",
     "template_invalid": "The template text has a syntax error. Check that every brace is closed.",
     "template_unknown_variable": "The template uses a placeholder this email does not have.",
-    "template_missing_variable": "The template leaves out a required placeholder."
+    "template_missing_variable": "The template leaves out a required placeholder.",
+    "email_address_taken": "Another request type already uses this email address."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -313,7 +314,32 @@
         "save": "Save template",
         "preview": "Preview",
         "reset": "Reset to default",
-        "saved": "Saved"
+        "saved": "Saved",
+        "name_email_in_received": "Email-in: request created",
+        "name_email_in_rejected": "Email-in: request declined"
+      },
+      "inbox": {
+        "title": "Incoming mail",
+        "subtitle": "Ordler reads this IMAP mailbox every minute. A member's email to a request type's address becomes a request; give each request type its address in Request types.",
+        "enabled": "Read this mailbox",
+        "host": "IMAP host",
+        "folder": "Folder",
+        "username": "Username",
+        "password": "Password",
+        "save": "Save mailbox",
+        "saved": "Saved",
+        "checkNow": "Check now",
+        "processed": "{count, plural, =0 {No new messages.} one {# message processed.} other {# messages processed.}}",
+        "failed": "Could not read the mailbox:",
+        "lastPoll": "Last checked {time}",
+        "recent": "Recent messages",
+        "none": "No messages yet.",
+        "status_created": "Request created",
+        "status_unknown_sender": "Not a member",
+        "status_no_route": "No request type for this address",
+        "status_rejected": "Declined",
+        "status_ignored": "Automatic message, ignored",
+        "status_failed": "Failed"
       }
     },
     "database": {
@@ -364,7 +390,9 @@
       "removeRule": "Remove rule {n}",
       "addRule": "Add rule",
       "rulesNeedField": "Add a form field to route by its answer.",
-      "rulesCount": "{count, plural, one {# routing rule} other {# routing rules}}"
+      "rulesCount": "{count, plural, one {# routing rule} other {# routing rules}}",
+      "emailAddress": "Email address",
+      "emailAddressHint": "Optional. Members can email this address to create a request of this type; route it to the mailbox set in Admin → Mail."
     },
     "integrations": {
       "title": "Integrations",

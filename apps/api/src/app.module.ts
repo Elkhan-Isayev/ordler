@@ -24,6 +24,7 @@ import { PublicApi } from './api-v1/public-api.js';
 import { TokensController } from './tokens/tokens.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { RequestsController } from './requests/requests.controller.js';
+import { EmailInController } from './email-in/email-in.controller.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
 import { AdminMembersController } from './members/admin-members.controller.js';
 import { InvitesController } from './members/invites.controller.js';
@@ -49,6 +50,7 @@ export class AppModule {
         AdminMembersController,
         InvitesController,
         AdminMailController,
+        EmailInController,
         AdminDatabaseController,
         IssuesController,
         AttachmentsController,

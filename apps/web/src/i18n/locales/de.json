@@ -130,7 +130,8 @@
     "delegation_overlap": "Für einige dieser Tage haben Sie bereits eine Vertretung.",
     "template_invalid": "Der Vorlagentext enthält einen Syntaxfehler. Prüfen Sie, ob alle Klammern geschlossen sind.",
     "template_unknown_variable": "Die Vorlage verwendet einen Platzhalter, den diese E-Mail nicht kennt.",
-    "template_missing_variable": "In der Vorlage fehlt ein Pflicht-Platzhalter."
+    "template_missing_variable": "In der Vorlage fehlt ein Pflicht-Platzhalter.",
+    "email_address_taken": "Ein anderer Anfragetyp verwendet diese E-Mail-Adresse bereits."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -313,7 +314,32 @@
         "save": "Vorlage speichern",
         "preview": "Vorschau",
         "reset": "Auf Standard zurücksetzen",
-        "saved": "Gespeichert"
+        "saved": "Gespeichert",
+        "name_email_in_received": "E-Mail-Eingang: Anfrage angelegt",
+        "name_email_in_rejected": "E-Mail-Eingang: Anfrage abgelehnt"
+      },
+      "inbox": {
+        "title": "Eingehende E-Mails",
+        "subtitle": "Ordler liest dieses IMAP-Postfach jede Minute. Eine E-Mail eines Mitglieds an die Adresse eines Anfragetyps wird zur Anfrage; die Adresse legen Sie je Typ unter Anfragetypen fest.",
+        "enabled": "Dieses Postfach lesen",
+        "host": "IMAP-Server",
+        "folder": "Ordner",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "save": "Postfach speichern",
+        "saved": "Gespeichert",
+        "checkNow": "Jetzt prüfen",
+        "processed": "{count, plural, =0 {Keine neuen E-Mails.} one {# E-Mail verarbeitet.} other {# E-Mails verarbeitet.}}",
+        "failed": "Postfach konnte nicht gelesen werden:",
+        "lastPoll": "Zuletzt geprüft {time}",
+        "recent": "Letzte E-Mails",
+        "none": "Noch keine E-Mails.",
+        "status_created": "Anfrage angelegt",
+        "status_unknown_sender": "Kein Mitglied",
+        "status_no_route": "Kein Anfragetyp für diese Adresse",
+        "status_rejected": "Abgelehnt",
+        "status_ignored": "Automatische E-Mail, ignoriert",
+        "status_failed": "Fehlgeschlagen"
       }
     },
     "database": {
@@ -364,7 +390,9 @@
       "removeRule": "Regel {n} entfernen",
       "addRule": "Regel hinzufügen",
       "rulesNeedField": "Fügen Sie ein Formularfeld hinzu, um nach seiner Antwort zu routen.",
-      "rulesCount": "{count, plural, one {# Routing-Regel} other {# Routing-Regeln}}"
+      "rulesCount": "{count, plural, one {# Routing-Regel} other {# Routing-Regeln}}",
+      "emailAddress": "E-Mail-Adresse",
+      "emailAddressHint": "Optional. Mitglieder können an diese Adresse schreiben, um eine Anfrage dieses Typs anzulegen; leiten Sie sie in das Postfach aus Admin → E-Mail."
     },
     "integrations": {
       "title": "Integrationen",

@@ -315,6 +315,48 @@ export const mailSettings = pgTable('mail_settings', {
   updatedBy: uuid('updated_by').references(() => members.id),
 });
 
+/** The IMAP mailbox email-in reads (SPEC §7); one row, like `mail_settings`. */
+export const inboxSettings = pgTable('inbox_settings', {
+  id: integer('id').primaryKey().default(1),
+  enabled: boolean('enabled').notNull().default(false),
+  host: text('host').notNull(),
+  port: integer('port').notNull(),
+  security: text('security', { enum: ['none', 'starttls', 'tls'] }).notNull(),
+  verifyTls: boolean('verify_tls').notNull().default(true),
+  username: text('username').notNull(),
+  passwordEncrypted: text('password_encrypted'),
+  folder: text('folder').notNull().default('INBOX'),
+  lastPollAt: timestamp('last_poll_at', { withTimezone: true }),
+  lastError: text('last_error'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid('updated_by').references(() => members.id),
+});
+
+/** Every message email-in has seen, once per Message-ID, with what became of it. */
+export const inboundEmails = pgTable(
+  'inbound_emails',
+  {
+    id: id(),
+    messageId: text('message_id').notNull(),
+    fromAddress: text('from_address').notNull(),
+    toAddresses: text('to_addresses')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    subject: text('subject').notNull().default(''),
+    status: text('status', {
+      enum: ['created', 'unknown_sender', 'no_route', 'rejected', 'ignored', 'failed'],
+    }).notNull(),
+    reason: text('reason'),
+    requestId: uuid('request_id').references(() => requests.id),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('inbound_emails_message_id_uq').on(t.messageId),
+    index('inbound_emails_received_idx').on(t.receivedAt),
+  ],
+);
+
 /** Admin rewording of a built-in email for one locale (SPEC §8.2); no row = built-in text. */
 export const emailTemplates = pgTable(
   'email_templates',
@@ -515,11 +557,16 @@ export const requestTypes = pgTable(
     allowRequesterApprovals: boolean('allow_requester_approvals').notNull().default(false),
     /** SLA targets for requests of this type (SPEC §6.5); none when null. */
     slaPolicyId: uuid('sla_policy_id'),
+    /** Lowercase email-in address (SPEC §7); messages sent to it become requests of this type. */
+    emailAddress: text('email_address'),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('request_types_department_idx').on(t.departmentId)],
+  (t) => [
+    index('request_types_department_idx').on(t.departmentId),
+    uniqueIndex('request_types_email_address_uq').on(t.emailAddress),
+  ],
 );
 
 /** One request to several departments; each department gets a child request (SPEC §6.4). */

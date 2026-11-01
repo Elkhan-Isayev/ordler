@@ -160,6 +160,7 @@ async function startApplication(
     ctx.webhooks.startRunner();
     ctx.sla.startRunner();
     ctx.requests.startTimeouts(undefined, (message) => logger.warn(message));
+    ctx.emailIn.startRunner();
   }
   logger.log(`Listening on port ${config.port}`);
 }

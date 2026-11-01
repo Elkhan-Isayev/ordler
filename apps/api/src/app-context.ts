@@ -2,6 +2,8 @@ import { DEFAULT_ATTACHMENT_MAX_MB } from '@ordler/shared';
 import type { JWTVerifyGetKey } from 'jose';
 import { GoogleAuthService, type FetchFn } from './auth/google.js';
 import { OidcAuthService } from './auth/oidc.js';
+import { EmailInService } from './email-in/email-in.service.js';
+import type { MailboxConnector } from './email-in/mailbox.js';
 import { DEFAULT_OTP_POLICY, OtpService, type OtpPolicy } from './auth/otp.js';
 import { PasswordAuthService } from './auth/password-auth.js';
 import { RateLimiter } from './auth/rate-limiter.js';
@@ -76,6 +78,7 @@ export interface AppContext {
   attachments: AttachmentService;
   requestTypes: RequestTypeService;
   requests: RequestService;
+  emailIn: EmailInService;
   notifications: NotificationService;
   slack: SlackService;
   tokens: TokenService;
@@ -135,6 +138,8 @@ export interface AppContextDeps {
   /** Discovery, token and key-set calls for Microsoft and generic OIDC; replaced in tests. */
   oidcFetch?: FetchFn;
   oidcJwks?: (uri: string) => JWTVerifyGetKey;
+  /** IMAP connections for email-in; replaced in tests. */
+  mailboxConnector?: MailboxConnector;
   version?: string | undefined;
   updateCheck?: { enabled: boolean; repository: string };
   updatesFetch?: UpdateFetchFn;
@@ -206,6 +211,19 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const attachmentMaxBytes = deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024;
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
   const sessions = new SessionService(deps.db, sessionTtlMs, now);
+  const requests = new RequestService({
+    db: deps.db,
+    access,
+    teamAccess,
+    issues,
+    notifier,
+    events,
+    channels: slack,
+    hooks: webhooks,
+    sla,
+    delegations,
+    now,
+  });
 
   return {
     db: deps.db,
@@ -257,18 +275,17 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     database: new DatabaseSettingsService({ db: deps.db, ...deps.databaseSettings }),
     issues,
     requestTypes: new RequestTypeService(deps.db, access, sla),
-    requests: new RequestService({
+    requests,
+    emailIn: new EmailInService({
       db: deps.db,
-      access,
-      teamAccess,
-      issues,
-      notifier,
-      events,
-      channels: slack,
-      hooks: webhooks,
-      sla,
-      delegations,
+      box,
+      mail,
+      requests,
+      baseUrl: deps.baseUrl,
+      attachmentMaxBytes,
       now,
+      log: (message) => console.warn(message),
+      ...(deps.mailboxConnector ? { connector: deps.mailboxConnector } : {}),
     }),
     notifications,
     slack,

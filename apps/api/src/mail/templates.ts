@@ -37,6 +37,12 @@ export const EMAIL_MESSAGES = {
     notifyBody:
       '{subject}\n\n{title}\n\nOpen in Ordler: {url}\n\nDecisions and replies happen in Ordler after signing in.',
     notifySubjectLine: '[{company}] {subject}',
+    emailInReceivedSubject: 'Re: {title} [{item}]',
+    emailInReceivedBody:
+      'Your request {item} was created in {company}.\n\n{title}\n\nFollow it in Ordler: {url}\n\nThis is an automatic reply.',
+    emailInRejectedSubject: 'Re: {title}',
+    emailInRejectedBody:
+      'Ordler could not create a request from your email to {company}.\n\n{reason, select, form_invalid {This request type needs answers to its form.} forbidden {Your account may not submit requests.} request_type_archived {This request type is no longer offered.} other {Something went wrong.}}\n\nSubmit it in Ordler instead: {url}\n\nThis is an automatic reply.',
     slackOpen: 'Open in Ordler',
     slackEvent:
       '{kind, select, issue_created {New issue} issue_status_changed {Status changed} issue_assigned {Assigned} issue_commented {New comment} request_received {New request} approval_requested {Approval requested} approval_decided {Approval decided} request_resolved {Request resolved} sla_at_risk {SLA at risk} sla_breached {SLA breached} other {Update}}',
@@ -57,6 +63,12 @@ export const EMAIL_MESSAGES = {
     notifyBody:
       '{subject}\n\n{title}\n\nОткрыть в Ordler: {url}\n\nРешения и ответы принимаются в Ordler после входа.',
     notifySubjectLine: '[{company}] {subject}',
+    emailInReceivedSubject: 'Re: {title} [{item}]',
+    emailInReceivedBody:
+      'Ваш запрос {item} создан в {company}.\n\n{title}\n\nСледите за ним в Ordler: {url}\n\nЭто автоматический ответ.',
+    emailInRejectedSubject: 'Re: {title}',
+    emailInRejectedBody:
+      'Ordler не смог создать запрос из вашего письма в {company}.\n\n{reason, select, form_invalid {Для этого типа запроса нужно заполнить форму.} forbidden {Вашей учётной записи нельзя создавать запросы.} request_type_archived {Этот тип запроса больше не принимается.} other {Что-то пошло не так.}}\n\nОтправьте его в Ordler: {url}\n\nЭто автоматический ответ.',
     slackOpen: 'Открыть в Ordler',
     slackEvent:
       '{kind, select, issue_created {Новая задача} issue_status_changed {Изменён статус} issue_assigned {Назначена} issue_commented {Новый комментарий} request_received {Новый запрос} approval_requested {Нужно согласование} approval_decided {Решение по согласованию} request_resolved {Запрос решён} sla_at_risk {SLA под угрозой} sla_breached {SLA нарушен} other {Обновление}}',
@@ -77,6 +89,12 @@ export const EMAIL_MESSAGES = {
     notifyBody:
       '{subject}\n\n{title}\n\nIn Ordler öffnen: {url}\n\nEntscheidungen und Antworten erfolgen in Ordler nach der Anmeldung.',
     notifySubjectLine: '[{company}] {subject}',
+    emailInReceivedSubject: 'Re: {title} [{item}]',
+    emailInReceivedBody:
+      'Ihre Anfrage {item} wurde in {company} angelegt.\n\n{title}\n\nIn Ordler verfolgen: {url}\n\nDies ist eine automatische Antwort.',
+    emailInRejectedSubject: 'Re: {title}',
+    emailInRejectedBody:
+      'Ordler konnte aus Ihrer E-Mail an {company} keine Anfrage anlegen.\n\n{reason, select, form_invalid {Dieser Anfragetyp braucht Antworten auf sein Formular.} forbidden {Ihr Konto darf keine Anfragen stellen.} request_type_archived {Dieser Anfragetyp wird nicht mehr angeboten.} other {Etwas ist schiefgegangen.}}\n\nStellen Sie sie stattdessen in Ordler: {url}\n\nDies ist eine automatische Antwort.',
     slackOpen: 'In Ordler öffnen',
     slackEvent:
       '{kind, select, issue_created {Neue Aufgabe} issue_status_changed {Status geändert} issue_assigned {Zugewiesen} issue_commented {Neuer Kommentar} request_received {Neue Anfrage} approval_requested {Genehmigung angefragt} approval_decided {Genehmigung entschieden} request_resolved {Anfrage gelöst} sla_at_risk {SLA gefährdet} sla_breached {SLA verletzt} other {Aktualisierung}}',
@@ -97,6 +115,12 @@ export const EMAIL_MESSAGES = {
     notifyBody:
       '{subject}\n\n{title}\n\nOrdler-də aç: {url}\n\nQərarlar və cavablar sistemə daxil olduqdan sonra Ordler-də verilir.',
     notifySubjectLine: '[{company}] {subject}',
+    emailInReceivedSubject: 'Re: {title} [{item}]',
+    emailInReceivedBody:
+      '{company} daxilində {item} müraciətiniz yaradıldı.\n\n{title}\n\nOrdler-də izləyin: {url}\n\nBu, avtomatik cavabdır.',
+    emailInRejectedSubject: 'Re: {title}',
+    emailInRejectedBody:
+      'Ordler {company} ünvanına göndərdiyiniz məktubdan müraciət yarada bilmədi.\n\n{reason, select, form_invalid {Bu müraciət növü üçün formu doldurmaq lazımdır.} forbidden {Hesabınız müraciət göndərə bilməz.} request_type_archived {Bu müraciət növü artıq qəbul edilmir.} other {Nəsə səhv getdi.}}\n\nOnu Ordler-də göndərin: {url}\n\nBu, avtomatik cavabdır.',
     slackOpen: 'Ordler-də aç',
     slackEvent:
       '{kind, select, issue_created {Yeni tapşırıq} issue_status_changed {Status dəyişdi} issue_assigned {Təyin edildi} issue_commented {Yeni şərh} request_received {Yeni müraciət} approval_requested {Təsdiq istənildi} approval_decided {Təsdiq qərarı} request_resolved {Müraciət həll edildi} sla_at_risk {SLA risk altında} sla_breached {SLA pozuldu} other {Yeniləmə}}',
@@ -134,6 +158,18 @@ export const EMAIL_TEMPLATES = {
     variables: ['company', 'subject', 'actor', 'item', 'title', 'url'],
     required: ['url'],
   },
+  email_in_received: {
+    subject: 'emailInReceivedSubject',
+    body: 'emailInReceivedBody',
+    variables: ['company', 'item', 'title', 'url'],
+    required: ['url'],
+  },
+  email_in_rejected: {
+    subject: 'emailInRejectedSubject',
+    body: 'emailInRejectedBody',
+    variables: ['company', 'title', 'reason', 'url'],
+    required: ['url'],
+  },
 } as const satisfies Record<
   EmailTemplateKey,
   {
@@ -155,6 +191,18 @@ export const EMAIL_TEMPLATE_SAMPLES: Record<EmailTemplateKey, Record<string, str
     item: 'ENG-42',
     title: 'Fix the VPN timeout',
     url: 'https://ordler.example/issues/ENG-42',
+  },
+  email_in_received: {
+    company: 'Ordler',
+    item: 'REQ-17',
+    title: 'New laptop for Ana',
+    url: 'https://ordler.example/requests/REQ-17',
+  },
+  email_in_rejected: {
+    company: 'Ordler',
+    title: 'New laptop for Ana',
+    reason: 'form_invalid',
+    url: 'https://ordler.example/portal',
   },
 };
 

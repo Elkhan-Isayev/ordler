@@ -72,6 +72,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   invalid_transition: 409,
   session_required: 403,
   request_type_archived: 409,
+  email_address_taken: 409,
   delegation_overlap: 409,
   // Not 401: that would read as "your Ordler session ended" to the web client.
   import_auth_failed: 422,

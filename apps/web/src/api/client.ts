@@ -79,6 +79,10 @@ import type {
   EmailTemplateKey,
   Locale,
   EmailTemplateView,
+  InboundEmailView,
+  InboxPollResult,
+  InboxSettingsView,
+  UpdateInboxSettingsInput,
   UpdateEmailTemplateInput,
   MeResponse,
   PublicStrategy,
@@ -217,6 +221,11 @@ export const api = {
     apiRequest<MailSettingsView>('/api/admin/mail', { method: 'PUT', body }),
   sendTestMail: (to: string) =>
     apiRequest<TestMailResult>('/api/admin/mail/test', { method: 'POST', body: { to } }),
+  inboxSettings: () => apiRequest<InboxSettingsView>('/api/admin/mail/inbox'),
+  updateInboxSettings: (body: UpdateInboxSettingsInput) =>
+    apiRequest<InboxSettingsView>('/api/admin/mail/inbox', { method: 'PUT', body }),
+  inboundEmails: () => apiRequest<InboundEmailView[]>('/api/admin/mail/inbox/messages'),
+  pollInbox: () => apiRequest<InboxPollResult>('/api/admin/mail/inbox/poll', { method: 'POST' }),
   emailTemplates: () => apiRequest<EmailTemplateView[]>('/api/admin/mail/templates'),
   saveEmailTemplate: (key: EmailTemplateKey, locale: Locale, body: UpdateEmailTemplateInput) =>
     apiRequest<EmailTemplateView[]>(`/api/admin/mail/templates/${key}/${locale}`, {

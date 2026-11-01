@@ -40,6 +40,7 @@ export const HARDWARE: RequestTypeView = {
   routingRules: [],
   allowRequesterApprovals: true,
   slaPolicy: null,
+  emailAddress: null,
   archivedAt: null,
 };
 

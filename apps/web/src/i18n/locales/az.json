@@ -130,7 +130,8 @@
     "delegation_overlap": "Bu günlərin bəziləri üçün artıq əvəzediciniz var.",
     "template_invalid": "Şablon mətnində sintaksis xətası var. Bütün mötərizələrin bağlandığını yoxlayın.",
     "template_unknown_variable": "Şablonda bu məktubda olmayan əvəzləmə istifadə olunub.",
-    "template_missing_variable": "Şablonda məcburi əvəzləmə çatışmır."
+    "template_missing_variable": "Şablonda məcburi əvəzləmə çatışmır.",
+    "email_address_taken": "Bu e-poçt ünvanını artıq başqa müraciət növü istifadə edir."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -313,7 +314,32 @@
         "save": "Şablonu saxla",
         "preview": "Önbaxış",
         "reset": "Standarta qaytar",
-        "saved": "Saxlanıldı"
+        "saved": "Saxlanıldı",
+        "name_email_in_received": "Daxil olan poçt: müraciət yaradıldı",
+        "name_email_in_rejected": "Daxil olan poçt: müraciət rədd edildi"
+      },
+      "inbox": {
+        "title": "Daxil olan poçt",
+        "subtitle": "Ordler bu IMAP qutusunu hər dəqiqə yoxlayır. Əməkdaşın müraciət növünün ünvanına yazdığı məktub müraciətə çevrilir; ünvanı hər növ üçün «Müraciət növləri» bölməsində təyin edin.",
+        "enabled": "Bu qutunu oxu",
+        "host": "IMAP serveri",
+        "folder": "Qovluq",
+        "username": "İstifadəçi adı",
+        "password": "Şifrə",
+        "save": "Qutunu saxla",
+        "saved": "Saxlanıldı",
+        "checkNow": "İndi yoxla",
+        "processed": "{count, plural, =0 {Yeni məktub yoxdur.} one {# məktub emal olundu.} other {# məktub emal olundu.}}",
+        "failed": "Qutunu oxumaq mümkün olmadı:",
+        "lastPoll": "Son yoxlama: {time}",
+        "recent": "Son məktublar",
+        "none": "Hələ məktub yoxdur.",
+        "status_created": "Müraciət yaradıldı",
+        "status_unknown_sender": "Əməkdaş deyil",
+        "status_no_route": "Bu ünvan üçün müraciət növü yoxdur",
+        "status_rejected": "Rədd edildi",
+        "status_ignored": "Avtomatik məktub, ötürüldü",
+        "status_failed": "Xəta"
       }
     },
     "database": {
@@ -364,7 +390,9 @@
       "removeRule": "{n} qaydasını sil",
       "addRule": "Qayda əlavə et",
       "rulesNeedField": "Cavaba görə yönləndirmək üçün forma sahəsi əlavə edin.",
-      "rulesCount": "{count, plural, one {# yönləndirmə qaydası} other {# yönləndirmə qaydası}}"
+      "rulesCount": "{count, plural, one {# yönləndirmə qaydası} other {# yönləndirmə qaydası}}",
+      "emailAddress": "E-poçt ünvanı",
+      "emailAddressHint": "İstəyə bağlı. Əməkdaşlar bu növdə müraciət yaratmaq üçün bu ünvana yaza bilər; onu «Admin → Poçt» bölməsindəki qutuya yönləndirin."
     },
     "integrations": {
       "title": "İnteqrasiyalar",

@@ -81,6 +81,7 @@ export class RequestTypeService {
   ): Promise<RequestTypeView> {
     await this.assertManager(memberId, departmentId);
     await this.validate(departmentId, input);
+    await this.assertAddressFree(input.emailAddress, undefined);
     const [row] = await this.db
       .insert(requestTypes)
       .values({ departmentId, ...input })
@@ -93,6 +94,7 @@ export class RequestTypeService {
     const before = await this.row(id);
     await this.assertManager(memberId, before.departmentId);
     await this.validate(before.departmentId, input);
+    await this.assertAddressFree(input.emailAddress, id);
     const [row] = await this.db
       .update(requestTypes)
       .set({ ...input, updatedAt: new Date() })
@@ -169,8 +171,22 @@ export class RequestTypeService {
       ),
       allowRequesterApprovals: row.allowRequesterApprovals,
       slaPolicy: (await this.sla?.policyRef(row.slaPolicyId)) ?? null,
+      emailAddress: row.emailAddress,
       archivedAt: row.archivedAt?.toISOString() ?? null,
     };
+  }
+
+  /** One address routes to one type; the unique index backs this check up under races. */
+  private async assertAddressFree(
+    address: string | null | undefined,
+    typeId: string | undefined,
+  ): Promise<void> {
+    if (!address) return;
+    const [taken] = await this.db
+      .select({ id: requestTypes.id })
+      .from(requestTypes)
+      .where(eq(requestTypes.emailAddress, address));
+    if (taken && taken.id !== typeId) throw new DomainError('email_address_taken');
   }
 
   private async validate(departmentId: string, input: RequestTypeInput): Promise<void> {
