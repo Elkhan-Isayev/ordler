@@ -86,15 +86,21 @@ describe('TriagePage', () => {
     });
     await renderWithI18n(<TriagePage teamKey="HELP" />);
     await screen.findByText('Filed 4');
-    act(() => realtime.push({ type: 'issue.changed', issue: pending(5) }));
-    expect(await screen.findByText('Filed 5')).toBeInTheDocument();
-    act(() =>
-      realtime.push({
-        type: 'issue.changed',
-        issue: issue(4, { inTriage: false, updatedAt: '2026-10-18T10:00:00.000Z' }),
-      }),
-    );
-    await waitFor(() => expect(screen.queryByText('Filed 4')).not.toBeInTheDocument());
+    // The socket subscribes asynchronously; pushing until the page reacts keeps this
+    // independent of timing (the events are idempotent).
+    await waitFor(() => {
+      act(() => realtime.push({ type: 'issue.changed', issue: pending(5) }));
+      expect(screen.getByText('Filed 5')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      act(() =>
+        realtime.push({
+          type: 'issue.changed',
+          issue: issue(4, { inTriage: false, updatedAt: '2026-10-18T10:00:00.000Z' }),
+        }),
+      );
+      expect(screen.queryByText('Filed 4')).not.toBeInTheDocument();
+    });
   });
 
   it('shows no decisions to viewers', async () => {
