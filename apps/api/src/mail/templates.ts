@@ -1,5 +1,24 @@
-import type { Locale } from '@ordler/shared';
+import {
+  isArgumentElement,
+  isPluralElement,
+  isSelectElement,
+  isTagElement,
+  parse,
+  type MessageFormatElement,
+} from '@formatjs/icu-messageformat-parser';
+import {
+  SUPPORTED_LOCALES,
+  type EmailTemplateKey,
+  type EmailTemplateText,
+  type EmailTemplateView,
+  type Locale,
+} from '@ordler/shared';
+import { and, eq } from 'drizzle-orm';
 import { IntlMessageFormat } from 'intl-messageformat';
+import { writeAudit, type AuditActor } from '../audit/audit.js';
+import { DomainError } from '../auth/errors.js';
+import type { Db } from '../db/client.js';
+import { emailTemplates } from '../db/schema.js';
 
 /** Email copy per locale (ICU MessageFormat); every locale must define every key. */
 export const EMAIL_MESSAGES = {
@@ -17,6 +36,7 @@ export const EMAIL_MESSAGES = {
       '{kind, select, issue_assigned {{actor} assigned you {item}} issue_commented {{actor} commented on {item}} issue_mentioned {{actor} mentioned you in {item}} issue_status_changed {{actor} changed the status of {item}} approval_requested {Approval needed: {item}} approval_decided {{actor} approved {item}} request_rejected {{item} was rejected} request_changes_requested {Changes requested on {item}} request_received {New request for your team: {item}} request_status_changed {{item} was updated} request_commented {{actor} commented on {item}} sla_at_risk {SLA at risk: {item}} sla_breached {SLA breached: {item}} approval_reminder {Reminder: your approval is waiting on {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOpen in Ordler: {url}\n\nDecisions and replies happen in Ordler after signing in.',
+    notifySubjectLine: '[{company}] {subject}',
     slackOpen: 'Open in Ordler',
     slackEvent:
       '{kind, select, issue_created {New issue} issue_status_changed {Status changed} issue_assigned {Assigned} issue_commented {New comment} request_received {New request} approval_requested {Approval requested} approval_decided {Approval decided} request_resolved {Request resolved} sla_at_risk {SLA at risk} sla_breached {SLA breached} other {Update}}',
@@ -36,6 +56,7 @@ export const EMAIL_MESSAGES = {
       '{kind, select, issue_assigned {{actor}: вам назначена {item}} issue_commented {{actor}: комментарий к {item}} issue_mentioned {{actor}: вас упомянули в {item}} issue_status_changed {{actor}: изменён статус {item}} approval_requested {Нужно согласование: {item}} approval_decided {{actor}: согласовано {item}} request_rejected {{item}: отклонено} request_changes_requested {{item}: нужны правки} request_received {Новый запрос вашей команде: {item}} request_status_changed {{item}: обновление} request_commented {{actor}: комментарий к {item}} sla_at_risk {SLA под угрозой: {item}} sla_breached {SLA нарушен: {item}} approval_reminder {Напоминание: ждёт вашего согласования {item}} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nОткрыть в Ordler: {url}\n\nРешения и ответы принимаются в Ordler после входа.',
+    notifySubjectLine: '[{company}] {subject}',
     slackOpen: 'Открыть в Ordler',
     slackEvent:
       '{kind, select, issue_created {Новая задача} issue_status_changed {Изменён статус} issue_assigned {Назначена} issue_commented {Новый комментарий} request_received {Новый запрос} approval_requested {Нужно согласование} approval_decided {Решение по согласованию} request_resolved {Запрос решён} sla_at_risk {SLA под угрозой} sla_breached {SLA нарушен} other {Обновление}}',
@@ -55,6 +76,7 @@ export const EMAIL_MESSAGES = {
       '{kind, select, issue_assigned {{actor} hat dir {item} zugewiesen} issue_commented {{actor} hat {item} kommentiert} issue_mentioned {{actor} hat Sie in {item} erwähnt} issue_status_changed {{actor} hat den Status von {item} geändert} approval_requested {Genehmigung nötig: {item}} approval_decided {{actor} hat {item} genehmigt} request_rejected {{item} wurde abgelehnt} request_changes_requested {Änderungen angefordert: {item}} request_received {Neue Anfrage für dein Team: {item}} request_status_changed {{item} wurde aktualisiert} request_commented {{actor} hat {item} kommentiert} sla_at_risk {SLA gefährdet: {item}} sla_breached {SLA verletzt: {item}} approval_reminder {Erinnerung: Ihre Genehmigung für {item} steht aus} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nIn Ordler öffnen: {url}\n\nEntscheidungen und Antworten erfolgen in Ordler nach der Anmeldung.',
+    notifySubjectLine: '[{company}] {subject}',
     slackOpen: 'In Ordler öffnen',
     slackEvent:
       '{kind, select, issue_created {Neue Aufgabe} issue_status_changed {Status geändert} issue_assigned {Zugewiesen} issue_commented {Neuer Kommentar} request_received {Neue Anfrage} approval_requested {Genehmigung angefragt} approval_decided {Genehmigung entschieden} request_resolved {Anfrage gelöst} sla_at_risk {SLA gefährdet} sla_breached {SLA verletzt} other {Aktualisierung}}',
@@ -74,6 +96,7 @@ export const EMAIL_MESSAGES = {
       '{kind, select, issue_assigned {{actor}: sizə {item} təyin edildi} issue_commented {{actor}: {item} üzrə şərh} issue_mentioned {{actor} sizi {item} tapşırığında qeyd etdi} issue_status_changed {{actor}: {item} statusu dəyişdi} approval_requested {Təsdiq lazımdır: {item}} approval_decided {{actor}: {item} təsdiqləndi} request_rejected {{item}: rədd edildi} request_changes_requested {{item}: düzəliş tələb olunur} request_received {Komandanıza yeni müraciət: {item}} request_status_changed {{item}: yeniləmə} request_commented {{actor}: {item} üzrə şərh} sla_at_risk {SLA risk altında: {item}} sla_breached {SLA pozuldu: {item}} approval_reminder {Xatırlatma: {item} təsdiqinizi gözləyir} other {{item}}}',
     notifyBody:
       '{subject}\n\n{title}\n\nOrdler-də aç: {url}\n\nQərarlar və cavablar sistemə daxil olduqdan sonra Ordler-də verilir.',
+    notifySubjectLine: '[{company}] {subject}',
     slackOpen: 'Ordler-də aç',
     slackEvent:
       '{kind, select, issue_created {Yeni tapşırıq} issue_status_changed {Status dəyişdi} issue_assigned {Təyin edildi} issue_commented {Yeni şərh} request_received {Yeni müraciət} approval_requested {Təsdiq istənildi} approval_decided {Təsdiq qərarı} request_resolved {Müraciət həll edildi} sla_at_risk {SLA risk altında} sla_breached {SLA pozuldu} other {Yeniləmə}}',
@@ -91,36 +114,171 @@ export function formatEmailMessage(
   return new IntlMessageFormat(EMAIL_MESSAGES[locale][key], locale).format(values) as string;
 }
 
-export function renderOtpEmail(input: {
-  locale: Locale;
-  code: string;
-  company: string;
-  minutes: number;
-}): { subject: string; text: string } {
-  const values = { code: input.code, company: input.company, minutes: input.minutes };
+/** Which built-in messages back each editable template, and the values it is rendered with. */
+export const EMAIL_TEMPLATES = {
+  otp: {
+    subject: 'otpSubject',
+    body: 'otpBody',
+    variables: ['code', 'company', 'minutes'],
+    required: ['code'],
+  },
+  invite: {
+    subject: 'inviteSubject',
+    body: 'inviteBody',
+    variables: ['company', 'url', 'days'],
+    required: ['url'],
+  },
+  notification: {
+    subject: 'notifySubjectLine',
+    body: 'notifyBody',
+    variables: ['company', 'subject', 'actor', 'item', 'title', 'url'],
+    required: ['url'],
+  },
+} as const satisfies Record<
+  EmailTemplateKey,
+  {
+    subject: EmailMessageKey;
+    body: EmailMessageKey;
+    variables: readonly string[];
+    required: readonly string[];
+  }
+>;
+
+/** Sample values for the admin preview. */
+export const EMAIL_TEMPLATE_SAMPLES: Record<EmailTemplateKey, Record<string, string | number>> = {
+  otp: { code: '482913', company: 'Ordler', minutes: 10 },
+  invite: { company: 'Ordler', url: 'https://ordler.example/invite/…', days: 7 },
+  notification: {
+    company: 'Ordler',
+    subject: 'Ana assigned you ENG-42',
+    actor: 'Ana',
+    item: 'ENG-42',
+    title: 'Fix the VPN timeout',
+    url: 'https://ordler.example/issues/ENG-42',
+  },
+};
+
+export type RenderedEmail = { subject: string; text: string };
+
+export function defaultTemplateText(key: EmailTemplateKey, locale: Locale): EmailTemplateText {
+  const template = EMAIL_TEMPLATES[key];
   return {
-    subject: formatEmailMessage(input.locale, 'otpSubject', values),
-    text: formatEmailMessage(input.locale, 'otpBody', values),
+    subject: EMAIL_MESSAGES[locale][template.subject],
+    body: EMAIL_MESSAGES[locale][template.body],
   };
 }
 
-export function renderInviteEmail(input: {
-  locale: Locale;
-  company: string;
-  url: string;
-  days: number;
-}): { subject: string; text: string } {
-  const values = { company: input.company, url: input.url, days: input.days };
-  return {
-    subject: formatEmailMessage(input.locale, 'inviteSubject', values),
-    text: formatEmailMessage(input.locale, 'inviteBody', values),
-  };
+/**
+ * Rejects text that does not parse, names an unknown placeholder or drops a required one;
+ * a broken template must fail when saved, not when a sign-in code is due.
+ */
+export function validateTemplateText(key: EmailTemplateKey, text: EmailTemplateText): void {
+  const template = EMAIL_TEMPLATES[key];
+  const used = new Set<string>();
+  for (const source of [text.subject, text.body]) {
+    let ast: MessageFormatElement[];
+    try {
+      ast = parse(source, { ignoreTag: true });
+    } catch {
+      throw new DomainError('template_invalid');
+    }
+    collectArguments(ast, used);
+  }
+  const allowed: readonly string[] = template.variables;
+  if ([...used].some((name) => !allowed.includes(name))) {
+    throw new DomainError('template_unknown_variable');
+  }
+  if (template.required.some((name) => !used.has(name))) {
+    throw new DomainError('template_missing_variable');
+  }
 }
 
-export function renderTestEmail(input: { locale: Locale; company: string }): {
-  subject: string;
-  text: string;
-} {
+function collectArguments(elements: MessageFormatElement[], into: Set<string>): void {
+  for (const element of elements) {
+    if (isArgumentElement(element)) into.add(element.value);
+    if (isPluralElement(element) || isSelectElement(element)) {
+      into.add(element.value);
+      for (const option of Object.values(element.options)) collectArguments(option.value, into);
+    }
+    if (isTagElement(element)) collectArguments(element.children, into);
+  }
+}
+
+export function renderTemplateText(
+  text: EmailTemplateText,
+  locale: Locale,
+  values: Record<string, string | number>,
+): RenderedEmail {
+  const format = (source: string) =>
+    new IntlMessageFormat(source, locale, undefined, { ignoreTag: true }).format(values) as string;
+  return { subject: format(text.subject), text: format(text.body) };
+}
+
+/** Renders with the admin's wording for this locale when there is one (SPEC §8.2). */
+export async function renderEmail(
+  db: Db,
+  key: EmailTemplateKey,
+  locale: Locale,
+  values: Record<string, string | number>,
+): Promise<RenderedEmail> {
+  const custom = await customText(db, key, locale);
+  if (custom) {
+    try {
+      return renderTemplateText(custom, locale, values);
+    } catch {
+      // Saved text is validated, but never let a bad row stop a sign-in code from going out.
+    }
+  }
+  return renderTemplateText(defaultTemplateText(key, locale), locale, values);
+}
+
+export async function listEmailTemplates(db: Db): Promise<EmailTemplateView[]> {
+  const rows = await db.select().from(emailTemplates);
+  return (Object.keys(EMAIL_TEMPLATES) as EmailTemplateKey[]).map((key) => ({
+    key,
+    variables: [...EMAIL_TEMPLATES[key].variables],
+    required: [...EMAIL_TEMPLATES[key].required],
+    locales: Object.fromEntries(
+      SUPPORTED_LOCALES.map((locale) => {
+        const fallback = defaultTemplateText(key, locale);
+        const row = rows.find((r) => r.key === key && r.locale === locale);
+        return [
+          locale,
+          {
+            subject: row?.subject ?? fallback.subject,
+            body: row?.body ?? fallback.body,
+            customized: Boolean(row),
+            default: fallback,
+          },
+        ];
+      }),
+    ),
+  }));
+}
+
+export function renderOtpEmail(
+  db: Db,
+  input: { locale: Locale; code: string; company: string; minutes: number },
+): Promise<RenderedEmail> {
+  return renderEmail(db, 'otp', input.locale, {
+    code: input.code,
+    company: input.company,
+    minutes: input.minutes,
+  });
+}
+
+export function renderInviteEmail(
+  db: Db,
+  input: { locale: Locale; company: string; url: string; days: number },
+): Promise<RenderedEmail> {
+  return renderEmail(db, 'invite', input.locale, {
+    company: input.company,
+    url: input.url,
+    days: input.days,
+  });
+}
+
+export function renderTestEmail(input: { locale: Locale; company: string }): RenderedEmail {
   const values = { company: input.company };
   return {
     subject: formatEmailMessage(input.locale, 'testSubject', values),
@@ -128,26 +286,92 @@ export function renderTestEmail(input: { locale: Locale; company: string }): {
   };
 }
 
-export function renderNotificationEmail(input: {
-  locale: Locale;
-  company: string;
-  kind: string;
-  actor: string;
-  item: string;
-  title: string;
-  url: string;
-}): { subject: string; text: string } {
+export function renderNotificationEmail(
+  db: Db,
+  input: {
+    locale: Locale;
+    company: string;
+    kind: string;
+    actor: string;
+    item: string;
+    title: string;
+    url: string;
+  },
+): Promise<RenderedEmail> {
+  // The event line stays built in (one phrase per event kind); admins reword around it.
   const subject = formatEmailMessage(input.locale, 'notifySubject', {
     kind: input.kind,
     actor: input.actor,
     item: input.item,
   });
-  return {
-    subject: `[${input.company}] ${subject}`,
-    text: formatEmailMessage(input.locale, 'notifyBody', {
-      subject,
-      title: input.title,
-      url: input.url,
-    }),
+  return renderEmail(db, 'notification', input.locale, {
+    company: input.company,
+    subject,
+    actor: input.actor,
+    item: input.item,
+    title: input.title,
+    url: input.url,
+  });
+}
+
+export async function saveEmailTemplate(
+  db: Db,
+  key: EmailTemplateKey,
+  locale: Locale,
+  text: EmailTemplateText,
+  actor: AuditActor & { id: string },
+): Promise<void> {
+  validateTemplateText(key, text);
+  const before = await customText(db, key, locale);
+  const values = {
+    subject: text.subject,
+    body: text.body,
+    updatedAt: new Date(),
+    updatedBy: actor.id,
   };
+  await db
+    .insert(emailTemplates)
+    .values({ key, locale, ...values })
+    .onConflictDoUpdate({ target: [emailTemplates.key, emailTemplates.locale], set: values });
+  await writeAudit(db, {
+    actor,
+    action: 'email_template.updated',
+    targetType: 'email_template',
+    // `template`, not `key`: the audit writer redacts anything named like a secret key.
+    before: { template: key, locale, ...(before ?? { customized: false }) },
+    after: { template: key, locale, ...text },
+  });
+}
+
+/** Back to the built-in text; a no-op when nothing was customized. */
+export async function resetEmailTemplate(
+  db: Db,
+  key: EmailTemplateKey,
+  locale: Locale,
+  actor: AuditActor & { id: string },
+): Promise<void> {
+  const before = await customText(db, key, locale);
+  if (!before) return;
+  await db
+    .delete(emailTemplates)
+    .where(and(eq(emailTemplates.key, key), eq(emailTemplates.locale, locale)));
+  await writeAudit(db, {
+    actor,
+    action: 'email_template.reset',
+    targetType: 'email_template',
+    before: { template: key, locale, ...before },
+    after: { template: key, locale, customized: false },
+  });
+}
+
+async function customText(
+  db: Db,
+  key: EmailTemplateKey,
+  locale: Locale,
+): Promise<EmailTemplateText | undefined> {
+  const [row] = await db
+    .select({ subject: emailTemplates.subject, body: emailTemplates.body })
+    .from(emailTemplates)
+    .where(and(eq(emailTemplates.key, key), eq(emailTemplates.locale, locale)));
+  return row;
 }

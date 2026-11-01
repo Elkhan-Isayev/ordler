@@ -181,7 +181,7 @@ export class NotificationService implements Notifier {
       // Only a deep link: approvals and replies need a signed-in session (SPEC §6.3).
       await this.deps.mail.send({
         to: person.email,
-        ...renderNotificationEmail({
+        ...(await renderNotificationEmail(this.deps.db, {
           locale,
           company: instance?.companyName ?? 'Ordler',
           kind: input.kind,
@@ -189,7 +189,7 @@ export class NotificationService implements Notifier {
           item: subject.identifier,
           title: subject.title,
           url: `${this.deps.baseUrl}${subject.path}`,
-        }),
+        })),
       });
     }
   }

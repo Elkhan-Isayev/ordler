@@ -1,4 +1,4 @@
-import type { InviteResponse, MailSettingsView } from '@ordler/shared';
+import type { EmailTemplateView, InviteResponse, MailSettingsView } from '@ordler/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SESSION_COOKIE } from '../auth/sessions.js';
 import { cookieFrom, createTestApp, type TestApp } from '../test/app.js';
@@ -19,7 +19,7 @@ const SETTINGS = {
 };
 
 function call(
-  method: 'GET' | 'PUT' | 'PATCH' | 'POST',
+  method: 'GET' | 'PUT' | 'PATCH' | 'POST' | 'DELETE',
   url: string,
   cookie?: string,
   payload?: object,
@@ -102,5 +102,54 @@ describe('Admin → Mail server', () => {
 
   it('requires a session', async () => {
     expect((await call('GET', '/api/admin/mail')).statusCode).toBe(401);
+  });
+});
+
+describe('Admin → Email templates', () => {
+  const custom = { subject: 'Код {code}', body: 'Ваш код {code}.' };
+
+  it('lists every template per locale and saves, previews and resets one', async () => {
+    const list = await call('GET', '/api/admin/mail/templates', owner);
+    expect(list.statusCode).toBe(200);
+    expect(list.json<EmailTemplateView[]>().map((t) => t.key)).toEqual([
+      'otp',
+      'invite',
+      'notification',
+    ]);
+
+    const preview = await call('POST', '/api/admin/mail/templates/otp/ru/preview', owner, custom);
+    expect(preview.json()).toEqual({ subject: 'Код 482913', text: 'Ваш код 482913.' });
+
+    const saved = await call('PUT', '/api/admin/mail/templates/otp/ru', owner, custom);
+    expect(saved.statusCode).toBe(200);
+    const otp = saved.json<EmailTemplateView[]>().find((t) => t.key === 'otp')!;
+    expect(otp.locales.ru).toMatchObject({ ...custom, customized: true });
+
+    const reset = await call('DELETE', '/api/admin/mail/templates/otp/ru', owner);
+    expect(reset.json<EmailTemplateView[]>()[0]!.locales.ru!.customized).toBe(false);
+  });
+
+  it('refuses text without the sign-in code, and unknown templates or locales', async () => {
+    const missing = await call('PUT', '/api/admin/mail/templates/otp/en', owner, {
+      subject: 'Hello',
+      body: 'No code',
+    });
+    expect(missing.statusCode).toBe(400);
+    expect(missing.json()).toEqual({ error: 'template_missing_variable' });
+    expect((await call('PUT', '/api/admin/mail/templates/otp/fr', owner, custom)).statusCode).toBe(
+      404,
+    );
+    expect(
+      (await call('PUT', '/api/admin/mail/templates/password/en', owner, custom)).statusCode,
+    ).toBe(404);
+  });
+
+  it('denies members without mail.manage', async () => {
+    const member = await plainMember();
+    expect((await call('GET', '/api/admin/mail/templates', member)).statusCode).toBe(403);
+    expect((await call('PUT', '/api/admin/mail/templates/otp/en', member, custom)).statusCode).toBe(
+      403,
+    );
+    expect((await call('DELETE', '/api/admin/mail/templates/otp/en', member)).statusCode).toBe(403);
   });
 });

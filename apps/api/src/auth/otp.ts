@@ -75,7 +75,7 @@ export class OtpService {
     const instance = await getInstance(this.db);
     const locale: Locale =
       member?.locale && isLocale(member.locale) ? member.locale : (instance?.defaultLocale ?? 'en');
-    const message = renderOtpEmail({
+    const message = await renderOtpEmail(this.db, {
       locale,
       code,
       company: instance?.companyName ?? 'Ordler',

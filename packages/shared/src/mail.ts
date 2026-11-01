@@ -37,3 +37,29 @@ export interface MailSettingsView {
 
 /** Response of POST /api/admin/mail/test: the SMTP error is shown to the admin as is. */
 export type TestMailResult = { sent: true } | { sent: false; error: string };
+
+/** Emails an admin can reword per locale (SPEC §8.2); the rest stay built in. */
+export const EMAIL_TEMPLATE_KEYS = ['otp', 'invite', 'notification'] as const;
+export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
+
+/** ICU MessageFormat text; variables are checked against the template on the server. */
+export const updateEmailTemplateSchema = z.object({
+  subject: z.string().trim().min(1).max(300),
+  body: z.string().trim().min(1).max(10_000),
+});
+export type UpdateEmailTemplateInput = z.infer<typeof updateEmailTemplateSchema>;
+
+export interface EmailTemplateText {
+  subject: string;
+  body: string;
+}
+
+/** Response of GET /api/admin/mail/templates: one entry per template and locale. */
+export interface EmailTemplateView {
+  key: EmailTemplateKey;
+  /** Placeholders the text may use, e.g. `code` for `{code}`. */
+  variables: string[];
+  /** Placeholders the text must keep, or the email would be useless (the code, the link). */
+  required: string[];
+  locales: Record<string, EmailTemplateText & { customized: boolean; default: EmailTemplateText }>;
+}

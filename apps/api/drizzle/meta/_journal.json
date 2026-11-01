@@ -183,6 +183,13 @@
       "when": 1793354653155,
       "tag": "0025_saved_views",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793499667064,
+      "tag": "0026_email_templates",
+      "breakpoints": true
     }
   ]
 }

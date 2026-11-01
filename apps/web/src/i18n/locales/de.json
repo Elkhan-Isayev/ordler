@@ -127,7 +127,10 @@
     "import_source_failed": "Die Quelle ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut.",
     "import_not_ready": "Dieser Import kann das in seinem aktuellen Zustand nicht.",
     "calendar_in_use": "Dieser Kalender wird von einer SLA-Richtlinie verwendet. Ändern Sie zuerst die Richtlinie.",
-    "delegation_overlap": "Für einige dieser Tage haben Sie bereits eine Vertretung."
+    "delegation_overlap": "Für einige dieser Tage haben Sie bereits eine Vertretung.",
+    "template_invalid": "Der Vorlagentext enthält einen Syntaxfehler. Prüfen Sie, ob alle Klammern geschlossen sind.",
+    "template_unknown_variable": "Die Vorlage verwendet einen Platzhalter, den diese E-Mail nicht kennt.",
+    "template_missing_variable": "In der Vorlage fehlt ein Pflicht-Platzhalter."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -293,7 +296,25 @@
       "testRecipient": "Empfänger",
       "sendTest": "Senden",
       "testSent": "Gesendet. Prüfe das Postfach.",
-      "testFailed": "Die Test-E-Mail konnte nicht gesendet werden:"
+      "testFailed": "Die Test-E-Mail konnte nicht gesendet werden:",
+      "templates": {
+        "title": "E-Mail-Vorlagen",
+        "subtitle": "Formulieren Sie die E-Mails von Ordler je Sprache um. Text in geschweiften Klammern wird beim Versand ersetzt.",
+        "template": "Vorlage",
+        "language": "Sprache",
+        "customized": "angepasst",
+        "name_otp": "Anmeldecode",
+        "name_invite": "Einladung",
+        "name_notification": "Benachrichtigung",
+        "variables": "Platzhalter:",
+        "required": "Pflicht: {names}.",
+        "subject": "Betreff",
+        "body": "Text",
+        "save": "Vorlage speichern",
+        "preview": "Vorschau",
+        "reset": "Auf Standard zurücksetzen",
+        "saved": "Gespeichert"
+      }
     },
     "database": {
       "title": "Datenbank",

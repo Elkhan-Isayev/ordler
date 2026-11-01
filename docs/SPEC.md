@@ -552,7 +552,13 @@ on email are shown as unavailable and admins see a banner.
 - SMTP can also be preset via environment variables (§16.2); values set in env are shown
   read-only in the admin panel.
 - Email templates (OTP, invite, verification, password reset, notification digest) are
-  localized into every supported language (§11.1), sent in the recipient's language; branding (logo, colors) taken from organization settings. Editable templates in Phase 2.
+  localized into every supported language (§11.1), sent in the recipient's language; branding (logo, colors) taken from organization settings.
+- Editable templates (Phase 2): Admin → Mail → Email templates rewords the sign-in code,
+  invitation and notification emails per language (subject and text, ICU MessageFormat with
+  the template's placeholders). Text that does not parse, uses an unknown placeholder or drops
+  a required one (`{code}`, `{url}`) is refused on save; preview renders sample values; reset
+  returns to the built-in text. Changes are audited. Notification emails keep the built-in
+  event line (`{subject}`) so every event kind stays translated.
 - Delivery runs through the job queue with retries; failures are visible in the admin panel.
 
 ---

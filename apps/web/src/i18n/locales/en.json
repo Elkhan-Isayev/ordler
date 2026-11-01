@@ -127,7 +127,10 @@
     "import_source_failed": "The source could not be reached or answered with an error. Try again later.",
     "import_not_ready": "This import cannot do that in its current state.",
     "calendar_in_use": "This calendar is used by an SLA policy. Change the policy first.",
-    "delegation_overlap": "You already have a delegate for some of these days."
+    "delegation_overlap": "You already have a delegate for some of these days.",
+    "template_invalid": "The template text has a syntax error. Check that every brace is closed.",
+    "template_unknown_variable": "The template uses a placeholder this email does not have.",
+    "template_missing_variable": "The template leaves out a required placeholder."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -293,7 +296,25 @@
       "testRecipient": "Recipient",
       "sendTest": "Send",
       "testSent": "Sent. Check the inbox.",
-      "testFailed": "Could not send the test email:"
+      "testFailed": "Could not send the test email:",
+      "templates": {
+        "title": "Email templates",
+        "subtitle": "Reword the emails Ordler sends, per language. Text in braces is replaced when the email is sent.",
+        "template": "Template",
+        "language": "Language",
+        "customized": "customized",
+        "name_otp": "Sign-in code",
+        "name_invite": "Invitation",
+        "name_notification": "Notification",
+        "variables": "Placeholders:",
+        "required": "Required: {names}.",
+        "subject": "Subject",
+        "body": "Text",
+        "save": "Save template",
+        "preview": "Preview",
+        "reset": "Reset to default",
+        "saved": "Saved"
+      }
     },
     "database": {
       "title": "Database",

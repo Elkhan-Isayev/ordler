@@ -315,6 +315,20 @@ export const mailSettings = pgTable('mail_settings', {
   updatedBy: uuid('updated_by').references(() => members.id),
 });
 
+/** Admin rewording of a built-in email for one locale (SPEC §8.2); no row = built-in text. */
+export const emailTemplates = pgTable(
+  'email_templates',
+  {
+    key: text('key').notNull(),
+    locale: text('locale').notNull(),
+    subject: text('subject').notNull(),
+    body: text('body').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: uuid('updated_by').references(() => members.id),
+  },
+  (t) => [primaryKey({ columns: [t.key, t.locale] })],
+);
+
 /** Status sets owned by a team (later also by request types), SPEC §5.2. */
 export const workflows = pgTable(
   'workflows',

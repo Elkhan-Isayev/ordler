@@ -74,6 +74,9 @@ export const ADMIN_ERROR_CODES = [
   'role_in_use',
   'role_name_taken',
   'calendar_in_use',
+  'template_invalid',
+  'template_unknown_variable',
+  'template_missing_variable',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 

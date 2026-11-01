@@ -127,7 +127,10 @@
     "import_source_failed": "Mənbəyə qoşulmaq mümkün olmadı və ya xəta ilə cavab verdi. Sonra yenidən cəhd edin.",
     "import_not_ready": "Bu idxal hazırkı vəziyyətində bunu edə bilməz.",
     "calendar_in_use": "Bu təqvim SLA siyasətində istifadə olunur. Əvvəlcə siyasəti dəyişin.",
-    "delegation_overlap": "Bu günlərin bəziləri üçün artıq əvəzediciniz var."
+    "delegation_overlap": "Bu günlərin bəziləri üçün artıq əvəzediciniz var.",
+    "template_invalid": "Şablon mətnində sintaksis xətası var. Bütün mötərizələrin bağlandığını yoxlayın.",
+    "template_unknown_variable": "Şablonda bu məktubda olmayan əvəzləmə istifadə olunub.",
+    "template_missing_variable": "Şablonda məcburi əvəzləmə çatışmır."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -293,7 +296,25 @@
       "testRecipient": "Alıcı",
       "sendTest": "Göndər",
       "testSent": "Göndərildi. Poçt qutusunu yoxlayın.",
-      "testFailed": "Test məktubunu göndərmək mümkün olmadı:"
+      "testFailed": "Test məktubunu göndərmək mümkün olmadı:",
+      "templates": {
+        "title": "Məktub şablonları",
+        "subtitle": "Ordler məktublarının mətnini hər dil üçün dəyişin. Fiqurlu mötərizədəki mətn göndərilərkən əvəz olunur.",
+        "template": "Şablon",
+        "language": "Dil",
+        "customized": "dəyişdirilib",
+        "name_otp": "Giriş kodu",
+        "name_invite": "Dəvət",
+        "name_notification": "Bildiriş",
+        "variables": "Əvəzləmələr:",
+        "required": "Məcburi: {names}.",
+        "subject": "Mövzu",
+        "body": "Mətn",
+        "save": "Şablonu saxla",
+        "preview": "Önbaxış",
+        "reset": "Standarta qaytar",
+        "saved": "Saxlanıldı"
+      }
     },
     "database": {
       "title": "Verilənlər bazası",

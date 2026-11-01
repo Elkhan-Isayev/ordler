@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
+import { EmailTemplates } from './EmailTemplates.js';
 import { buttonClass, clearSecretField, inputClass, Panel, SectionHeader } from './common.js';
 
 const labelClass = 'flex flex-col gap-1 text-xs text-ink-muted';
@@ -178,6 +179,7 @@ export function MailSection({ defaultTestRecipient }: { defaultTestRecipient: st
       </Panel>
 
       {settings.source !== 'none' && <TestMail defaultRecipient={defaultTestRecipient} />}
+      <EmailTemplates />
     </section>
   );
 }

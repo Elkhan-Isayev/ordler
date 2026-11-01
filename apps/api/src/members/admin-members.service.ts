@@ -447,7 +447,12 @@ export class AdminMembersService {
     try {
       await this.deps.mail.send({
         to: email,
-        ...renderInviteEmail({ locale, company: instance?.companyName ?? 'Ordler', url, days: 7 }),
+        ...(await renderInviteEmail(this.db, {
+          locale,
+          company: instance?.companyName ?? 'Ordler',
+          url,
+          days: 7,
+        })),
       });
       return true;
     } catch {

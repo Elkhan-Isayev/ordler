@@ -76,6 +76,10 @@ import type {
   TriageAction,
   UpdateIssueInput,
   MailSettingsView,
+  EmailTemplateKey,
+  Locale,
+  EmailTemplateView,
+  UpdateEmailTemplateInput,
   MeResponse,
   PublicStrategy,
   AuthStrategyKind,
@@ -213,6 +217,21 @@ export const api = {
     apiRequest<MailSettingsView>('/api/admin/mail', { method: 'PUT', body }),
   sendTestMail: (to: string) =>
     apiRequest<TestMailResult>('/api/admin/mail/test', { method: 'POST', body: { to } }),
+  emailTemplates: () => apiRequest<EmailTemplateView[]>('/api/admin/mail/templates'),
+  saveEmailTemplate: (key: EmailTemplateKey, locale: Locale, body: UpdateEmailTemplateInput) =>
+    apiRequest<EmailTemplateView[]>(`/api/admin/mail/templates/${key}/${locale}`, {
+      method: 'PUT',
+      body,
+    }),
+  resetEmailTemplate: (key: EmailTemplateKey, locale: Locale) =>
+    apiRequest<EmailTemplateView[]>(`/api/admin/mail/templates/${key}/${locale}`, {
+      method: 'DELETE',
+    }),
+  previewEmailTemplate: (key: EmailTemplateKey, locale: Locale, body: UpdateEmailTemplateInput) =>
+    apiRequest<{ subject: string; text: string }>(
+      `/api/admin/mail/templates/${key}/${locale}/preview`,
+      { method: 'POST', body },
+    ),
   team: (key: string) => apiRequest<TeamView>(`/api/teams/${encodeURIComponent(key)}`),
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
