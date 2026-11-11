@@ -217,6 +217,29 @@ describe('import from Linear and Jira (SPEC §10.2)', () => {
     expect(row!.tokenEncrypted).not.toContain('lin_api_valid_token');
   });
 
+  it('connects to Trello with an API key and token, sealed together and never returned', async () => {
+    source = new FakeSource(`${'k'.repeat(32)}:${'t'.repeat(64)}`);
+    const invalid = await call('POST', '/api/admin/imports', owner, {
+      source: 'trello',
+      apiKey: 'short',
+      token: 't'.repeat(64),
+    });
+    expect(invalid.statusCode).toBe(400);
+    const response = await call('POST', '/api/admin/imports', owner, {
+      source: 'trello',
+      apiKey: 'k'.repeat(32),
+      token: 't'.repeat(64),
+    });
+    expect(response.statusCode).toBe(201);
+    const run = response.json<ImportRunView>();
+    expect(run.source).toBe('trello');
+    expect(source.tokens.at(-1)).toBe(`${'k'.repeat(32)}:${'t'.repeat(64)}`);
+    expect(response.body).not.toContain('t'.repeat(64));
+    const [row] = await t.ctx.db.select().from(importRuns).where(eq(importRuns.id, run.id));
+    expect(row!.sourceKey).toBe('trello');
+    expect(row!.tokenEncrypted).not.toContain('t'.repeat(64));
+  });
+
   it('suggests Ordler members by email and checks the mapping', async () => {
     const run = await connect();
     const options = (

@@ -1046,11 +1046,12 @@
     "confirmArchive": "Archive {name}? Its projects stay as they are."
   },
   "imports": {
-    "subtitle": "Bring issues, comments and files over from Linear or Jira with an API token. Nobody is notified while it runs, and running it again does not create duplicates.",
+    "subtitle": "Bring issues, comments and files over from Linear, Jira or Trello with an API token. Nobody is notified while it runs, and running it again does not create duplicates.",
     "history": "Previous imports",
     "source": {
       "linear": "Linear",
-      "jira": "Jira"
+      "jira": "Jira",
+      "trello": "Trello"
     },
     "countsShort": "{imported} imported · {failed} failed",
     "status": {
@@ -1065,13 +1066,17 @@
     "baseUrl": "Jira site address",
     "email": "Account email (Jira Cloud)",
     "emailHint": "Leave empty for Jira Server or Data Center with a personal access token.",
+    "apiKey": "Trello API key",
+    "apiKeyHint": "trello.com/power-ups/admin → New Power-Up → API key.",
     "tokenLabel": {
       "linear": "Linear API key",
-      "jira": "Jira API token"
+      "jira": "Jira API token",
+      "trello": "Trello token"
     },
     "tokenHint": {
       "linear": "Linear → Settings → Security & access → Personal API keys. Stored encrypted and erased when the import ends.",
-      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profile → Personal access tokens. Stored encrypted and erased when the import ends."
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profile → Personal access tokens. Stored encrypted and erased when the import ends.",
+      "trello": "Next to the API key, follow the “Token” link and allow read access. Both are stored encrypted and erased when the import ends."
     },
     "connecting": "Connecting…",
     "connectButton": "Connect",
@@ -1079,7 +1084,8 @@
     "connectedAs": "Connected to {source} as {name}.",
     "containers": {
       "linear": "Teams to import",
-      "jira": "Projects to import"
+      "jira": "Projects to import",
+      "trello": "Boards to import"
     },
     "target": "Into",
     "newTeam": "New team…",
@@ -1106,7 +1112,8 @@
       "estimate": "Estimates are not imported yet.",
       "cycle": "Cycles are not imported.",
       "links": "Issue links other than sub-issues are not imported yet.",
-      "truncated": "Only the first 1,000 issues per source were counted."
+      "truncated": "Only the first 1,000 issues per source were counted.",
+      "startDate": "Card start dates are not imported."
     },
     "counts": "{imported} imported, {updated} updated, {skipped} unchanged, {failed} failed · {comments} comments, {attachments} files",
     "failed": "Import failed: {error}",

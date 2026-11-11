@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-/** Import from Linear and Jira by API token (SPEC §10.2, ADR 0010). */
-export const IMPORT_SOURCES = ['linear', 'jira'] as const;
+/** Import from Linear, Jira and Trello by API token (SPEC §10.2, ADR 0010, ADR 0016). */
+export const IMPORT_SOURCES = ['linear', 'jira', 'trello'] as const;
 export type ImportSource = (typeof IMPORT_SOURCES)[number];
 
 export const importConnectSchema = z.discriminatedUnion('source', [
@@ -12,6 +12,18 @@ export const importConnectSchema = z.discriminatedUnion('source', [
     /** Jira Cloud signs in with email + API token; Server/DC with a personal token alone. */
     email: z.email().max(200).optional(),
     token: z.string().trim().min(10).max(500),
+  }),
+  z.object({
+    source: z.literal('trello'),
+    /** Power-Up API key from trello.com/power-ups/admin, paired with a user token. */
+    apiKey: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9]{16,100}$/),
+    token: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9]{32,300}$/),
   }),
 ]);
 export type ImportConnectInput = z.infer<typeof importConnectSchema>;

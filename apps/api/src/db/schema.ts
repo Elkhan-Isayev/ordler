@@ -1036,11 +1036,11 @@ export const initiativeProjects = pgTable(
   ],
 );
 
-/** One import from Linear or Jira (ADR 0010); the cursor makes it resumable. */
+/** One import from Linear, Jira or Trello (ADR 0010); the cursor makes it resumable. */
 export const importRuns = pgTable('import_runs', {
   id: id(),
-  source: text('source', { enum: ['linear', 'jira'] }).notNull(),
-  /** `linear` or `jira:<base url>`: what external ids are unique within. */
+  source: text('source', { enum: ['linear', 'jira', 'trello'] }).notNull(),
+  /** `linear`, `trello` or `jira:<base url>`: what external ids are unique within. */
   sourceKey: text('source_key').notNull(),
   baseUrl: text('base_url'),
   email: text('email'),

@@ -1046,11 +1046,12 @@
     "confirmArchive": "{name} archivieren? Die Projekte bleiben unverändert."
   },
   "imports": {
-    "subtitle": "Übernehmen Sie Issues, Kommentare und Dateien per API-Token aus Linear oder Jira. Während des Imports wird niemand benachrichtigt, und ein erneuter Lauf erzeugt keine Duplikate.",
+    "subtitle": "Übernehmen Sie Issues, Kommentare und Dateien aus Linear, Jira oder Trello per API-Token. Während des Imports wird niemand benachrichtigt, und ein erneuter Lauf erzeugt keine Duplikate.",
     "history": "Frühere Importe",
     "source": {
       "linear": "Linear",
-      "jira": "Jira"
+      "jira": "Jira",
+      "trello": "Trello"
     },
     "countsShort": "{imported} importiert · {failed} fehlgeschlagen",
     "status": {
@@ -1065,13 +1066,17 @@
     "baseUrl": "Adresse der Jira-Site",
     "email": "Konto-E-Mail (Jira Cloud)",
     "emailHint": "Leer lassen für Jira Server oder Data Center mit persönlichem Zugriffstoken.",
+    "apiKey": "Trello-API-Schlüssel",
+    "apiKeyHint": "trello.com/power-ups/admin → New Power-Up → API key.",
     "tokenLabel": {
       "linear": "Linear-API-Schlüssel",
-      "jira": "Jira-API-Token"
+      "jira": "Jira-API-Token",
+      "trello": "Trello-Token"
     },
     "tokenHint": {
       "linear": "Linear → Settings → Security & access → Personal API keys. Wird verschlüsselt gespeichert und nach dem Import gelöscht.",
-      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Wird verschlüsselt gespeichert und nach dem Import gelöscht."
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Wird verschlüsselt gespeichert und nach dem Import gelöscht.",
+      "trello": "Folgen Sie neben dem API-Schlüssel dem Link „Token“ und erlauben Sie Lesezugriff. Beides wird verschlüsselt gespeichert und nach dem Import gelöscht."
     },
     "connecting": "Verbinde…",
     "connectButton": "Verbinden",
@@ -1079,7 +1084,8 @@
     "connectedAs": "Mit {source} verbunden als {name}.",
     "containers": {
       "linear": "Zu importierende Teams",
-      "jira": "Zu importierende Projekte"
+      "jira": "Zu importierende Projekte",
+      "trello": "Zu importierende Boards"
     },
     "target": "Nach",
     "newTeam": "Neues Team…",
@@ -1106,7 +1112,8 @@
       "estimate": "Schätzungen werden noch nicht importiert.",
       "cycle": "Zyklen werden nicht importiert.",
       "links": "Verknüpfungen außer Unter-Issues werden noch nicht importiert.",
-      "truncated": "Es wurden nur die ersten 1.000 Issues je Quelle gezählt."
+      "truncated": "Es wurden nur die ersten 1.000 Issues je Quelle gezählt.",
+      "startDate": "Startdaten von Karten werden nicht importiert."
     },
     "counts": "{imported} importiert, {updated} aktualisiert, {skipped} unverändert, {failed} fehlgeschlagen · {comments} Kommentare, {attachments} Dateien",
     "failed": "Import fehlgeschlagen: {error}",

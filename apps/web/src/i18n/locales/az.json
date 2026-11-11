@@ -1046,11 +1046,12 @@
     "confirmArchive": "{name} arxivlənsin? Layihələr olduğu kimi qalır."
   },
   "imports": {
-    "subtitle": "API tokeni ilə Linear və ya Jira-dan tapşırıqları, şərhləri və faylları köçürün. İdxal zamanı heç kimə bildiriş göndərilmir, təkrar işə salmaq dublikat yaratmır.",
+    "subtitle": "Linear, Jira və ya Trello-dan tapşırıqları, şərhləri və faylları API tokeni ilə köçürün. İdxal zamanı heç kimə bildiriş göndərilmir, təkrar işə salma isə dublikat yaratmır.",
     "history": "Əvvəlki idxallar",
     "source": {
       "linear": "Linear",
-      "jira": "Jira"
+      "jira": "Jira",
+      "trello": "Trello"
     },
     "countsShort": "{imported} idxal edildi · {failed} xəta",
     "status": {
@@ -1065,13 +1066,17 @@
     "baseUrl": "Jira saytının ünvanı",
     "email": "Hesabın e-poçtu (Jira Cloud)",
     "emailHint": "Şəxsi giriş tokeni ilə Jira Server və ya Data Center üçün boş saxlayın.",
+    "apiKey": "Trello API açarı",
+    "apiKeyHint": "trello.com/power-ups/admin → New Power-Up → API key.",
     "tokenLabel": {
       "linear": "Linear API açarı",
-      "jira": "Jira API tokeni"
+      "jira": "Jira API tokeni",
+      "trello": "Trello tokeni"
     },
     "tokenHint": {
       "linear": "Linear → Settings → Security & access → Personal API keys. Şifrələnmiş saxlanılır və idxal bitəndə silinir.",
-      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Şifrələnmiş saxlanılır və idxal bitəndə silinir."
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Profil → Personal access tokens. Şifrələnmiş saxlanılır və idxal bitəndə silinir.",
+      "trello": "API açarının yanında «Token» linkini açın və oxuma icazəsi verin. Hər ikisi şifrələnmiş saxlanılır və idxal bitəndə silinir."
     },
     "connecting": "Qoşulur…",
     "connectButton": "Qoş",
@@ -1079,7 +1084,8 @@
     "connectedAs": "{source} sisteminə {name} kimi qoşuldu.",
     "containers": {
       "linear": "İdxal ediləcək komandalar",
-      "jira": "İdxal ediləcək layihələr"
+      "jira": "İdxal ediləcək layihələr",
+      "trello": "İdxal ediləcək lövhələr"
     },
     "target": "Hara",
     "newTeam": "Yeni komanda…",
@@ -1106,7 +1112,8 @@
       "estimate": "Qiymətləndirmələr hələ idxal edilmir.",
       "cycle": "Tsikllər idxal edilmir.",
       "links": "Alt tapşırıqlardan başqa əlaqələr hələ idxal edilmir.",
-      "truncated": "Hər mənbə üçün yalnız ilk 1000 tapşırıq sayıldı."
+      "truncated": "Hər mənbə üçün yalnız ilk 1000 tapşırıq sayıldı.",
+      "startDate": "Kartların başlama tarixləri köçürülmür."
     },
     "counts": "{imported} idxal edildi, {updated} yeniləndi, {skipped} dəyişməyib, {failed} xəta · {comments} şərh, {attachments} fayl",
     "failed": "İdxal xəta ilə bitdi: {error}",

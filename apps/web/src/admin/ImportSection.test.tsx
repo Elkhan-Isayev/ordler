@@ -87,6 +87,30 @@ describe('ImportSection', () => {
     );
   });
 
+  it('asks Trello for an API key and a token', async () => {
+    const calls = mockApi({
+      'GET /api/admin/imports': () => ({ json: [] }),
+      'POST /api/admin/imports': () => ({ status: 201, json: { ...RUN, source: 'trello' } }),
+      'GET /api/admin/imports/run-1/options': () => ({ json: OPTIONS }),
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      'GET /api/directory': () => ({ json: DIRECTORY }),
+    });
+    await renderWithI18n(<ImportSection />);
+    await userEvent.click(await screen.findByLabelText('Trello'));
+    expect(screen.queryByLabelText('Jira site address')).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Trello API key'), 'a'.repeat(32));
+    await userEvent.type(screen.getByLabelText('Trello token'), 'b'.repeat(64));
+    await userEvent.click(screen.getByRole('button', { name: 'Connect' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
+        source: 'trello',
+        apiKey: 'a'.repeat(32),
+        token: 'b'.repeat(64),
+      }),
+    );
+    expect(await screen.findByText('Boards to import')).toBeInTheDocument();
+  });
+
   it('maps teams and people, dry-runs and starts', async () => {
     const calls = mockApi({
       'GET /api/admin/imports': () => ({ json: [RUN] }),

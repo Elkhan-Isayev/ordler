@@ -82,7 +82,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🔌  | **Public REST API v1** with OpenAPI 3.1, cursor pagination and idempotency keys                                                                                 |
 | 🪝  | **Webhooks**: HMAC-signed, ordered per endpoint, retried for 24 hours, with a delivery log                                                                      |
 | 🤖  | **MCP server** with OAuth sign-in or personal access tokens, so AI agents work as you (and never approve for you)                                               |
-| 📦  | **Import from Linear and Jira** by API token, with dry run, pause and safe re-runs                                                                              |
+| 📦  | **Import from Linear, Jira and Trello** by API token, with dry run, pause and safe re-runs                                                                      |
 | 🔗  | **Link previews** in Teams, WhatsApp, Telegram and others, showing only the item number and company name                                                        |
 | 🧾  | **Audit log**, read-only and append-only                                                                                                                        |
 | 🌍  | **Four languages**: English, Русский, Deutsch, Azərbaycanca                                                                                                     |
@@ -464,7 +464,8 @@ approvals (replaces <current tool or spreadsheets>).
 - **MCP for AI agents**: point an MCP client at `https://tasks.company.com/mcp` with a
   personal token; see [ADR 0009](docs/adr/0009-personal-tokens-and-mcp.md).
 - **Import**: **Administration → Import** moves teams, issues, comments and attachments from
-  Linear or Jira; see [ADR 0010](docs/adr/0010-import-from-linear-and-jira.md).
+  Linear, Jira or Trello; see [ADR 0010](docs/adr/0010-import-from-linear-and-jira.md) and
+  [ADR 0016](docs/adr/0016-import-from-trello.md).
 
 ## Security
 

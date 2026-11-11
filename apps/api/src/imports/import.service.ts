@@ -35,7 +35,7 @@ import { teamStatuses } from '../issues/workflows.js';
 import type { OrgService } from '../org/org.service.js';
 import type { EventBus } from '../realtime/event-bus.js';
 import { ATTACHMENT_REF } from './markdown.js';
-import type { SourceFactory } from './sources/index.js';
+import { trelloSecret, type SourceFactory } from './sources/index.js';
 import {
   SourceError,
   type ExternalIssue,
@@ -76,7 +76,11 @@ const ZERO: ImportCounts = {
 const REPORT_LIMIT = 1000;
 const MAX_FAILURES = 5;
 const DRY_RUN_PAGES = 20;
-const SOURCE_NAME: Record<ImportSource, string> = { linear: 'Linear', jira: 'Jira' };
+const SOURCE_NAME: Record<ImportSource, string> = {
+  linear: 'Linear',
+  jira: 'Jira',
+  trello: 'Trello',
+};
 const LABEL_COLORS = ['#5e6ad2', '#26b5ce', '#4cb782', '#f2c94c', '#f2994a', '#eb5757', '#bb87fc'];
 
 const tokenPurpose = (id: string) => `import-run:${id}`;
@@ -88,7 +92,7 @@ function colorFor(name: string): string {
 }
 
 /**
- * Import from Linear and Jira (SPEC §10.2, ADR 0010). Admin-only (`org.manage`, checked by the
+ * Import from Linear, Jira and Trello (SPEC §10.2, ADR 0010, ADR 0016). Admin-only (`org.manage`, checked by the
  * controller). Runs are resumable rows; writes go straight to the tables, so nobody is notified.
  */
 export class ImportService {
@@ -129,16 +133,17 @@ export class ImportService {
   async connect(memberId: string, input: ImportConnectInput): Promise<ImportRunView> {
     const baseUrl = input.source === 'jira' ? input.baseUrl.replace(/\/+$/, '') : null;
     const email = input.source === 'jira' ? (input.email ?? null) : null;
-    const source = this.deps.sources({ source: input.source, baseUrl, email, token: input.token });
+    const token = input.source === 'trello' ? trelloSecret(input.apiKey, input.token) : input.token;
+    const source = this.deps.sources({ source: input.source, baseUrl, email, token });
     const account = await this.call(() => source.account());
     const id = randomUUID();
     await this.db.insert(importRuns).values({
       id,
       source: input.source,
-      sourceKey: baseUrl ? `jira:${baseUrl}` : 'linear',
+      sourceKey: baseUrl ? `jira:${baseUrl}` : input.source,
       baseUrl,
       email,
-      tokenEncrypted: this.deps.box.encrypt(input.token, tokenPurpose(id)),
+      tokenEncrypted: this.deps.box.encrypt(token, tokenPurpose(id)),
       account,
       createdBy: memberId,
     });

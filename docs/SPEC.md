@@ -513,7 +513,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
 | Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
 | Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
-| Data                            | Export all data (JSON), import from Linear and Jira via API token (§10.2, Phase 2).                                                                                                               |
+| Data                            | Export all data (JSON), import from Linear, Jira and Trello via API token (§10.2, Phase 2).                                                                                                       |
 
 ### 8.1 Authentication strategies and registration
 
@@ -678,11 +678,11 @@ access, but self-service: **every member creates tokens for themselves**.
   truncated to keep responses small for agents.
 - Tool descriptions are English; returned data keeps the original language of the content.
 
-### 10.2 Import from Linear and Jira (Phase 2)
+### 10.2 Import from Linear, Jira and Trello (Phase 2)
 
-Companies switch to Ordler with years of history in Linear or Jira. Import moves that work
+Companies switch to Ordler with years of history in Linear, Jira or Trello. Import moves that work
 over once (or repeatedly during a trial period) without losing context. Import uses only
-the source's API with a token: Ordler must be able to reach Linear or the Jira server.
+the source's API with a token: Ordler must be able to reach Linear, Trello or the Jira server.
 
 **Sources (token only)**
 
@@ -691,6 +691,7 @@ the source's API with a token: Ordler must be able to reach Linear or the Jira s
 | Linear                    | GraphQL API with a personal API key; Ordler only reads                                 |
 | Jira Cloud                | REST API v3 with the account email and an API token; scope chosen with JQL             |
 | Jira Server / Data Center | REST API v2 with a personal access token; internal URLs allowed; scope chosen with JQL |
+| Trello                    | REST API with a Power-Up API key and a read-only user token; boards are the scope      |
 
 File-based import (CSV/XML exports) is not supported: exports lose comments, attachments and
 relations.
@@ -729,6 +730,13 @@ relations.
    resume from the last item.
 6. **Report**: imported / updated / skipped / failed items with reasons, downloadable as CSV;
    the whole run is recorded in the audit log.
+
+Trello (ADR 0016): a board maps to a team, its lists to statuses (kind guessed from the list
+name, e.g. "Done" → completed, "Doing" → started) and cards to issues. Archived cards and
+cards in archived lists share an "Archived" status (canceled by default, mappable). Checklists
+become Markdown task lists in the description, link attachments a list of links, uploaded
+files attachments; card members become assignees and are matched by hand, because Trello
+hides emails. Card start dates are listed as not imported.
 
 **What comes over**
 
@@ -976,7 +984,7 @@ audit_log(id, actor_type, actor_id, action, target_type, target_id,
 
 Cycles, projects, initiatives, saved/shared views, timeline layout, SLA policies with
 business hours, approval timeouts/escalation/delegation, conditional steps and fields,
-routing rules, webhooks + public API, email-in, import from Linear and Jira via API token (§10.2), editable email templates,
+routing rules, webhooks + public API, email-in, import from Linear, Jira and Trello via API token (§10.2), editable email templates,
 Slack app (DMs, link unfurls, create from message).
 
 ### Phase 3

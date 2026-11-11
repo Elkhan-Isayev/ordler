@@ -1046,11 +1046,12 @@
     "confirmArchive": "Отправить {name} в архив? Проекты останутся как есть."
   },
   "imports": {
-    "subtitle": "Перенесите задачи, комментарии и файлы из Linear или Jira по API-токену. Во время импорта никто не получает уведомлений, а повторный запуск не создаёт дубликатов.",
+    "subtitle": "Перенесите задачи, комментарии и файлы из Linear, Jira или Trello по API-токену. Во время импорта никто не получает уведомлений, а повторный запуск не создаёт дубликатов.",
     "history": "Прошлые импорты",
     "source": {
       "linear": "Linear",
-      "jira": "Jira"
+      "jira": "Jira",
+      "trello": "Trello"
     },
     "countsShort": "импортировано {imported} · ошибок {failed}",
     "status": {
@@ -1065,13 +1066,17 @@
     "baseUrl": "Адрес сайта Jira",
     "email": "Email аккаунта (Jira Cloud)",
     "emailHint": "Оставьте пустым для Jira Server или Data Center с персональным токеном доступа.",
+    "apiKey": "API-ключ Trello",
+    "apiKeyHint": "trello.com/power-ups/admin → New Power-Up → API key.",
     "tokenLabel": {
       "linear": "API-ключ Linear",
-      "jira": "API-токен Jira"
+      "jira": "API-токен Jira",
+      "trello": "Токен Trello"
     },
     "tokenHint": {
       "linear": "Linear → Settings → Security & access → Personal API keys. Хранится зашифрованным и стирается по окончании импорта.",
-      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Профиль → Personal access tokens. Хранится зашифрованным и стирается по окончании импорта."
+      "jira": "Cloud: id.atlassian.com → Security → API tokens. Server/DC: Профиль → Personal access tokens. Хранится зашифрованным и стирается по окончании импорта.",
+      "trello": "Рядом с API-ключом откройте ссылку «Token» и разрешите доступ на чтение. Ключ и токен хранятся в зашифрованном виде и удаляются после окончания импорта."
     },
     "connecting": "Подключение…",
     "connectButton": "Подключить",
@@ -1079,7 +1084,8 @@
     "connectedAs": "Подключено к {source} как {name}.",
     "containers": {
       "linear": "Команды для импорта",
-      "jira": "Проекты для импорта"
+      "jira": "Проекты для импорта",
+      "trello": "Доски для импорта"
     },
     "target": "Куда",
     "newTeam": "Новая команда…",
@@ -1106,7 +1112,8 @@
       "estimate": "Оценки пока не импортируются.",
       "cycle": "Циклы не импортируются.",
       "links": "Связи задач, кроме подзадач, пока не импортируются.",
-      "truncated": "Посчитаны только первые 1000 задач каждого источника."
+      "truncated": "Посчитаны только первые 1000 задач каждого источника.",
+      "startDate": "Даты начала карточек не переносятся."
     },
     "counts": "импортировано {imported}, обновлено {updated}, без изменений {skipped}, ошибок {failed} · комментариев {comments}, файлов {attachments}",
     "failed": "Импорт завершился ошибкой: {error}",

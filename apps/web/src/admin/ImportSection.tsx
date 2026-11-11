@@ -1,13 +1,14 @@
-import type {
-  AdminDepartment,
-  ImportConfig,
-  ImportContainer,
-  ImportDryRun,
-  ImportOptions,
-  ImportRunView,
-  ImportSource,
-  MemberRef,
-  WorkflowStatus,
+import {
+  IMPORT_SOURCES,
+  type AdminDepartment,
+  type ImportConfig,
+  type ImportContainer,
+  type ImportDryRun,
+  type ImportOptions,
+  type ImportRunView,
+  type ImportSource,
+  type MemberRef,
+  type WorkflowStatus,
 } from '@ordler/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -147,12 +148,14 @@ function ConnectForm({ onConnected }: { onConnected: (run: ImportRunView) => voi
         await api.connectImport(
           source === 'linear'
             ? { source, token }
-            : {
-                source,
-                baseUrl: String(form.get('baseUrl') ?? '').trim(),
-                token,
-                ...(email ? { email } : {}),
-              },
+            : source === 'trello'
+              ? { source, apiKey: String(form.get('apiKey') ?? '').trim(), token }
+              : {
+                  source,
+                  baseUrl: String(form.get('baseUrl') ?? '').trim(),
+                  token,
+                  ...(email ? { email } : {}),
+                },
         ),
       );
     } catch (failure) {
@@ -167,7 +170,7 @@ function ConnectForm({ onConnected }: { onConnected: (run: ImportRunView) => voi
       <form className="flex flex-col gap-3" onSubmit={(event) => void submit(event)}>
         <fieldset className="flex gap-4">
           <legend className="mb-2 text-sm font-semibold text-ink">{t('imports.connect')}</legend>
-          {(['linear', 'jira'] as const).map((value) => (
+          {IMPORT_SOURCES.map((value) => (
             <label key={value} className="flex items-center gap-2 text-sm text-ink">
               <input
                 type="radio"
@@ -203,6 +206,24 @@ function ConnectForm({ onConnected }: { onConnected: (run: ImportRunView) => voi
             </label>
             <p id="import-email-hint" className="-mt-2 text-xs text-ink-faint">
               {t('imports.emailHint')}
+            </p>
+          </>
+        )}
+        {source === 'trello' && (
+          <>
+            <label className="flex flex-col gap-1 text-xs text-ink-muted">
+              {t('imports.apiKey')}
+              <input
+                name="apiKey"
+                required
+                autoComplete="off"
+                spellCheck={false}
+                aria-describedby="import-api-key-hint"
+                className={inputClass}
+              />
+            </label>
+            <p id="import-api-key-hint" className="-mt-2 text-xs text-ink-faint">
+              {t('imports.apiKeyHint')}
             </p>
           </>
         )}
