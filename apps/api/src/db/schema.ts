@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -1208,4 +1209,87 @@ export const savedViews = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('saved_views_team_idx').on(t.teamId), index('saved_views_owner_idx').on(t.ownerId)],
+);
+
+/**
+ * Whiteboards (SPEC §5.5, ADR 0015): a team's collaborative canvas. `seq` counts changes; the
+ * row lock taken to bump it orders concurrent saves, so readers never skip a change number.
+ */
+export const whiteboards = pgTable(
+  'whiteboards',
+  {
+    id: id(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id),
+    title: text('title').notNull(),
+    createdBy: uuid('created_by').references(() => members.id),
+    seq: bigint('seq', { mode: 'number' }).notNull().default(0),
+    elementCount: integer('element_count').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+  },
+  (t) => [index('whiteboards_team_idx').on(t.teamId)],
+);
+
+/**
+ * One row per canvas element, deleted ones included: editors converge by keeping the higher
+ * `version` (ties: the lower `version_nonce`), the same rule the editor applies locally.
+ */
+export const whiteboardElements = pgTable(
+  'whiteboard_elements',
+  {
+    whiteboardId: uuid('whiteboard_id')
+      .notNull()
+      .references(() => whiteboards.id),
+    elementId: text('element_id').notNull(),
+    version: integer('version').notNull(),
+    versionNonce: integer('version_nonce').notNull(),
+    isDeleted: boolean('is_deleted').notNull().default(false),
+    seq: bigint('seq', { mode: 'number' }).notNull(),
+    data: jsonb('data').notNull(),
+    updatedBy: uuid('updated_by').references(() => members.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.whiteboardId, t.elementId] }),
+    index('whiteboard_elements_seq_idx').on(t.whiteboardId, t.seq),
+  ],
+);
+
+/** Images placed on a board, in PostgreSQL like attachments (ADR 0008). */
+export const whiteboardFiles = pgTable(
+  'whiteboard_files',
+  {
+    whiteboardId: uuid('whiteboard_id')
+      .notNull()
+      .references(() => whiteboards.id),
+    fileId: text('file_id').notNull(),
+    mimeType: text('mime_type').notNull(),
+    size: integer('size').notNull(),
+    data: bytea('data').notNull(),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.whiteboardId, t.fileId] })],
+);
+
+/** Whiteboards attached to issues; a board may serve several issues and the other way round. */
+export const issueWhiteboards = pgTable(
+  'issue_whiteboards',
+  {
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id),
+    whiteboardId: uuid('whiteboard_id')
+      .notNull()
+      .references(() => whiteboards.id),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.issueId, t.whiteboardId] }),
+    index('issue_whiteboards_board_idx').on(t.whiteboardId),
+  ],
 );

@@ -61,6 +61,11 @@ export class RealtimeClient {
     };
   }
 
+  /** Sends a message on the open socket; dropped while disconnected (pointers are ephemeral). */
+  publish(message: RealtimeClientMessage): void {
+    this.send(message);
+  }
+
   stop(): void {
     this.stopped = true;
     clearTimeout(this.timer);

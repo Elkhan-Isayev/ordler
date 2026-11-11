@@ -27,6 +27,7 @@ const MEMBER: readonly Permission[] = [
   'issue.update',
   'issue.assign',
   'comment.create',
+  'whiteboard.edit',
   'request.create',
   // Necessary but not sufficient: the active approval step must also resolve to the user.
   'request.approve',

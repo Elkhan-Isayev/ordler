@@ -46,6 +46,15 @@ describe('system roles', () => {
     expect(viewer).not.toContain('request.create');
   });
 
+  it('everyone who creates issues may draw on whiteboards; viewers and guests only look', () => {
+    for (const role of Object.values(SYSTEM_ROLES)) {
+      expect(role.permissions.includes('whiteboard.edit'), role.key).toBe(
+        role.permissions.includes('issue.create'),
+      );
+    }
+    expect(SYSTEM_ROLES.viewer.permissions).not.toContain('whiteboard.edit');
+  });
+
   it('personal tokens and MCP are available to everyone except guests', () => {
     for (const role of Object.values(SYSTEM_ROLES)) {
       const expected = role.key !== 'guest';

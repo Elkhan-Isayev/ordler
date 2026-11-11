@@ -5,6 +5,7 @@ import {
   FolderKanban,
   Inbox,
   Layers,
+  Shapes,
   Mountain,
   Send,
   Settings,
@@ -115,6 +116,9 @@ export function Sidebar({
           </NavItem>
           <NavItem icon={Layers} href="/views">
             {t('nav.views')}
+          </NavItem>
+          <NavItem icon={Shapes} href="/whiteboards">
+            {t('nav.whiteboards')}
           </NavItem>
           <NavItem icon={Store} href="/portals">
             {t('nav.servicePortals')}

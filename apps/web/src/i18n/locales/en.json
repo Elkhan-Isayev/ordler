@@ -22,7 +22,8 @@
     "admin": "Administration",
     "board": "Board",
     "integrations": "Integrations",
-    "teamSettings": "Settings"
+    "teamSettings": "Settings",
+    "whiteboards": "Whiteboards"
   },
   "settings": {
     "language": "Language"
@@ -134,7 +135,8 @@
     "email_address_taken": "Another request type already uses this email address.",
     "slack_not_configured": "The Slack app is not fully configured yet.",
     "slack_rejected": "Slack rejected the token. Check that it was copied completely.",
-    "oauth_invalid_request": "This authorization link is not valid. Start the connection again from your app."
+    "oauth_invalid_request": "This authorization link is not valid. Start the connection again from your app.",
+    "whiteboard_full": "This whiteboard is full. Remove unused elements or start a new board."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -1294,5 +1296,51 @@
     "warning": "Only allow this if you just connected this app yourself. You can revoke it any time in Settings → Access tokens.",
     "allow": "Allow",
     "deny": "Deny"
+  },
+  "whiteboards": {
+    "loading": "Loading the whiteboard…",
+    "new": "New whiteboard",
+    "titleLabel": "Whiteboard title",
+    "titlePlaceholder": "Whiteboard title",
+    "team": "Team",
+    "create": "Create",
+    "empty": "No whiteboards yet. Create one to sketch ideas, flows and plans together.",
+    "missing": "This whiteboard was deleted or you cannot see it.",
+    "readOnly": "View only",
+    "onIssues": "Attached to",
+    "here": "{count, plural, one {# person here} other {# people here}}",
+    "insert": "Insert…",
+    "delete": "Delete whiteboard",
+    "confirmDelete": "Delete the whiteboard “{title}”? It disappears from every issue it is attached to.",
+    "section": "Whiteboards",
+    "newOnIssue": "New whiteboard",
+    "attachExisting": "Attach existing",
+    "pick": "Choose a whiteboard…",
+    "open": "Open",
+    "detach": "Detach “{title}”",
+    "templates": {
+      "sticky": "Sticky note",
+      "flowchart": "Flowchart",
+      "retrospective": "Retrospective",
+      "kanban": "Kanban",
+      "mindmap": "Mind map"
+    },
+    "labels": {
+      "start": "Start",
+      "step": "Step",
+      "decision": "Decision?",
+      "end": "End",
+      "yes": "yes",
+      "no": "no",
+      "wentWell": "Went well",
+      "toImprove": "To improve",
+      "actions": "Action items",
+      "todo": "To do",
+      "doing": "In progress",
+      "done": "Done",
+      "card": "Task",
+      "topic": "Main topic",
+      "idea": "Idea"
+    }
   }
 }

@@ -111,6 +111,7 @@ describe('team issues', () => {
       comment: true,
       delete: true,
       shareViews: true,
+      whiteboards: true,
     });
   });
 
@@ -230,6 +231,7 @@ describe('issue permissions', () => {
       comment: false,
       delete: false,
       shareViews: false,
+      whiteboards: false,
     });
     expect((await call('GET', '/api/issues/HELP-1', viewer.cookie)).statusCode).toBe(200);
     expect(

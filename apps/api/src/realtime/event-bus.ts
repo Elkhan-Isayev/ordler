@@ -1,3 +1,4 @@
+import type { WhiteboardPresence } from '@ordler/shared';
 import pg from 'pg';
 
 /** Something changed that open browser tabs should see; resolved to data per subscriber. */
@@ -9,7 +10,13 @@ export type DomainEvent =
   /** The Inbox or Approvals of these members changed. */
   | { type: 'member.inbox'; memberIds: string[] }
   /** A request changed: its team and the people involved (requester, approvers) hear it. */
-  | { type: 'request.changed'; teamId: string; identifier: string; memberIds: string[] };
+  | { type: 'request.changed'; teamId: string; identifier: string; memberIds: string[] }
+  /** Elements of a whiteboard were saved under change number `seq`. */
+  | { type: 'whiteboard.elements'; teamId: string; whiteboardId: string; seq: number }
+  /** A whiteboard was renamed or deleted. */
+  | { type: 'whiteboard.changed'; teamId: string; whiteboardId: string }
+  /** A tab's pointer on a whiteboard; never stored, only fanned out. */
+  | { type: 'whiteboard.presence'; whiteboardId: string; presence: WhiteboardPresence };
 
 export type EventHandler = (event: DomainEvent) => void;
 
@@ -37,7 +44,7 @@ export const EVENT_CHANNEL = 'ordler_events';
 
 /**
  * PostgreSQL LISTEN/NOTIFY: every replica hears every event without extra infrastructure.
- * Payloads carry only ids, well under the 8000-byte NOTIFY limit.
+ * Payloads carry ids (and whiteboard pointers of at most a few KB), under the 8000-byte limit.
  */
 export class PgEventBus implements EventBus {
   private readonly local = new LocalEventBus();

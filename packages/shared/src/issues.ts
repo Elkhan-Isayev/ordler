@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import {
+  whiteboardPresenceSchema,
+  type WhiteboardElement,
+  type WhiteboardPresence,
+  type WhiteboardPresenceMessage,
+} from './whiteboards.js';
+import {
   ISSUE_STATUS_CATEGORIES,
   PRIORITIES,
   type IssueStatusCategory,
@@ -98,6 +104,7 @@ export const ISSUE_ERROR_CODES = [
   'single_assignee',
   'cycle_not_in_team',
   'project_not_in_team',
+  'whiteboard_full',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -163,6 +170,8 @@ export interface TeamView {
     delete: boolean;
     /** Saving views everyone in the team sees (`view.create_shared`). */
     shareViews: boolean;
+    /** Creating whiteboards and drawing on them (`whiteboard.edit`). */
+    whiteboards: boolean;
   };
 }
 
@@ -265,15 +274,32 @@ export type RealtimeServerMessage =
   /** Something arrived in or left the member's Inbox or Approvals. */
   | { type: 'inbox.changed' }
   /** A request the member is involved in changed; pages showing it reload. */
-  | { type: 'request.changed'; identifier: string };
+  | { type: 'request.changed'; identifier: string }
+  /** Elements of an open whiteboard changed; `seq` is the change number they belong to. */
+  | {
+      type: 'whiteboard.elements';
+      whiteboardId: string;
+      seq: number;
+      elements: WhiteboardElement[];
+    }
+  /** Another tab's pointer or selection on an open whiteboard. */
+  | { type: 'whiteboard.presence'; whiteboardId: string; presence: WhiteboardPresence }
+  /** The whiteboard was renamed or deleted: its page reloads it. */
+  | { type: 'whiteboard.changed'; whiteboardId: string };
 
-/** Browser → server messages; topics are `team:<teamId>` and the member's own `member:<id>`. */
+/**
+ * Browser → server messages; topics are `team:<teamId>`, the member's own `member:<id>` and
+ * `whiteboard:<id>`, where tabs also share their pointer.
+ */
 export type RealtimeClientMessage =
-  { type: 'subscribe'; topic: string } | { type: 'unsubscribe'; topic: string };
+  | { type: 'subscribe'; topic: string }
+  | { type: 'unsubscribe'; topic: string }
+  | WhiteboardPresenceMessage;
 
 export const realtimeClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('subscribe'), topic: z.string().max(100) }),
   z.object({ type: z.literal('unsubscribe'), topic: z.string().max(100) }),
+  whiteboardPresenceSchema,
 ]);
 
 export function teamTopic(teamId: string): string {

@@ -376,3 +376,108 @@ describe('personal access tokens', () => {
     expect(audit).toHaveLength(1);
   });
 });
+
+describe('MCP whiteboards (SPEC §5.5)', () => {
+  it('draws a diagram on a new board, attaches it to an issue and reads it back', async () => {
+    const { token } = (await createToken(dev.cookie)).json<CreatedToken>();
+    const created = await tool(token, 'create_whiteboard', {
+      team: 'HELP',
+      title: 'Printer escalation',
+      issue: 'HELP-1',
+      nodes: [
+        { id: 'jam', label: 'Printer jams', shape: 'ellipse' },
+        { id: 'fix', label: 'Can the user fix it?', shape: 'diamond' },
+        { id: 'ticket', label: 'Call the vendor', color: 'red' },
+      ],
+      edges: [
+        { from: 'jam', to: 'fix' },
+        { from: 'fix', to: 'ticket', label: 'no' },
+      ],
+    });
+    expect(created.isError).toBe(false);
+    const board = created.data();
+    expect(board).toMatchObject({
+      title: 'Printer escalation',
+      team: 'HELP',
+      issues: ['HELP-1'],
+      canEdit: true,
+      connectors: [
+        { from: 'jam', to: 'fix', label: null },
+        { from: 'fix', to: 'ticket', label: 'no' },
+      ],
+    });
+    expect(board.shapes.map((s: { label: string }) => s.label)).toEqual([
+      'Printer jams',
+      'Can the user fix it?',
+      'Call the vendor',
+    ]);
+    expect(board.url).toBe(`https://ordler.test/whiteboards/${board.id}`);
+
+    // People see it in Ordler, and the issue lists it as a resource for the agent.
+    const scene = (await call('GET', `/api/whiteboards/${board.id}/scene`, dev.cookie)).json<{
+      elements: unknown[];
+    }>();
+    expect(scene.elements.length).toBeGreaterThanOrEqual(7);
+    const issue = (await tool(token, 'get_issue', { identifier: 'HELP-1' })).data();
+    expect(issue.whiteboards).toEqual([
+      expect.objectContaining({ id: board.id, resource: `ordler://whiteboard/${board.id}` }),
+    ]);
+    const resource = await rpc(token, 'resources/read', { uri: `ordler://whiteboard/${board.id}` });
+    expect(JSON.parse(resource.result.contents[0].text)).toMatchObject({ id: board.id });
+
+    const added = await tool(token, 'add_to_whiteboard', {
+      id: board.id,
+      nodes: [{ id: 'done', label: 'Printing again', color: 'green' }],
+      edges: [{ from: 'ticket', to: 'done' }],
+    });
+    expect(added.data().connectors).toHaveLength(3);
+    expect((await tool(token, 'list_whiteboards', { team: 'HELP' })).data()).toMatchObject([
+      { id: board.id, title: 'Printer escalation' },
+    ]);
+
+    const audited = await t.ctx.db
+      .select({ action: auditLog.action, after: auditLog.after })
+      .from(auditLog)
+      .where(eq(auditLog.targetId, board.id));
+    expect(audited).toEqual(
+      expect.arrayContaining([
+        { action: 'whiteboard.created', after: { title: 'Printer escalation', via: 'Claude' } },
+        { action: 'whiteboard.linked', after: { issue: 'HELP-1', via: 'Claude' } },
+        {
+          action: 'whiteboard.content_changed',
+          after: { elements: expect.any(Number), via: 'Claude' },
+        },
+      ]),
+    );
+  });
+
+  it('reports diagram mistakes without leaving an empty board behind', async () => {
+    const { token } = (await createToken(dev.cookie)).json<CreatedToken>();
+    const wrong = await tool(token, 'create_whiteboard', {
+      team: 'HELP',
+      title: 'Broken',
+      nodes: [{ id: 'a', label: 'A' }],
+      edges: [{ from: 'a', to: 'missing' }],
+    });
+    expect(wrong).toMatchObject({ isError: true, text: expect.stringMatching(/^Invalid diagram/) });
+    expect((await tool(token, 'list_whiteboards')).data()).toEqual([]);
+    const elsewhere = await tool(token, 'create_whiteboard', { team: 'ACC', title: 'Peek' });
+    expect(elsewhere).toMatchObject({ isError: true, text: 'Ordler refused: not_found' });
+  });
+
+  it('keeps read-only tokens to reading boards', async () => {
+    const { token } = (await createToken(dev.cookie, { scopes: ['read'] })).json<CreatedToken>();
+    const names = (await rpc(token, 'tools/list')).result.tools.map(
+      (x: { name: string }) => x.name,
+    );
+    expect(names).toEqual(expect.arrayContaining(['list_whiteboards', 'get_whiteboard']));
+    expect(names).not.toContain('create_whiteboard');
+    expect((await tool(token, 'create_whiteboard', { team: 'HELP', title: 'x' })).isError).toBe(
+      true,
+    );
+    const missing = await tool(token, 'get_whiteboard', {
+      id: '00000000-0000-7000-8000-000000000000',
+    });
+    expect(missing).toMatchObject({ isError: true, text: 'Ordler refused: not_found' });
+  });
+});

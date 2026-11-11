@@ -13,6 +13,8 @@ import { InitiativePage, InitiativesPage } from './projects/InitiativePages.js';
 import { ProjectPage } from './projects/ProjectPage.js';
 import { ProjectsPage } from './projects/ProjectsPage.js';
 import { ViewsPage } from './issues/ViewsPage.js';
+import { WhiteboardPage } from './whiteboards/WhiteboardPage.js';
+import { WhiteboardsPage } from './whiteboards/WhiteboardsPage.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
 import { TriagePage } from './issues/TriagePage.js';
 import { NewRequestPage } from './requests/NewRequestPage.js';
@@ -57,6 +59,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const newGroup = /^\/portals\/group\/([0-9a-f,-]+)\/?$/.exec(path);
   const requestPage = /^\/requests\/(REQ-\d+)\/?$/i.exec(path);
   const groupPage = /^\/request-groups\/(REQ-G-\d+)\/?$/i.exec(path);
+  const whiteboardPage = /^\/whiteboards\/([0-9a-f-]{36})\/?$/.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
   const counts = useInboxCounts(me.member.id);
@@ -112,6 +115,10 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <InitiativesPage canCreate={me.organizationPermissions.includes('initiative.manage')} />
         ) : initiativePage ? (
           <InitiativePage key={initiativePage[1]} initiativeId={initiativePage[1]!} />
+        ) : path === '/whiteboards' ? (
+          <WhiteboardsPage />
+        ) : whiteboardPage ? (
+          <WhiteboardPage key={whiteboardPage[1]} id={whiteboardPage[1]!} />
         ) : path === '/views' ? (
           <ViewsPage />
         ) : teamViews ? (

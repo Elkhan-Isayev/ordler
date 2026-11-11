@@ -71,6 +71,7 @@ images and Helm chart are public, like Wiki.js (§17).
 | **Project**           | Set of issues (possibly across teams) with a goal, lead, target date.                                                                                                                 |
 | **Initiative**        | Group of projects aligned with an organizational objective.                                                                                                                           |
 | **View**              | Saved filter + display configuration over issues/requests.                                                                                                                            |
+| **Whiteboard**        | A team's collaborative canvas (shapes, arrows, sticky notes, text, drawings, images), edited live by several people and attachable to issues (§5.5).                                  |
 | **Inbox**             | Per-user notification feed.                                                                                                                                                           |
 | **SLA**               | Service level target (time to first response, time to resolution) attached to a request type.                                                                                         |
 | **Role**              | Named set of permissions, granted to a member at a **scope** (organization, department, team).                                                                                        |
@@ -153,7 +154,7 @@ issue.read                 issue.create                issue.update
 issue.delete               issue.assign                issue.move_team
 comment.create             comment.delete_any
 cycle.manage               project.manage              initiative.manage
-view.create_shared
+view.create_shared         whiteboard.edit
 request.create             request.read_department     request.triage
 request.comment_internal   request.approve             request.reassign
 api_key.manage             webhook.manage              integration.manage
@@ -181,6 +182,7 @@ updates system roles + tests.
 | issue.create                   |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |       |
 | issue.read                     |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
 | request.create                 |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |   ✓   |
+| whiteboard.edit                |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |       |
 | token.create_personal, mcp.use |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
 | org.audit.read                 |   ✓   |     ✓     |            |                 |           |        |        |       |
 
@@ -238,6 +240,7 @@ Workspace
   Initiatives
   Projects
   Views
+  Whiteboards          ← collaborative canvases (§5.5)
   Service portals      ← catalog of all departments' request types
 
 Your departments
@@ -268,6 +271,30 @@ Your departments
 - Optimistic updates; real-time sync of changes from other users (< 1 s).
 - Light / dark theme, follows OS by default.
 - Full-text search across issues, requests, comments, projects (permission-filtered).
+
+### 5.5 Whiteboards
+
+Miro-like canvases built into Ordler ([ADR 0015](adr/0015-whiteboards.md)):
+
+- A whiteboard belongs to a team. Everyone who can read the team sees it (Workspace →
+  Whiteboards); members with `whiteboard.edit` create boards and draw on them; the creator and
+  members with `team.update` rename and delete them. Deleting archives the board.
+- Canvas: shapes, arrows that stay bound to shapes, text, freehand drawing, images, frames,
+  sticky notes, a shape library, laser pointer, export to PNG/SVG, light and dark theme.
+  Templates: flowchart, retrospective, kanban, mind map.
+- Real-time collaboration: several people edit the same board at once and see each other's
+  pointers, names and selections; edits reach other tabs within a second and converge per
+  element (higher version wins). Reconnecting tabs catch up on what they missed.
+- A board can be attached to several issues and an issue can have several boards. The issue
+  page shows each attached board live inside the issue, with "Open" for the full-screen
+  editor; attaching and detaching needs `issue.update` on the issue.
+- MCP: `list_whiteboards`, `get_whiteboard` (shapes, labels, connectors, text),
+  `create_whiteboard` (optionally drawing a diagram from nodes and edges and attaching it to
+  an issue), `add_to_whiteboard`, `attach_whiteboard`; resource `ordler://whiteboard/{id}`;
+  `get_issue` lists attached boards. Writes need the `issues:write` scope.
+- Audit: create, rename, delete, attach and detach; content changes only when made through a
+  token (editors save many times a second).
+- Limits: 20 000 elements per board, 512 KB per element; images up to `ATTACHMENT_MAX_MB`.
 
 ---
 
@@ -638,7 +665,10 @@ access, but self-service: **every member creates tokens for themselves**.
   - `get_request`, `list_my_requests`
   - `list_my_approvals` (read-only)
   - `list_teams`, `list_members`, `whoami`
+  - `list_whiteboards`, `get_whiteboard`, `create_whiteboard`, `add_to_whiteboard`,
+    `attach_whiteboard` (§5.5)
 - Resources: `ordler://issue/HELP-142`, `ordler://request/IT-REQ-57`, `ordler://team/HELP`,
+  `ordler://whiteboard/<id>`,
   so clients can attach items as context.
 - **Approvals cannot be decided through MCP or tokens**: `list_my_approvals` is read-only;
   approve/reject/request changes remain human actions in the signed-in UI (§6.3).
@@ -853,6 +883,10 @@ chat_connection(id, provider, workspace_id, bot_token_encrypted, signing_secret_
 member_chat_identity(member_id, provider, external_user_id, linked_at)
 personal_access_token(id, member_id, name, token_hash, prefix, scopes[], expires_at,
                       last_used_at, last_used_ip, revoked_at, created_at)
+whiteboard(id, team_id, title, created_by, seq, element_count, created_at, updated_at, archived_at)
+whiteboard_element(whiteboard_id, element_id, version, version_nonce, is_deleted, seq, data JSONB)
+whiteboard_file(whiteboard_id, file_id, mime_type, size, data)
+issue_whiteboard(issue_id, whiteboard_id, created_by, created_at)
 audit_log(id, actor_type, actor_id, action, target_type, target_id,
           before JSONB, after JSONB, ip, user_agent, created_at)
 ```

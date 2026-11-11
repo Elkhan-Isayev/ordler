@@ -13,6 +13,8 @@ import { IssuesController } from './issues/issues.controller.js';
 import { AdminRolesController } from './admin/admin-roles.controller.js';
 import { CyclesController } from './cycles/cycles.controller.js';
 import { ViewsController } from './views/views.controller.js';
+import { WhiteboardsController } from './whiteboards/whiteboards.controller.js';
+import { registerWhiteboardHttp } from './whiteboards/whiteboard-http.js';
 import { ProjectsController } from './projects/projects.controller.js';
 import { InitiativesController } from './projects/initiatives.controller.js';
 import { ImportsController } from './imports/imports.controller.js';
@@ -66,6 +68,7 @@ export class AppModule {
         TokensController,
         CyclesController,
         ViewsController,
+        WhiteboardsController,
         ProjectsController,
         InitiativesController,
         ImportsController,
@@ -96,4 +99,5 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   new PublicApi(ctx).register(instance);
   registerSlackHttp(instance, ctx.slackApp);
   registerOAuthHttp(instance, ctx.oauth, ctx.limits.oauthRegister);
+  registerWhiteboardHttp(instance, ctx.whiteboards, ctx.attachments.maxBytes);
 }

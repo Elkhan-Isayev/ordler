@@ -26,6 +26,7 @@ import { ProjectPicker } from '../projects/ProjectPicker.js';
 import { cycleName } from '../cycles/format.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
+import { IssueWhiteboards } from '../whiteboards/IssueWhiteboards.js';
 import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
 
 type TimelineEntry =
@@ -194,6 +195,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
               onChanged={() => void reload()}
               onError={(code) => setError(code)}
             />
+            <IssueWhiteboards issue={issue} team={team} onError={setError} />
             <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
               <ol className="flex flex-col gap-3 text-sm text-ink-muted">

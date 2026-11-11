@@ -99,6 +99,13 @@ import type {
   UpdateAuthStrategyInput,
   UpdateMailSettingsInput,
   UpdateStatusResponse,
+  WhiteboardCreate,
+  WhiteboardElement,
+  WhiteboardFile,
+  WhiteboardFileInput,
+  WhiteboardScene,
+  WhiteboardSummary,
+  WhiteboardView,
 } from '@ordler/shared';
 
 export class ApiError extends Error {
@@ -251,7 +258,9 @@ export const api = {
   teamIssues: (key: string) =>
     apiRequest<IssueSummary[]>(`/api/teams/${encodeURIComponent(key)}/issues`),
   readableTeams: () =>
-    apiRequest<Array<{ id: string; key: string; name: string; department: string }>>('/api/teams'),
+    apiRequest<
+      Array<{ id: string; key: string; name: string; department: string; whiteboards?: boolean }>
+    >('/api/teams'),
   views: (teamKey?: string) =>
     apiRequest<SavedView[]>(
       teamKey ? `/api/teams/${encodeURIComponent(teamKey)}/views` : '/api/views',
@@ -264,6 +273,41 @@ export const api = {
   updateView: (id: string, body: ViewUpdate) =>
     apiRequest<SavedView>(`/api/views/${id}`, { method: 'PATCH', body }),
   deleteView: (id: string) => apiRequest<void>(`/api/views/${id}`, { method: 'DELETE' }),
+  whiteboards: (teamKey?: string) =>
+    apiRequest<WhiteboardSummary[]>(
+      teamKey ? `/api/whiteboards?team=${encodeURIComponent(teamKey)}` : '/api/whiteboards',
+    ),
+  whiteboard: (id: string) => apiRequest<WhiteboardView>(`/api/whiteboards/${id}`),
+  createWhiteboard: (body: WhiteboardCreate) =>
+    apiRequest<WhiteboardView>('/api/whiteboards', { method: 'POST', body }),
+  renameWhiteboard: (id: string, title: string) =>
+    apiRequest<WhiteboardView>(`/api/whiteboards/${id}`, { method: 'PATCH', body: { title } }),
+  deleteWhiteboard: (id: string) =>
+    apiRequest<void>(`/api/whiteboards/${id}`, { method: 'DELETE' }),
+  whiteboardScene: (id: string, since = 0) =>
+    apiRequest<WhiteboardScene>(`/api/whiteboards/${id}/scene?since=${since}`),
+  saveWhiteboardScene: (id: string, elements: WhiteboardElement[]) =>
+    apiRequest<{ seq: number; accepted: string[] }>(`/api/whiteboards/${id}/scene`, {
+      method: 'POST',
+      body: { elements },
+    }),
+  whiteboardFiles: (id: string, ids: string[]) =>
+    apiRequest<WhiteboardFile[]>(
+      `/api/whiteboards/${id}/files?ids=${ids.map(encodeURIComponent).join(',')}`,
+    ),
+  saveWhiteboardFile: (id: string, body: WhiteboardFileInput) =>
+    apiRequest<void>(`/api/whiteboards/${id}/files`, { method: 'POST', body }),
+  issueWhiteboards: (identifier: string) =>
+    apiRequest<WhiteboardSummary[]>(`/api/issues/${encodeURIComponent(identifier)}/whiteboards`),
+  attachWhiteboard: (identifier: string, whiteboardId: string) =>
+    apiRequest<WhiteboardSummary[]>(`/api/issues/${encodeURIComponent(identifier)}/whiteboards`, {
+      method: 'POST',
+      body: { whiteboardId },
+    }),
+  detachWhiteboard: (identifier: string, whiteboardId: string) =>
+    apiRequest<void>(`/api/issues/${encodeURIComponent(identifier)}/whiteboards/${whiteboardId}`, {
+      method: 'DELETE',
+    }),
   projects: (teamKey?: string) =>
     apiRequest<ProjectSummary[]>(
       teamKey ? `/api/teams/${encodeURIComponent(teamKey)}/projects` : '/api/projects',

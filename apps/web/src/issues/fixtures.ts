@@ -57,7 +57,15 @@ export const TEAM: TeamView = {
     { id: 'l-bug', name: 'Bug', color: '#e5484d', scope: 'team' },
     { id: 'l-sec', name: 'Security', color: '#3e63dd', scope: 'organization' },
   ],
-  can: { create: true, update: true, assign: true, comment: true, delete: true, shareViews: false },
+  can: {
+    create: true,
+    update: true,
+    assign: true,
+    comment: true,
+    delete: true,
+    shareViews: false,
+    whiteboards: true,
+  },
 };
 
 export function issue(number: number, overrides: Partial<IssueSummary> = {}): IssueSummary {

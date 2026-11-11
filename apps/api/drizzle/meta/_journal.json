@@ -211,6 +211,13 @@
       "when": 1793501440636,
       "tag": "0029_mcp_oauth",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794406511363,
+      "tag": "0030_whiteboards",
+      "breakpoints": true
     }
   ]
 }

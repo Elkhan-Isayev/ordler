@@ -12,6 +12,14 @@ import type { AppContext } from '../app-context.js';
 import { DomainError } from '../auth/errors.js';
 import { loadDirectory } from '../members/directory.js';
 import { loadMe } from '../members/me.js';
+import {
+  buildDiagram,
+  describeBoard,
+  diagramEdgeSchema,
+  diagramNodeSchema,
+  type DiagramEdge,
+  type DiagramNode,
+} from '../whiteboards/diagram.js';
 
 /** Who is calling: always a member, through one of their tokens. */
 export interface McpCaller {
@@ -109,6 +117,58 @@ export function requestFull(ctx: AppContext, request: RequestView) {
     })),
     linkedIssues: request.linkedIssues,
   };
+}
+
+/** An issue as agents read it, with the whiteboards attached to it. */
+export async function issueWithBoards(ctx: AppContext, caller: McpCaller, identifier: string) {
+  const issue = issueFull(ctx, await ctx.issues.get(caller.memberId, identifier));
+  const boards = await ctx.whiteboards.forIssue(caller.memberId, identifier);
+  return {
+    ...issue,
+    whiteboards: boards.map((b) => ({
+      id: b.id,
+      title: b.title,
+      resource: `ordler://whiteboard/${b.id}`,
+      url: link(ctx, `/whiteboards/${b.id}`),
+    })),
+  };
+}
+
+/** A whiteboard as agents read it: what is drawn, as shapes, connectors and text. */
+export async function whiteboardFull(ctx: AppContext, caller: McpCaller, id: string) {
+  const board = await ctx.whiteboards.get(caller.memberId, id);
+  const elements = await ctx.whiteboards.elements(caller.memberId, id);
+  return {
+    id: board.id,
+    title: board.title,
+    team: board.team.key,
+    url: link(ctx, `/whiteboards/${board.id}`),
+    issues: board.issues.map((i) => i.identifier),
+    canEdit: board.canEdit,
+    ...describeBoard(elements),
+  };
+}
+
+const diagramInput = {
+  nodes: z
+    .array(diagramNodeSchema)
+    .max(200)
+    .default([])
+    .describe('Boxes, ellipses, diamonds (decisions), sticky notes or free text'),
+  edges: z.array(diagramEdgeSchema).max(400).default([]).describe('Arrows between nodes'),
+  direction: z.enum(['down', 'right']).default('down'),
+};
+
+async function drawDiagram(
+  ctx: AppContext,
+  caller: McpCaller,
+  id: string,
+  diagram: { nodes: DiagramNode[]; edges: DiagramEdge[]; direction: 'down' | 'right' },
+) {
+  if (diagram.nodes.length === 0 && diagram.edges.length === 0) return;
+  const existing = await ctx.whiteboards.elements(caller.memberId, id);
+  const elements = buildDiagram(diagram, existing);
+  await ctx.whiteboards.save(caller.memberId, id, { elements }, caller.tokenName);
 }
 
 async function myTeams(ctx: AppContext, memberId: string) {
@@ -244,7 +304,7 @@ const tools: ToolDefinition[] = [
     scope: 'read',
     input: z.object({ identifier: identifierSchema }),
     async run(ctx, caller, args: { identifier: string }) {
-      return issueFull(ctx, await ctx.issues.get(caller.memberId, args.identifier));
+      return issueWithBoards(ctx, caller, args.identifier);
     },
   },
   {
@@ -551,6 +611,97 @@ const tools: ToolDefinition[] = [
             : `/request-groups/${p.group!.identifier}`,
         ),
       }));
+    },
+  },
+  {
+    name: 'list_whiteboards',
+    description:
+      'Whiteboards (collaborative diagrams) the member can see, newest first; optionally of one team.',
+    scope: 'read',
+    input: z.object({ team: z.string().trim().min(1).max(10).optional(), limit: limitSchema }),
+    async run(ctx, caller, args: { team?: string; limit: number }) {
+      const boards = await ctx.whiteboards.list(caller.memberId, args.team);
+      return boards.slice(0, args.limit).map((b) => ({
+        id: b.id,
+        title: b.title,
+        team: b.team.key,
+        updatedAt: b.updatedAt,
+        url: link(ctx, `/whiteboards/${b.id}`),
+      }));
+    },
+  },
+  {
+    name: 'get_whiteboard',
+    description:
+      'What a whiteboard shows: shapes with labels and ids, arrows between them, free text and attached issues.',
+    scope: 'read',
+    input: z.object({ id: z.uuid() }),
+    async run(ctx, caller, args: { id: string }) {
+      return whiteboardFull(ctx, caller, args.id);
+    },
+  },
+  {
+    name: 'create_whiteboard',
+    description:
+      'Create a whiteboard in a team, optionally drawing a diagram (nodes and edges, laid out automatically) and attaching it to an issue. People see it live and can keep editing it in Ordler.',
+    scope: 'issues:write',
+    input: z.object({
+      team: z.string().trim().min(1).max(10),
+      title: z.string().trim().min(1).max(200),
+      issue: identifierSchema.optional().describe('Attach the board to this issue, e.g. HELP-142'),
+      ...diagramInput,
+    }),
+    async run(
+      ctx,
+      caller,
+      args: {
+        team: string;
+        title: string;
+        issue?: string;
+        nodes: DiagramNode[];
+        edges: DiagramEdge[];
+        direction: 'down' | 'right';
+      },
+    ) {
+      // Built first: a diagram the agent got wrong must not leave an empty board behind.
+      const elements = args.nodes.length > 0 || args.edges.length > 0 ? buildDiagram(args, []) : [];
+      const board = await ctx.whiteboards.create(
+        caller.memberId,
+        { team: args.team, title: args.title, ...(args.issue ? { issue: args.issue } : {}) },
+        caller.tokenName,
+      );
+      if (elements.length > 0) {
+        await ctx.whiteboards.save(caller.memberId, board.id, { elements }, caller.tokenName);
+      }
+      return whiteboardFull(ctx, caller, board.id);
+    },
+  },
+  {
+    name: 'add_to_whiteboard',
+    description:
+      'Draw more nodes and edges on an existing whiteboard, to the right of what is there. Edges may connect to shape ids returned by get_whiteboard.',
+    scope: 'issues:write',
+    input: z.object({ id: z.uuid(), ...diagramInput }),
+    async run(
+      ctx,
+      caller,
+      args: { id: string; nodes: DiagramNode[]; edges: DiagramEdge[]; direction: 'down' | 'right' },
+    ) {
+      if (args.nodes.length === 0 && args.edges.length === 0) {
+        throw new DomainError('validation_failed');
+      }
+      await drawDiagram(ctx, caller, args.id, args);
+      return whiteboardFull(ctx, caller, args.id);
+    },
+  },
+  {
+    name: 'attach_whiteboard',
+    description: 'Attach an existing whiteboard to an issue, so it shows on the issue page.',
+    scope: 'issues:write',
+    input: z.object({ id: z.uuid(), issue: identifierSchema }),
+    async run(ctx, caller, args: { id: string; issue: string }) {
+      await ctx.whiteboards.link(caller.memberId, args.issue, args.id, caller.tokenName);
+      return issueWithBoards(ctx, caller, args.issue);
     },
   },
 ];

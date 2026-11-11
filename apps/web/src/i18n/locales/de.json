@@ -22,7 +22,8 @@
     "admin": "Administration",
     "board": "Board",
     "integrations": "Integrationen",
-    "teamSettings": "Einstellungen"
+    "teamSettings": "Einstellungen",
+    "whiteboards": "Whiteboards"
   },
   "settings": {
     "language": "Sprache"
@@ -134,7 +135,8 @@
     "email_address_taken": "Ein anderer Anfragetyp verwendet diese E-Mail-Adresse bereits.",
     "slack_not_configured": "Die Slack-App ist noch nicht vollständig eingerichtet.",
     "slack_rejected": "Slack hat das Token abgelehnt. Prüfen Sie, ob es vollständig kopiert wurde.",
-    "oauth_invalid_request": "Dieser Autorisierungslink ist ungültig. Starten Sie die Verbindung in Ihrer App neu."
+    "oauth_invalid_request": "Dieser Autorisierungslink ist ungültig. Starten Sie die Verbindung in Ihrer App neu.",
+    "whiteboard_full": "Dieses Whiteboard ist voll. Entferne nicht benötigte Elemente oder beginne ein neues Whiteboard."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -1294,5 +1296,51 @@
     "warning": "Erlauben Sie das nur, wenn Sie diese App gerade selbst verbunden haben. Sie können den Zugriff jederzeit unter Einstellungen → Zugriffstoken widerrufen.",
     "allow": "Erlauben",
     "deny": "Ablehnen"
+  },
+  "whiteboards": {
+    "loading": "Whiteboard wird geladen…",
+    "new": "Neues Whiteboard",
+    "titleLabel": "Titel des Whiteboards",
+    "titlePlaceholder": "Titel des Whiteboards",
+    "team": "Team",
+    "create": "Erstellen",
+    "empty": "Noch keine Whiteboards. Erstelle eines, um Ideen, Abläufe und Pläne gemeinsam zu skizzieren.",
+    "missing": "Dieses Whiteboard wurde gelöscht oder du kannst es nicht sehen.",
+    "readOnly": "Nur ansehen",
+    "onIssues": "Angehängt an",
+    "here": "{count, plural, one {# Person hier} other {# Personen hier}}",
+    "insert": "Einfügen…",
+    "delete": "Whiteboard löschen",
+    "confirmDelete": "Whiteboard „{title}“ löschen? Es verschwindet aus allen Issues, an die es angehängt ist.",
+    "section": "Whiteboards",
+    "newOnIssue": "Neues Whiteboard",
+    "attachExisting": "Vorhandenes anhängen",
+    "pick": "Whiteboard wählen…",
+    "open": "Öffnen",
+    "detach": "„{title}“ lösen",
+    "templates": {
+      "sticky": "Haftnotiz",
+      "flowchart": "Flussdiagramm",
+      "retrospective": "Retrospektive",
+      "kanban": "Kanban",
+      "mindmap": "Mindmap"
+    },
+    "labels": {
+      "start": "Start",
+      "step": "Schritt",
+      "decision": "Entscheidung?",
+      "end": "Ende",
+      "yes": "ja",
+      "no": "nein",
+      "wentWell": "Lief gut",
+      "toImprove": "Zu verbessern",
+      "actions": "Maßnahmen",
+      "todo": "Zu erledigen",
+      "doing": "In Arbeit",
+      "done": "Erledigt",
+      "card": "Aufgabe",
+      "topic": "Hauptthema",
+      "idea": "Idee"
+    }
   }
 }

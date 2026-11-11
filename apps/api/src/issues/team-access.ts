@@ -17,6 +17,8 @@ export interface TeamPermissions {
   manage: boolean;
   /** Saving and editing the team's shared views (view.create_shared). */
   shareViews: boolean;
+  /** Creating whiteboards in the team and drawing on them (whiteboard.edit). */
+  whiteboards: boolean;
 }
 
 /**
@@ -52,6 +54,7 @@ export class TeamAccess {
       delete: read && has('issue.delete'),
       manage: read && has('team.update'),
       shareViews: read && has('view.create_shared'),
+      whiteboards: read && has('whiteboard.edit'),
     };
   }
 

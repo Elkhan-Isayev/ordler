@@ -30,6 +30,7 @@ import { LabelService } from './issues/label.service.js';
 import { WorkflowService } from './issues/workflow.service.js';
 import { CycleService } from './cycles/cycle.service.js';
 import { ViewService } from './views/view.service.js';
+import { WhiteboardService } from './whiteboards/whiteboard.service.js';
 import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
@@ -93,6 +94,7 @@ export interface AppContext {
   workflow: WorkflowService;
   cycles: CycleService;
   views: ViewService;
+  whiteboards: WhiteboardService;
   projects: ProjectService;
   initiatives: InitiativeService;
   imports: ImportService;
@@ -227,6 +229,14 @@ export function createAppContext(deps: AppContextDeps): AppContext {
   const attachmentMaxBytes = deps.attachmentMaxBytes ?? DEFAULT_ATTACHMENT_MAX_MB * 1024 * 1024;
   const sessionTtlMs = deps.sessionTtlDays * 86_400_000;
   const sessions = new SessionService(deps.db, sessionTtlMs, now);
+  const whiteboards = new WhiteboardService({
+    db: deps.db,
+    access: teamAccess,
+    issues,
+    events,
+    maxFileBytes: attachmentMaxBytes,
+    now,
+  });
   const requestTypes = new RequestTypeService(deps.db, access, sla);
   const slackApi = new SlackApi(deps.slackHttp);
   const requests = new RequestService({
@@ -329,6 +339,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     workflow: new WorkflowService(deps.db, teamAccess, events),
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
     views: new ViewService(deps.db, teamAccess, now),
+    whiteboards,
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
     webhooks,
@@ -350,6 +361,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     realtime: new RealtimeHub({
       baseUrl: deps.baseUrl,
       issues,
+      whiteboards,
       sessions,
       events,
       ...(deps.realtimeHeartbeatMs ? { heartbeatMs: deps.realtimeHeartbeatMs } : {}),

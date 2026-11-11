@@ -136,6 +136,7 @@ export class IssueService {
         comment: can.comment,
         delete: can.delete,
         shareViews: can.shareViews,
+        whiteboards: can.whiteboards,
       },
     };
   }
@@ -216,7 +217,9 @@ export class IssueService {
   /** Teams the member can read, for pickers such as a project's teams. */
   async readableTeams(
     memberId: string,
-  ): Promise<Array<{ id: string; key: string; name: string; department: string }>> {
+  ): Promise<
+    Array<{ id: string; key: string; name: string; department: string; whiteboards: boolean }>
+  > {
     const rows = await this.db
       .select({ team: teams, department: departments.name })
       .from(teams)
@@ -225,8 +228,16 @@ export class IssueService {
       .orderBy(asc(departments.name), asc(teams.name));
     const result = [];
     for (const { team, department } of rows) {
-      if ((await this.deps.access.forTeam(memberId, team)).read) {
-        result.push({ id: team.id, key: team.key, name: team.name, department });
+      const can = await this.deps.access.forTeam(memberId, team);
+      if (can.read) {
+        // Whether the member may create whiteboards there (whiteboard.edit).
+        result.push({
+          id: team.id,
+          key: team.key,
+          name: team.name,
+          department,
+          whiteboards: can.whiteboards,
+        });
       }
     }
     return result;
@@ -627,8 +638,25 @@ export class IssueService {
         manage: false,
         delete: false,
         shareViews: false,
+        whiteboards: false,
       };
     return this.deps.access.forTeam(memberId, team);
+  }
+
+  /** The issue behind an identifier and what the member may do in its team; unreadable = not_found. */
+  async access(memberId: string, identifier: string) {
+    const { issueId, team, can } = await this.readableIssue(memberId, identifier);
+    const [row] = await this.db
+      .select({ number: issues.number, title: issues.title })
+      .from(issues)
+      .where(eq(issues.id, issueId));
+    return {
+      issueId,
+      identifier: formatIssueIdentifier(team.key, row!.number),
+      title: row!.title,
+      team,
+      can,
+    };
   }
 
   private async readableTeam(

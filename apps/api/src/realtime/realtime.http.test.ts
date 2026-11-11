@@ -1,4 +1,4 @@
-import type { IssueDetail, RealtimeServerMessage, TeamView } from '@ordler/shared';
+import type { IssueDetail, RealtimeServerMessage, TeamView, WhiteboardView } from '@ordler/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
 import { SESSION_COOKIE } from '../auth/sessions.js';
@@ -152,5 +152,108 @@ describe('realtime updates', () => {
     const tab = await connect(owner);
     tab.socket.send('not json');
     expect(await tab.closed).toBe(1003);
+  });
+});
+
+describe('realtime whiteboards (ADR 0015)', () => {
+  async function openBoard() {
+    const board = (
+      await t.app.inject({
+        method: 'POST',
+        url: '/api/whiteboards',
+        headers: { cookie: owner },
+        payload: { team: 'HELP', title: 'Sketch' },
+      })
+    ).json<WhiteboardView>();
+    const topic = `whiteboard:${board.id}`;
+    const join = async () => {
+      const tab = await connect(owner);
+      tab.socket.send(JSON.stringify({ type: 'subscribe', topic }));
+      expect(await tab.next()).toEqual({ type: 'subscribed', topic });
+      return tab;
+    };
+    return { board, topic, join };
+  }
+
+  it('pushes saved elements to every open tab of the board', async () => {
+    const { board, join } = await openBoard();
+    const [a, b] = [await join(), await join()];
+    const element = {
+      id: 'box',
+      type: 'rectangle',
+      version: 1,
+      versionNonce: 4,
+      isDeleted: false,
+      x: 1,
+    };
+    await t.app.inject({
+      method: 'POST',
+      url: `/api/whiteboards/${board.id}/scene`,
+      headers: { cookie: owner },
+      payload: { elements: [element] },
+    });
+    const expected = {
+      type: 'whiteboard.elements',
+      whiteboardId: board.id,
+      seq: 1,
+      elements: [element],
+    };
+    expect(await a.next()).toEqual(expected);
+    expect(await b.next()).toEqual(expected);
+
+    await t.app.inject({
+      method: 'PATCH',
+      url: `/api/whiteboards/${board.id}`,
+      headers: { cookie: owner },
+      payload: { title: 'Renamed' },
+    });
+    expect(await a.next()).toEqual({ type: 'whiteboard.changed', whiteboardId: board.id });
+  });
+
+  it('shares pointers with the other tabs, and says when a tab leaves', async () => {
+    const { topic, join, board } = await openBoard();
+    const [a, b] = [await join(), await join()];
+    a.socket.send(
+      JSON.stringify({
+        type: 'presence',
+        topic,
+        pointer: { x: 10, y: 20 },
+        button: 'down',
+        selectedElementIds: ['box'],
+      }),
+    );
+    const seen = await b.next();
+    expect(seen).toMatchObject({
+      type: 'whiteboard.presence',
+      whiteboardId: board.id,
+      presence: {
+        member: { name: OWNER.name },
+        pointer: { x: 10, y: 20, tool: 'pointer' },
+        button: 'down',
+        selectedElementIds: ['box'],
+      },
+    });
+    const clientId = (seen as Extract<RealtimeServerMessage, { type: 'whiteboard.presence' }>)
+      .presence.clientId;
+
+    a.socket.send(JSON.stringify({ type: 'unsubscribe', topic }));
+    expect(await b.next()).toMatchObject({ presence: { clientId, left: true, pointer: null } });
+    // The sender never hears its own pointer.
+    expect(a.messages).toHaveLength(1);
+  });
+
+  it('ignores pointers for boards the tab has not joined and denies unknown boards', async () => {
+    const { topic, join } = await openBoard();
+    const watcher = await join();
+    const stranger = await connect(owner);
+    stranger.socket.send(JSON.stringify({ type: 'presence', topic, pointer: { x: 1, y: 1 } }));
+    stranger.socket.send(
+      JSON.stringify({
+        type: 'subscribe',
+        topic: 'whiteboard:00000000-0000-7000-8000-000000000000',
+      }),
+    );
+    expect(await stranger.next()).toMatchObject({ type: 'denied' });
+    expect(watcher.messages).toHaveLength(1);
   });
 });

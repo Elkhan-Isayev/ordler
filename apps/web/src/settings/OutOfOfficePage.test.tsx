@@ -1,12 +1,20 @@
 import type { DelegationView } from '@ordler/shared';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
 import { renderWithI18n } from '../test/render.js';
 import { OutOfOfficePage } from './OutOfOfficePage.js';
 
-afterEach(() => vi.unstubAllGlobals());
+// The form refuses past dates, so the fixtures' dates must stay in the future.
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-01T09:00:00Z'));
+});
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 const DIRECTORY = {
   members: [

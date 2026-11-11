@@ -46,14 +46,15 @@ and a service desk for requests between departments. Ordler is both, in one plac
 
 ### Work inside a team (Linear-style)
 
-|     | Feature                                                                                                                            |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| ✅  | **Issues** with per-team identifiers, priority, assignees, due dates, labels, sub-issues, history, list and drag-and-drop board    |
-| 📥  | **Triage**: issues from outside the team wait for accept, decline or duplicate                                                     |
-| 🔁  | **Cycles** with automatic rollover and burn-up; **projects** with milestones and status updates; **initiatives** grouping projects |
-| 🗂   | **Team settings**: workflow editor, labels, Slack channels                                                                         |
-| 🖼   | **Rich text**: formatting, pasted screenshots and files, Mermaid diagrams; files live in PostgreSQL                                |
-| 🔎  | **Search** with Ctrl/Cmd+K; one-click **copy ID / copy link**; **saved views** (personal or shared) and a **timeline**             |
+|     | Feature                                                                                                                                                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅  | **Issues** with per-team identifiers, priority, assignees, due dates, labels, sub-issues, history, list and drag-and-drop board                                                       |
+| 📥  | **Triage**: issues from outside the team wait for accept, decline or duplicate                                                                                                        |
+| 🔁  | **Cycles** with automatic rollover and burn-up; **projects** with milestones and status updates; **initiatives** grouping projects                                                    |
+| 🗂   | **Team settings**: workflow editor, labels, Slack channels                                                                                                                            |
+| 🖼   | **Rich text**: formatting, pasted screenshots and files, Mermaid diagrams; files live in PostgreSQL                                                                                   |
+| 🔎  | **Search** with Ctrl/Cmd+K; one-click **copy ID / copy link**; **saved views** (personal or shared) and a **timeline**                                                                |
+| 🎨  | **Whiteboards** (Miro-style): draw together live with cursors, sticky notes and templates; attach boards to issues and see them inside the issue; AI agents draw diagrams through MCP |
 
 ### Requests between departments (service-desk-style)
 
@@ -146,13 +147,13 @@ Dotted lines are optional. Details: [SPEC §12](docs/SPEC.md#12-architecture),
 [ADR 0001](docs/adr/0001-tech-stack.md), [ADR 0002](docs/adr/0002-on-prem-single-tenant.md),
 [ADR 0007](docs/adr/0007-realtime-updates.md).
 
-| Layer    | Technology                                                       |
-| -------- | ---------------------------------------------------------------- |
-| Web      | React 19, Vite, Tailwind CSS, Tiptap, Mermaid, i18next (ICU)     |
-| API      | NestJS 11 on Fastify, Zod validation, Drizzle ORM                |
-| Database | PostgreSQL 18 (`uuidv7()` keys), LISTEN/NOTIFY, files as `bytea` |
-| Auth     | Argon2id, opaque sessions, OIDC via `jose`                       |
-| Tests    | Vitest, Testing Library, PGlite (real PostgreSQL 18 in WASM)     |
+| Layer    | Technology                                                               |
+| -------- | ------------------------------------------------------------------------ |
+| Web      | React 19, Vite, Tailwind CSS, Tiptap, Mermaid, Excalidraw, i18next (ICU) |
+| API      | NestJS 11 on Fastify, Zod validation, Drizzle ORM                        |
+| Database | PostgreSQL 18 (`uuidv7()` keys), LISTEN/NOTIFY, files as `bytea`         |
+| Auth     | Argon2id, opaque sessions, OIDC via `jose`                               |
+| Tests    | Vitest, Testing Library, PGlite (real PostgreSQL 18 in WASM)             |
 
 ---
 

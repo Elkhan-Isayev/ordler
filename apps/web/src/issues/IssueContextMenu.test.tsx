@@ -71,6 +71,7 @@ describe('IssueContextMenu', () => {
         comment: false,
         delete: false,
         shareViews: false,
+        whiteboards: false,
       },
     });
     await result;

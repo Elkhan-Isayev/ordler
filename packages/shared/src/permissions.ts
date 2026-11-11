@@ -38,6 +38,8 @@ export const PERMISSIONS = [
   'project.manage',
   'initiative.manage',
   'view.create_shared',
+  // Create whiteboards in a team and draw on them (SPEC §5.5).
+  'whiteboard.edit',
   'request.create',
   'request.read_department',
   'request.triage',

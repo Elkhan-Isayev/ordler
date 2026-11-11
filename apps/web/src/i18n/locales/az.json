@@ -22,7 +22,8 @@
     "admin": "İdarəetmə",
     "board": "Lövhə",
     "integrations": "İnteqrasiyalar",
-    "teamSettings": "Parametrlər"
+    "teamSettings": "Parametrlər",
+    "whiteboards": "Lövhələr"
   },
   "settings": {
     "language": "Dil"
@@ -134,7 +135,8 @@
     "email_address_taken": "Bu e-poçt ünvanını artıq başqa müraciət növü istifadə edir.",
     "slack_not_configured": "Slack tətbiqi hələ tam qurulmayıb.",
     "slack_rejected": "Slack tokeni rədd etdi. Onun tam köçürüldüyünü yoxlayın.",
-    "oauth_invalid_request": "Bu avtorizasiya linki etibarsızdır. Qoşulmanı tətbiqdən yenidən başladın."
+    "oauth_invalid_request": "Bu avtorizasiya linki etibarsızdır. Qoşulmanı tətbiqdən yenidən başladın.",
+    "whiteboard_full": "Bu lövhə doludur. Lazımsız elementləri silin və ya yeni lövhə yaradın."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -1294,5 +1296,51 @@
     "warning": "Yalnız bu tətbiqi indicə özünüz qoşmusunuzsa icazə verin. Girişi istənilən vaxt «Ayarlar → Giriş tokenləri» bölməsində ləğv edə bilərsiniz.",
     "allow": "İcazə ver",
     "deny": "Rədd et"
+  },
+  "whiteboards": {
+    "loading": "Lövhə yüklənir…",
+    "new": "Yeni lövhə",
+    "titleLabel": "Lövhənin adı",
+    "titlePlaceholder": "Lövhənin adı",
+    "team": "Komanda",
+    "create": "Yarat",
+    "empty": "Hələ lövhə yoxdur. İdeyaları, sxemləri və planları birlikdə çəkmək üçün lövhə yaradın.",
+    "missing": "Bu lövhə silinib və ya ona girişiniz yoxdur.",
+    "readOnly": "Yalnız baxış",
+    "onIssues": "Bağlıdır:",
+    "here": "{count, plural, one {Burada # nəfər} other {Burada # nəfər}}",
+    "insert": "Əlavə et…",
+    "delete": "Lövhəni sil",
+    "confirmDelete": "“{title}” lövhəsi silinsin? O, bağlı olduğu bütün tapşırıqlardan yox olacaq.",
+    "section": "Lövhələr",
+    "newOnIssue": "Yeni lövhə",
+    "attachExisting": "Mövcud lövhəni bağla",
+    "pick": "Lövhə seçin…",
+    "open": "Aç",
+    "detach": "“{title}” lövhəsini ayır",
+    "templates": {
+      "sticky": "Stiker",
+      "flowchart": "Blok-sxem",
+      "retrospective": "Retrospektiv",
+      "kanban": "Kanban",
+      "mindmap": "Zehin xəritəsi"
+    },
+    "labels": {
+      "start": "Başlanğıc",
+      "step": "Addım",
+      "decision": "Şərt?",
+      "end": "Son",
+      "yes": "bəli",
+      "no": "xeyr",
+      "wentWell": "Yaxşı alınan",
+      "toImprove": "Yaxşılaşdırılmalı",
+      "actions": "Tədbirlər",
+      "todo": "Görüləcək",
+      "doing": "İcrada",
+      "done": "Hazırdır",
+      "card": "Tapşırıq",
+      "topic": "Əsas mövzu",
+      "idea": "İdeya"
+    }
   }
 }
