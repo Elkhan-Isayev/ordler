@@ -68,7 +68,13 @@ export async function loadMe(db: Db, memberId: string): Promise<MeView | undefin
   ].sort();
 
   return {
-    member: { id: member.id, name: member.name, email: member.email, locale: member.locale },
+    member: {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      locale: member.locale,
+      theme: member.theme ?? 'system',
+    },
     workspace: { companyName: instance.companyName, defaultLocale: instance.defaultLocale },
     organizationPermissions,
     departments: [...byDepartment.values()],

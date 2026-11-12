@@ -84,6 +84,47 @@ describe('setup wizard', () => {
 });
 
 describe('sessions and /api/me', () => {
+  it('stores the theme preference for the signed-in member only', async () => {
+    const cookie = await setupOwner();
+    const me = async () => (await inject({ method: 'GET', url: '/api/me', cookie })).json();
+    expect((await me()).member.theme).toBe('system');
+
+    const dark = await inject({
+      method: 'PATCH',
+      url: '/api/me/preferences',
+      cookie,
+      payload: { theme: 'dark' },
+    });
+    expect(dark.statusCode).toBe(200);
+    expect(dark.json().member.theme).toBe('dark');
+    expect((await me()).member.theme).toBe('dark');
+
+    await inject({
+      method: 'PATCH',
+      url: '/api/me/preferences',
+      cookie,
+      payload: { theme: 'system' },
+    });
+    expect((await me()).member.theme).toBe('system');
+  });
+
+  it('rejects unknown themes and anonymous preference changes', async () => {
+    const cookie = await setupOwner();
+    const invalid = await inject({
+      method: 'PATCH',
+      url: '/api/me/preferences',
+      cookie,
+      payload: { theme: 'sepia' },
+    });
+    expect(invalid.statusCode).toBe(400);
+    const anonymous = await inject({
+      method: 'PATCH',
+      url: '/api/me/preferences',
+      payload: { theme: 'dark' },
+    });
+    expect(anonymous.statusCode).toBe(401);
+  });
+
   it('requires a session', async () => {
     expect((await inject({ method: 'GET', url: '/api/me' })).statusCode).toBe(401);
     const bogus = await inject({ method: 'GET', url: '/api/me', cookie: `${SESSION_COOKIE}=nope` });

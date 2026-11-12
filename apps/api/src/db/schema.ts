@@ -66,6 +66,8 @@ export const members = pgTable(
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     name: text('name').notNull(),
     locale: text('locale'),
+    /** Web app colour theme (SPEC §5.4); null follows the operating system. */
+    theme: text('theme', { enum: ['light', 'dark'] }),
     timezone: text('timezone'),
     homeDepartmentId: uuid('home_department_id').references(() => departments.id),
     managerId: uuid('manager_id'),

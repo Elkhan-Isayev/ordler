@@ -225,6 +225,13 @@
       "when": 1794469321987,
       "tag": "0031_wiki",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794482940947,
+      "tag": "0032_member_theme",
+      "breakpoints": true
     }
   ]
 }

@@ -274,7 +274,9 @@ Your departments
 - **Timeline**: issues with a due date are bars from creation to the due date, the rest are
   listed below; projects are bars from start to target date (a marker when only one is set).
 - Optimistic updates; real-time sync of changes from other users (< 1 s).
-- Light / dark theme, follows OS by default.
+- Light / dark theme: each member picks System (default, follows the OS), Light or Dark in
+  Settings → Appearance; the choice is stored on the member and follows them across devices.
+  Diagrams (Mermaid blocks and whiteboards, including embeds) always render light.
 - Full-text search across issues, requests, comments, projects (permission-filtered).
 
 ### 5.5 Whiteboards
@@ -285,7 +287,7 @@ Miro-like canvases built into Ordler ([ADR 0015](adr/0015-whiteboards.md)):
   Whiteboards); members with `whiteboard.edit` create boards and draw on them; the creator and
   members with `team.update` rename and delete them. Deleting archives the board.
 - Canvas: shapes, arrows that stay bound to shapes, text, freehand drawing, images, frames,
-  sticky notes, a shape library, laser pointer, export to PNG/SVG, light and dark theme.
+  sticky notes, a shape library, laser pointer, export to PNG/SVG, always drawn in the light theme.
   Templates: flowchart, retrospective, kanban, mind map.
 - Real-time collaboration: several people edit the same board at once and see each other's
   pointers, names and selections; edits reach other tabs within a second and converge per

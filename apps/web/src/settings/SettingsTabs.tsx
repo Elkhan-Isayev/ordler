@@ -5,6 +5,7 @@ const TABS = [
   { href: '/settings/tokens', key: 'tokens.title' },
   { href: '/settings/out-of-office', key: 'outOfOffice.title' },
   { href: '/settings/slack', key: 'slack.title' },
+  { href: '/settings/appearance', key: 'appearance.title' },
 ] as const;
 
 /** Personal settings pages, side by side. */

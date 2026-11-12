@@ -2,8 +2,11 @@
 
 /*
  * Warm palette: graphite and cream instead of cold blue-grey, softer contrast, rounder corners.
- * Light by default; dark follows the OS (SPEC §5.4).
+ * Light or dark by the member's choice, or following the OS (SPEC §5.4): theme/theme.ts sets
+ * data-theme on <html> before the first paint.
  */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @theme {
   --color-sidebar: #f4f0ea;
   --color-surface: #fbf9f6;
@@ -24,21 +27,19 @@
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-sidebar: #232120;
-    --color-surface: #1c1a19;
-    --color-card: #2a2726;
-    --color-ink: #f3efe9;
-    --color-ink-muted: #c4bcb3;
-    --color-ink-faint: #8f877f;
-    --color-line: #3a3633;
-    --color-hover: #34302d;
-    --color-accent: #9b5de5;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.25), 0 6px 20px rgb(0 0 0 / 0.18);
-    --color-chart-scope: #b07d32;
-    --color-chart-done: #9b5de5;
-  }
+:root[data-theme='dark'] {
+  --color-sidebar: #232120;
+  --color-surface: #1c1a19;
+  --color-card: #2a2726;
+  --color-ink: #f3efe9;
+  --color-ink-muted: #c4bcb3;
+  --color-ink-faint: #8f877f;
+  --color-line: #3a3633;
+  --color-hover: #34302d;
+  --color-accent: #9b5de5;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.25), 0 6px 20px rgb(0 0 0 / 0.18);
+  --color-chart-scope: #b07d32;
+  --color-chart-done: #9b5de5;
 }
 
 body {
@@ -54,7 +55,7 @@ body {
 select,
 input,
 textarea {
-  color-scheme: light dark;
+  color-scheme: inherit;
 }
 
 /* Rich text (issues, comments): compact, Linear-like typography. */
@@ -162,6 +163,13 @@ textarea {
 .ordler-prose .ordler-diagram {
   margin: 0.4em 0;
   overflow-x: auto;
+  /* Diagrams are always light, so they keep a light sheet behind them in the dark theme. */
+  background: #ffffff;
+  color-scheme: light;
+  border-radius: var(--radius-md);
+}
+:root[data-theme='dark'] .ordler-prose .ordler-diagram {
+  padding: 0.75rem;
 }
 .ordler-prose .ordler-diagram svg {
   max-width: 100%;

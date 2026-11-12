@@ -1419,5 +1419,16 @@
         "canceled": "Abgebrochen"
       }
     }
+  },
+  "appearance": {
+    "title": "Darstellung",
+    "subtitle": "So sieht Ordler für Sie aus. Die Auswahl gilt auf all Ihren Geräten.",
+    "theme": "Design",
+    "themes": {
+      "system": "Wie im System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "diagramsHint": "Diagramme und Whiteboards bleiben immer hell, damit sie für alle gleich aussehen."
   }
 }

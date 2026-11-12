@@ -1419,5 +1419,16 @@
         "canceled": "Ləğv edilib"
       }
     }
+  },
+  "appearance": {
+    "title": "Görünüş",
+    "subtitle": "Ordler sizin üçün necə görünür. Seçim bütün cihazlarınızda saxlanılır.",
+    "theme": "Mövzu",
+    "themes": {
+      "system": "Sistemdəki kimi",
+      "light": "Açıq",
+      "dark": "Tünd"
+    },
+    "diagramsHint": "Diaqramlar və lövhələr hamıya eyni görünsün deyə həmişə açıq qalır."
   }
 }

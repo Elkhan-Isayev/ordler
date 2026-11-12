@@ -4,9 +4,13 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { AuthGate } from './auth/AuthGate.js';
 import { createI18n } from './i18n/index.js';
+import { applyTheme, storedTheme } from './theme/theme.js';
 // Bundled, so on-prem installs never fetch fonts from the internet.
 import '@fontsource-variable/inter';
 import './styles.css';
+
+// Before the first render, so a dark-theme member never sees a light flash.
+applyTheme(storedTheme());
 
 const browserLocale = resolveLocale({ acceptLanguage: navigator.languages.join(',') });
 const i18n = await createI18n(browserLocale);

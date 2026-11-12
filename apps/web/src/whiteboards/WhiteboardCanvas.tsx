@@ -41,10 +41,6 @@ export interface CanvasHandle {
   insertTemplate(key: TemplateKey, labels: Record<string, string>): void;
 }
 
-function prefersDark(): boolean {
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-}
-
 /**
  * The live canvas of one whiteboard (SPEC §5.5, ADR 0015). Joins the board's realtime topic,
  * loads and catches up the scene, saves local edits in small batches and shows everybody
@@ -65,7 +61,6 @@ export default function WhiteboardCanvas({
 }) {
   const { i18n } = useTranslation();
   const [excalidraw, setExcalidraw] = useState<ExcalidrawImperativeAPI>();
-  const [dark, setDark] = useState(prefersDark);
   const tracker = useMemo(() => new SceneTracker(), []);
   const roster = useMemo(() => new PresenceRoster(), []);
   const uploaded = useRef(new Set<string>());
@@ -87,13 +82,6 @@ export default function WhiteboardCanvas({
     saver.current = created;
     return () => created.stop();
   }, [board.id, tracker]);
-
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-color-scheme: dark)');
-    const update = () => setDark(query.matches);
-    query?.addEventListener('change', update);
-    return () => query?.removeEventListener('change', update);
-  }, []);
 
   /** Brings in images other people placed that this tab has not seen yet. */
   const fetchFiles = useCallback(
@@ -257,7 +245,8 @@ export default function WhiteboardCanvas({
         isCollaborating
         viewModeEnabled={readOnly}
         zenModeEnabled={embedded}
-        theme={dark ? 'dark' : 'light'}
+        // Diagrams stay light in every app theme, so boards look the same to everyone and in exports.
+        theme="light"
         langCode={LANGUAGES[i18n.language.split('-')[0] ?? 'en'] ?? 'en'}
         name={board.title}
         onChange={onChange}

@@ -16,6 +16,7 @@ import { errorKey } from './errors.js';
 import { Card } from './form.js';
 import { SetupWizard } from './SetupWizard.js';
 import { SignInPage } from './SignInPage.js';
+import { applyTheme } from '../theme/theme.js';
 
 type GateState =
   | { kind: 'loading' }
@@ -69,6 +70,7 @@ export function AuthGate({
       });
       void i18n.changeLanguage(locale);
       document.documentElement.lang = locale;
+      applyTheme(me.member.theme);
       setState({ kind: 'app', me });
     },
     [browserLocale, i18n],

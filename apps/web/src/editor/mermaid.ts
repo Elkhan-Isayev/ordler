@@ -10,12 +10,12 @@ let ready: Promise<typeof import('mermaid').default> | undefined;
 /** Mermaid is large, so it loads only when a diagram is first shown. */
 function load() {
   ready ??= import('mermaid').then(({ default: mermaid }) => {
-    const dark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
     // strict: labels are sanitised and click handlers or scripts in diagrams are disabled.
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
-      theme: dark ? 'dark' : 'neutral',
+      // Diagrams stay light in every app theme (they are read and printed like documents).
+      theme: 'neutral',
     });
     return mermaid;
   });

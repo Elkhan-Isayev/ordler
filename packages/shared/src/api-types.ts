@@ -1,9 +1,10 @@
 import type { AuthStrategyKind } from './auth.js';
 import type { Permission } from './permissions.js';
+import type { Theme } from './preferences.js';
 
 /** Response of GET /api/me and of every successful sign-in. */
 export interface MeResponse {
-  member: { id: string; name: string; email: string; locale: string | null };
+  member: { id: string; name: string; email: string; locale: string | null; theme: Theme };
   workspace: { companyName: string; defaultLocale: string };
   /** Effective at organization scope; the UI only uses it to show or hide controls. */
   organizationPermissions: Permission[];

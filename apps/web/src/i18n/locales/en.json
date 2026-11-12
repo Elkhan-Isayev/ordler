@@ -1419,5 +1419,16 @@
         "canceled": "Canceled"
       }
     }
+  },
+  "appearance": {
+    "title": "Appearance",
+    "subtitle": "How Ordler looks for you. The choice follows you to every device.",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "diagramsHint": "Diagrams and whiteboards always stay light, so they look the same to everyone."
   }
 }

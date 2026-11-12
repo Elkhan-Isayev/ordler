@@ -107,6 +107,7 @@ import type {
   UpdateInboxSettingsInput,
   UpdateEmailTemplateInput,
   MeResponse,
+  MePreferencesInput,
   PublicStrategy,
   AuthStrategyKind,
   OAuthStrategyKind,
@@ -190,6 +191,8 @@ export const api = {
     apiRequest<DatabaseUpdateResult>('/api/admin/database', { method: 'PUT', body }),
   completeSetup: (body: unknown) => apiRequest<MeResponse>('/api/setup', { method: 'POST', body }),
   me: () => apiRequest<MeResponse>('/api/me'),
+  updatePreferences: (body: MePreferencesInput) =>
+    apiRequest<MeResponse>('/api/me/preferences', { method: 'PATCH', body }),
   strategies: () => apiRequest<PublicStrategy[]>('/api/auth/strategies'),
   signInWithPassword: (email: string, password: string) =>
     apiRequest<MeResponse>('/api/auth/password', { method: 'POST', body: { email, password } }),

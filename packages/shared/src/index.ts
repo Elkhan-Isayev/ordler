@@ -24,3 +24,4 @@ export * from './slack-app.js';
 export * from './oauth.js';
 export * from './whiteboards.js';
 export * from './wiki.js';
+export * from './preferences.js';
