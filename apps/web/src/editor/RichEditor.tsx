@@ -1,7 +1,9 @@
 import { mentionHref, type AttachmentView, type MemberRef } from '@ordler/shared';
 import { CodeBlock } from '@tiptap/extension-code-block';
 import { Image } from '@tiptap/extension-image';
+import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Placeholder } from '@tiptap/extension-placeholder';
+import { TableKit } from '@tiptap/extension-table';
 import { Markdown } from '@tiptap/markdown';
 import { EditorContent, ReactNodeViewRenderer, useEditor, type Editor } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -93,6 +95,10 @@ export function RichEditor({
       StarterKit.configure({ codeBlock: false, link: { openOnClick: !editable, autolink: true } }),
       CodeBlock.extend({ addNodeView: () => ReactNodeViewRenderer(CodeBlockView) }),
       Image.configure({ inline: false }),
+      // Tables and checklists round-trip as GFM, so imported wiki pages keep them on save.
+      TableKit.configure({ table: { resizable: false } }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
       Markdown,
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],

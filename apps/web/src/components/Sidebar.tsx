@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  BookOpen,
   CircleCheck,
   FolderKanban,
   Inbox,
@@ -116,6 +117,9 @@ export function Sidebar({
           </NavItem>
           <NavItem icon={Layers} href="/views">
             {t('nav.views')}
+          </NavItem>
+          <NavItem icon={BookOpen} href="/wiki" active={currentPath?.startsWith('/wiki') ?? false}>
+            {t('nav.wiki')}
           </NavItem>
           <NavItem icon={Shapes} href="/whiteboards">
             {t('nav.whiteboards')}

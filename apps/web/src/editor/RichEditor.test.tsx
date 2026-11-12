@@ -31,6 +31,23 @@ function attach(files: File[]) {
 }
 
 describe('RichEditor', () => {
+  it('keeps tables and checklists, as imported wiki pages use them', async () => {
+    const onChange = vi.fn();
+    const markdown = '- [x] Done\n- [ ] Open\n\n| Service | Port |\n| --- | --- |\n| SSH | 22 |';
+    await renderWithI18n(<RichEditor label="Description" value={markdown} onChange={onChange} />);
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(
+      within(textbox())
+        .getAllByRole('checkbox')
+        .map((c) => (c as HTMLInputElement).checked),
+    ).toEqual([true, false]);
+    await userEvent.type(textbox(), 'x');
+    await waitFor(() => expect(onChange).toHaveBeenCalled());
+    const saved = onChange.mock.calls.at(-1)![0] as string;
+    expect(saved).toContain('- [ ] Open');
+    expect(saved).toMatch(/\| SSH +\| 22 +\|/);
+  });
+
   it('renders stored Markdown as rich text', async () => {
     await renderWithI18n(
       <RichEditor label="Description" value={'## Steps\n\n- restart\n- **check** the cable'} />,

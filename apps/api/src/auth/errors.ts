@@ -6,6 +6,7 @@ import type {
   IssueErrorCode,
   RequestErrorCode,
   TokenErrorCode,
+  WikiErrorCode,
 } from '@ordler/shared';
 
 export type DomainErrorCode =
@@ -15,7 +16,8 @@ export type DomainErrorCode =
   | AttachmentErrorCode
   | RequestErrorCode
   | TokenErrorCode
-  | ImportErrorCode;
+  | ImportErrorCode
+  | WikiErrorCode;
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_credentials: 401,
@@ -66,6 +68,9 @@ const STATUS: Record<DomainErrorCode, number> = {
   cycle_not_in_team: 400,
   project_not_in_team: 400,
   whiteboard_full: 409,
+  wiki_conflict: 409,
+  wiki_folder_not_empty: 409,
+  wiki_too_deep: 400,
   file_too_large: 413,
   file_missing: 400,
   form_invalid: 400,

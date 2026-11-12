@@ -72,6 +72,7 @@ images and Helm chart are public, like Wiki.js (§17).
 | **Initiative**        | Group of projects aligned with an organizational objective.                                                                                                                           |
 | **View**              | Saved filter + display configuration over issues/requests.                                                                                                                            |
 | **Whiteboard**        | A team's collaborative canvas (shapes, arrows, sticky notes, text, drawings, images), edited live by several people and attachable to issues (§5.5).                                  |
+| **Wiki space**        | A department's knowledge base: nested folders of Markdown pages with version history; diagrams in pages are embedded whiteboards (§5.6).                                              |
 | **Inbox**             | Per-user notification feed.                                                                                                                                                           |
 | **SLA**               | Service level target (time to first response, time to resolution) attached to a request type.                                                                                         |
 | **Role**              | Named set of permissions, granted to a member at a **scope** (organization, department, team).                                                                                        |
@@ -155,6 +156,7 @@ issue.delete               issue.assign                issue.move_team
 comment.create             comment.delete_any
 cycle.manage               project.manage              initiative.manage
 view.create_shared         whiteboard.edit
+wiki.read                  wiki.edit
 request.create             request.read_department     request.triage
 request.comment_internal   request.approve             request.reassign
 api_key.manage             webhook.manage              integration.manage
@@ -183,6 +185,8 @@ updates system roles + tests.
 | issue.read                     |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
 | request.create                 |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |   ✓   |
 | whiteboard.edit                |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |       |
+| wiki.read                      |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
+| wiki.edit                      |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |        |       |
 | token.create_personal, mcp.use |   ✓   |     ✓     |     ✓      |        ✓        |     ✓     |   ✓    |   ✓    |       |
 | org.audit.read                 |   ✓   |     ✓     |            |                 |           |        |        |       |
 
@@ -240,6 +244,7 @@ Workspace
   Initiatives
   Projects
   Views
+  Wiki                 ← department knowledge bases (§5.6)
   Whiteboards          ← collaborative canvases (§5.5)
   Service portals      ← catalog of all departments' request types
 
@@ -295,6 +300,38 @@ Miro-like canvases built into Ordler ([ADR 0015](adr/0015-whiteboards.md)):
 - Audit: create, rename, delete, attach and detach; content changes only when made through a
   token (editors save many times a second).
 - Limits: 20 000 elements per board, 512 KB per element; images up to `ATTACHMENT_MAX_MB`.
+
+### 5.6 Wiki
+
+A Wiki.js-like knowledge base built into Ordler ([ADR 0017](adr/0017-wiki.md)):
+
+- **Spaces**: every department has one wiki space with nested folders (up to 8 levels) and
+  Markdown pages, edited with the same rich text editor as issues (images, files, tables,
+  checklists, code). Workspace → Wiki lists the readable spaces and searches titles and text.
+- **Access**: `wiki.read` granted over the department, or over any of its teams, reads the
+  space; `wiki.edit` creates and edits pages and folders. A department admin
+  (`department.update`) can open the space to the whole organization (readable by everyone
+  with `wiki.read`, editable still only by the department), delete any page and import from
+  Wiki.js. Authors delete their own pages; deleting archives the page and keeps its history.
+  Only empty folders can be deleted.
+- **History**: every saved version is kept (`wiki_page_revision`, append-only); any version
+  can be viewed and restored as a new version. Saving an edit started from an older version
+  is refused (`wiki_conflict`) so nobody silently overwrites a colleague.
+- **Diagrams are whiteboards** (§5.5): a paragraph that is only a link to a board,
+  `[Title](/whiteboards/<id>)`, shows the live board in its place. "Insert diagram" in the
+  editor picks an existing board or creates one; readers who cannot see the board's team get
+  a note instead. Files pasted into pages belong to the department and follow its access.
+- **Import from Wiki.js 2.x** by API key: pick folders (path prefixes) and single pages; the
+  folder tree, images and files linked from pages and links between imported pages come
+  over; HTML pages are converted to Markdown. Runs in the background, resumable; re-running
+  updates changed pages and skips the rest; the key is erased when the import ends.
+- **MCP**: `list_wiki_spaces`, `list_wiki_pages`, `search_wiki`, `get_wiki_page` (with the
+  embedded boards), `create_wiki_page` (folder paths are created on demand),
+  `update_wiki_page` (optional `baseVersion`), `embed_whiteboard_in_wiki`; `create_whiteboard`
+  takes `wikiPage` to draw a diagram straight into a page. Resource `ordler://wiki/{id}`.
+  Writes need the `wiki:write` scope.
+- Audit: folder and page creation, moves, deletions, visibility and imports; content edits
+  are in the page history, and also audited when made through a token.
 
 ---
 
@@ -637,7 +674,8 @@ access, but self-service: **every member creates tokens for themselves**.
   "no expiry" only if the admin allows it), scopes.
 - Scopes: `read` (issues, requests, projects, comments the member can see), `issues:write`
   (create/update issues, comment), `requests:write` (create requests, comment on own
-  requests). Admin operations are never available through personal tokens.
+  requests), `wiki:write` (create and edit wiki pages, §5.6). Admin operations are never
+  available through personal tokens.
 - Shown once on creation, format `ordl_pat_<random>`; stored only as a hash with a visible
   prefix, last-used time and IP; the member can revoke at any time, admins can revoke any.
 - The same tokens authenticate the public REST API (Phase 2).
@@ -667,8 +705,10 @@ access, but self-service: **every member creates tokens for themselves**.
   - `list_teams`, `list_members`, `whoami`
   - `list_whiteboards`, `get_whiteboard`, `create_whiteboard`, `add_to_whiteboard`,
     `attach_whiteboard` (§5.5)
+  - `list_wiki_spaces`, `list_wiki_pages`, `search_wiki`, `get_wiki_page`, `create_wiki_page`,
+    `update_wiki_page`, `embed_whiteboard_in_wiki` (§5.6)
 - Resources: `ordler://issue/HELP-142`, `ordler://request/IT-REQ-57`, `ordler://team/HELP`,
-  `ordler://whiteboard/<id>`,
+  `ordler://whiteboard/<id>`, `ordler://wiki/<id>`,
   so clients can attach items as context.
 - **Approvals cannot be decided through MCP or tokens**: `list_my_approvals` is read-only;
   approve/reject/request changes remain human actions in the signed-in UI (§6.3).
@@ -895,6 +935,11 @@ whiteboard(id, team_id, title, created_by, seq, element_count, created_at, updat
 whiteboard_element(whiteboard_id, element_id, version, version_nonce, is_deleted, seq, data JSONB)
 whiteboard_file(whiteboard_id, file_id, mime_type, size, data)
 issue_whiteboard(issue_id, whiteboard_id, created_by, created_at)
+wiki_folder(id, department_id, parent_id, name, created_by, created_at)
+wiki_page(id, department_id, folder_id, title, content, version, created_by, updated_by, created_at, updated_at, archived_at)
+wiki_page_revision(page_id, version, title, content, author_id, created_at)   -- append-only
+wiki_import(id, department_id, folder_id, base_url, token_encrypted, status, page_ids, cursor, counts, report)
+department.wiki_visibility ∈ {department, organization}; attachment.team_id | attachment.department_id
 audit_log(id, actor_type, actor_id, action, target_type, target_id,
           before JSONB, after JSONB, ip, user_agent, created_at)
 ```

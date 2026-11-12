@@ -40,6 +40,9 @@ export const PERMISSIONS = [
   'view.create_shared',
   // Create whiteboards in a team and draw on them (SPEC §5.5).
   'whiteboard.edit',
+  // Read a department's wiki space; edit its pages and folders (SPEC §5.6).
+  'wiki.read',
+  'wiki.edit',
   'request.create',
   'request.read_department',
   'request.triage',

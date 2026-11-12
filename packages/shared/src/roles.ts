@@ -19,7 +19,12 @@ export interface SystemRole {
   permissions: readonly Permission[];
 }
 
-const VIEWER: readonly Permission[] = ['issue.read', 'token.create_personal', 'mcp.use'];
+const VIEWER: readonly Permission[] = [
+  'issue.read',
+  'wiki.read',
+  'token.create_personal',
+  'mcp.use',
+];
 
 const MEMBER: readonly Permission[] = [
   ...VIEWER,
@@ -28,6 +33,7 @@ const MEMBER: readonly Permission[] = [
   'issue.assign',
   'comment.create',
   'whiteboard.edit',
+  'wiki.edit',
   'request.create',
   // Necessary but not sufficient: the active approval step must also resolve to the user.
   'request.approve',

@@ -14,6 +14,7 @@ import { AdminRolesController } from './admin/admin-roles.controller.js';
 import { CyclesController } from './cycles/cycles.controller.js';
 import { ViewsController } from './views/views.controller.js';
 import { WhiteboardsController } from './whiteboards/whiteboards.controller.js';
+import { WikiController } from './wiki/wiki.controller.js';
 import { registerWhiteboardHttp } from './whiteboards/whiteboard-http.js';
 import { ProjectsController } from './projects/projects.controller.js';
 import { InitiativesController } from './projects/initiatives.controller.js';
@@ -69,6 +70,7 @@ export class AppModule {
         CyclesController,
         ViewsController,
         WhiteboardsController,
+        WikiController,
         ProjectsController,
         InitiativesController,
         ImportsController,

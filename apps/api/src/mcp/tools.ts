@@ -1,5 +1,9 @@
 import {
   PRIORITIES,
+  WIKI_MAX_CONTENT,
+  wikiWhiteboardEmbed,
+  wikiWhiteboards,
+  type WikiFolder,
   type IssueDetail,
   type IssueSummary,
   type RequestSummary,
@@ -146,6 +150,82 @@ export async function whiteboardFull(ctx: AppContext, caller: McpCaller, id: str
     issues: board.issues.map((i) => i.identifier),
     canEdit: board.canEdit,
     ...describeBoard(elements),
+  };
+}
+
+const departmentRef = z.string().trim().min(1).max(200).describe('Department name or id');
+
+/** A department wiki by name (case-insensitive) or id, among the spaces the member can read. */
+async function wikiDepartment(ctx: AppContext, caller: McpCaller, ref: string): Promise<string> {
+  const spaces = await ctx.wiki.spaces(caller.memberId);
+  const found =
+    spaces.find((s) => s.department.id === ref) ??
+    spaces.find((s) => s.department.name.toLowerCase() === ref.toLowerCase());
+  if (!found) throw new DomainError('not_found');
+  return found.department.id;
+}
+
+/** Folder id → path like "Guides/Setup". */
+function folderPaths(folders: readonly WikiFolder[]): Map<string, string> {
+  const byId = new Map(folders.map((f) => [f.id, f]));
+  const paths = new Map<string, string>();
+  for (const folder of folders) {
+    const names: string[] = [];
+    let current: WikiFolder | undefined = folder;
+    while (current && names.length < 32) {
+      names.unshift(current.name);
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+    paths.set(folder.id, names.join('/'));
+  }
+  return paths;
+}
+
+/** A wiki page the caller may edit through this token; refused otherwise. */
+async function editableWikiPage(ctx: AppContext, caller: McpCaller, id: string) {
+  if (!caller.scopes.includes('wiki:write')) throw new DomainError('forbidden');
+  const page = await ctx.wiki.page(caller.memberId, id);
+  if (!page.canEdit) throw new DomainError('forbidden');
+  return page;
+}
+
+/** Appends a whiteboard embed as its own paragraph, unless the page already shows it. */
+async function embedInWikiPage(
+  ctx: AppContext,
+  caller: McpCaller,
+  pageId: string,
+  boardId: string,
+  title: string,
+) {
+  const page = await editableWikiPage(ctx, caller, pageId);
+  if (wikiWhiteboards(page.content).includes(boardId)) return;
+  const embed = wikiWhiteboardEmbed(boardId, title);
+  await ctx.wiki.updatePage(
+    caller.memberId,
+    pageId,
+    { content: page.content.trim() ? `${page.content.trimEnd()}\n\n${embed}\n` : `${embed}\n` },
+    caller.tokenName,
+  );
+}
+
+/** A wiki page as agents read it, with the diagrams (whiteboards) it embeds. */
+export async function wikiPageFull(ctx: AppContext, caller: McpCaller, id: string) {
+  const page = await ctx.wiki.page(caller.memberId, id);
+  return {
+    id: page.id,
+    title: page.title,
+    department: page.department.name,
+    folder: page.path.map((f) => f.name).join('/') || null,
+    version: page.version,
+    content: page.content,
+    updatedBy: page.updatedBy?.name ?? null,
+    updatedAt: page.updatedAt,
+    canEdit: page.canEdit,
+    whiteboards: wikiWhiteboards(page.content).map((boardId) => ({
+      id: boardId,
+      resource: `ordler://whiteboard/${boardId}`,
+    })),
+    url: link(ctx, `/wiki/page/${page.id}`),
   };
 }
 
@@ -643,12 +723,13 @@ const tools: ToolDefinition[] = [
   {
     name: 'create_whiteboard',
     description:
-      'Create a whiteboard in a team, optionally drawing a diagram (nodes and edges, laid out automatically) and attaching it to an issue. People see it live and can keep editing it in Ordler.',
+      'Create a whiteboard in a team, optionally drawing a diagram (nodes and edges, laid out automatically), attaching it to an issue and embedding it at the end of a wiki page (needs the "wiki:write" scope). People see it live and can keep editing it in Ordler. Use this for every diagram in a wiki page.',
     scope: 'issues:write',
     input: z.object({
       team: z.string().trim().min(1).max(10),
       title: z.string().trim().min(1).max(200),
       issue: identifierSchema.optional().describe('Attach the board to this issue, e.g. HELP-142'),
+      wikiPage: z.uuid().optional().describe('Embed the board at the end of this wiki page'),
       ...diagramInput,
     }),
     async run(
@@ -658,6 +739,7 @@ const tools: ToolDefinition[] = [
         team: string;
         title: string;
         issue?: string;
+        wikiPage?: string;
         nodes: DiagramNode[];
         edges: DiagramEdge[];
         direction: 'down' | 'right';
@@ -665,6 +747,8 @@ const tools: ToolDefinition[] = [
     ) {
       // Built first: a diagram the agent got wrong must not leave an empty board behind.
       const elements = args.nodes.length > 0 || args.edges.length > 0 ? buildDiagram(args, []) : [];
+      // Checked before the board exists, so a refused embed leaves nothing behind.
+      if (args.wikiPage) await editableWikiPage(ctx, caller, args.wikiPage);
       const board = await ctx.whiteboards.create(
         caller.memberId,
         { team: args.team, title: args.title, ...(args.issue ? { issue: args.issue } : {}) },
@@ -673,7 +757,20 @@ const tools: ToolDefinition[] = [
       if (elements.length > 0) {
         await ctx.whiteboards.save(caller.memberId, board.id, { elements }, caller.tokenName);
       }
+      if (args.wikiPage) await embedInWikiPage(ctx, caller, args.wikiPage, board.id, board.title);
       return whiteboardFull(ctx, caller, board.id);
+    },
+  },
+  {
+    name: 'embed_whiteboard_in_wiki',
+    description:
+      'Show an existing whiteboard inside a wiki page, as a live diagram at the end of the page.',
+    scope: 'wiki:write',
+    input: z.object({ id: z.uuid(), page: z.uuid() }),
+    async run(ctx, caller, args: { id: string; page: string }) {
+      const board = await ctx.whiteboards.get(caller.memberId, args.id);
+      await embedInWikiPage(ctx, caller, args.page, board.id, board.title);
+      return wikiPageFull(ctx, caller, args.page);
     },
   },
   {
@@ -702,6 +799,156 @@ const tools: ToolDefinition[] = [
     async run(ctx, caller, args: { id: string; issue: string }) {
       await ctx.whiteboards.link(caller.memberId, args.issue, args.id, caller.tokenName);
       return issueWithBoards(ctx, caller, args.issue);
+    },
+  },
+  {
+    name: 'list_wiki_spaces',
+    description:
+      'Wiki spaces the member can read: one per department, with the number of pages and whether the member may edit.',
+    scope: 'read',
+    input: z.object({}),
+    async run(ctx, caller) {
+      return (await ctx.wiki.spaces(caller.memberId)).map((s) => ({
+        department: s.department.name,
+        departmentId: s.department.id,
+        visibility: s.visibility,
+        pages: s.pages,
+        canEdit: s.canEdit,
+      }));
+    },
+  },
+  {
+    name: 'list_wiki_pages',
+    description:
+      "A department's wiki tree: every page with its folder path. Use the department name or id.",
+    scope: 'read',
+    input: z.object({ department: departmentRef }),
+    async run(ctx, caller, args: { department: string }) {
+      const id = await wikiDepartment(ctx, caller, args.department);
+      const tree = await ctx.wiki.tree(caller.memberId, id);
+      const pathOf = folderPaths(tree.folders);
+      return {
+        department: tree.space.department.name,
+        canEdit: tree.space.canEdit,
+        folders: [...pathOf.values()].sort(),
+        pages: tree.pages.map((p) => ({
+          id: p.id,
+          title: p.title,
+          folder: p.folderId ? (pathOf.get(p.folderId) ?? null) : null,
+          updatedAt: p.updatedAt,
+          url: link(ctx, `/wiki/page/${p.id}`),
+        })),
+      };
+    },
+  },
+  {
+    name: 'search_wiki',
+    description:
+      'Find wiki pages whose title or text contains the words, across every readable department or one.',
+    scope: 'read',
+    input: z.object({
+      query: z.string().trim().min(2).max(200),
+      department: departmentRef.optional(),
+      limit: limitSchema,
+    }),
+    async run(ctx, caller, args: { query: string; department?: string; limit: number }) {
+      const department = args.department
+        ? await wikiDepartment(ctx, caller, args.department)
+        : undefined;
+      const hits = await ctx.wiki.search(caller.memberId, args.query, department);
+      return hits.slice(0, args.limit).map((h) => ({
+        id: h.id,
+        title: h.title,
+        department: h.department.name,
+        snippet: h.snippet,
+        resource: `ordler://wiki/${h.id}`,
+        url: link(ctx, `/wiki/page/${h.id}`),
+      }));
+    },
+  },
+  {
+    name: 'get_wiki_page',
+    description: 'A wiki page with its Markdown text, folder path and version.',
+    scope: 'read',
+    input: z.object({ id: z.uuid() }),
+    async run(ctx, caller, args: { id: string }) {
+      return wikiPageFull(ctx, caller, args.id);
+    },
+  },
+  {
+    name: 'create_wiki_page',
+    description:
+      'Create a Markdown page in a department wiki. `folder` is a path like "Guides/Setup"; missing folders are created. For diagrams do not write Mermaid or ASCII art: create a whiteboard with create_whiteboard and its `wikiPage` argument.',
+    scope: 'wiki:write',
+    input: z.object({
+      department: departmentRef,
+      folder: z.string().trim().max(1000).optional(),
+      title: z.string().trim().min(1).max(200),
+      content: z.string().max(WIKI_MAX_CONTENT).default(''),
+    }),
+    async run(
+      ctx,
+      caller,
+      args: { department: string; folder?: string; title: string; content: string },
+    ) {
+      const department = await wikiDepartment(ctx, caller, args.department);
+      const folderId = args.folder
+        ? await ctx.wiki.folderAtPath(
+            caller.memberId,
+            department,
+            args.folder,
+            true,
+            caller.tokenName,
+          )
+        : null;
+      const page = await ctx.wiki.createPage(
+        caller.memberId,
+        { department, folderId, title: args.title, content: args.content },
+        caller.tokenName,
+      );
+      return wikiPageFull(ctx, caller, page.id);
+    },
+  },
+  {
+    name: 'update_wiki_page',
+    description:
+      "Change a wiki page: title, full Markdown text, or folder path. Pass `baseVersion` from get_wiki_page to refuse overwriting someone else's newer edit.",
+    scope: 'wiki:write',
+    input: z.object({
+      id: z.uuid(),
+      title: z.string().trim().min(1).max(200).optional(),
+      content: z.string().max(WIKI_MAX_CONTENT).optional(),
+      folder: z.string().trim().max(1000).optional().describe('Folder path; "" for the root'),
+      baseVersion: z.number().int().min(1).optional(),
+    }),
+    async run(
+      ctx,
+      caller,
+      args: { id: string; title?: string; content?: string; folder?: string; baseVersion?: number },
+    ) {
+      const current = await ctx.wiki.page(caller.memberId, args.id);
+      const folderId =
+        args.folder === undefined
+          ? undefined
+          : await ctx.wiki.folderAtPath(
+              caller.memberId,
+              current.department.id,
+              args.folder,
+              true,
+              caller.tokenName,
+            );
+      await ctx.wiki.updatePage(
+        caller.memberId,
+        args.id,
+        {
+          ...(args.title !== undefined ? { title: args.title } : {}),
+          ...(args.content !== undefined ? { content: args.content } : {}),
+          ...(folderId !== undefined ? { folderId } : {}),
+          ...(args.baseVersion !== undefined ? { baseVersion: args.baseVersion } : {}),
+        },
+        caller.tokenName,
+      );
+      return wikiPageFull(ctx, caller, args.id);
     },
   },
 ];

@@ -4,7 +4,14 @@ import type { AppContext } from '../app-context.js';
 import { DomainError } from '../auth/errors.js';
 import { holdsAnywhere } from '../tokens/token.service.js';
 import { DiagramError } from '../whiteboards/diagram.js';
-import { issueWithBoards, requestFull, TOOLS, whiteboardFull, type McpCaller } from './tools.js';
+import {
+  issueWithBoards,
+  requestFull,
+  TOOLS,
+  whiteboardFull,
+  wikiPageFull,
+  type McpCaller,
+} from './tools.js';
 
 export const MCP_PATH = '/mcp';
 
@@ -18,6 +25,7 @@ const RESOURCE_TEMPLATES = [
   { uriTemplate: 'ordler://request/{identifier}', name: 'Request', mimeType: 'application/json' },
   { uriTemplate: 'ordler://team/{key}', name: 'Team', mimeType: 'application/json' },
   { uriTemplate: 'ordler://whiteboard/{id}', name: 'Whiteboard', mimeType: 'application/json' },
+  { uriTemplate: 'ordler://wiki/{id}', name: 'Wiki page', mimeType: 'application/json' },
 ];
 
 interface JsonRpcRequest {
@@ -217,13 +225,16 @@ export class McpServer {
 
   private async readResource(caller: McpCaller, uri: string) {
     if (!caller.scopes.includes('read')) throw new RpcError(-32002, 'Resource not found');
-    const match = /^ordler:\/\/(issue|request|team|whiteboard)\/([A-Za-z0-9-]{1,40})$/.exec(uri);
+    const match = /^ordler:\/\/(issue|request|team|whiteboard|wiki)\/([A-Za-z0-9-]{1,40})$/.exec(
+      uri,
+    );
     if (!match) throw new RpcError(-32002, 'Resource not found');
     const [, kind, id] = match;
     let data: unknown;
     try {
       if (kind === 'issue') data = await issueWithBoards(this.ctx, caller, id!);
       else if (kind === 'whiteboard') data = await whiteboardFull(this.ctx, caller, id!);
+      else if (kind === 'wiki') data = await wikiPageFull(this.ctx, caller, id!);
       else if (kind === 'request') {
         data = requestFull(this.ctx, await this.ctx.requests.get(caller.memberId, id!));
       } else {

@@ -39,7 +39,8 @@ export class DbAccessContext implements AccessContextSource {
       }
     }
 
-    const needsDirectory = assignments.some((a) => a.scope.type === 'department');
+    // Team grants need it too: the wiki counts a team's members as part of its department.
+    const needsDirectory = assignments.some((a) => a.scope.type !== 'organization');
     const departmentByTeam = new Map<string, string>();
     if (needsDirectory) {
       const rowsTeams = await this.db

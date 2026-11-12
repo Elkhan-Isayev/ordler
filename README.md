@@ -55,6 +55,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 🖼   | **Rich text**: formatting, pasted screenshots and files, Mermaid diagrams; files live in PostgreSQL                                                                                   |
 | 🔎  | **Search** with Ctrl/Cmd+K; one-click **copy ID / copy link**; **saved views** (personal or shared) and a **timeline**                                                                |
 | 🎨  | **Whiteboards** (Miro-style): draw together live with cursors, sticky notes and templates; attach boards to issues and see them inside the issue; AI agents draw diagrams through MCP |
+| 📚  | **Wiki** (Wiki.js-style): a knowledge base per department with folders, page history, live whiteboard diagrams in pages, import from Wiki.js and MCP tools for agents                 |
 
 ### Requests between departments (service-desk-style)
 

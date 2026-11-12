@@ -57,7 +57,13 @@ const MIME = /^[a-z]+\/[a-z0-9.+-]+$/;
 /** Writes a file without permission checks; callers decide who may (uploads, the importer). */
 export async function storeAttachment(
   db: Db,
-  input: { teamId: string; uploadedBy: string | null; file: UploadedFile },
+  input: {
+    /** An issue file belongs to a team; a wiki file to a department (exactly one is set). */
+    teamId?: string;
+    departmentId?: string;
+    uploadedBy: string | null;
+    file: UploadedFile;
+  },
 ): Promise<AttachmentView> {
   const { file } = input;
   const image = sniffImage(file.data);
@@ -70,7 +76,8 @@ export async function storeAttachment(
     const [row] = await tx
       .insert(attachments)
       .values({
-        teamId: input.teamId,
+        teamId: input.teamId ?? null,
+        departmentId: input.departmentId ?? null,
         uploadedBy: input.uploadedBy,
         filename,
         contentType,
@@ -93,13 +100,19 @@ export async function storeAttachment(
 
 /**
  * Attachments stored in PostgreSQL (ADR 0008). Uploading needs write access to the team's
- * issues; downloading needs read access, the same rule as the issue that shows them.
+ * issues; downloading needs read access, the same rule as the issue that shows them. Wiki
+ * files belong to a department and follow its wiki access instead (ADR 0017).
  */
 export class AttachmentService {
   constructor(
     private readonly db: Db,
     private readonly access: TeamAccess,
     readonly maxBytes: number,
+    /** Wiki files follow the department's wiki access (SPEC §5.6). */
+    private readonly wikiReadable: (
+      memberId: string,
+      departmentId: string,
+    ) => Promise<boolean> = () => Promise.resolve(false),
   ) {}
 
   async upload(memberId: string, teamKey: string, file: UploadedFile): Promise<AttachmentView> {
@@ -119,12 +132,16 @@ export class AttachmentService {
     const [row] = await this.db
       .select({ attachment: attachments, team: teams, data: attachmentContents.data })
       .from(attachments)
-      .innerJoin(teams, eq(teams.id, attachments.teamId))
+      .leftJoin(teams, eq(teams.id, attachments.teamId))
       .innerJoin(attachmentContents, eq(attachmentContents.attachmentId, attachments.id))
       .where(eq(attachments.id, id));
     if (!row) throw new DomainError('not_found');
     // Not readable looks like missing, so private teams do not leak through file links.
-    if (!(await this.access.forTeam(memberId, row.team)).read) throw new DomainError('not_found');
+    const readable = row.team
+      ? (await this.access.forTeam(memberId, row.team)).read
+      : row.attachment.departmentId !== null &&
+        (await this.wikiReadable(memberId, row.attachment.departmentId));
+    if (!readable) throw new DomainError('not_found');
     return {
       filename: row.attachment.filename,
       contentType: row.attachment.contentType,

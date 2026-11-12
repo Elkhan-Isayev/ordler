@@ -158,6 +158,7 @@ async function startApplication(
     ctx.updates.start();
     ctx.cycles.start(undefined, (message) => logger.warn(message));
     ctx.imports.startRunner(undefined, (message) => logger.warn(message));
+    ctx.wikiImports.startRunner(undefined, (message) => logger.warn(message));
     ctx.webhooks.startRunner();
     ctx.sla.startRunner();
     ctx.requests.startTimeouts(undefined, (message) => logger.warn(message));

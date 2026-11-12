@@ -23,7 +23,8 @@
     "board": "Board",
     "integrations": "Integrationen",
     "teamSettings": "Einstellungen",
-    "whiteboards": "Whiteboards"
+    "whiteboards": "Whiteboards",
+    "wiki": "Wiki"
   },
   "settings": {
     "language": "Sprache"
@@ -136,7 +137,10 @@
     "slack_not_configured": "Die Slack-App ist noch nicht vollständig eingerichtet.",
     "slack_rejected": "Slack hat das Token abgelehnt. Prüfen Sie, ob es vollständig kopiert wurde.",
     "oauth_invalid_request": "Dieser Autorisierungslink ist ungültig. Starten Sie die Verbindung in Ihrer App neu.",
-    "whiteboard_full": "Dieses Whiteboard ist voll. Entferne nicht benötigte Elemente oder beginne ein neues Whiteboard."
+    "whiteboard_full": "Dieses Whiteboard ist voll. Entferne nicht benötigte Elemente oder beginne ein neues Whiteboard.",
+    "wiki_conflict": "Inzwischen hat jemand eine neuere Version dieser Seite gespeichert. Kopieren Sie Ihre Änderungen, laden Sie die Seite neu und übernehmen Sie sie erneut.",
+    "wiki_folder_not_empty": "Nur leere Ordner können gelöscht werden. Verschieben oder löschen Sie zuerst den Inhalt.",
+    "wiki_too_deep": "Ordner können höchstens 8 Ebenen tief verschachtelt werden."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -896,12 +900,14 @@
     "scopes": {
       "read": "Lesen",
       "issuesWrite": "Issues schreiben",
-      "requestsWrite": "Anfragen stellen"
+      "requestsWrite": "Anfragen stellen",
+      "wikiWrite": "Wiki bearbeiten"
     },
     "scopeHints": {
       "read": "Issues, Anfragen und Kommentare, die Sie sehen können.",
       "issuesWrite": "Issues erstellen und ändern, kommentieren.",
-      "requestsWrite": "Anfragen über Serviceportale stellen."
+      "requestsWrite": "Anfragen über Serviceportale stellen.",
+      "wikiWrite": "Wiki-Seiten und -Ordner anlegen und bearbeiten."
     },
     "approvalsNote": "Genehmigungen können nie per Token entschieden werden: Nur Sie können angemeldet genehmigen oder ablehnen.",
     "create": "Token erstellen",
@@ -1348,6 +1354,70 @@
       "card": "Aufgabe",
       "topic": "Hauptthema",
       "idea": "Idee"
+    }
+  },
+  "wiki": {
+    "search": "Wiki durchsuchen",
+    "results": "Suchergebnisse",
+    "noResults": "Keine passenden Seiten.",
+    "noSpaces": "Noch keine Wiki-Bereiche. Jede Abteilung erhält einen, sobald sie Mitglieder hat.",
+    "pageCount": "{count, plural, one {# Seite} other {# Seiten}}",
+    "tree": "Seiten von {name}",
+    "breadcrumbs": "Ort",
+    "emptySpace": "Noch leer. Legen Sie die erste Seite an.",
+    "emptyFolder": "Dieser Ordner ist leer.",
+    "emptyPage": "Diese Seite ist leer.",
+    "newPage": "Neue Seite",
+    "newFolder": "Neuer Ordner",
+    "pageTitle": "Seitentitel",
+    "folderName": "Ordnername",
+    "renameFolder": "{name} umbenennen",
+    "deleteFolder": "{name} löschen",
+    "create": "Anlegen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "history": "Verlauf",
+    "deletePage": "Seite löschen",
+    "confirmDelete": "„{title}“ löschen? Der Verlauf bleibt erhalten.",
+    "updated": "Geändert von {name} · {date} · Version {version}",
+    "viewingVersion": "Version {version} von {name} · {date}",
+    "version": "Version {version}",
+    "restore": "Diese Version wiederherstellen",
+    "content": "Seitentext",
+    "contentPlaceholder": "Schreiben, Bilder einfügen, Diagramme hinzufügen…",
+    "folder": "Ordner",
+    "rootFolder": "Oberste Ebene",
+    "insertBoard": "Diagramm einfügen",
+    "existingBoard": "Vorhandenes Whiteboard…",
+    "newBoardTitle": "Titel des neuen Whiteboards",
+    "createBoard": "Anlegen und einfügen",
+    "embedHint": "Diagramme sind Whiteboards: beim Bearbeiten als Linkzeile, beim Lesen als Live-Board.",
+    "boardUnavailable": "Dieses Whiteboard wurde entfernt oder gehört zu einem Team, das Sie nicht sehen.",
+    "visibilityLabel": "Wer diesen Bereich lesen darf",
+    "visibility": {
+      "department": "Nur die Abteilung",
+      "organization": "Gesamte Organisation"
+    },
+    "import": {
+      "open": "Aus Wiki.js importieren",
+      "title": "Import aus Wiki.js",
+      "baseUrl": "Wiki.js-Adresse",
+      "token": "Wiki.js-API-Schlüssel",
+      "tokenHint": "Wiki.js → Administration → API-Zugriff → Neuer API-Schlüssel (Lesezugriff genügt). Verschlüsselt gespeichert und nach dem Import gelöscht.",
+      "choose": "Wählen Sie Ordner (mit allem Inhalt) oder einzelne Seiten. Sie landen im gerade geöffneten Ordner.",
+      "pages": "Wiki.js-Seiten",
+      "folder": "{name}/",
+      "start": "Import starten",
+      "counts": "{imported} importiert, {updated} aktualisiert, {skipped} unverändert, {failed} fehlgeschlagen von {total} · {files} Dateien",
+      "failed": "Import fehlgeschlagen: {error}",
+      "status": {
+        "draft": "Nicht gestartet",
+        "running": "Import läuft…",
+        "completed": "Fertig",
+        "failed": "Fehlgeschlagen",
+        "canceled": "Abgebrochen"
+      }
     }
   }
 }

@@ -31,6 +31,9 @@ import { WorkflowService } from './issues/workflow.service.js';
 import { CycleService } from './cycles/cycle.service.js';
 import { ViewService } from './views/view.service.js';
 import { WhiteboardService } from './whiteboards/whiteboard.service.js';
+import { WikiAccess } from './wiki/wiki-access.js';
+import { WikiImportService } from './wiki/wiki-import.service.js';
+import { WikiService } from './wiki/wiki.service.js';
 import { ProjectService } from './projects/project.service.js';
 import { InitiativeService } from './projects/initiative.service.js';
 import { ImportService } from './imports/import.service.js';
@@ -38,6 +41,7 @@ import { WebhookService, type WebhookFetch } from './webhooks/webhook.service.js
 import { SlaService } from './sla/sla.service.js';
 import { DelegationService } from './approvals/delegation.service.js';
 import { sourceFactory, type SourceFactory } from './imports/sources/index.js';
+import type { HttpFetch } from './imports/sources/types.js';
 import type { Notifier } from './notifications/notifier.js';
 import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slack.service.js';
 import { OAuthService } from './oauth/oauth.service.js';
@@ -95,6 +99,8 @@ export interface AppContext {
   cycles: CycleService;
   views: ViewService;
   whiteboards: WhiteboardService;
+  wiki: WikiService;
+  wikiImports: WikiImportService;
   projects: ProjectService;
   initiatives: InitiativeService;
   imports: ImportService;
@@ -160,6 +166,8 @@ export interface AppContextDeps {
   importSources?: SourceFactory;
   /** Outgoing webhook calls; replaced in tests. */
   webhookFetch?: WebhookFetch;
+  /** Wiki.js calls of wiki imports; replaced in tests. */
+  wikiFetch?: HttpFetch;
 }
 
 export function createAppContext(deps: AppContextDeps): AppContext {
@@ -234,6 +242,12 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     access: teamAccess,
     issues,
     events,
+    maxFileBytes: attachmentMaxBytes,
+    now,
+  });
+  const wiki = new WikiService({
+    db: deps.db,
+    access: new WikiAccess(access),
     maxFileBytes: attachmentMaxBytes,
     now,
   });
@@ -340,6 +354,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     cycles: new CycleService({ db: deps.db, access: teamAccess, issues, events, now }),
     views: new ViewService(deps.db, teamAccess, now),
     whiteboards,
+    wiki,
+    wikiImports: new WikiImportService({
+      db: deps.db,
+      box,
+      wiki,
+      maxFileBytes: attachmentMaxBytes,
+      now,
+      ...(deps.wikiFetch ? { fetch: deps.wikiFetch } : {}),
+    }),
     projects,
     initiatives: new InitiativeService({ db: deps.db, access, projects, now }),
     webhooks,
@@ -356,7 +379,9 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     }),
     audit: new AuditService(deps.db),
     version: deps.version,
-    attachments: new AttachmentService(deps.db, teamAccess, attachmentMaxBytes),
+    attachments: new AttachmentService(deps.db, teamAccess, attachmentMaxBytes, (memberId, id) =>
+      wiki.canRead(memberId, id),
+    ),
     events,
     realtime: new RealtimeHub({
       baseUrl: deps.baseUrl,

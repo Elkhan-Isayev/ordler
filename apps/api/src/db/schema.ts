@@ -44,6 +44,10 @@ export const departments = pgTable(
     id: id(),
     name: text('name').notNull(),
     headMemberId: uuid('head_member_id'),
+    /** Who reads the department's wiki besides the department: `department` or `organization`. */
+    wikiVisibility: text('wiki_visibility', { enum: ['department', 'organization'] })
+      .notNull()
+      .default('department'),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -487,9 +491,9 @@ export const attachments = pgTable(
   'attachments',
   {
     id: id(),
-    teamId: uuid('team_id')
-      .notNull()
-      .references(() => teams.id),
+    /** Owner of an issue file; null for a wiki file, which belongs to a department. */
+    teamId: uuid('team_id').references(() => teams.id),
+    departmentId: uuid('department_id').references(() => departments.id),
     uploadedBy: uuid('uploaded_by').references(() => members.id),
     filename: text('filename').notNull(),
     contentType: text('content_type').notNull(),
@@ -1069,7 +1073,7 @@ export const externalRefs = pgTable(
   'external_refs',
   {
     sourceKey: text('source_key').notNull(),
-    kind: text('kind', { enum: ['issue', 'comment', 'attachment'] }).notNull(),
+    kind: text('kind', { enum: ['issue', 'comment', 'attachment', 'wiki_page'] }).notNull(),
     externalId: text('external_id').notNull(),
     ordlerId: uuid('ordler_id').notNull(),
     /** The source's own updated time when last imported, to skip unchanged items. */
@@ -1293,3 +1297,81 @@ export const issueWhiteboards = pgTable(
     index('issue_whiteboards_board_idx').on(t.whiteboardId),
   ],
 );
+
+/** Folders of a department's wiki space (SPEC §5.6, ADR 0017); null parent = space root. */
+export const wikiFolders = pgTable(
+  'wiki_folders',
+  {
+    id: id(),
+    departmentId: uuid('department_id')
+      .notNull()
+      .references(() => departments.id),
+    parentId: uuid('parent_id'),
+    name: text('name').notNull(),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('wiki_folders_department_idx').on(t.departmentId, t.parentId)],
+);
+
+/** Markdown pages; `version` grows with every saved edit and guards against lost updates. */
+export const wikiPages = pgTable(
+  'wiki_pages',
+  {
+    id: id(),
+    departmentId: uuid('department_id')
+      .notNull()
+      .references(() => departments.id),
+    folderId: uuid('folder_id').references(() => wikiFolders.id),
+    title: text('title').notNull(),
+    content: text('content').notNull().default(''),
+    version: integer('version').notNull().default(1),
+    createdBy: uuid('created_by').references(() => members.id),
+    updatedBy: uuid('updated_by').references(() => members.id),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+  },
+  (t) => [index('wiki_pages_department_idx').on(t.departmentId, t.folderId)],
+);
+
+/** Every saved version of a page, append-only: the page history. */
+export const wikiPageRevisions = pgTable(
+  'wiki_page_revisions',
+  {
+    pageId: uuid('page_id')
+      .notNull()
+      .references(() => wikiPages.id),
+    version: integer('version').notNull(),
+    title: text('title').notNull(),
+    content: text('content').notNull(),
+    authorId: uuid('author_id').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.pageId, t.version] })],
+);
+
+/** One import from Wiki.js (ADR 0017); the cursor makes it resumable, like `import_runs`. */
+export const wikiImports = pgTable('wiki_imports', {
+  id: id(),
+  departmentId: uuid('department_id')
+    .notNull()
+    .references(() => departments.id),
+  folderId: uuid('folder_id').references(() => wikiFolders.id),
+  baseUrl: text('base_url').notNull(),
+  /** Sealed with the instance key; erased once the import ends. */
+  tokenEncrypted: text('token_encrypted'),
+  status: text('status', { enum: ['draft', 'running', 'completed', 'failed', 'canceled'] })
+    .notNull()
+    .default('draft'),
+  /** Wiki.js page ids to import, fixed when the import starts. */
+  pageIds: jsonb('page_ids').notNull().default([]),
+  cursor: integer('cursor').notNull().default(0),
+  counts: jsonb('counts').notNull().default({}),
+  report: jsonb('report').notNull().default([]),
+  error: text('error'),
+  leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  createdBy: uuid('created_by').references(() => members.id),
+  createdAt: createdAt(),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+});

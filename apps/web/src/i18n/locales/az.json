@@ -23,7 +23,8 @@
     "board": "Lövhə",
     "integrations": "İnteqrasiyalar",
     "teamSettings": "Parametrlər",
-    "whiteboards": "Lövhələr"
+    "whiteboards": "Lövhələr",
+    "wiki": "Viki"
   },
   "settings": {
     "language": "Dil"
@@ -136,7 +137,10 @@
     "slack_not_configured": "Slack tətbiqi hələ tam qurulmayıb.",
     "slack_rejected": "Slack tokeni rədd etdi. Onun tam köçürüldüyünü yoxlayın.",
     "oauth_invalid_request": "Bu avtorizasiya linki etibarsızdır. Qoşulmanı tətbiqdən yenidən başladın.",
-    "whiteboard_full": "Bu lövhə doludur. Lazımsız elementləri silin və ya yeni lövhə yaradın."
+    "whiteboard_full": "Bu lövhə doludur. Lazımsız elementləri silin və ya yeni lövhə yaradın.",
+    "wiki_conflict": "Siz redaktə edərkən kimsə bu səhifənin daha yeni versiyasını saxladı. Dəyişikliklərinizi kopyalayın, səhifəni yeniləyin və yenidən tətbiq edin.",
+    "wiki_folder_not_empty": "Yalnız boş qovluqlar silinə bilər. Əvvəlcə içindəkiləri köçürün və ya silin.",
+    "wiki_too_deep": "Qovluqlar ən çox 8 səviyyə iç-içə ola bilər."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -896,12 +900,14 @@
     "scopes": {
       "read": "Oxumaq",
       "issuesWrite": "Tapşırıqları dəyişmək",
-      "requestsWrite": "Sorğu göndərmək"
+      "requestsWrite": "Sorğu göndərmək",
+      "wikiWrite": "Vikini redaktə etmək"
     },
     "scopeHints": {
       "read": "Gördüyünüz tapşırıqlar, sorğular və şərhlər.",
       "issuesWrite": "Tapşırıq yaratmaq, dəyişmək, şərh yazmaq.",
-      "requestsWrite": "Xidmət portallarından sorğu göndərmək."
+      "requestsWrite": "Xidmət portallarından sorğu göndərmək.",
+      "wikiWrite": "Viki səhifələri və qovluqları yaratmaq və redaktə etmək."
     },
     "approvalsNote": "Təsdiqlər heç vaxt tokenlə qərarlaşdırıla bilməz: yalnız siz daxil olaraq təsdiq və ya rədd edə bilərsiniz.",
     "create": "Token yarat",
@@ -1348,6 +1354,70 @@
       "card": "Tapşırıq",
       "topic": "Əsas mövzu",
       "idea": "İdeya"
+    }
+  },
+  "wiki": {
+    "search": "Vikidə axtarış",
+    "results": "Axtarış nəticələri",
+    "noResults": "Uyğun səhifə yoxdur.",
+    "noSpaces": "Hələ viki sahəsi yoxdur. Hər departamentin üzvləri olduqda sahəsi yaranır.",
+    "pageCount": "{count, plural, one {# səhifə} other {# səhifə}}",
+    "tree": "{name} səhifələri",
+    "breadcrumbs": "Yer",
+    "emptySpace": "Hələ boşdur. İlk səhifəni yaradın.",
+    "emptyFolder": "Bu qovluq boşdur.",
+    "emptyPage": "Bu səhifə boşdur.",
+    "newPage": "Yeni səhifə",
+    "newFolder": "Yeni qovluq",
+    "pageTitle": "Səhifə adı",
+    "folderName": "Qovluq adı",
+    "renameFolder": "{name} adını dəyiş",
+    "deleteFolder": "{name} sil",
+    "create": "Yarat",
+    "save": "Saxla",
+    "cancel": "Ləğv et",
+    "edit": "Redaktə et",
+    "history": "Tarixçə",
+    "deletePage": "Səhifəni sil",
+    "confirmDelete": "“{title}” silinsin? Tarixçəsi saxlanılır.",
+    "updated": "{name} dəyişdi · {date} · versiya {version}",
+    "viewingVersion": "Versiya {version}, {name} · {date}",
+    "version": "Versiya {version}",
+    "restore": "Bu versiyanı bərpa et",
+    "content": "Səhifənin mətni",
+    "contentPlaceholder": "Yazın, şəkil yapışdırın, diaqram əlavə edin…",
+    "folder": "Qovluq",
+    "rootFolder": "Sahənin kökü",
+    "insertBoard": "Diaqram əlavə et",
+    "existingBoard": "Mövcud lövhə…",
+    "newBoardTitle": "Yeni lövhənin adı",
+    "createBoard": "Yarat və əlavə et",
+    "embedHint": "Diaqramlar lövhələrdir: redaktə zamanı keçid sətri, oxuyarkən canlı lövhə kimi görünür.",
+    "boardUnavailable": "Bu lövhə silinib və ya görmədiyiniz komandaya aiddir.",
+    "visibilityLabel": "Bu sahəni kim oxuya bilər",
+    "visibility": {
+      "department": "Yalnız departament",
+      "organization": "Bütün təşkilat"
+    },
+    "import": {
+      "open": "Wiki.js-dən idxal",
+      "title": "Wiki.js-dən idxal",
+      "baseUrl": "Wiki.js ünvanı",
+      "token": "Wiki.js API açarı",
+      "tokenHint": "Wiki.js → Administration → API Access → yeni API açarı (oxuma kifayətdir). Şifrələnmiş saxlanılır və idxal bitəndə silinir.",
+      "choose": "Qovluqları (içindəkilərlə birlikdə) və ya ayrı səhifələri seçin. Onlar hazırda açıq olan qovluğa düşəcək.",
+      "pages": "Wiki.js səhifələri",
+      "folder": "{name}/",
+      "start": "İdxala başla",
+      "counts": "{total} səhifədən {imported} idxal, {updated} yenilənib, {skipped} dəyişməyib, {failed} xəta · {files} fayl",
+      "failed": "İdxal alınmadı: {error}",
+      "status": {
+        "draft": "Başlanmayıb",
+        "running": "İdxal edilir…",
+        "completed": "Hazırdır",
+        "failed": "Xəta",
+        "canceled": "Ləğv edilib"
+      }
     }
   }
 }

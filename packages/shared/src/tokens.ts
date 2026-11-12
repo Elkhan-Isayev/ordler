@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /** What a personal access token may do; it never exceeds its member (SPEC §10.1). */
-export const TOKEN_SCOPES = ['read', 'issues:write', 'requests:write'] as const;
+export const TOKEN_SCOPES = ['read', 'issues:write', 'requests:write', 'wiki:write'] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 
 export const PERSONAL_TOKEN_PREFIX = 'ordl_pat_';

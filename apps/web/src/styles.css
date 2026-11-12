@@ -120,6 +120,42 @@ textarea {
   border-radius: 6px;
   margin: 0.4em 0;
 }
+.ordler-prose table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  width: 100%;
+  table-layout: fixed;
+}
+.ordler-prose th,
+.ordler-prose td {
+  border: 1px solid var(--color-line);
+  padding: 0.3em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+.ordler-prose th {
+  background: var(--color-hover);
+  font-weight: 600;
+}
+.ordler-prose th p,
+.ordler-prose td p {
+  margin: 0;
+}
+.ordler-prose ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.ordler-prose ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.5em;
+  align-items: flex-start;
+}
+.ordler-prose ul[data-type='taskList'] li > label {
+  margin-top: 0.3em;
+}
+.ordler-prose ul[data-type='taskList'] li > div {
+  flex: 1;
+}
 .ordler-prose img.ProseMirror-selectednode {
   outline: 2px solid var(--color-accent);
 }

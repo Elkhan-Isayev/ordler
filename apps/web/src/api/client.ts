@@ -1,4 +1,20 @@
 import type {
+  WikiFolder,
+  WikiFolderCreate,
+  WikiFolderUpdate,
+  WikiImportConnect,
+  WikiImportSourcePage,
+  WikiImportStart,
+  WikiImportView,
+  WikiPageCreate,
+  WikiPageUpdate,
+  WikiPageView,
+  WikiRevision,
+  WikiRevisionView,
+  WikiSearchHit,
+  WikiSpace,
+  WikiTree,
+  WikiVisibility,
   DelegationInput,
   DelegationView,
   CalendarInput,
@@ -459,6 +475,45 @@ export const api = {
     apiRequest<IssueDetail>(`/api/comments/${id}`, { method: 'PATCH', body: { body } }),
   deleteComment: (id: string) =>
     apiRequest<IssueDetail>(`/api/comments/${id}`, { method: 'DELETE' }),
+  wikiSpaces: () => apiRequest<WikiSpace[]>('/api/wiki/spaces'),
+  wikiTree: (departmentId: string) => apiRequest<WikiTree>(`/api/wiki/spaces/${departmentId}`),
+  setWikiVisibility: (departmentId: string, visibility: WikiVisibility) =>
+    apiRequest<WikiSpace>(`/api/wiki/spaces/${departmentId}`, {
+      method: 'PATCH',
+      body: { visibility },
+    }),
+  uploadWikiFile: (departmentId: string, file: File) =>
+    uploadFile<AttachmentView>(`/api/wiki/spaces/${departmentId}/files`, file),
+  searchWiki: (query: string, departmentId?: string) =>
+    apiRequest<WikiSearchHit[]>(
+      `/api/wiki/search?q=${encodeURIComponent(query)}${departmentId ? `&department=${departmentId}` : ''}`,
+    ),
+  createWikiFolder: (body: WikiFolderCreate) =>
+    apiRequest<WikiFolder>('/api/wiki/folders', { method: 'POST', body }),
+  updateWikiFolder: (id: string, body: WikiFolderUpdate) =>
+    apiRequest<WikiFolder>(`/api/wiki/folders/${id}`, { method: 'PATCH', body }),
+  deleteWikiFolder: (id: string) =>
+    apiRequest<void>(`/api/wiki/folders/${id}`, { method: 'DELETE' }),
+  createWikiPage: (body: WikiPageCreate) =>
+    apiRequest<WikiPageView>('/api/wiki/pages', { method: 'POST', body }),
+  wikiPage: (id: string) => apiRequest<WikiPageView>(`/api/wiki/pages/${id}`),
+  updateWikiPage: (id: string, body: WikiPageUpdate) =>
+    apiRequest<WikiPageView>(`/api/wiki/pages/${id}`, { method: 'PATCH', body }),
+  deleteWikiPage: (id: string) => apiRequest<void>(`/api/wiki/pages/${id}`, { method: 'DELETE' }),
+  wikiRevisions: (id: string) => apiRequest<WikiRevision[]>(`/api/wiki/pages/${id}/revisions`),
+  wikiRevision: (id: string, version: number) =>
+    apiRequest<WikiRevisionView>(`/api/wiki/pages/${id}/revisions/${version}`),
+  wikiImports: (departmentId: string) =>
+    apiRequest<WikiImportView[]>(`/api/wiki/spaces/${departmentId}/imports`),
+  connectWikiImport: (body: WikiImportConnect) =>
+    apiRequest<WikiImportView>('/api/wiki/imports', { method: 'POST', body }),
+  wikiImport: (id: string) => apiRequest<WikiImportView>(`/api/wiki/imports/${id}`),
+  wikiImportPages: (id: string) =>
+    apiRequest<WikiImportSourcePage[]>(`/api/wiki/imports/${id}/pages`),
+  startWikiImport: (id: string, body: WikiImportStart) =>
+    apiRequest<WikiImportView>(`/api/wiki/imports/${id}/start`, { method: 'POST', body }),
+  cancelWikiImport: (id: string) =>
+    apiRequest<WikiImportView>(`/api/wiki/imports/${id}/cancel`, { method: 'POST' }),
   uploadAttachment: (teamKey: string, file: File) =>
     uploadFile<AttachmentView>(`/api/teams/${encodeURIComponent(teamKey)}/attachments`, file),
   directory: () => apiRequest<DirectoryView>('/api/directory'),

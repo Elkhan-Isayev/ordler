@@ -15,6 +15,9 @@ import { ProjectsPage } from './projects/ProjectsPage.js';
 import { ViewsPage } from './issues/ViewsPage.js';
 import { WhiteboardPage } from './whiteboards/WhiteboardPage.js';
 import { WhiteboardsPage } from './whiteboards/WhiteboardsPage.js';
+import { WikiHome } from './wiki/WikiHome.js';
+import { WikiPageScreen } from './wiki/WikiPageScreen.js';
+import { WikiSpacePage } from './wiki/WikiSpacePage.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
 import { TriagePage } from './issues/TriagePage.js';
 import { NewRequestPage } from './requests/NewRequestPage.js';
@@ -60,6 +63,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const requestPage = /^\/requests\/(REQ-\d+)\/?$/i.exec(path);
   const groupPage = /^\/request-groups\/(REQ-G-\d+)\/?$/i.exec(path);
   const whiteboardPage = /^\/whiteboards\/([0-9a-f-]{36})\/?$/.exec(path);
+  const wikiSpace = /^\/wiki\/([0-9a-f-]{36})\/?$/.exec(path);
+  const wikiPage = /^\/wiki\/page\/([0-9a-f-]{36})(\/edit)?\/?$/.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
   const counts = useInboxCounts(me.member.id);
@@ -115,6 +120,12 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <InitiativesPage canCreate={me.organizationPermissions.includes('initiative.manage')} />
         ) : initiativePage ? (
           <InitiativePage key={initiativePage[1]} initiativeId={initiativePage[1]!} />
+        ) : path === '/wiki' ? (
+          <WikiHome />
+        ) : wikiSpace ? (
+          <WikiSpacePage key={wikiSpace[1]} departmentId={wikiSpace[1]!} />
+        ) : wikiPage ? (
+          <WikiPageScreen key={wikiPage[1]} id={wikiPage[1]!} edit={Boolean(wikiPage[2])} />
         ) : path === '/whiteboards' ? (
           <WhiteboardsPage />
         ) : whiteboardPage ? (

@@ -55,6 +55,15 @@ describe('system roles', () => {
     expect(SYSTEM_ROLES.viewer.permissions).not.toContain('whiteboard.edit');
   });
 
+  it('everyone but guests reads the wiki; whoever creates issues may edit it', () => {
+    for (const role of Object.values(SYSTEM_ROLES)) {
+      expect(role.permissions.includes('wiki.read'), role.key).toBe(role.key !== 'guest');
+      expect(role.permissions.includes('wiki.edit'), role.key).toBe(
+        role.permissions.includes('issue.create'),
+      );
+    }
+  });
+
   it('personal tokens and MCP are available to everyone except guests', () => {
     for (const role of Object.values(SYSTEM_ROLES)) {
       const expected = role.key !== 'guest';

@@ -23,7 +23,8 @@
     "board": "Board",
     "integrations": "Integrations",
     "teamSettings": "Settings",
-    "whiteboards": "Whiteboards"
+    "whiteboards": "Whiteboards",
+    "wiki": "Wiki"
   },
   "settings": {
     "language": "Language"
@@ -136,7 +137,10 @@
     "slack_not_configured": "The Slack app is not fully configured yet.",
     "slack_rejected": "Slack rejected the token. Check that it was copied completely.",
     "oauth_invalid_request": "This authorization link is not valid. Start the connection again from your app.",
-    "whiteboard_full": "This whiteboard is full. Remove unused elements or start a new board."
+    "whiteboard_full": "This whiteboard is full. Remove unused elements or start a new board.",
+    "wiki_conflict": "Someone saved a newer version of this page meanwhile. Copy your changes, reload the page and apply them again.",
+    "wiki_folder_not_empty": "Only empty folders can be deleted. Move or delete what is inside first.",
+    "wiki_too_deep": "Folders can be nested at most 8 levels deep."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -896,12 +900,14 @@
     "scopes": {
       "read": "Read",
       "issuesWrite": "Write issues",
-      "requestsWrite": "Submit requests"
+      "requestsWrite": "Submit requests",
+      "wikiWrite": "Write wiki"
     },
     "scopeHints": {
       "read": "Issues, requests and comments you can see.",
       "issuesWrite": "Create and update issues, comment.",
-      "requestsWrite": "Submit requests from service portals."
+      "requestsWrite": "Submit requests from service portals.",
+      "wikiWrite": "Create and edit wiki pages and folders."
     },
     "approvalsNote": "Approvals can never be decided with a token: only you, signed in, can approve or reject.",
     "create": "Create token",
@@ -1348,6 +1354,70 @@
       "card": "Task",
       "topic": "Main topic",
       "idea": "Idea"
+    }
+  },
+  "wiki": {
+    "search": "Search the wiki",
+    "results": "Search results",
+    "noResults": "No pages match.",
+    "noSpaces": "No wiki spaces yet. Each department gets one when it has members.",
+    "pageCount": "{count, plural, one {# page} other {# pages}}",
+    "tree": "Pages of {name}",
+    "breadcrumbs": "Location",
+    "emptySpace": "Nothing here yet. Create the first page.",
+    "emptyFolder": "This folder is empty.",
+    "emptyPage": "This page is empty.",
+    "newPage": "New page",
+    "newFolder": "New folder",
+    "pageTitle": "Page title",
+    "folderName": "Folder name",
+    "renameFolder": "Rename {name}",
+    "deleteFolder": "Delete {name}",
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "history": "History",
+    "deletePage": "Delete page",
+    "confirmDelete": "Delete “{title}”? Its history is kept.",
+    "updated": "Updated by {name} · {date} · version {version}",
+    "viewingVersion": "Version {version} by {name} · {date}",
+    "version": "Version {version}",
+    "restore": "Restore this version",
+    "content": "Page text",
+    "contentPlaceholder": "Write, paste images, add diagrams…",
+    "folder": "Folder",
+    "rootFolder": "Top of the space",
+    "insertBoard": "Insert diagram",
+    "existingBoard": "Existing whiteboard…",
+    "newBoardTitle": "New whiteboard title",
+    "createBoard": "Create and insert",
+    "embedHint": "Diagrams are whiteboards: while editing they show as a link line, when reading as the live board.",
+    "boardUnavailable": "This whiteboard was removed or belongs to a team you cannot see.",
+    "visibilityLabel": "Who can read this space",
+    "visibility": {
+      "department": "Department only",
+      "organization": "Whole organization"
+    },
+    "import": {
+      "open": "Import from Wiki.js",
+      "title": "Import from Wiki.js",
+      "baseUrl": "Wiki.js address",
+      "token": "Wiki.js API key",
+      "tokenHint": "Wiki.js → Administration → API Access → New API key (read access is enough). Stored encrypted and erased when the import ends.",
+      "choose": "Tick folders (everything inside them) or single pages. They are imported into the folder that is open now.",
+      "pages": "Wiki.js pages",
+      "folder": "{name}/",
+      "start": "Start import",
+      "counts": "{imported} imported, {updated} updated, {skipped} unchanged, {failed} failed of {total} · {files} files",
+      "failed": "Import failed: {error}",
+      "status": {
+        "draft": "Not started",
+        "running": "Importing…",
+        "completed": "Done",
+        "failed": "Failed",
+        "canceled": "Canceled"
+      }
     }
   }
 }
