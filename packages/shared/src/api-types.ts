@@ -1,6 +1,9 @@
 import type { AuthStrategyKind } from './auth.js';
 import type { Permission } from './permissions.js';
 import type { Theme } from './preferences.js';
+import type { IssueSummary } from './issues.js';
+import type { RequestSummary } from './requests.js';
+import type { WikiSearchHit } from './wiki.js';
 
 /** Response of GET /api/me and of every successful sign-in. */
 export interface MeResponse {
@@ -38,4 +41,11 @@ export interface UpdateStatusResponse {
   release: { name: string; url: string; notes: string; publishedAt: string } | null;
   checkedAt: string | null;
   lastError: string | null;
+}
+
+/** Response of GET /api/search (SPEC §5.4): everything the member may open, by kind. */
+export interface SearchResults {
+  issues: IssueSummary[];
+  requests: RequestSummary[];
+  wikiPages: WikiSearchHit[];
 }

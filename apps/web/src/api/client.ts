@@ -107,6 +107,7 @@ import type {
   UpdateInboxSettingsInput,
   UpdateEmailTemplateInput,
   MeResponse,
+  SearchResults,
   MePreferencesInput,
   PublicStrategy,
   AuthStrategyKind,
@@ -209,6 +210,8 @@ export const api = {
     apiRequest<{ id: string }>('/api/admin/departments', { method: 'POST', body: { name } }),
   archiveDepartment: (id: string) =>
     apiRequest<void>(`/api/admin/departments/${id}/archive`, { method: 'POST' }),
+  restoreDepartment: (id: string) =>
+    apiRequest<void>(`/api/admin/departments/${id}/restore`, { method: 'POST' }),
   createTeam: (departmentId: string, body: { name: string; key: string; isPrivate: boolean }) =>
     apiRequest<{ id: string }>(`/api/admin/departments/${departmentId}/teams`, {
       method: 'POST',
@@ -443,10 +446,7 @@ export const api = {
   deleteLabel: (id: string) => apiRequest<void>(`/api/labels/${id}`, { method: 'DELETE' }),
   createLabel: (body: CreateLabelInput) =>
     apiRequest<LabelView>('/api/labels', { method: 'POST', body }),
-  search: (q: string) =>
-    apiRequest<{ issues: IssueSummary[]; requests: RequestSummary[] }>(
-      `/api/search?q=${encodeURIComponent(q)}`,
-    ),
+  search: (q: string) => apiRequest<SearchResults>(`/api/search?q=${encodeURIComponent(q)}`),
   createIssue: (key: string, body: Partial<CreateIssueInput> & { title: string }) =>
     apiRequest<IssueDetail>(`/api/teams/${encodeURIComponent(key)}/issues`, {
       method: 'POST',

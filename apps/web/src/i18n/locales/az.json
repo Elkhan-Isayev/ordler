@@ -194,7 +194,12 @@
       "head": "Müdir",
       "teamKeyPreview": "Bu komandanın tapşırıqları {key}-1, {key}-2… kimi nömrələnəcək. 2–10 böyük latın hərfi və ya rəqəm, birincisi hərf olmalıdır.",
       "multipleAssignees": "Bir neçə icraçı",
-      "multipleAssigneesFor": "{name} komandasında bir neçə icraçıya icazə ver"
+      "multipleAssigneesFor": "{name} komandasında bir neçə icraçıya icazə ver",
+      "rename": "Adını dəyiş",
+      "renameFor": "{name} adını dəyiş",
+      "save": "Yadda saxla",
+      "cancel": "Ləğv et",
+      "restore": "Arxivdən qaytar"
     },
     "members": {
       "title": "İştirakçılar",
@@ -927,9 +932,15 @@
   },
   "search": {
     "title": "Axtarış",
-    "placeholder": "Tapşırıq və sorğuları axtarın…",
+    "placeholder": "Nömrə və ya ad üzrə axtarış…",
     "results": "Nəticələr",
-    "empty": "Heç nə tapılmadı."
+    "empty": "Heç nə tapılmadı.",
+    "hint": "Nömrə (HELP-12, REQ-3 və ya sadəcə 12) və ya addan sözlər yazın.",
+    "groups": {
+      "issues": "Tapşırıqlar",
+      "requests": "Sorğular",
+      "wiki": "Viki"
+    }
   },
   "teamSettings": {
     "title": "Parametrlər",

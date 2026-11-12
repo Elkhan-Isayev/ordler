@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Locale } from '@ordler/shared';
 import { I18nextProvider } from 'react-i18next';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createI18n } from '../i18n/index.js';
 import { formatBadge, Sidebar, type SidebarProps } from './Sidebar.js';
 
@@ -33,6 +33,15 @@ async function renderSidebar(locale: Locale = 'en', overrides: Partial<SidebarPr
 }
 
 describe('Sidebar', () => {
+  it('shows a search field with its shortcut that opens the search', async () => {
+    const onSearch = vi.fn();
+    await renderSidebar('ru', { onSearch });
+    const field = screen.getByRole('button', { name: /Поиск/ });
+    expect(field).toHaveTextContent(/K$/);
+    await userEvent.click(field);
+    expect(onSearch).toHaveBeenCalled();
+  });
+
   it('shows personal, workspace and department navigation', async () => {
     await renderSidebar();
     for (const label of ['Inbox', 'My issues', 'My requests', 'Approvals', 'Service portals']) {

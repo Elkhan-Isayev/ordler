@@ -105,6 +105,57 @@ describe('DepartmentsSection', () => {
     );
   });
 
+  it('renames a department inline', async () => {
+    const calls = mockApi({
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      [`PATCH /api/admin/departments/${DEPT_ID}`]: () => ({ status: 204 }),
+    });
+    await renderWithI18n(<DepartmentsSection />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Rename IT' }));
+    const form = screen.getByRole('form', { name: 'Rename IT' });
+    const input = within(form).getByLabelText('Name');
+    await userEvent.clear(input);
+    await userEvent.type(input, 'IT Ops');
+    await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ name: 'IT Ops' }),
+    );
+    await waitFor(() => expect(screen.queryByRole('form', { name: 'Rename IT' })).toBeNull());
+  });
+
+  it('keeps the rename form open when the name is taken', async () => {
+    mockApi({
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      [`PATCH /api/admin/departments/${DEPT_ID}`]: () => ({
+        status: 409,
+        json: { error: 'department_name_taken' },
+      }),
+    });
+    await renderWithI18n(<DepartmentsSection />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Rename IT' }));
+    const form = screen.getByRole('form', { name: 'Rename IT' });
+    await userEvent.type(within(form).getByLabelText('Name'), ' 2');
+    await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'A department with this name already exists.',
+    );
+    expect(screen.getByRole('form', { name: 'Rename IT' })).toBeInTheDocument();
+  });
+
+  it('restores an archived department and hides archive and rename for it', async () => {
+    const archived = [{ ...DEPARTMENTS[0]!, archivedAt: '2026-11-01T00:00:00.000Z' }];
+    const calls = mockApi({
+      'GET /api/admin/departments': () => ({ json: archived }),
+      [`POST /api/admin/departments/${DEPT_ID}/restore`]: () => ({ status: 204 }),
+    });
+    await renderWithI18n(<DepartmentsSection />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Restore' }));
+    await waitFor(() =>
+      expect(calls.some((c) => c.path === `/api/admin/departments/${DEPT_ID}/restore`)).toBe(true),
+    );
+    expect(screen.queryByRole('button', { name: 'Rename IT' })).toBeNull();
+  });
+
   it('explains an empty organization', async () => {
     mockApi({ 'GET /api/admin/departments': () => ({ json: [] }) });
     await renderWithI18n(<DepartmentsSection />);

@@ -117,6 +117,43 @@ describe('departments and teams', () => {
     expect(badKey.statusCode).toBe(400);
   });
 
+  it('restores an archived department with the teams archived together with it', async () => {
+    const it = (await call('POST', '/api/admin/departments', owner, { name: 'IT' })).json<{
+      id: string;
+    }>();
+    await call('POST', `/api/admin/departments/${it.id}/teams`, owner, { name: 'A', key: 'AA' });
+    await call('POST', `/api/admin/departments/${it.id}/teams`, owner, { name: 'B', key: 'BB' });
+    let list = (await call('GET', '/api/admin/departments', owner)).json<AdminDepartment[]>();
+    const early = list[0]!.teams.find((team) => team.key === 'BB')!;
+    await call('POST', `/api/admin/teams/${early.id}/archive`, owner);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await call('POST', `/api/admin/departments/${it.id}/archive`, owner);
+
+    expect((await call('POST', `/api/admin/departments/${it.id}/restore`, owner)).statusCode).toBe(
+      204,
+    );
+    list = (await call('GET', '/api/admin/departments', owner)).json<AdminDepartment[]>();
+    expect(list[0]!.archivedAt).toBeNull();
+    const archivedKeys = list[0]!.teams.filter((team) => team.archivedAt).map((team) => team.key);
+    // The team archived on its own earlier stays archived.
+    expect(archivedKeys).toEqual(['BB']);
+    const [entry] = await t.database.db
+      .select()
+      .from(auditLog)
+      .where(eq(auditLog.action, 'department.restored'));
+    expect(entry).toMatchObject({ targetId: it.id });
+  });
+
+  it('refuses to restore a department whose name is now taken', async () => {
+    const old = (await call('POST', '/api/admin/departments', owner, { name: 'IT' })).json<{
+      id: string;
+    }>();
+    await call('POST', `/api/admin/departments/${old.id}/archive`, owner);
+    await call('POST', '/api/admin/departments', owner, { name: 'it' });
+    const response = await call('POST', `/api/admin/departments/${old.id}/restore`, owner);
+    expect(response.json()).toEqual({ error: 'department_name_taken' });
+  });
+
   it('refuses teams in archived departments', async () => {
     const it = (await call('POST', '/api/admin/departments', owner, { name: 'IT' })).json<{
       id: string;
@@ -361,6 +398,23 @@ describe('access control', () => {
         })
       ).statusCode,
     ).toBe(403);
+  });
+
+  it('lets only a permitted admin restore a department', async () => {
+    const it = (await call('POST', '/api/admin/departments', owner, { name: 'IT' })).json<{
+      id: string;
+    }>();
+    await call('POST', `/api/admin/departments/${it.id}/archive`, owner);
+    const member = await onboard('plain2@push30.test', {
+      key: 'member',
+      scope: { type: 'organization' },
+    });
+    expect(
+      (await call('POST', `/api/admin/departments/${it.id}/restore`, member.cookie)).statusCode,
+    ).toBe(403);
+    expect((await call('POST', `/api/admin/departments/${it.id}/restore`, owner)).statusCode).toBe(
+      204,
+    );
   });
 
   it('records who did what', async () => {

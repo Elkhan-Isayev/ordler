@@ -755,6 +755,8 @@ describe('request search', () => {
       'REQ-1',
     ]);
     expect((await find(people.agent!.cookie, 'req-1')).map((r) => r.identifier)).toEqual(['REQ-1']);
+    expect((await find(people.agent!.cookie, '1')).map((r) => r.identifier)).toEqual(['REQ-1']);
+    expect(await find(people.agent!.cookie, '7')).toEqual([]);
     // The approver sees it; an unrelated Finance member does not.
     expect((await find(people.csboss!.cookie, 'headsets')).map((r) => r.identifier)).toEqual([
       'REQ-1',

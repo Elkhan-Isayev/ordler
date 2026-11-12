@@ -855,15 +855,18 @@ export class RequestService {
    */
   async search(memberId: string, query: string, limit = 20): Promise<RequestSummary[]> {
     const pattern = `%${likeEscape(query)}%`;
-    const number = parseRequestIdentifier(query);
+    // `REQ-12` or a bare `12`, as in Linear.
+    const number =
+      parseRequestIdentifier(query) ??
+      (/^\d{1,9}$/.test(query.trim()) ? Number(query.trim()) : undefined);
+    const byNumber = number ? sql`${requests.number} = ${number}` : sql`false`;
     const candidates = await this.db
       .select()
       .from(requests)
       .where(
-        sql`(${number ? sql`${requests.number} = ${number}` : sql`false`}
-          or ${requests.title} ilike ${pattern} or ${requests.description} ilike ${pattern})`,
+        sql`(${byNumber} or ${requests.title} ilike ${pattern} or ${requests.description} ilike ${pattern})`,
       )
-      .orderBy(desc(requests.updatedAt))
+      .orderBy(sql`case when ${byNumber} then 0 else 1 end`, desc(requests.updatedAt))
       .limit(200);
     const visible: string[] = [];
     for (const row of candidates) {

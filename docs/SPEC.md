@@ -104,6 +104,8 @@ Rules:
   (members holding the `Department Supervisor` role in that department).
 - Team keys are unique per organization, 2–10 uppercase letters/digits.
 - Departments and teams are archived, never hard-deleted, while they own issues/requests.
+  An archived department can be restored together with the teams archived with it, if its
+  name is still free.
 - Optional `manager` field on a member (for "requester's manager" approvals).
 
 ---
@@ -278,6 +280,10 @@ Your departments
   Settings → Appearance; the choice is stored on the member and follows them across devices.
   Diagrams (Mermaid blocks and whiteboards, including embeds) always render light.
 - Full-text search across issues, requests, comments, projects (permission-filtered).
+- **Search** (Linear-style): a search field at the top of the sidebar, `Cmd/Ctrl+K`,
+  `Cmd/Ctrl+F` (replaces the browser's find) or `/` outside text fields open it. It finds
+  issues, requests and wiki pages by number (`HELP-12`, `REQ-3`, or a bare `12` in every
+  readable team) or by title and text; number matches come first, results are grouped by kind.
 
 ### 5.5 Whiteboards
 
@@ -538,7 +544,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Overview                        | Seats, active users, request volume, SLA compliance; current version and update availability (§16.5).                                                                                             |
 | Members                         | Invite (email, bulk CSV), deactivate/reactivate, set home department and manager, view assignments, impersonate-for-support (Owner only, audited, read-only).                                     |
-| Departments                     | Create / rename / archive, head, supervisors, business hours calendar.                                                                                                                            |
+| Departments                     | Create / rename / archive / restore, head, supervisors, business hours calendar.                                                                                                                  |
 | Teams                           | Create inside department, key, privacy, members, team lead, move team between departments.                                                                                                        |
 | Roles & permissions             | List system roles (read-only), create custom roles from the permission catalog, assign roles at scope, "effective permissions" inspector for any member.                                          |
 | Workflows                       | Team workflows and request workflows editor.                                                                                                                                                      |

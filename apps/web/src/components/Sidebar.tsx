@@ -13,8 +13,13 @@ import {
   Stamp,
   Store,
   type LucideIcon,
+  Search,
 } from 'lucide-react';
 import { Link } from '../router.js';
+
+/** Shortcut hint in the platform's own words. */
+const MOD_KEY =
+  typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
 
 export interface SidebarTeam {
   id: string;
@@ -76,17 +81,19 @@ export function Sidebar({
             {workspaceName.slice(0, 2).toUpperCase()}
           </span>
           <span className="truncate font-semibold text-ink">{workspaceName}</span>
-          {onSearch && (
-            <button
-              type="button"
-              onClick={onSearch}
-              title="Ctrl+K"
-              className="ml-auto rounded-md px-2 py-1 text-xs hover:bg-hover hover:text-ink"
-            >
-              {t('nav.search')}
-            </button>
-          )}
         </div>
+        {onSearch && (
+          <button
+            type="button"
+            onClick={onSearch}
+            aria-keyshortcuts={`${MOD_KEY === '⌘' ? 'Meta' : 'Control'}+K`}
+            className="-mt-3 flex items-center gap-2 rounded-md border border-line bg-card px-2.5 py-1.5 text-left text-ink-faint hover:text-ink"
+          >
+            <Search aria-hidden size={14} />
+            <span className="flex-1">{t('nav.search')}</span>
+            <kbd className="rounded border border-line px-1 text-[10px]">{MOD_KEY} K</kbd>
+          </button>
+        )}
 
         <ul className="flex flex-col gap-0.5">
           <NavItem icon={Inbox} href="/inbox" badge={formatBadge(inboxCount)}>

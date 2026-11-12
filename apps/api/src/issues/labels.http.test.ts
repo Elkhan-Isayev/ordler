@@ -235,4 +235,20 @@ describe('search (SPEC §5.4)', () => {
     expect((await find(dev, 'help-2')).issues.map((i) => i.identifier)).toEqual(['HELP-2']);
     expect((await call('GET', '/api/search?q=', dev)).statusCode).toBe(400);
   });
+
+  it('finds an issue by its bare number in every readable team, ahead of title matches', async () => {
+    await issue(dev, { title: 'VPN' });
+    await issue(dev, { title: 'Printer' });
+    await issue(owner, { title: 'Budget' }, 'ACC');
+    await issue(dev, { title: 'Room 2 projector' });
+    const find = async (cookie: string, q: string) =>
+      (await call('GET', `/api/search?q=${q}`, cookie))
+        .json<{ issues: Array<{ identifier: string }> }>()
+        .issues.map((i) => i.identifier);
+    // HELP-3 matches "2" by title and is newer, but the number match comes first.
+    expect(await find(dev, '2')).toEqual(['HELP-2', 'HELP-3']);
+    // ACC is not readable for dev.
+    expect(await find(dev, '1')).toEqual(['HELP-1']);
+    expect((await find(owner, '1')).sort()).toEqual(['ACC-1', 'HELP-1']);
+  });
 });

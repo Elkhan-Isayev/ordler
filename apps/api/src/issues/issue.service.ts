@@ -161,10 +161,14 @@ export class IssueService {
     if (readable.length === 0) return [];
     const pattern = `%${likeEscape(query)}%`;
     const parsed = parseIssueIdentifier(query.toUpperCase());
+    // A bare number finds that issue in every readable team, as in Linear.
+    const bareNumber = /^\d{1,9}$/.test(query.trim()) ? Number(query.trim()) : undefined;
     const byIdentifier = parsed
       ? sql`((${teams.key} = ${parsed.teamKey} and ${issues.number} = ${parsed.number})
           or ${issues.externalKey} = ${query.toUpperCase()})`
-      : sql`false`;
+      : bareNumber
+        ? sql`${issues.number} = ${bareNumber}`
+        : sql`false`;
     const matches = await this.db
       .select({ id: issues.id })
       .from(issues)
@@ -178,7 +182,8 @@ export class IssueService {
               and c.deleted_at is null and c.body ilike ${pattern}))`,
         ),
       )
-      .orderBy(desc(issues.updatedAt))
+      // Identifier hits first, then the most recently touched.
+      .orderBy(sql`case when ${byIdentifier} then 0 else 1 end`, desc(issues.updatedAt))
       .limit(limit);
     if (matches.length === 0) return [];
     const found = await this.summaries(

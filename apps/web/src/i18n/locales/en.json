@@ -194,7 +194,12 @@
       "head": "Head",
       "teamKeyPreview": "Issues of this team will be numbered {key}-1, {key}-2… 2–10 Latin capital letters or digits, starting with a letter.",
       "multipleAssignees": "Several assignees",
-      "multipleAssigneesFor": "Allow several assignees in {name}"
+      "multipleAssigneesFor": "Allow several assignees in {name}",
+      "rename": "Rename",
+      "renameFor": "Rename {name}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "restore": "Restore"
     },
     "members": {
       "title": "Members",
@@ -927,9 +932,15 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search issues and requests…",
+    "placeholder": "Search by number or title…",
     "results": "Results",
-    "empty": "Nothing found."
+    "empty": "Nothing found.",
+    "hint": "Type a number (HELP-12, REQ-3 or just 12) or words from a title.",
+    "groups": {
+      "issues": "Issues",
+      "requests": "Requests",
+      "wiki": "Wiki"
+    }
   },
   "teamSettings": {
     "title": "Settings",

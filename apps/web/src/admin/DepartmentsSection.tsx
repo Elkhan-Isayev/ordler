@@ -1,4 +1,5 @@
 import type { AdminDepartment } from '@ordler/shared';
+import { Pencil } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
@@ -101,6 +102,17 @@ function DepartmentCard({
   const archived = department.archivedAt !== null;
 
   const [key, setKey] = useState('');
+  const [renaming, setRenaming] = useState(false);
+
+  async function rename(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = String(new FormData(event.currentTarget).get('name')).trim();
+    if (!name || name === department.name) {
+      setRenaming(false);
+      return;
+    }
+    if (await run(() => api.updateDepartment(department.id, { name }))) setRenaming(false);
+  }
 
   async function addTeam(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,12 +134,50 @@ function DepartmentCard({
   return (
     <Panel>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-medium text-ink">
-          {department.name}
-          {archived && (
-            <span className="ml-2 text-xs text-ink-faint">{t('admin.departments.archived')}</span>
-          )}
-        </h3>
+        {renaming ? (
+          <form
+            onSubmit={rename}
+            aria-label={t('admin.departments.renameFor', { name: department.name })}
+            className="flex flex-1 items-center gap-2"
+          >
+            <input
+              name="name"
+              required
+              autoFocus
+              maxLength={120}
+              defaultValue={department.name}
+              aria-label={t('admin.departments.name')}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setRenaming(false);
+              }}
+              className={`${inputClass} flex-1`}
+            />
+            <button type="submit" className={buttonClass}>
+              {t('admin.departments.save')}
+            </button>
+            <button type="button" className={ghostButtonClass} onClick={() => setRenaming(false)}>
+              {t('admin.departments.cancel')}
+            </button>
+          </form>
+        ) : (
+          <h3 className="flex items-center gap-1 font-medium text-ink">
+            {department.name}
+            {archived && (
+              <span className="ml-1 text-xs text-ink-faint">{t('admin.departments.archived')}</span>
+            )}
+            {!archived && (
+              <button
+                type="button"
+                aria-label={t('admin.departments.renameFor', { name: department.name })}
+                title={t('admin.departments.rename')}
+                className="rounded p-1 text-ink-faint hover:bg-hover hover:text-ink"
+                onClick={() => setRenaming(true)}
+              >
+                <Pencil aria-hidden size={13} />
+              </button>
+            )}
+          </h3>
+        )}
         {!archived && people.length > 0 && (
           <label className="ml-auto flex items-center gap-1 text-xs text-ink-muted">
             {t('admin.departments.head')}
@@ -162,6 +212,15 @@ function DepartmentCard({
             }}
           >
             {t('admin.departments.archive')}
+          </button>
+        )}
+        {archived && (
+          <button
+            type="button"
+            className={ghostButtonClass}
+            onClick={() => void run(() => api.restoreDepartment(department.id))}
+          >
+            {t('admin.departments.restore')}
           </button>
         )}
       </div>

@@ -51,6 +51,13 @@ export class AdminOrgController {
     await this.ctx.org.archiveDepartment(id, actor(request));
   }
 
+  @RequirePermission('department.archive', departmentFromParam())
+  @Post('departments/:departmentId/restore')
+  @HttpCode(204)
+  async restoreDepartment(@Param('departmentId') id: string, @Req() request: OrdlerRequest) {
+    await this.ctx.org.restoreDepartment(id, actor(request));
+  }
+
   @RequirePermission('team.create', departmentFromParam())
   @Post('departments/:departmentId/teams')
   async createTeam(

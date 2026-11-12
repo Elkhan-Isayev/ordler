@@ -113,6 +113,28 @@ export class OrgService {
     });
   }
 
+  /** Brings back a department and the teams that were archived together with it. */
+  async restoreDepartment(id: string, actor: AuditActor): Promise<void> {
+    const dept = await this.department(id);
+    if (!dept.archivedAt) return;
+    // Another active department may have taken the name meanwhile.
+    await this.assertDepartmentNameFree(dept.name);
+    const archivedAt = dept.archivedAt;
+    await this.db.transaction(async (tx) => {
+      await tx.update(departments).set({ archivedAt: null }).where(eq(departments.id, id));
+      await tx
+        .update(teams)
+        .set({ archivedAt: null })
+        .where(sql`${teams.departmentId} = ${id} and ${teams.archivedAt} = ${archivedAt}`);
+    });
+    await writeAudit(this.db, {
+      actor,
+      action: 'department.restored',
+      targetType: 'department',
+      targetId: id,
+    });
+  }
+
   async createTeam(
     departmentId: string,
     input: { name: string; key: string; isPrivate: boolean },

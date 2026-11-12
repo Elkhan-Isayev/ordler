@@ -376,6 +376,12 @@ describe('wiki spaces (SPEC §5.6)', () => {
       'Budget',
       'VPN',
     ]);
+    // The global search (Cmd+K) lists the same readable pages.
+    const global = async (cookie: string) =>
+      (await call('GET', '/api/search?q=wireguard', cookie)).json<{ wikiPages: WikiSearchHit[] }>()
+        .wikiPages;
+    expect((await global(people.anna.cookie)).map((h) => h.title)).toEqual(['VPN']);
+    expect((await global(owner)).map((h) => h.title).sort()).toEqual(['Budget', 'VPN']);
   });
 
   it('stores pasted files with the department and serves them to its readers only', async () => {

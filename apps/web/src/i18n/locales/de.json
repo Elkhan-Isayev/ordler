@@ -194,7 +194,12 @@
       "head": "Leitung",
       "teamKeyPreview": "Issues dieses Teams werden {key}-1, {key}-2… nummeriert. 2–10 lateinische Großbuchstaben oder Ziffern, beginnend mit einem Buchstaben.",
       "multipleAssignees": "Mehrere Zuständige",
-      "multipleAssigneesFor": "Mehrere Zuständige in {name} erlauben"
+      "multipleAssigneesFor": "Mehrere Zuständige in {name} erlauben",
+      "rename": "Umbenennen",
+      "renameFor": "{name} umbenennen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "restore": "Wiederherstellen"
     },
     "members": {
       "title": "Mitglieder",
@@ -927,9 +932,15 @@
   },
   "search": {
     "title": "Suche",
-    "placeholder": "Issues und Anfragen suchen…",
+    "placeholder": "Nach Nummer oder Titel suchen…",
     "results": "Ergebnisse",
-    "empty": "Nichts gefunden."
+    "empty": "Nichts gefunden.",
+    "hint": "Geben Sie eine Nummer (HELP-12, REQ-3 oder einfach 12) oder Wörter aus einem Titel ein.",
+    "groups": {
+      "issues": "Aufgaben",
+      "requests": "Anfragen",
+      "wiki": "Wiki"
+    }
   },
   "teamSettings": {
     "title": "Einstellungen",

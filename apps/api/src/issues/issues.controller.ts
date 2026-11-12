@@ -146,11 +146,12 @@ export class IssuesController {
   @Get('search')
   async search(@Query() query: unknown, @Req() request: OrdlerRequest) {
     const { q, limit } = parseBody(searchQuerySchema, query);
-    const [issues, requests] = await Promise.all([
+    const [issues, requests, wikiPages] = await Promise.all([
       this.ctx.issues.search(request.member!.id, q, limit),
       this.ctx.requests.search(request.member!.id, q, limit),
+      this.ctx.wiki.search(request.member!.id, q),
     ]);
-    return { issues, requests };
+    return { issues, requests, wikiPages: wikiPages.slice(0, limit) };
   }
 
   @Post('teams/:key/statuses')
