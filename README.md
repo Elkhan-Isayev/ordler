@@ -173,7 +173,7 @@ in a shorter form.
 | ----------------- | -------------------------------------------------------------------------------------------------------- |
 | Image             | `ghcr.io/elkhan-isayev/ordler:<version>` (amd64, arm64), non-root user `1000`, read-only root filesystem |
 | Helm chart        | `oci://ghcr.io/elkhan-isayev/charts/ordler`, chart version = app version                                 |
-| Releases          | <https://github.com/Elkhan-Isayev/ordler/releases>; pin an exact version, e.g. `0.9.0`                   |
+| Releases          | <https://github.com/Elkhan-Isayev/ordler/releases>; pin an exact version, e.g. `0.9.1`                   |
 | Port              | `3000` (HTTP); UI, REST API, WebSocket and MCP all on this one port                                      |
 | Health            | `GET /healthz` liveness, `GET /readyz` readiness (checks the database)                                   |
 | Only dependency   | PostgreSQL **18 or newer**, one empty database (AWS RDS, Azure, Cloud SQL or self-hosted)                |
@@ -298,7 +298,7 @@ extraEnv:
 
 ```bash
 curl -sO https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-helm install ordler oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.9.0 \
+helm install ordler oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.9.1 \
   -n ordler -f values.yaml --set-file database.sslCa=global-bundle.pem
 kubectl -n ordler rollout status deploy/ordler
 ```
@@ -313,7 +313,7 @@ curl -O https://raw.githubusercontent.com/Elkhan-Isayev/ordler/main/deploy/docke
 export BASE_URL=https://tasks.company.com
 export DATABASE_URL='postgres://ordler:<password>@db.company.com:5432/ordler'
 export DB_SSL=require
-export ORDLER_IMAGE=ghcr.io/elkhan-isayev/ordler:0.9.0
+export ORDLER_IMAGE=ghcr.io/elkhan-isayev/ordler:0.9.1
 docker compose up -d
 ```
 
@@ -417,7 +417,7 @@ Full reference: [SPEC §16.2](docs/SPEC.md#162-configuration-environment-variabl
 **Why:** a self-hosted tool for team tasks and for requests between departments, with
 approvals (replaces <current tool or spreadsheets>).
 **Docs:** https://github.com/Elkhan-Isayev/ordler#deploy-in-your-company
-**Version:** 0.9.0 (pinned; image ghcr.io/elkhan-isayev/ordler:0.9.0)
+**Version:** 0.9.1 (pinned; image ghcr.io/elkhan-isayev/ordler:0.9.1)
 
 ### What is needed
 
@@ -438,7 +438,7 @@ approvals (replaces <current tool or spreadsheets>).
 - [ ] Create database and user (`CREATE USER ordler …; CREATE DATABASE ordler OWNER ordler;`)
 - [ ] Create secrets `ordler-db` (DB password) and `ordler-key` (`openssl rand -base64 32`)
 - [ ] Add `ordler-key` to the secrets backup
-- [ ] Install the Helm chart `oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.9.0`
+- [ ] Install the Helm chart `oci://ghcr.io/elkhan-isayev/charts/ordler --version 0.9.1`
       with `baseUrl`, `database.*`, `encryptionKey.existingSecret`, `ingress.*`, SMTP env
       (example values in the README)
 - [ ] Enable daily database backups / snapshots with <retention>
