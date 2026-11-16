@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const OUT = 'THIRD_PARTY_NOTICES.md';
-/** Installed but kept out of everything Ordler ships (see apps/web/src/build/no-elk.ts). */
+/** Installed but kept out of everything Ordler ships (see apps/web/src/vite/no-elk.ts). */
 const NOT_SHIPPED = new Set(['elkjs']);
 const LICENSE_FILE = /^(licen[cs]e|copying|notice)(\.|-|$)/i;
 
@@ -28,6 +28,13 @@ for (const [license, list] of Object.entries(byLicense)) {
     if (pkg.name.startsWith('@ordler/') || NOT_SHIPPED.has(pkg.name)) continue;
     pkg.versions.forEach((version, index) => {
       const dir = pkg.paths[index];
+      // The image runs on Linux: packages limited to other systems (fsevents) never ship, and
+      // skipping them keeps the file identical whether it is generated on macOS or in CI.
+      const manifest =
+        dir && existsSync(join(dir, 'package.json'))
+          ? JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+          : {};
+      if (Array.isArray(manifest.os) && !manifest.os.some((os) => os === 'linux')) return;
       const files =
         dir && existsSync(dir)
           ? readdirSync(dir)

@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
-import { noElk } from './src/build/no-elk.js';
+import { noElk } from './src/vite/no-elk.js';
 
 /**
  * Serves the whiteboard editor's fonts from Ordler itself (ADR 0015): on-prem installs may
