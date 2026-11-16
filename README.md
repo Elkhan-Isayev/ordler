@@ -23,7 +23,7 @@ self-hosted on your own infrastructure.
 
 <br/>
 
-<img src="docs/assets/screenshots/board.jpg" alt="A team board in Ordler with issues grouped by status, labels, priorities and assignees" width="900" />
+<img src="docs/assets/screenshots/demo.gif" alt="Ordler tour: a team board, an issue with a diagram, search, a wiki page with a whiteboard and Mermaid diagram, a whiteboard, a request with approvals, and the dark theme" width="900" />
 
 </div>
 

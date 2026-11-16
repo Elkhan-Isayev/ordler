@@ -19,3 +19,8 @@ with cross-department approvals, search and the dark theme.
 ## Tests
 
 - No code changes. Images checked by eye.
+
+## Follow-up
+
+- `docs/assets/screenshots/demo.gif` — a 24-second tour (board, issue, search, wiki, whiteboard,
+  request, dark theme) replaces the static hero image; recorded from the same demo instance.
