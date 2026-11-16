@@ -23,7 +23,7 @@ self-hosted on your own infrastructure.
 
 <br/>
 
-<img src="docs/assets/screenshots/update-banner.jpg" alt="Ordler workspace with departments, teams and the update notification" width="800" />
+<img src="docs/assets/screenshots/board.jpg" alt="A team board in Ordler with issues grouped by status, labels, priorities and assignees" width="900" />
 
 </div>
 
@@ -98,12 +98,16 @@ the [roadmap](docs/SPEC.md#14-delivery-phases).
 
 <table>
   <tr>
-    <td align="center"><img src="docs/assets/screenshots/admin-departments.jpg" alt="Departments and teams" width="400" /><br/><sub>Admin: departments and teams</sub></td>
-    <td align="center"><img src="docs/assets/screenshots/admin-members.jpg" alt="Members and invites" width="400" /><br/><sub>Admin: invites with one-time links, roles per scope</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/wiki-overview.jpg" alt="Wiki page with an embedded whiteboard and a Mermaid sequence diagram" /><br/><sub><b>Wiki</b>: department docs with whiteboards and Mermaid diagrams</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/whiteboard.jpg" alt="Collaborative whiteboard with a service map" /><br/><sub><b>Whiteboards</b>: draw together in real time, embed anywhere</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/assets/screenshots/admin-sign-in.jpg" alt="Sign-in methods" width="400" /><br/><sub>Admin: sign-in methods</sub></td>
-    <td align="center"><img src="docs/assets/screenshots/setup-wizard.jpg" alt="Setup wizard" width="400" /><br/><sub>First-run setup wizard</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/issue.jpg" alt="Issue with a Mermaid flowchart, checklist, sub-issues and project" /><br/><sub><b>Issues</b>: rich text, diagrams, sub-issues, cycles and projects</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/request.jpg" alt="Laptop request with a two-step approval across departments" /><br/><sub><b>Requests</b>: forms and approvals across departments</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/search.jpg" alt="Search palette finding issues and wiki pages" /><br/><sub><b>Search</b>: <kbd>⌘K</kbd> / <kbd>Ctrl+F</kbd> by number or title</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/screenshots/board-dark.jpg" alt="Team board in the dark theme" /><br/><sub><b>Dark theme</b>, or follow the system</sub></td>
   </tr>
 </table>
 
