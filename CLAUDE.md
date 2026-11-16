@@ -46,7 +46,8 @@ Vitest alias; runtime code imports its built `dist`.
 ## Changelog
 
 Every change set adds a new file to `.ai/changelog/` following `.ai/README.md`
-(one file per change, from `_TEMPLATE.md`).
+(one file per change, from `_TEMPLATE.md`). The `.ai/` folder is local only: git ignores
+it, so it never reaches GitHub.
 
 ## Invariants
 

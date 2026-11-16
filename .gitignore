@@ -36,3 +36,6 @@ pnpm-debug.log*
 
 # Local development data (database cluster, keys)
 .data/
+
+# Local AI working notes and changelog, kept out of the public repository
+.ai/

@@ -979,7 +979,6 @@ audit_log(id, actor_type, actor_id, action, target_type, target_id,
 - E2E tests (Playwright) for critical flows: sign-in, create issue, cross-department request
   with two-step approval, admin role assignment.
 - Static checks in CI: TypeScript strict, ESLint, Prettier, dependency audit.
-- Every PR adds a changelog entry in `.ai/changelog/` (see `.ai/README.md`).
 
 ---
 

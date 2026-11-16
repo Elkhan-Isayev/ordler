@@ -18,8 +18,7 @@ self-hosted on your own infrastructure.
 [Deploy in your company](#deploy-in-your-company) ·
 [DevOps ticket template](#devops-ticket-template) ·
 [Specification](docs/SPEC.md) ·
-[Architecture decisions](docs/adr/) ·
-[Changelog](.ai/changelog/)
+[Architecture decisions](docs/adr/)
 
 <br/>
 
@@ -512,7 +511,6 @@ pnpm format:check
 
 - Every UI or server change ships with unit tests; bug fixes start with a failing test.
 - Every user-facing string exists in all four languages.
-- Every change adds a file to [`.ai/changelog/`](.ai/README.md).
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/).
 
 ```
