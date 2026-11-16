@@ -87,6 +87,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   import_auth_failed: 422,
   import_source_failed: 502,
   import_not_ready: 409,
+  import_running: 409,
 };
 
 /** Expected business failures; mapped to `{ error: code }` responses by the HTTP layer. */

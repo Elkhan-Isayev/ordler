@@ -140,7 +140,8 @@
     "whiteboard_full": "Dieses Whiteboard ist voll. Entferne nicht benötigte Elemente oder beginne ein neues Whiteboard.",
     "wiki_conflict": "Inzwischen hat jemand eine neuere Version dieser Seite gespeichert. Kopieren Sie Ihre Änderungen, laden Sie die Seite neu und übernehmen Sie sie erneut.",
     "wiki_folder_not_empty": "Nur leere Ordner können gelöscht werden. Verschieben oder löschen Sie zuerst den Inhalt.",
-    "wiki_too_deep": "Ordner können höchstens 8 Ebenen tief verschachtelt werden."
+    "wiki_too_deep": "Ordner können höchstens 8 Ebenen tief verschachtelt werden.",
+    "import_running": "Ein anderer Import läuft gerade. Pausieren Sie ihn oder warten Sie, bis er fertig ist."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -199,7 +200,11 @@
       "renameFor": "{name} umbenennen",
       "save": "Speichern",
       "cancel": "Abbrechen",
-      "restore": "Wiederherstellen"
+      "restore": "Wiederherstellen",
+      "clearIssues": "Alle Aufgaben löschen",
+      "clearIssuesPrompt": "Damit werden alle Aufgaben in allen Teams von {name} gelöscht, zum Beispiel um sie erneut aus Linear zu importieren. Geben Sie zur Bestätigung den Namen der Abteilung ein:",
+      "clearIssuesMismatch": "Der Name stimmt nicht überein. Es wurde nichts gelöscht.",
+      "issuesCleared": "{count, plural, one {# Aufgabe gelöscht} other {# Aufgaben gelöscht}}. Starten Sie den Import erneut, um sie zurückzuholen."
     },
     "members": {
       "title": "Mitglieder",
@@ -1142,7 +1147,8 @@
     "pause": "Pausieren",
     "resume": "Fortsetzen",
     "cancel": "Import abbrechen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "retry": "Erneut versuchen"
   },
   "webhooks": {
     "subtitle": "Senden Sie signierte HTTP-POSTs an Ihre Systeme, wenn sich Issues, Anfragen und Genehmigungen ändern. Fehlgeschlagene Zustellungen werden etwa zwei Tage lang wiederholt.",

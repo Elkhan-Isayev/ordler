@@ -210,6 +210,10 @@ export const api = {
     apiRequest<{ id: string }>('/api/admin/departments', { method: 'POST', body: { name } }),
   archiveDepartment: (id: string) =>
     apiRequest<void>(`/api/admin/departments/${id}/archive`, { method: 'POST' }),
+  clearDepartmentIssues: (id: string) =>
+    apiRequest<{ issues: number }>(`/api/admin/departments/${id}/clear-issues`, {
+      method: 'POST',
+    }),
   restoreDepartment: (id: string) =>
     apiRequest<void>(`/api/admin/departments/${id}/restore`, { method: 'POST' }),
   createTeam: (departmentId: string, body: { name: string; key: string; isPrivate: boolean }) =>

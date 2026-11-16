@@ -6,6 +6,7 @@ import {
   updateTeamSchema,
 } from '@ordler/shared';
 import type { AppContext } from '../app-context.js';
+import { DomainError } from '../auth/errors.js';
 import { APP_CONTEXT, parseBody, type OrdlerRequest } from '../http/http.js';
 import { departmentFromParam, RequirePermission, teamFromParam } from '../rbac/permission.guard.js';
 
@@ -56,6 +57,14 @@ export class AdminOrgController {
   @HttpCode(204)
   async restoreDepartment(@Param('departmentId') id: string, @Req() request: OrdlerRequest) {
     await this.ctx.org.restoreDepartment(id, actor(request));
+  }
+
+  /** Before a fresh import: deletes all of the department's issues (SPEC §10.2). */
+  @RequirePermission('org.manage')
+  @Post('departments/:departmentId/clear-issues')
+  clearIssues(@Param('departmentId') id: string, @Req() request: OrdlerRequest) {
+    if (!/^[0-9a-f-]{36}$/.test(id)) throw new DomainError('not_found');
+    return this.ctx.imports.clearDepartment(request.member!.id, id);
   }
 
   @RequirePermission('team.create', departmentFromParam())

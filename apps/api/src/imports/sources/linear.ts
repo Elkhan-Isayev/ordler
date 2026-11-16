@@ -4,6 +4,7 @@ import {
   sourceJson,
   type ExternalIssue,
   type ExternalPerson,
+  type ExternalProject,
   type HttpFetch,
   type ImportSourceAdapter,
 } from './types.js';
@@ -15,6 +16,15 @@ const CATEGORY: Record<string, IssueStatusCategory> = {
   unstarted: 'unstarted',
   triage: 'unstarted',
   started: 'started',
+  completed: 'completed',
+  canceled: 'canceled',
+};
+/** Linear project states → Ordler project statuses. */
+const PROJECT_STATUS: Record<string, ExternalProject['status']> = {
+  backlog: 'planned',
+  planned: 'planned',
+  started: 'in_progress',
+  paused: 'paused',
   completed: 'completed',
   canceled: 'canceled',
 };
@@ -41,6 +51,7 @@ const ISSUES = `query Issues($team: ID!, $after: String, $closed: Boolean!) {
       assignee { name email }
       creator { name email }
       parent { id }
+      project { id name description state startDate targetDate lead { name email } }
       cycle { id }
       labels { nodes { name } }
       comments(first: 100) { nodes { id body createdAt user { name email } } }
@@ -137,6 +148,15 @@ export class LinearSource implements ImportSourceAdapter {
       assignee: LinearUser | null;
       creator: LinearUser | null;
       parent: { id: string } | null;
+      project: {
+        id: string;
+        name: string;
+        description: string | null;
+        state: string;
+        startDate: string | null;
+        targetDate: string | null;
+        lead: LinearUser | null;
+      } | null;
       cycle: { id: string } | null;
       labels: { nodes: Array<{ name: string }> };
       comments: {
@@ -166,6 +186,17 @@ export class LinearSource implements ImportSourceAdapter {
           createdAt: n.createdAt,
           updatedAt: n.updatedAt,
           parentExternalId: n.parent?.id ?? null,
+          project: n.project
+            ? {
+                externalId: n.project.id,
+                name: n.project.name,
+                description: n.project.description ?? '',
+                status: PROJECT_STATUS[n.project.state] ?? 'planned',
+                lead: person(n.project.lead),
+                startDate: n.project.startDate,
+                targetDate: n.project.targetDate,
+              }
+            : null,
           comments: n.comments.nodes.map((c) => ({
             externalId: c.id,
             author: person(c.user),

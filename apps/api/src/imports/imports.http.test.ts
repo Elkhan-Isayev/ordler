@@ -8,10 +8,10 @@ import type {
   IssueDetail,
   TeamView,
 } from '@ordler/shared';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SESSION_COOKIE } from '../auth/sessions.js';
-import { importRuns } from '../db/schema.js';
+import { auditLog, importRuns, issues, projects, projectTeams } from '../db/schema.js';
 import { cookieFrom, createTestApp, type TestApp } from '../test/app.js';
 import { OWNER } from '../test/fixtures.js';
 import type { SourceCredentials } from './sources/index.js';
@@ -475,5 +475,130 @@ describe('import from Linear and Jira (SPEC §10.2)', () => {
     const [row] = await t.ctx.db.select().from(importRuns).where(eq(importRuns.id, run.id));
     expect(row!.tokenEncrypted).toBeNull();
     expect((await issue('HELP-2')).title).toBe('Issue 2');
+  });
+  it('brings Linear projects over as Ordler projects linked to the team', async () => {
+    const autosave = {
+      externalId: 'proj-1',
+      name: 'Autosave',
+      description: 'Never lose a draft',
+      status: 'in_progress' as const,
+      lead: { id: 'dev@push30.test', name: 'Dev', email: 'dev@push30.test' },
+      startDate: '2026-01-01',
+      targetDate: '2026-03-01',
+    };
+    source.issues = [
+      external(1, { project: autosave }),
+      external(2, { project: autosave }),
+      external(3),
+    ];
+    await runImport();
+    const rows = await t.ctx.db.select().from(projects);
+    expect(rows).toEqual([
+      expect.objectContaining({
+        name: 'Autosave',
+        description: 'Never lose a draft',
+        status: 'in_progress',
+        leadId: people.dev.id,
+        startDate: '2026-01-01',
+        targetDate: '2026-03-01',
+      }),
+    ]);
+    expect(await t.ctx.db.select().from(projectTeams)).toEqual([
+      { projectId: rows[0]!.id, teamId: ids.help },
+    ]);
+    expect((await issue('HELP-1')).projectId).toBe(rows[0]!.id);
+    expect((await issue('HELP-2')).projectId).toBe(rows[0]!.id);
+    expect((await issue('HELP-3')).projectId).toBeNull();
+
+    // A second run reuses the project instead of creating another one.
+    await runImport();
+    expect(await t.ctx.db.select().from(projects)).toHaveLength(1);
+  });
+
+  it('a re-run fills in projects and files missing from an earlier run', async () => {
+    source.issues = [external(1)];
+    await runImport();
+    // Same updatedAt in the source, but now with a project and a file Ordler lacks.
+    source.issues = [
+      external(1, {
+        project: {
+          externalId: 'proj-1',
+          name: 'Autosave',
+          description: '',
+          status: 'planned',
+          lead: null,
+          startDate: null,
+          targetDate: null,
+        },
+        attachments: [{ ref: UPLOAD, filename: 'shot.png', url: UPLOAD, size: PNG.length }],
+      }),
+    ];
+    const second = await runImport();
+    expect(second.counts).toMatchObject({ updated: 1, skipped: 0, attachments: 1 });
+    expect((await issue('HELP-1')).projectId).not.toBeNull();
+    // Nothing left to fill in: the third run skips it.
+    expect((await runImport()).counts).toMatchObject({ skipped: 1, updated: 0 });
+  });
+
+  it('retries a failed run from where it stopped', async () => {
+    source.issues = [external(1), external(2), external(3)];
+    const run = await connect();
+    await configure(run.id);
+    await call('POST', `/api/admin/imports/${run.id}/start`, owner);
+    await t.ctx.imports.step(run.id);
+    source.failWith = new SourceError('import_auth_failed', 'revoked');
+    expect((await t.ctx.imports.runToCompletion(run.id)).status).toBe('failed');
+
+    source.failWith = undefined;
+    const retried = await call('POST', `/api/admin/imports/${run.id}/start`, owner);
+    expect(retried.json<ImportRunView>()).toMatchObject({ status: 'running', error: null });
+    const done = await t.ctx.imports.runToCompletion(run.id);
+    expect(done).toMatchObject({ status: 'completed', counts: { imported: 3 } });
+    expect((await call('GET', '/api/issues/HELP-4', owner)).statusCode).toBe(404);
+  });
+
+  it('clears a department so the next import brings its issues in afresh', async () => {
+    source.issues = [
+      external(1, {
+        comments: [
+          { externalId: 'c1', author: null, body: 'Hi', createdAt: '2026-01-01T11:00:00.000Z' },
+        ],
+        attachments: [{ ref: UPLOAD, filename: 'shot.png', url: UPLOAD, size: PNG.length }],
+      }),
+      external(2),
+    ];
+    await runImport();
+
+    const denied = await call(
+      'POST',
+      `/api/admin/departments/${ids.it}/clear-issues`,
+      people.dev.cookie,
+    );
+    expect(denied.statusCode).toBe(403);
+    const cleared = await call('POST', `/api/admin/departments/${ids.it}/clear-issues`, owner);
+    expect(cleared.json()).toEqual({ issues: 2 });
+    expect((await call('GET', '/api/issues/HELP-1', owner)).statusCode).toBe(404);
+    const [entry] = await t.ctx.db
+      .select()
+      .from(auditLog)
+      .where(eq(auditLog.action, 'department.issues_cleared'));
+    expect(entry).toMatchObject({ targetId: ids.it });
+
+    const again = await runImport();
+    expect(again.counts).toMatchObject({ imported: 2, skipped: 0, comments: 1, attachments: 1 });
+    expect(again.report.map((r) => r.identifier)).toEqual(['HELP-3', 'HELP-4']);
+    expect((await issue('HELP-3')).comments).toHaveLength(1);
+    const live = await t.ctx.db.select().from(issues).where(isNull(issues.archivedAt));
+    expect(live).toHaveLength(2);
+  });
+
+  it('refuses to clear a department while an import is running', async () => {
+    source.issues = [external(1), external(2), external(3)];
+    const run = await connect();
+    await configure(run.id);
+    await call('POST', `/api/admin/imports/${run.id}/start`, owner);
+    const response = await call('POST', `/api/admin/departments/${ids.it}/clear-issues`, owner);
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({ error: 'import_running' });
   });
 });

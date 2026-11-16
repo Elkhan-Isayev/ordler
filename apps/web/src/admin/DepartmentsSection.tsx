@@ -103,6 +103,27 @@ function DepartmentCard({
 
   const [key, setKey] = useState('');
   const [renaming, setRenaming] = useState(false);
+  const [cleared, setCleared] = useState<number>();
+
+  /** Typing the name guards against clearing the wrong department. */
+  async function clearIssues() {
+    const typed = window.prompt(
+      t('admin.departments.clearIssuesPrompt', { name: department.name }),
+    );
+    if (typed === null) return;
+    if (typed.trim() !== department.name) {
+      window.alert(t('admin.departments.clearIssuesMismatch'));
+      return;
+    }
+    let count = 0;
+    if (
+      await run(async () => {
+        count = (await api.clearDepartmentIssues(department.id)).issues;
+      })
+    ) {
+      setCleared(count);
+    }
+  }
 
   async function rename(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -133,7 +154,7 @@ function DepartmentCard({
 
   return (
     <Panel>
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {renaming ? (
           <form
             onSubmit={rename}
@@ -160,7 +181,7 @@ function DepartmentCard({
             </button>
           </form>
         ) : (
-          <h3 className="flex items-center gap-1 font-medium text-ink">
+          <h3 className="flex items-center gap-1 font-medium whitespace-nowrap text-ink">
             {department.name}
             {archived && (
               <span className="ml-1 text-xs text-ink-faint">{t('admin.departments.archived')}</span>
@@ -202,7 +223,7 @@ function DepartmentCard({
         {!archived && (
           <button
             type="button"
-            className={ghostButtonClass}
+            className={`${ghostButtonClass} whitespace-nowrap`}
             onClick={() => {
               if (
                 window.confirm(t('admin.departments.confirmArchive', { name: department.name }))
@@ -214,10 +235,19 @@ function DepartmentCard({
             {t('admin.departments.archive')}
           </button>
         )}
+        {!archived && (
+          <button
+            type="button"
+            className={`${ghostButtonClass} whitespace-nowrap`}
+            onClick={() => void clearIssues()}
+          >
+            {t('admin.departments.clearIssues')}
+          </button>
+        )}
         {archived && (
           <button
             type="button"
-            className={ghostButtonClass}
+            className={`${ghostButtonClass} whitespace-nowrap`}
             onClick={() => void run(() => api.restoreDepartment(department.id))}
           >
             {t('admin.departments.restore')}
@@ -225,6 +255,11 @@ function DepartmentCard({
         )}
       </div>
 
+      {cleared !== undefined && (
+        <p role="status" className="text-sm text-ink-muted">
+          {t('admin.departments.issuesCleared', { count: cleared })}
+        </p>
+      )}
       {department.teams.length === 0 ? (
         <p className="text-sm text-ink-faint">{t('admin.departments.noTeams')}</p>
       ) : (

@@ -140,7 +140,8 @@
     "whiteboard_full": "This whiteboard is full. Remove unused elements or start a new board.",
     "wiki_conflict": "Someone saved a newer version of this page meanwhile. Copy your changes, reload the page and apply them again.",
     "wiki_folder_not_empty": "Only empty folders can be deleted. Move or delete what is inside first.",
-    "wiki_too_deep": "Folders can be nested at most 8 levels deep."
+    "wiki_too_deep": "Folders can be nested at most 8 levels deep.",
+    "import_running": "Another import is running. Pause or wait for it first."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -199,7 +200,11 @@
       "renameFor": "Rename {name}",
       "save": "Save",
       "cancel": "Cancel",
-      "restore": "Restore"
+      "restore": "Restore",
+      "clearIssues": "Delete all issues",
+      "clearIssuesPrompt": "This deletes every issue in all teams of {name}, for example to import them again from Linear. Type the department name to confirm:",
+      "clearIssuesMismatch": "The name does not match. Nothing was deleted.",
+      "issuesCleared": "{count, plural, one {# issue deleted} other {# issues deleted}}. Run the import again to bring them back."
     },
     "members": {
       "title": "Members",
@@ -1142,7 +1147,8 @@
     "pause": "Pause",
     "resume": "Resume",
     "cancel": "Cancel import",
-    "close": "Close"
+    "close": "Close",
+    "retry": "Retry"
   },
   "webhooks": {
     "subtitle": "Send signed HTTP POSTs to your systems when issues, requests and approvals change. Failed deliveries are retried for about two days.",

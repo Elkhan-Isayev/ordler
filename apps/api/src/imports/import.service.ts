@@ -20,6 +20,7 @@ import type { Db } from '../db/client.js';
 import {
   attachments,
   comments,
+  departments,
   externalRefs,
   importRuns,
   issueAssignees,
@@ -28,6 +29,8 @@ import {
   issues,
   labels,
   members,
+  projects,
+  projectTeams,
   teamMemberships,
   teams,
 } from '../db/schema.js';
@@ -40,6 +43,7 @@ import {
   SourceError,
   type ExternalIssue,
   type ExternalPerson,
+  type ExternalProject,
   type ImportSourceAdapter,
 } from './sources/types.js';
 
@@ -266,6 +270,17 @@ export class ImportService {
     const run = await this.row(id);
     if (run.status === 'paused') {
       await this.setStatus(id, 'paused', { status: 'running' });
+    } else if (run.status === 'failed' && run.tokenEncrypted) {
+      // Retry from the saved cursor: already imported items are skipped, the rest come over.
+      const cursor = run.cursor as Cursor;
+      cursor.failures = 0;
+      delete cursor.waitUntil;
+      await this.setStatus(id, 'failed', {
+        status: 'running',
+        cursor,
+        error: null,
+        finishedAt: null,
+      });
     } else if (run.status === 'draft') {
       const config = this.config(run);
       const map: Record<string, string> = {};
@@ -311,6 +326,79 @@ export class ImportService {
       .where(eq(importRuns.id, id));
     await this.audit(memberId, 'import.canceled', id, {});
     return this.get(id);
+  }
+
+  /**
+   * Deletes every issue of a department's teams, as the issue page does (archived, kept for the
+   * audit trail), and forgets their source links, so the next import brings them in afresh.
+   */
+  async clearDepartment(memberId: string, departmentId: string): Promise<{ issues: number }> {
+    const [department] = await this.db
+      .select({ id: departments.id, name: departments.name })
+      .from(departments)
+      .where(eq(departments.id, departmentId));
+    if (!department) throw new DomainError('not_found');
+    // A running import would write into the teams being cleared.
+    const [busy] = await this.db
+      .select({ id: importRuns.id })
+      .from(importRuns)
+      .where(eq(importRuns.status, 'running'));
+    if (busy) throw new DomainError('import_running');
+    const teamIds = (
+      await this.db.select({ id: teams.id }).from(teams).where(eq(teams.departmentId, departmentId))
+    ).map((row) => row.id);
+    if (teamIds.length === 0) return { issues: 0 };
+    const now = this.now();
+    const cleared = await this.db.transaction(async (tx) => {
+      const removed = await tx
+        .update(issues)
+        .set({ archivedAt: now, updatedAt: now })
+        .where(and(inArray(issues.teamId, teamIds), isNull(issues.archivedAt)))
+        .returning({ id: issues.id });
+      const issueIds = tx
+        .select({ id: issues.id })
+        .from(issues)
+        .where(inArray(issues.teamId, teamIds));
+      await tx
+        .delete(externalRefs)
+        .where(and(eq(externalRefs.kind, 'issue'), inArray(externalRefs.ordlerId, issueIds)));
+      await tx.delete(externalRefs).where(
+        and(
+          eq(externalRefs.kind, 'comment'),
+          inArray(
+            externalRefs.ordlerId,
+            tx
+              .select({ id: comments.id })
+              .from(comments)
+              .where(and(eq(comments.subjectType, 'issue'), inArray(comments.subjectId, issueIds))),
+          ),
+        ),
+      );
+      await tx
+        .delete(externalRefs)
+        .where(
+          and(
+            eq(externalRefs.kind, 'attachment'),
+            inArray(
+              externalRefs.ordlerId,
+              tx
+                .select({ id: attachments.id })
+                .from(attachments)
+                .where(inArray(attachments.teamId, teamIds)),
+            ),
+          ),
+        );
+      return removed.length;
+    });
+    await writeAudit(this.db, {
+      actor: { type: 'member', id: memberId },
+      action: 'department.issues_cleared',
+      targetType: 'department',
+      targetId: departmentId,
+      after: { name: department.name, issues: cleared },
+    });
+    for (const teamId of teamIds) await this.deps.events.publish({ type: 'team.changed', teamId });
+    return { issues: cleared };
   }
 
   /** Worker loop: keeps stepping while there is work, then naps. */
@@ -491,13 +579,19 @@ export class ImportService {
           id: issues.id,
           number: issues.number,
           teamId: issues.teamId,
+          projectId: issues.projectId,
           archivedAt: issues.archivedAt,
         })
         .from(issues)
         .where(eq(issues.id, ref.ordlerId));
       if (!row || row.archivedAt)
         return { key: issue.key, outcome: 'skipped', reason: 'deleted_in_ordler' };
-      if (ref.sourceUpdatedAt?.getTime() === new Date(issue.updatedAt).getTime()) {
+      if (
+        ref.sourceUpdatedAt?.getTime() === new Date(issue.updatedAt).getTime() &&
+        // Unchanged, but a re-run still fills in a missing project or files that failed before.
+        (!issue.project || row.projectId) &&
+        !(await this.missingAttachments(run, issue))
+      ) {
         return { key: issue.key, outcome: 'skipped' };
       }
       existing = row;
@@ -554,6 +648,7 @@ export class ImportService {
     );
     const newComments = issue.comments.filter((c) => !knownComments.has(c.externalId));
     const parentId = parentRef && parentRef.teamId === target.id ? parentRef.id : null;
+    const projectId = await this.ensureProject(run, config, target.id, issue.project ?? null);
     const createdAt = new Date(issue.createdAt);
     const updatedAt = new Date(issue.updatedAt);
     const imported = { source: run.source, key: issue.key, url: issue.url };
@@ -566,6 +661,7 @@ export class ImportService {
       dueDate: issue.dueDate,
       externalKey: issue.key,
       updatedAt,
+      ...(projectId ? { projectId } : {}),
     };
 
     const result = await this.db.transaction(async (tx) => {
@@ -669,6 +765,72 @@ export class ImportService {
       identifier: `${target.key}-${result.number}`,
       ...(issue.dropped.length > 0 ? { reason: `not_imported:${issue.dropped.join(',')}` } : {}),
     };
+  }
+
+  /** True when a file that fits the size limit was not stored by an earlier run. */
+  private async missingAttachments(run: Run, issue: ExternalIssue): Promise<boolean> {
+    const wanted = issue.attachments
+      .filter((f) => f.size === null || f.size <= this.deps.maxAttachmentBytes)
+      .map((f) => `${issue.externalId}:${f.ref}`);
+    if (wanted.length === 0) return false;
+    const known = await this.db
+      .select({ externalId: externalRefs.externalId })
+      .from(externalRefs)
+      .where(
+        and(
+          eq(externalRefs.sourceKey, run.sourceKey),
+          eq(externalRefs.kind, 'attachment'),
+          inArray(externalRefs.externalId, wanted),
+        ),
+      );
+    return known.length < wanted.length;
+  }
+
+  /**
+   * The Ordler project for a source project, created on first sight and linked to the team;
+   * null when there is none or an admin archived it in Ordler.
+   */
+  private async ensureProject(
+    run: Run,
+    config: ImportConfigData,
+    teamId: string,
+    project: ExternalProject | null,
+  ): Promise<string | null> {
+    if (!project) return null;
+    const [known] = await this.db
+      .select({ id: projects.id, archivedAt: projects.archivedAt })
+      .from(externalRefs)
+      .innerJoin(projects, eq(projects.id, externalRefs.ordlerId))
+      .where(this.refWhere(run.sourceKey, 'project', project.externalId));
+    if (known?.archivedAt) return null;
+    const leadId = project.lead ? (config.peopleMap[project.lead.id] ?? null) : null;
+    const id =
+      known?.id ??
+      (await this.db.transaction(async (tx) => {
+        const [row] = await tx
+          .insert(projects)
+          .values({
+            name: project.name.trim().slice(0, 200) || project.externalId,
+            description: project.description.slice(0, 100_000),
+            status: project.status,
+            leadId,
+            startDate: project.startDate,
+            targetDate: project.targetDate,
+            createdBy: run.createdBy,
+          })
+          .returning({ id: projects.id });
+        await tx.insert(externalRefs).values({
+          sourceKey: run.sourceKey,
+          kind: 'project',
+          externalId: project.externalId,
+          ordlerId: row!.id,
+          importRunId: run.id,
+        });
+        return row!.id;
+      }));
+    // A project spanning several source teams gets each of their Ordler teams.
+    await this.db.insert(projectTeams).values({ projectId: id, teamId }).onConflictDoNothing();
+    return id;
   }
 
   /** Uploads an issue's files once; returns text reference → stored file. */
@@ -820,7 +982,7 @@ export class ImportService {
 
   private refWhere(
     sourceKey: string,
-    kind: 'issue' | 'comment' | 'attachment',
+    kind: 'issue' | 'comment' | 'attachment' | 'project',
     externalId: string,
   ) {
     return and(

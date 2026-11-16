@@ -770,6 +770,9 @@ relations.
      labels such as `type:Bug`, so nothing is lost before custom fields exist.
    - Hierarchy: Linear parent/sub-issues and Jira sub-tasks → Ordler sub-issues; Jira
      epics → parent issues (or projects once Projects ship).
+   - Linear projects → Ordler projects (name, description, status, lead, start and target
+     dates), linked to the team the issues land in; a project spanning several Linear teams
+     becomes one Ordler project with all their teams.
    - Cycles / sprints → cycles; estimates / story points → estimate.
 4. **Dry run**: counts per team, unmapped people, unmapped statuses, attachments that exceed
    `ATTACHMENT_MAX_MB`, and warnings — nothing is written yet.
@@ -804,7 +807,14 @@ hides emails. Card start dates are listed as not imported.
   Ordler issue.
 - A mapping table `external_refs (source, external_id → ordler_id)` makes import idempotent:
   running it again updates changed items and adds new ones instead of duplicating, which
-  allows a trial period with both tools before switching over.
+  allows a trial period with both tools before switching over. A re-run also fills in what an
+  earlier run missed (a file that failed to download, a project) even when the source item is
+  unchanged.
+- A failed run can be retried from where it stopped, while its token is kept.
+- To start over, an org admin deletes all issues of a department (Admin → Departments,
+  confirmed by typing the department name, refused while an import is running). The issues
+  are deleted as from the issue page and their source links are forgotten, so the next run
+  imports them again with new numbers.
 - Imported items never trigger notifications, Slack posts or emails.
 
 **Out of scope for the first version**: Jira Service Management requests and approval

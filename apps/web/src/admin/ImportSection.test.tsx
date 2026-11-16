@@ -194,4 +194,30 @@ describe('ImportSection', () => {
     expect(screen.getByText('Not imported: estimate')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument();
   });
+
+  it('retries a failed import', async () => {
+    const calls = mockApi({
+      'GET /api/admin/imports': () => ({
+        json: [{ ...RUN, status: 'failed', error: 'import_source_failed' }],
+      }),
+      'POST /api/admin/imports/run-1/start': () => ({
+        status: 201,
+        json: { ...RUN, status: 'running' },
+      }),
+    });
+    await renderWithI18n(<ImportSection />);
+    await userEvent.click(await screen.findByRole('button', { name: /Linear Admin/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() =>
+      expect(calls.some((c) => c.path === '/api/admin/imports/run-1/start')).toBe(true),
+    );
+    expect(await screen.findByText('Running')).toBeInTheDocument();
+  });
+
+  it('offers no retry while an import is running', async () => {
+    mockApi({ 'GET /api/admin/imports': () => ({ json: [{ ...RUN, status: 'running' }] }) });
+    await renderWithI18n(<ImportSection />);
+    await userEvent.click(await screen.findByRole('button', { name: /Linear Admin/ }));
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+  });
 });

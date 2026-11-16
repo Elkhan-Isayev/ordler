@@ -140,7 +140,8 @@
     "whiteboard_full": "Bu lövhə doludur. Lazımsız elementləri silin və ya yeni lövhə yaradın.",
     "wiki_conflict": "Siz redaktə edərkən kimsə bu səhifənin daha yeni versiyasını saxladı. Dəyişikliklərinizi kopyalayın, səhifəni yeniləyin və yenidən tətbiq edin.",
     "wiki_folder_not_empty": "Yalnız boş qovluqlar silinə bilər. Əvvəlcə içindəkiləri köçürün və ya silin.",
-    "wiki_too_deep": "Qovluqlar ən çox 8 səviyyə iç-içə ola bilər."
+    "wiki_too_deep": "Qovluqlar ən çox 8 səviyyə iç-içə ola bilər.",
+    "import_running": "Hazırda başqa idxal gedir. Əvvəlcə onu dayandırın və ya bitməsini gözləyin."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -199,7 +200,11 @@
       "renameFor": "{name} adını dəyiş",
       "save": "Yadda saxla",
       "cancel": "Ləğv et",
-      "restore": "Arxivdən qaytar"
+      "restore": "Arxivdən qaytar",
+      "clearIssues": "Bütün tapşırıqları sil",
+      "clearIssuesPrompt": "{name} departamentinin bütün komandalarındakı tapşırıqlar silinəcək, məsələn, onları Linear-dan yenidən idxal etmək üçün. Təsdiq üçün departamentin adını yazın:",
+      "clearIssuesMismatch": "Ad uyğun gəlmir. Heç nə silinmədi.",
+      "issuesCleared": "{count, plural, one {# tapşırıq silindi} other {# tapşırıq silindi}}. Onları geri gətirmək üçün idxalı yenidən başladın."
     },
     "members": {
       "title": "İştirakçılar",
@@ -1142,7 +1147,8 @@
     "pause": "Fasilə",
     "resume": "Davam et",
     "cancel": "İdxalı dayandır",
-    "close": "Bağla"
+    "close": "Bağla",
+    "retry": "Yenidən cəhd et"
   },
   "webhooks": {
     "subtitle": "Tapşırıqlar, sorğular və təsdiqlər dəyişəndə sistemlərinizə imzalanmış HTTP POST sorğuları göndərin. Uğursuz çatdırılmalar təxminən iki gün təkrarlanır.",

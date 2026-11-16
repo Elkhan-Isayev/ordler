@@ -131,5 +131,6 @@ export const IMPORT_ERROR_CODES = [
   'import_auth_failed',
   'import_source_failed',
   'import_not_ready',
+  'import_running',
 ] as const;
 export type ImportErrorCode = (typeof IMPORT_ERROR_CODES)[number];

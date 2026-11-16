@@ -711,6 +711,11 @@ function Progress({
             {t('imports.resume')}
           </button>
         )}
+        {run.status === 'failed' && (
+          <button type="button" className={buttonClass} onClick={() => act('start')}>
+            {t('imports.retry')}
+          </button>
+        )}
         {(run.status === 'running' || run.status === 'paused') && (
           <button type="button" className={ghostButtonClass} onClick={() => act('cancel')}>
             {t('imports.cancel')}

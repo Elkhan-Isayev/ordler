@@ -1075,7 +1075,9 @@ export const externalRefs = pgTable(
   'external_refs',
   {
     sourceKey: text('source_key').notNull(),
-    kind: text('kind', { enum: ['issue', 'comment', 'attachment', 'wiki_page'] }).notNull(),
+    kind: text('kind', {
+      enum: ['issue', 'comment', 'attachment', 'wiki_page', 'project'],
+    }).notNull(),
     externalId: text('external_id').notNull(),
     ordlerId: uuid('ordler_id').notNull(),
     /** The source's own updated time when last imported, to skip unchanged items. */

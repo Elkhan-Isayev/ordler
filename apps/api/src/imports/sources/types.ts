@@ -32,6 +32,17 @@ export interface ExternalAttachment {
   size: number | null;
 }
 
+/** A source project (Linear project) an issue belongs to; becomes an Ordler project. */
+export interface ExternalProject {
+  externalId: string;
+  name: string;
+  description: string;
+  status: 'planned' | 'in_progress' | 'paused' | 'completed' | 'canceled';
+  lead: ExternalPerson | null;
+  startDate: string | null;
+  targetDate: string | null;
+}
+
 /** One issue, already in Ordler's vocabulary (ADR 0010). */
 export interface ExternalIssue {
   externalId: string;
@@ -48,6 +59,8 @@ export interface ExternalIssue {
   createdAt: string;
   updatedAt: string;
   parentExternalId: string | null;
+  /** Only sources with projects (Linear) set it. */
+  project?: ExternalProject | null;
   comments: ExternalComment[];
   attachments: ExternalAttachment[];
   /** Things Ordler cannot store yet; listed in the report. */

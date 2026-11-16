@@ -156,6 +156,40 @@ describe('DepartmentsSection', () => {
     expect(screen.queryByRole('button', { name: 'Rename IT' })).toBeNull();
   });
 
+  it('deletes all issues only after the department name is typed', async () => {
+    const calls = mockApi({
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      [`POST /api/admin/departments/${DEPT_ID}/clear-issues`]: () => ({ json: { issues: 12 } }),
+    });
+    const prompt = vi.spyOn(window, 'prompt').mockReturnValueOnce('it').mockReturnValueOnce('IT');
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await renderWithI18n(<DepartmentsSection />);
+    const clear = await screen.findByRole('button', { name: 'Delete all issues' });
+    await userEvent.click(clear);
+    expect(alert).toHaveBeenCalledWith('The name does not match. Nothing was deleted.');
+    expect(calls.some((c) => c.path.endsWith('/clear-issues'))).toBe(false);
+
+    await userEvent.click(clear);
+    expect(await screen.findByRole('status')).toHaveTextContent('12 issues deleted');
+    expect(prompt).toHaveBeenCalledTimes(2);
+    expect(calls.filter((c) => c.path.endsWith('/clear-issues'))).toHaveLength(1);
+  });
+
+  it('explains why issues cannot be deleted during an import', async () => {
+    mockApi({
+      'GET /api/admin/departments': () => ({ json: DEPARTMENTS }),
+      [`POST /api/admin/departments/${DEPT_ID}/clear-issues`]: () => ({
+        status: 409,
+        json: { error: 'import_running' },
+      }),
+    });
+    vi.spyOn(window, 'prompt').mockReturnValueOnce('IT');
+    await renderWithI18n(<DepartmentsSection />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete all issues' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Another import is running.');
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
   it('explains an empty organization', async () => {
     mockApi({ 'GET /api/admin/departments': () => ({ json: [] }) });
     await renderWithI18n(<DepartmentsSection />);
