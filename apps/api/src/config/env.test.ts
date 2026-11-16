@@ -192,6 +192,14 @@ describe('version and update check', () => {
     expect(config.version).toBe('1.4.2');
   });
 
+  it('offers the public source by default and a fork when set', () => {
+    expect(loadConfig(base).sourceUrl).toBe('https://github.com/Elkhan-Isayev/ordler');
+    expect(
+      loadConfig({ ...base, ORDLER_SOURCE_URL: 'https://git.acme.test/it/ordler' }).sourceUrl,
+    ).toBe('https://git.acme.test/it/ordler');
+    expect(() => loadConfig({ ...base, ORDLER_SOURCE_URL: 'javascript:alert(1)' })).toThrow();
+  });
+
   it('rejects malformed repositories', () => {
     expect(() => loadConfig({ ...base, UPDATE_CHECK_REPOSITORY: 'https://evil/x' })).toThrow(
       /owner\/repo/,

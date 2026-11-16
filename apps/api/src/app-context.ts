@@ -1,4 +1,4 @@
-import { DEFAULT_ATTACHMENT_MAX_MB } from '@ordler/shared';
+import { DEFAULT_ATTACHMENT_MAX_MB, DEFAULT_SOURCE_URL } from '@ordler/shared';
 import type { JWTVerifyGetKey } from 'jose';
 import { GoogleAuthService, type FetchFn } from './auth/google.js';
 import { OidcAuthService } from './auth/oidc.js';
@@ -109,6 +109,7 @@ export interface AppContext {
   delegations: DelegationService;
   audit: AuditService;
   version: string | undefined;
+  sourceUrl: string;
   events: EventBus;
   realtime: RealtimeHub;
   limits: {
@@ -160,6 +161,8 @@ export interface AppContextDeps {
   /** IMAP connections for email-in; replaced in tests. */
   mailboxConnector?: MailboxConnector;
   version?: string | undefined;
+  /** "Source code" link shown to every user (AGPL §13). */
+  sourceUrl?: string;
   updateCheck?: { enabled: boolean; repository: string };
   updatesFetch?: UpdateFetchFn;
   /** Linear and Jira clients for imports; replaced in tests. */
@@ -379,6 +382,7 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     }),
     audit: new AuditService(deps.db),
     version: deps.version,
+    sourceUrl: deps.sourceUrl ?? DEFAULT_SOURCE_URL,
     attachments: new AttachmentService(deps.db, teamAccess, attachmentMaxBytes, (memberId, id) =>
       wiki.canRead(memberId, id),
     ),

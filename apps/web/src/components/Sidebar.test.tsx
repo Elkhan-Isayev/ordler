@@ -2,7 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Locale } from '@ordler/shared';
 import { I18nextProvider } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { mockApi } from '../test/api-mock.js';
 import { createI18n } from '../i18n/index.js';
 import { formatBadge, Sidebar, type SidebarProps } from './Sidebar.js';
 
@@ -32,7 +33,34 @@ async function renderSidebar(locale: Locale = 'en', overrides: Partial<SidebarPr
   );
 }
 
+afterEach(() => vi.unstubAllGlobals());
+
 describe('Sidebar', () => {
+  it('offers the source code of the running version (AGPL §13)', async () => {
+    mockApi({
+      'GET /api/about': () => ({
+        json: {
+          version: '0.9.0',
+          license: 'AGPL-3.0-only',
+          sourceUrl: 'https://git.acme.test/ordler',
+        },
+      }),
+    });
+    await renderSidebar();
+    const link = await screen.findByRole('link', { name: 'Source code' });
+    expect(link).toHaveAttribute('href', 'https://git.acme.test/ordler');
+    expect(await screen.findByText(/Ordler 0\.9\.0 · AGPL-3\.0/)).toBeInTheDocument();
+  });
+
+  it('still links the public source when the server cannot say', async () => {
+    mockApi({ 'GET /api/about': () => ({ status: 500, json: { error: 'internal' } }) });
+    await renderSidebar('ru');
+    expect(screen.getByRole('link', { name: 'Исходный код' })).toHaveAttribute(
+      'href',
+      'https://github.com/Elkhan-Isayev/ordler',
+    );
+  });
+
   it('shows a search field with its shortcut that opens the search', async () => {
     const onSearch = vi.fn();
     await renderSidebar('ru', { onSearch });

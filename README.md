@@ -379,23 +379,24 @@ database written by a newer one.
 
 ### Configuration reference
 
-| Variable                                                                                            | Default                 | Purpose                                                                   |
-| --------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- |
-| `BASE_URL`                                                                                          | `http://localhost:3000` | Public URL: links in emails, OAuth callbacks, CSRF origin check           |
-| `DATABASE_URL` or `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`                             | install page            | PostgreSQL connection; every secret also accepts `*_FILE`                 |
-| `DB_SSL`, `DB_SSL_CA` / `DB_SSL_CA_FILE`                                                            | `disable`               | `require` or `verify-full` (use `verify-full` with the RDS CA bundle)     |
-| `DB_SCHEMA`                                                                                         | `public`                | Schema for Ordler's tables when the database is shared                    |
-| `DB_POOL_MAX`                                                                                       | `20`                    | Connections per replica                                                   |
-| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE`                                                            | generated in `/data`    | 32-byte base64 key sealing stored secrets                                 |
-| `ORDLER_DATA_DIR`                                                                                   | `/data`                 | Volume for install-page settings and the generated key                    |
-| `ORDLER_INSTALL_TOKEN`                                                                              | random, in the log      | Fixed token for the install page                                          |
-| `ORDLER_MIGRATE`                                                                                    | `true`                  | `false` when a DBA applies migrations                                     |
-| `ORDLER_ROLE`                                                                                       | `all`                   | `web` serves HTTP only, `worker` runs background jobs only                |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_VERIFY_TLS` | admin panel             | Mail delivery; also editable in **Administration → Mail server**          |
-| `SESSION_TTL_DAYS`                                                                                  | `30`                    | Session lifetime                                                          |
-| `ATTACHMENT_MAX_MB`                                                                                 | `25`                    | Largest uploaded file                                                     |
-| `UPDATE_CHECK`                                                                                      | `true`                  | Daily anonymous check of GitHub releases; `false` for air-gapped installs |
-| `LOG_LEVEL`                                                                                         | `info`                  | `debug`, `info`, `warn`, `error`                                          |
+| Variable                                                                                            | Default                 | Purpose                                                                      |
+| --------------------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------- |
+| `BASE_URL`                                                                                          | `http://localhost:3000` | Public URL: links in emails, OAuth callbacks, CSRF origin check              |
+| `DATABASE_URL` or `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`                             | install page            | PostgreSQL connection; every secret also accepts `*_FILE`                    |
+| `DB_SSL`, `DB_SSL_CA` / `DB_SSL_CA_FILE`                                                            | `disable`               | `require` or `verify-full` (use `verify-full` with the RDS CA bundle)        |
+| `DB_SCHEMA`                                                                                         | `public`                | Schema for Ordler's tables when the database is shared                       |
+| `DB_POOL_MAX`                                                                                       | `20`                    | Connections per replica                                                      |
+| `ENCRYPTION_KEY` / `ENCRYPTION_KEY_FILE`                                                            | generated in `/data`    | 32-byte base64 key sealing stored secrets                                    |
+| `ORDLER_DATA_DIR`                                                                                   | `/data`                 | Volume for install-page settings and the generated key                       |
+| `ORDLER_INSTALL_TOKEN`                                                                              | random, in the log      | Fixed token for the install page                                             |
+| `ORDLER_MIGRATE`                                                                                    | `true`                  | `false` when a DBA applies migrations                                        |
+| `ORDLER_ROLE`                                                                                       | `all`                   | `web` serves HTTP only, `worker` runs background jobs only                   |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_VERIFY_TLS` | admin panel             | Mail delivery; also editable in **Administration → Mail server**             |
+| `SESSION_TTL_DAYS`                                                                                  | `30`                    | Session lifetime                                                             |
+| `ATTACHMENT_MAX_MB`                                                                                 | `25`                    | Largest uploaded file                                                        |
+| `UPDATE_CHECK`                                                                                      | `true`                  | Daily anonymous check of GitHub releases; `false` for air-gapped installs    |
+| `ORDLER_SOURCE_URL`                                                                                 | the public repository   | Target of the **Source code** link; set it to your fork if you modify Ordler |
+| `LOG_LEVEL`                                                                                         | `info`                  | `debug`, `info`, `warn`, `error`                                             |
 
 Full reference: [SPEC §16.2](docs/SPEC.md#162-configuration-environment-variables).
 
@@ -524,7 +525,42 @@ deploy/       docker-compose.yml and the Helm chart
 docs/         SPEC.md, ADRs, install guide
 ```
 
-## License
+## License and legal
 
-Ordler is free software under the [GNU Affero General Public License v3.0](LICENSE). If you run
-a modified version as a network service, you must offer its source to your users.
+**Free and open source.** Ordler is free software under the
+[GNU Affero General Public License v3.0](LICENSE). It is a personal, non-commercial project:
+there is no paid edition, no subscription and no license key, and nothing is sold.
+
+**No warranty.** Ordler is provided "as is", without warranty of any kind, and the authors are
+not liable for any damage or data loss arising from its use (AGPL-3.0, sections 15 and 16).
+Take database backups before upgrades.
+
+**Your data stays with you.** Ordler runs only on your own infrastructure. The authors never
+receive your data: there is no telemetry and no cloud service. The only outbound call is an
+anonymous daily check of public GitHub releases, which `UPDATE_CHECK=false` turns off.
+
+**What the AGPL asks of companies that use it**
+
+- Using Ordler inside your company, unmodified: no obligations beyond keeping the license and
+  notices.
+- Modifying Ordler and letting people use it over a network (even only your employees): offer
+  them the source of your modified version. Every page already shows a **Source code** link;
+  point it at your fork with `ORDLER_SOURCE_URL`.
+- Redistributing Ordler (for example a changed image): keep [LICENSE](LICENSE) and
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and license your changes under the AGPL.
+
+**Third-party software.** Ordler is built on open source packages used under their own licenses
+(MIT, Apache-2.0, BSD, ISC, OFL and similar); all of them are listed with their license texts in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which also ships in the Docker image.
+Dependencies whose licenses are not compatible with the AGPL are kept out of the build.
+
+**Trademarks.** Linear, Jira, Atlassian, Trello, Wiki.js, Slack, GitHub and other names are
+trademarks of their respective owners. They are mentioned only to describe compatibility and
+imports. Ordler is an independent project, not affiliated with, endorsed by or sponsored by
+any of them, and it uses none of their code, logos or designs.
+
+**Demo content.** Screenshots and the GIF show a fictional company ("Acme") with made-up people
+and data.
+
+This section is a plain-language summary, not legal advice; the [LICENSE](LICENSE) text is what
+applies.

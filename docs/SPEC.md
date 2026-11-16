@@ -1162,6 +1162,9 @@ with PostgreSQL as the only mandatory external service.
   version, release-notes link, a warning for major versions, copy-paste upgrade commands for
   Docker Compose and Helm, and a reminder to snapshot the database first. Dismissing hides the
   banner until a newer release appears. Admins can trigger a check (at most once a minute).
+- Every page shows "Ordler <version> · AGPL-3.0 · Source code" at the bottom of the sidebar
+  (AGPL §13), fed by the public `GET /api/about`. `ORDLER_SOURCE_URL` (default: the public
+  repository) points the link at a modified build's own source.
 - Development builds (no `ORDLER_VERSION`) never show the banner. `UPDATE_CHECK=false`
   disables the check for air-gapped installations.
 

@@ -101,6 +101,7 @@ async function startApplication(
     attachmentMaxBytes: config.attachmentMaxBytes,
     readiness,
     version: config.version,
+    sourceUrl: config.sourceUrl,
     updateCheck: config.updateCheck,
     databaseSettings: {
       source,

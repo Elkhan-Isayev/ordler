@@ -24,7 +24,9 @@
     "integrations": "Интеграции",
     "teamSettings": "Настройки",
     "whiteboards": "Доски",
-    "wiki": "Вики"
+    "wiki": "Вики",
+    "license": "AGPL-3.0",
+    "sourceCode": "Исходный код"
   },
   "settings": {
     "language": "Язык"

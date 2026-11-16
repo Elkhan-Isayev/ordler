@@ -19,7 +19,8 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build \
  && pnpm --filter @ordler/api deploy --legacy --prod /out \
- && cp -r apps/web/dist /out/public
+ && cp -r apps/web/dist /out/public \
+ && cp LICENSE THIRD_PARTY_NOTICES.md /out/
 
 FROM ${NODE_IMAGE} AS runtime
 ARG ORDLER_VERSION=""

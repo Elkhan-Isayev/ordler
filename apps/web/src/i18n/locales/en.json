@@ -24,7 +24,9 @@
     "integrations": "Integrations",
     "teamSettings": "Settings",
     "whiteboards": "Whiteboards",
-    "wiki": "Wiki"
+    "wiki": "Wiki",
+    "license": "AGPL-3.0",
+    "sourceCode": "Source code"
   },
   "settings": {
     "language": "Language"

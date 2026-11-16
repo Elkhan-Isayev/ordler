@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { DEFAULT_SOURCE_URL, type AboutResponse } from '@ordler/shared';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -15,6 +16,7 @@ import {
   type LucideIcon,
   Search,
 } from 'lucide-react';
+import { api } from '../api/client.js';
 import { Link } from '../router.js';
 
 /** Shortcut hint in the platform's own words. */
@@ -156,9 +158,45 @@ export function Sidebar({
             ))}
           </Section>
         )}
-        {footer && <div className="mt-auto border-t border-line pt-3">{footer}</div>}
+        <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
+          {footer}
+          <SourceLink />
+        </div>
       </nav>
     </CurrentPath.Provider>
+  );
+}
+
+/**
+ * AGPL §13: everyone using an instance is offered its source. The link shows even when the
+ * server cannot be asked, falling back to the public repository.
+ */
+export function SourceLink() {
+  const { t } = useTranslation();
+  const [about, setAbout] = useState<AboutResponse>();
+  useEffect(() => {
+    let live = true;
+    api
+      .about()
+      .then((answer) => live && setAbout(answer))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  const version = about && about.version !== 'development' ? ` ${about.version}` : '';
+  return (
+    <p className="px-2 text-xs text-ink-faint">
+      Ordler{version} · {t('nav.license')} ·{' '}
+      <a
+        href={about?.sourceUrl ?? DEFAULT_SOURCE_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="hover:text-ink hover:underline"
+      >
+        {t('nav.sourceCode')}
+      </a>
+    </p>
   );
 }
 

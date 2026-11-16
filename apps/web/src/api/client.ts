@@ -1,4 +1,5 @@
 import type {
+  AboutResponse,
   WikiFolder,
   WikiFolderCreate,
   WikiFolderUpdate,
@@ -202,6 +203,7 @@ export const api = {
   verifyOtp: (email: string, code: string) =>
     apiRequest<MeResponse>('/api/auth/otp/verify', { method: 'POST', body: { email, code } }),
   signOut: () => apiRequest<void>('/api/auth/sign-out', { method: 'POST' }),
+  about: () => apiRequest<AboutResponse>('/api/about'),
   updateStatus: () => apiRequest<UpdateStatusResponse>('/api/admin/updates'),
   checkForUpdates: () =>
     apiRequest<UpdateStatusResponse>('/api/admin/updates/check', { method: 'POST' }),

@@ -24,7 +24,9 @@
     "integrations": "İnteqrasiyalar",
     "teamSettings": "Parametrlər",
     "whiteboards": "Lövhələr",
-    "wiki": "Viki"
+    "wiki": "Viki",
+    "license": "AGPL-3.0",
+    "sourceCode": "Mənbə kodu"
   },
   "settings": {
     "language": "Dil"

@@ -19,6 +19,17 @@ export interface MeResponse {
   }>;
 }
 
+/** Where Ordler's source code is published; AGPL §13 asks every instance to offer it. */
+export const DEFAULT_SOURCE_URL = 'https://github.com/Elkhan-Isayev/ordler';
+
+/** Response of GET /api/about: public, so the source offer reaches every user. */
+export interface AboutResponse {
+  version: string;
+  license: 'AGPL-3.0-only';
+  /** The source of the code this instance runs; a modified build points at its own. */
+  sourceUrl: string;
+}
+
 /** Response item of GET /api/auth/strategies. */
 export interface PublicStrategy {
   kind: AuthStrategyKind;

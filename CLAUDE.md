@@ -41,7 +41,8 @@ Every change to UI or server code ships with unit tests in the same change:
 Scripts live in the root and package `package.json` files; run them with pnpm from Corepack.
 Turbo needs a `pnpm` binary on `PATH`, so use `corepack enable` (or a shim) rather than
 `corepack pnpm` when running root scripts. Tests import `@ordler/shared` from source via a
-Vitest alias; runtime code imports its built `dist`.
+Vitest alias; runtime code imports its built `dist`. After adding, removing or upgrading a
+production dependency, run `pnpm notices` to regenerate `THIRD_PARTY_NOTICES.md` (CI checks it).
 
 ## Changelog
 

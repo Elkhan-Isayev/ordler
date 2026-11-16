@@ -6,6 +6,7 @@ import fastifyMultipart from '@fastify/multipart';
 import { AttachmentsController } from './attachments/attachments.controller.js';
 import { AdminStrategiesController } from './auth/admin-strategies.controller.js';
 import { AuthController } from './auth/auth.controller.js';
+import { AboutController } from './health/about.controller.js';
 import { HealthController, READINESS_CHECK } from './health/health.controller.js';
 import { APP_CONTEXT, DomainErrorFilter, registerRequestHooks } from './http/http.js';
 import { AdminDatabaseController } from './install/admin-database.controller.js';
@@ -48,6 +49,7 @@ export class AppModule {
       module: AppModule,
       controllers: [
         HealthController,
+        AboutController,
         SetupController,
         AuthController,
         MeController,

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { DEFAULT_ATTACHMENT_MAX_MB, SUPPORTED_LOCALES } from '@ordler/shared';
+import { DEFAULT_ATTACHMENT_MAX_MB, DEFAULT_SOURCE_URL, SUPPORTED_LOCALES } from '@ordler/shared';
 import { z } from 'zod';
 import { DEFAULT_SCHEMA } from '../db/schema-default.js';
 
@@ -67,6 +67,8 @@ export interface AppConfig {
   /** Release version baked into the image; `undefined` for development builds. */
   version: string | undefined;
   updateCheck: { enabled: boolean; repository: string };
+  /** Shown to every user as "Source code" (AGPL §13); a modified build sets its own. */
+  sourceUrl: string;
 }
 
 /** Public GitHub repository whose releases announce new Ordler versions. */
@@ -115,6 +117,7 @@ const envSchema = z.object({
     .string()
     .regex(/^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/, 'UPDATE_CHECK_REPOSITORY must be owner/repo')
     .default(DEFAULT_RELEASE_REPOSITORY),
+  ORDLER_SOURCE_URL: z.url({ protocol: /^https?$/ }).default(DEFAULT_SOURCE_URL),
 });
 
 /** Variables that may instead be read from a mounted file via `<NAME>_FILE` (Kubernetes secrets). */
@@ -196,6 +199,7 @@ export function loadConfig(env: Env, readFile: FileReader = defaultReadFile): Ap
     sessionTtlDays: e.SESSION_TTL_DAYS,
     version: e.ORDLER_VERSION,
     updateCheck: { enabled: e.UPDATE_CHECK, repository: e.UPDATE_CHECK_REPOSITORY },
+    sourceUrl: e.ORDLER_SOURCE_URL,
     ...(e.SMTP_HOST
       ? {
           smtp: {

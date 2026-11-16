@@ -22,6 +22,11 @@ GitHub, ready-made images on public registries, a Helm chart for Kubernetes.
 
 - AGPL §13 obliges anyone offering a modified Ordler over a network to publish their changes,
   which protects the project from closed forks.
-- Every dependency must be AGPL-compatible; CI runs a license check.
+- Every dependency must be AGPL-compatible. `THIRD_PARTY_NOTICES.md` lists every shipped
+  package with its license text, ships in the image, and CI fails when it is stale. elkjs
+  (EPL-2.0, pulled in by Mermaid) is kept out of the web build; Mermaid falls back to its
+  default layout.
+- The app offers its source to every user (sidebar link, `GET /api/about`,
+  `ORDLER_SOURCE_URL` for modified builds), as AGPL §13 asks.
 - The repository is public: no secrets, customer data or internal URLs in code, fixtures,
   tests or docs.
