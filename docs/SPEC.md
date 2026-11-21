@@ -573,7 +573,7 @@ Accessible to members with any `*.manage` permission; each section is gated by i
 | Database                        | Current PostgreSQL connection and server version, without secrets. Owners can change installer-saved settings (applied after restart); settings from environment variables are read-only (§16.4). |
 | Security                        | Session lifetime, 2FA enforcement, password policy, IP allowlist (Phase 3).                                                                                                                       |
 | API, tokens & MCP               | MCP server on/off, who may create personal tokens, maximum token lifetime, list and revoke any member's tokens, MCP usage log (§10.1). Webhook endpoints and delivery logs with retry (Phase 2).  |
-| Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). Microsoft Teams (Phase 3).                   |
+| Integrations                    | Slack: channel subscriptions (Phase 1), Slack app connection with manifest, bot token, signing secret, Socket Mode status, linked members (Phase 2). GitHub App (§10). Microsoft Teams (Phase 3). |
 | Audit log                       | Searchable, filterable, exportable (CSV/JSON); retention configurable.                                                                                                                            |
 | Data                            | Export all data (JSON), import from Linear, Jira and Trello via API token (§10.2, Phase 2).                                                                                                       |
 
@@ -685,7 +685,21 @@ target_id, before, after, ip, user_agent, created_at`. Append-only; no update/de
   without a reply. Each Message-ID is handled once.
 - Slack: channel notifications via incoming webhooks (Phase 1); Slack app with DMs, unfurls
   and message actions (Phase 2), see §7.1. Microsoft Teams notifications (Phase 3).
-- Git provider links (branch/PR mention → issue) (Phase 3).
+- GitHub (ADR 0019): a GitHub App that an admin with `integration.manage` creates from Ordler's
+  manifest in Admin → Integrations → GitHub (github.com or GitHub Enterprise Server; manual app
+  id, private key and webhook secret as a fallback). Webhooks arrive at `/api/github/webhook`,
+  verified with `X-Hub-Signature-256` and handled once per delivery id. A branch name, pull
+  request title/body or commit message that mentions an issue identifier (any case, e.g.
+  `elkhan/eng-12-fix-login`) links that item to the issue; the issue page lists linked pull
+  requests (open, draft, merged, closed), branches and commits with links to GitHub, visible to
+  whoever may read the issue, and offers **Copy branch name** (`<email handle>/<identifier>-<title>`).
+  The app comments once per pull request with each linked issue's identifier, title, status and
+  link (identifier and link only for private teams) and edits that comment when the linked set
+  changes. Per-team automation, off by default and set by `team.update` in team settings: a
+  status for "pull request opened" (moves only backlog/unstarted issues outside Triage) and for
+  "pull request merged" (moves only unfinished issues), recorded in history as a change via
+  GitHub. Secrets are sealed and write-only; setup and automation changes are audited.
+  GitLab and Bitbucket (Phase 3).
 
 ### 10.1 MCP server and personal access tokens (Phase 1)
 
@@ -1066,12 +1080,13 @@ audit_log(id, actor_type, actor_id, action, target_type, target_id,
 Cycles, projects, initiatives, saved/shared views, timeline layout, SLA policies with
 business hours, approval timeouts/escalation/delegation, conditional steps and fields,
 routing rules, webhooks + public API, email-in, import from Linear, Jira and Trello via API token (§10.2), editable email templates,
-Slack app (DMs, link unfurls, create from message).
+Slack app (DMs, link unfurls, create from message), GitHub integration (branch, PR and commit
+links, bot comment, PR status automation).
 
 ### Phase 3
 
 SAML SSO + SCIM provisioning, Microsoft Teams notifications, analytics dashboards (SLA, throughput,
-cycle time), automations (rule builder: "when X then Y"), Git integrations, public
+cycle time), automations (rule builder: "when X then Y"), GitLab and Bitbucket integrations, public
 external portal, air-gapped install bundle.
 
 ---

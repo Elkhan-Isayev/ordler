@@ -25,6 +25,7 @@ import { CyclePicker } from '../cycles/CyclePicker.js';
 import { ProjectPicker } from '../projects/ProjectPicker.js';
 import { cycleName } from '../cycles/format.js';
 import { DueDatePicker } from './DueDatePicker.js';
+import { CopyBranchButton, IssueGithubLinks, useIssueGithub } from './IssueGithub.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { IssueWhiteboards } from '../whiteboards/IssueWhiteboards.js';
 import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
@@ -51,6 +52,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
   const [issue, setIssue] = useState<IssueDetail>();
   const [team, setTeam] = useState<TeamView>();
   const [error, setError] = useState<string>();
+  const github = useIssueGithub(identifier, issue?.updatedAt ?? '');
 
   const reload = useCallback(async () => {
     try {
@@ -150,6 +152,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
         ))}
         <span className="text-ink">{issue.identifier}</span>
         <CopyButtons identifier={issue.identifier} />
+        {github && <CopyBranchButton branchName={github.branchName} />}
         {team.can.delete && (
           <button
             type="button"
@@ -195,6 +198,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
               onChanged={() => void reload()}
               onError={(code) => setError(code)}
             />
+            {github && <IssueGithubLinks links={github.links} />}
             <IssueWhiteboards issue={issue} team={team} onError={setError} />
             <section aria-label={t('issues.activity')} className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-ink">{t('issues.activity')}</h2>
@@ -402,11 +406,13 @@ function Property({ label, children }: { label: string; children: React.ReactNod
 
 /** Human-readable history line, resolving status and member ids against the team. */
 export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): string {
-  const name = event.actor?.name ?? t('issues.someone');
+  // Integrations act without a member: history names the integration (ADR 0019).
+  const name = event.actor?.name ?? event.viaToken ?? t('issues.someone');
   // Agents act as the member; history says which token did it (SPEC §10.1).
-  const actor = event.viaToken
-    ? t('issues.viaToken', { actor: name, token: event.viaToken })
-    : name;
+  const actor =
+    event.viaToken && event.actor
+      ? t('issues.viaToken', { actor: name, token: event.viaToken })
+      : name;
   const imported = event.changes.imported?.to as { source: string; key: string } | undefined;
   if (imported) {
     return t(event.kind === 'created' ? 'issues.event.imported' : 'issues.event.reimported', {

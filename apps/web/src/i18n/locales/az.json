@@ -145,7 +145,10 @@
     "wiki_conflict": "Siz redaktə edərkən kimsə bu səhifənin daha yeni versiyasını saxladı. Dəyişikliklərinizi kopyalayın, səhifəni yeniləyin və yenidən tətbiq edin.",
     "wiki_folder_not_empty": "Yalnız boş qovluqlar silinə bilər. Əvvəlcə içindəkiləri köçürün və ya silin.",
     "wiki_too_deep": "Qovluqlar ən çox 8 səviyyə iç-içə ola bilər.",
-    "import_running": "Hazırda başqa idxal gedir. Əvvəlcə onu dayandırın və ya bitməsini gözləyin."
+    "import_running": "Hazırda başqa idxal gedir. Əvvəlcə onu dayandırın və ya bitməsini gözləyin.",
+    "github_not_configured": "GitHub App hələ tam qurulmayıb: App ID, gizli açar və webhook sirri lazımdır.",
+    "github_rejected": "GitHub sorğunu rədd etdi. Tətbiq məlumatlarını yoxlayın və yenidən cəhd edin.",
+    "github_unreachable": "GitHub-a qoşulmaq mümkün olmadı. GitHub ünvanını və şəbəkəni yoxlayın."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -522,6 +525,31 @@
       "save": "Slack tətbiqini saxla",
       "saved": "Saxlanıldı",
       "disconnect": "Ayır"
+    },
+    "github": {
+      "title": "GitHub",
+      "subtitle": "Tapşırığı xatırladan branch-lar, pull request-lər və commit-lər tapşırıqda görünür; bot pull request-ə geri keçid olan şərh yazır.",
+      "created": "GitHub App yaradıldı. Onu Ordler-in izləməli olduğu repozitoriyalara quraşdırın.",
+      "connected": "GitHub App “{app}” kimi qoşulub",
+      "paused": "GitHub App “{app}” qurulub, amma söndürülüb",
+      "notConnected": "Qoşulmayıb",
+      "lastDelivery": "son hadisə {when}",
+      "installHint": "GitHub-da repozitoriyaları seçin:",
+      "install": "Tətbiqi quraşdır",
+      "githubUrl": "GitHub ünvanı",
+      "organization": "Təşkilat (məcburi deyil)",
+      "createHint": "https://github.com və ya GitHub Enterprise Server ünvanınızı göstərin. Təşkilat göstərilsə, tətbiq ona, əks halda öz GitHub hesabınıza məxsus olacaq. GitHub bu Ordler-in webhook ünvanına çata bilməlidir.",
+      "create": "GitHub App yarat",
+      "recreate": "Yeni GitHub App yarat",
+      "manual": "Tətbiq məlumatlarını əl ilə daxil et",
+      "enabled": "Aktivdir",
+      "appId": "App ID",
+      "webhookSecret": "Webhook sirri",
+      "privateKey": "Gizli açar (PEM)",
+      "webhookUrl": "Webhook ünvanı",
+      "save": "Yadda saxla",
+      "saved": "Yadda saxlanıldı",
+      "disconnect": "Ayır"
     }
   },
   "invite": {
@@ -679,7 +707,23 @@
     "dueDateClear": "Son tarixi sil",
     "createMoreHint": "Yaratdıqdan sonra pəncərə açıq qalır: status, icraçılar, etiketlər və ana tapşırıq saxlanılır, bir neçə tapşırığı ardıcıl əlavə edə bilərsiniz.",
     "createdKeepOpen": "{identifier} yaradıldı. Növbətini əlavə edin.",
-    "timeline": "Zaman xətti"
+    "timeline": "Zaman xətti",
+    "github": {
+      "title": "GitHub",
+      "copyBranch": "Branch adını kopyala",
+      "copiedBranch": "Branch adı kopyalandı",
+      "kind": {
+        "branch": "Branch",
+        "pull_request": "Pull request",
+        "commit": "Commit"
+      },
+      "state": {
+        "open": "Açıq",
+        "draft": "Qaralama",
+        "merged": "Birləşdirilib",
+        "closed": "Bağlı"
+      }
+    }
   },
   "editor": {
     "toolbar": "Formatlama",
@@ -970,7 +1014,14 @@
     "orgLabel": "Təşkilat etiketi",
     "deleteLabel": "{name} sil",
     "multipleAssignees": "Tapşırıqda bir neçə icraçı",
-    "multipleAssigneesHint": "Söndürüldükdə hər tapşırığın ən çox bir icraçısı olur."
+    "multipleAssigneesHint": "Söndürüldükdə hər tapşırığın ən çox bir icraçısı olur.",
+    "github": {
+      "title": "GitHub",
+      "subtitle": "Bağlı tapşırıqları avtomatik keçir. Açılanda yalnız hələ başlanmamış tapşırıqlar, birləşdiriləndə yalnız bitməmişlər keçirilir.",
+      "openedStatusId": "Pull request açılanda",
+      "mergedStatusId": "Pull request birləşdiriləndə",
+      "off": "Heç nə etmə"
+    }
   },
   "cycles": {
     "cycle": "Dövr",

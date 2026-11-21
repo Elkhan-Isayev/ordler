@@ -77,5 +77,5 @@ export function scopeLabel(
 /** Empties a write-only secret field once saved, so the typed value does not linger. */
 export function clearSecretField(form: HTMLFormElement, name: string): void {
   const field = form.elements.namedItem(name);
-  if (field instanceof HTMLInputElement) field.value = '';
+  if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.value = '';
 }

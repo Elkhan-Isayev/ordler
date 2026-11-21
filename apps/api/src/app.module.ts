@@ -31,6 +31,8 @@ import { RequestsController } from './requests/requests.controller.js';
 import { EmailInController } from './email-in/email-in.controller.js';
 import { AdminSlackAppController, MySlackController } from './slack/slack.controller.js';
 import { registerSlackHttp } from './slack/slack-http.js';
+import { AdminGithubAppController, GithubController } from './github/github.controller.js';
+import { registerGithubHttp } from './github/github-http.js';
 import { OAuthConsentController } from './oauth/oauth.controller.js';
 import { registerOAuthHttp } from './oauth/oauth-http.js';
 import { AdminMailController } from './mail/admin-mail.controller.js';
@@ -62,6 +64,8 @@ export class AppModule {
         EmailInController,
         AdminSlackAppController,
         MySlackController,
+        AdminGithubAppController,
+        GithubController,
         OAuthConsentController,
         AdminDatabaseController,
         IssuesController,
@@ -102,6 +106,7 @@ export async function configureApp(app: NestFastifyApplication, ctx: AppContext)
   new McpServer(ctx, ctx.version).register(instance);
   new PublicApi(ctx).register(instance);
   registerSlackHttp(instance, ctx.slackApp);
+  registerGithubHttp(instance, ctx.github, (message) => console.warn(message));
   registerOAuthHttp(instance, ctx.oauth, ctx.limits.oauthRegister);
   registerWhiteboardHttp(instance, ctx.whiteboards, ctx.attachments.maxBytes);
 }

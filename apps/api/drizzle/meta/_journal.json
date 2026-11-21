@@ -246,6 +246,13 @@
       "when": 1795269281001,
       "tag": "0034_wiki_search",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1795275200089,
+      "tag": "0035_github_integration",
+      "breakpoints": true
     }
   ]
 }

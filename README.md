@@ -79,6 +79,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | ⚡  | **Live updates** in every open tab within a second, across replicas (WebSocket + PostgreSQL LISTEN/NOTIFY)                                                      |
 | 🔔  | **Inbox, email and Slack notifications** in each member's language; **editable email templates** per language                                                   |
 | 💬  | **Slack app**: personal DMs, channel picker, link previews, "Create issue/request" from any message; Socket Mode, no public URL                                 |
+| 🐙  | **GitHub**: branches, pull requests and commits that mention an issue show up on it; bot comment on PRs; optional status automation; GitHub Enterprise Server   |
 | 🔌  | **Public REST API v1** with OpenAPI 3.1, cursor pagination and idempotency keys                                                                                 |
 | 🪝  | **Webhooks**: HMAC-signed, ordered per endpoint, retried for 24 hours, with a delivery log                                                                      |
 | 🤖  | **MCP server** with OAuth sign-in or personal access tokens, so AI agents work as you (and never approve for you)                                               |
@@ -193,7 +194,8 @@ in a shorter form.
 - [ ] **Secrets store** for the database password and the encryption key
 - [ ] Optional: a **Google OAuth client**, a **Microsoft Entra app registration** or an
       **OIDC client** for single sign-on
-- [ ] Optional: an **IMAP mailbox** for email-in and a **Slack app** (Ordler shows its manifest)
+- [ ] Optional: an **IMAP mailbox** for email-in, a **Slack app** (Ordler shows its manifest) and a
+      **GitHub App** (Ordler creates it from a manifest)
 
 ### Network
 
@@ -205,6 +207,9 @@ in a shorter form.
 | `/api/*`        | UI API, REST API `/api/v1` | Allow request bodies of at least 25 MB (file uploads)         |
 | `/api/realtime` | WebSocket                  | Needs `Upgrade` headers; read timeout ≥ 60 s (3600 s is fine) |
 | `/mcp`          | MCP endpoint for AI agents |                                                               |
+
+With the GitHub integration, GitHub must reach `POST /api/github/webhook` (HMAC-signed); behind a
+firewall that is the only path to expose to github.com.
 
 For ingress-nginx:
 
@@ -224,6 +229,7 @@ nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
 | `api.github.com`                               | 443       | Daily release check for the admin update banner; `UPDATE_CHECK=false` turns it off |
 | `hooks.slack.com`                              | 443       | Only with Slack channel notifications                                              |
 | `slack.com`, `wss-*.slack.com`                 | 443       | Only with the Slack app (Web API and Socket Mode)                                  |
+| `api.github.com` or your GitHub Enterprise     | 443       | Only with the GitHub integration (app tokens and the pull request comment)         |
 | `login.microsoftonline.com`, your OIDC issuer  | 443       | Only with Microsoft or OIDC sign-in                                                |
 | IMAP server                                    | 993 / 143 | Only with email-in                                                                 |
 | Your webhook endpoints                         | 443       | Only with webhooks configured by admins                                            |

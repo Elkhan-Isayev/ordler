@@ -25,3 +25,4 @@ export * from './oauth.js';
 export * from './whiteboards.js';
 export * from './wiki.js';
 export * from './preferences.js';
+export * from './github.js';

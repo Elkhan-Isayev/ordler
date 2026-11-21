@@ -79,6 +79,9 @@ export const ADMIN_ERROR_CODES = [
   'template_missing_variable',
   'slack_not_configured',
   'slack_rejected',
+  'github_not_configured',
+  'github_rejected',
+  'github_unreachable',
 ] as const;
 export type AdminErrorCode = (typeof ADMIN_ERROR_CODES)[number];
 

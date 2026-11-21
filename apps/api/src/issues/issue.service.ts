@@ -604,11 +604,61 @@ export class IssueService {
     return updated;
   }
 
+  /**
+   * A status change made by an integration rather than a member (ADR 0019): history shows it
+   * "via <integration>" with no actor, and it fans out like any other status change.
+   */
+  async setStatusBySystem(issueId: string, statusId: string, via: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ issue: issues, team: teams })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(eq(issues.id, issueId));
+    if (!row || row.issue.archivedAt || row.issue.statusId === statusId) return false;
+    const statuses = await teamStatuses(this.db, row.team.id);
+    if (!statuses.some((s) => s.id === statusId)) return false;
+    const changes: IssueEvent['changes'] = {
+      statusId: { from: row.issue.statusId, to: statusId },
+    };
+    const now = this.now();
+    await this.db.transaction(async (tx) => {
+      await tx.update(issues).set({ statusId, updatedAt: now }).where(eq(issues.id, issueId));
+      await tx.insert(issueEvents).values({
+        issueId,
+        actorId: null,
+        kind: 'updated',
+        changes,
+        viaToken: via,
+        createdAt: now,
+      });
+    });
+    await this.deps.events.publish({ type: 'issue.changed', teamId: row.team.id, issueId });
+    const updated = (await this.summary(issueId))!;
+    await writeAudit(this.db, {
+      actor: { type: 'system' },
+      action: 'issue.updated',
+      targetType: 'issue',
+      targetId: issueId,
+      after: { identifier: updated.identifier, fields: ['statusId'], via },
+    });
+    await this.deps.hooks?.issueEvent('issue.updated', updated, null, { changes });
+    this.toChannels(row.team.id, 'issue_status_changed', updated);
+    await this.deps.notifier?.notify({
+      recipients: [row.issue.createdBy, ...updated.assignees.map((a) => a.id)].filter(
+        (id): id is string => Boolean(id),
+      ),
+      kind: 'issue_status_changed',
+      actorId: null,
+      subject: { type: 'issue', id: issueId },
+    });
+    return true;
+  }
+
   /** Posts to the team's Slack channels; the item is the team's own, so nothing leaks. */
   private toChannels(
     teamId: string,
     event: SlackEvent,
-    issue: IssueDetail,
+    issue: IssueSummary,
     excerpt?: string,
   ): void {
     if (!this.deps.channels) return;
@@ -697,6 +747,11 @@ export class IssueService {
       team,
       can,
     };
+  }
+
+  /** A team by key and what the member may do in it; unreadable teams answer `not_found`. */
+  async teamFor(memberId: string, key: string): Promise<{ team: TeamRow; can: TeamPermissions }> {
+    return this.readableTeam(memberId, key);
   }
 
   private async readableTeam(

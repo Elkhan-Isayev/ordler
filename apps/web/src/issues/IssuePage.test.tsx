@@ -213,6 +213,19 @@ describe('describeEvent', () => {
     );
   });
 
+  it('names the integration when it changed the issue without a member', async () => {
+    const i18n = await createI18n('en');
+    const event = {
+      id: 'e',
+      kind: 'updated' as const,
+      actor: null,
+      changes: { statusId: { from: 's-todo', to: 's-done' } },
+      viaToken: 'GitHub',
+      createdAt: '2026-10-18T09:00:00.000Z',
+    };
+    expect(describeEvent(i18n.t, event, TEAM)).toMatch(/^GitHub: /);
+  });
+
   it('tells where an imported issue came from', async () => {
     const i18n = await createI18n('en');
     const event = {

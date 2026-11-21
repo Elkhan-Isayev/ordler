@@ -18,6 +18,7 @@ import {
 import { api } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
+import { TeamGithubPanel } from './TeamGithubPanel.js';
 import { selectClass, StatusIcon, statusLabel } from './ui.js';
 
 /** Moves one id up or down among the statuses of its category; returns the full order. */
@@ -256,6 +257,7 @@ export function TeamSettingsPage({ teamKey }: { teamKey: string }) {
         </ul>
       </Panel>
       <CycleSettingsPanel teamKey={team.key} />
+      <TeamGithubPanel team={team} />
       <IntegrationsSection team={{ id: team.id, name: team.name }} />
     </div>
   );

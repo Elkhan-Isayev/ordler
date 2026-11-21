@@ -48,6 +48,8 @@ import { SlackService, type FetchFn as SlackFetchFn } from './notifications/slac
 import { OAuthService } from './oauth/oauth.service.js';
 import { SlackApi, type SlackHttp } from './slack/slack-api.js';
 import { SlackAppService } from './slack/slack-app.service.js';
+import { GithubApi, type GithubHttp } from './github/github-api.js';
+import { GithubService } from './github/github.service.js';
 import { TeamAccess } from './issues/team-access.js';
 import { MailService } from './mail/mail.service.js';
 import { LocalEventBus, type EventBus } from './realtime/event-bus.js';
@@ -92,6 +94,7 @@ export interface AppContext {
   slack: SlackService;
   slackApp: SlackAppService;
   slackApi: SlackApi;
+  github: GithubService;
   oauth: OAuthService;
   tokens: TokenService;
   roles: RolesService;
@@ -160,6 +163,8 @@ export interface AppContextDeps {
   slackHttp?: SlackHttp;
   /** Verifies Sign in with Slack ID tokens; replaced in tests. */
   slackJwks?: JWTVerifyGetKey;
+  /** GitHub REST calls of the GitHub App (ADR 0019); replaced in tests. */
+  githubHttp?: GithubHttp;
   /** IMAP connections for email-in; replaced in tests. */
   mailboxConnector?: MailboxConnector;
   version?: string | undefined;
@@ -337,6 +342,15 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     requestTypes,
     slackApp,
     slackApi,
+    github: new GithubService({
+      db: deps.db,
+      box,
+      baseUrl: deps.baseUrl,
+      issues,
+      api: new GithubApi(deps.githubHttp, now),
+      now,
+      log: (message) => console.warn(message),
+    }),
     requests,
     emailIn: new EmailInService({
       db: deps.db,

@@ -5,6 +5,7 @@ import { AuditSection } from './AuditSection.js';
 import { AuthSection } from './AuthSection.js';
 import { DatabaseSection } from './DatabaseSection.js';
 import { DepartmentsSection } from './DepartmentsSection.js';
+import { GithubAppPanel } from './GithubAppPanel.js';
 import { ImportSection } from './ImportSection.js';
 import { IntegrationsSection } from './IntegrationsSection.js';
 import { MailSection } from './MailSection.js';
@@ -80,6 +81,7 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
         {active === 'integrations' && (
           <div className="flex flex-col gap-4">
             {me.organizationPermissions.includes('org.manage') && <SlackAppPanel />}
+            {me.organizationPermissions.includes('integration.manage') && <GithubAppPanel />}
             <IntegrationsSection />
           </div>
         )}

@@ -101,6 +101,13 @@ import type {
   EmailTemplateView,
   InboundEmailView,
   SlackAppView,
+  GithubAppView,
+  GithubManifestInput,
+  GithubManifestStart,
+  IssueGithubView,
+  TeamGithubSettings,
+  UpdateGithubAppInput,
+  UpdateTeamGithubInput,
   OAuthConsentView,
   OAuthDecision,
   SlackChannel,
@@ -572,6 +579,20 @@ export const api = {
   updateSlackApp: (body: UpdateSlackAppInput) =>
     apiRequest<SlackAppView>('/api/admin/slack-app', { method: 'PUT', body }),
   slackManifest: () => apiRequest<object>('/api/admin/slack-app/manifest'),
+  githubApp: () => apiRequest<GithubAppView>('/api/admin/github-app'),
+  updateGithubApp: (body: UpdateGithubAppInput) =>
+    apiRequest<GithubAppView>('/api/admin/github-app', { method: 'PUT', body }),
+  githubManifest: (body: GithubManifestInput) =>
+    apiRequest<GithubManifestStart>('/api/admin/github-app/manifest', { method: 'POST', body }),
+  issueGithub: (identifier: string) =>
+    apiRequest<IssueGithubView>(`/api/issues/${encodeURIComponent(identifier)}/github`),
+  teamGithub: (key: string) =>
+    apiRequest<TeamGithubSettings>(`/api/teams/${encodeURIComponent(key)}/github`),
+  updateTeamGithub: (key: string, body: UpdateTeamGithubInput) =>
+    apiRequest<TeamGithubSettings>(`/api/teams/${encodeURIComponent(key)}/github`, {
+      method: 'PUT',
+      body,
+    }),
   mySlack: () => apiRequest<SlackLinkView>('/api/me/slack'),
   updateMySlack: (directMessages: boolean) =>
     apiRequest<SlackLinkView>('/api/me/slack', { method: 'PATCH', body: { directMessages } }),

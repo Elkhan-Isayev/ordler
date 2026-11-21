@@ -99,6 +99,10 @@ export const teams = pgTable(
     cycleCooldownWeeks: integer('cycle_cooldown_weeks').notNull().default(0),
     /** How many future cycles are kept planned ahead. */
     cycleUpcoming: integer('cycle_upcoming').notNull().default(2),
+    /** GitHub automation (ADR 0019): status set when a linked pull request opens; null is off. */
+    githubOpenedStatusId: uuid('github_opened_status_id'),
+    /** Status set when a linked pull request merges; null is off. */
+    githubMergedStatusId: uuid('github_merged_status_id'),
     /** Last issue number handed out; incremented under a row lock so numbers never repeat. */
     issueCounter: integer('issue_counter').notNull().default(0),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
@@ -820,6 +824,73 @@ export const slackLinks = pgTable(
     linkedAt: createdAt(),
   },
   (t) => [uniqueIndex('slack_links_user_uq').on(t.workspaceId, t.slackUserId)],
+);
+
+/** The company's GitHub App (ADR 0019); one row. */
+export const githubApp = pgTable('github_app', {
+  id: integer('id').primaryKey().default(1),
+  enabled: boolean('enabled').notNull().default(false),
+  /** https://github.com or a GitHub Enterprise Server URL. */
+  githubUrl: text('github_url').notNull().default('https://github.com'),
+  organization: text('organization'),
+  appId: text('app_id'),
+  appSlug: text('app_slug'),
+  /** Sealed JSON: private key, webhook secret, client secret. */
+  secretsEncrypted: text('secrets_encrypted'),
+  lastDeliveryAt: timestamp('last_delivery_at', { withTimezone: true }),
+  lastError: text('last_error'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid('updated_by').references(() => members.id),
+});
+
+/** A branch, pull request or commit that mentions an issue (ADR 0019). */
+export const githubLinks = pgTable(
+  'github_links',
+  {
+    id: id(),
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id),
+    kind: text('kind', { enum: ['branch', 'pull_request', 'commit'] }).notNull(),
+    repository: text('repository').notNull(),
+    /** Branch name, pull request number or commit SHA. */
+    ref: text('ref').notNull(),
+    title: text('title'),
+    state: text('state', { enum: ['open', 'draft', 'merged', 'closed'] }),
+    url: text('url').notNull(),
+    author: text('author'),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('github_links_item_uq').on(t.issueId, t.kind, t.repository, t.ref),
+    index('github_links_ref_idx').on(t.repository, t.kind, t.ref),
+  ],
+);
+
+/** The one bot comment per pull request; the insert claims it so replicas never both post. */
+export const githubPullRequestComments = pgTable(
+  'github_pull_request_comments',
+  {
+    repository: text('repository').notNull(),
+    number: integer('number').notNull(),
+    /** GitHub comment id; null while the first post is in flight or failed. */
+    commentId: bigint('comment_id', { mode: 'number' }),
+    /** Identifiers the comment lists, sorted; a change means the comment is edited. */
+    identifiers: text('identifiers').array().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.repository, t.number] })],
+);
+
+/** X-GitHub-Delivery ids seen in the last day, so redeliveries are handled once. */
+export const githubDeliveries = pgTable(
+  'github_deliveries',
+  {
+    id: text('id').primaryKey(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('github_deliveries_received_idx').on(t.receivedAt)],
 );
 
 /** Personal access tokens (SPEC §10.1): only a SHA-256 of the secret is stored. */

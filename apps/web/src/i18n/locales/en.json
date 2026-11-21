@@ -145,7 +145,10 @@
     "wiki_conflict": "Someone saved a newer version of this page meanwhile. Copy your changes, reload the page and apply them again.",
     "wiki_folder_not_empty": "Only empty folders can be deleted. Move or delete what is inside first.",
     "wiki_too_deep": "Folders can be nested at most 8 levels deep.",
-    "import_running": "Another import is running. Pause or wait for it first."
+    "import_running": "Another import is running. Pause or wait for it first.",
+    "github_not_configured": "The GitHub App is not fully configured yet: it needs the app ID, private key and webhook secret.",
+    "github_rejected": "GitHub rejected the request. Check the app details and try again.",
+    "github_unreachable": "GitHub could not be reached. Check the GitHub URL and the network."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -522,6 +525,31 @@
       "save": "Save Slack app",
       "saved": "Saved",
       "disconnect": "Disconnect"
+    },
+    "github": {
+      "title": "GitHub",
+      "subtitle": "Branches, pull requests and commits that mention an issue appear on it; a bot comments on pull requests with a link back.",
+      "created": "The GitHub App was created. Install it on the repositories Ordler should watch.",
+      "connected": "Connected as GitHub App “{app}”",
+      "paused": "GitHub App “{app}” is set up but turned off",
+      "notConnected": "Not connected",
+      "lastDelivery": "last event {when}",
+      "installHint": "Choose the repositories on GitHub:",
+      "install": "Install the app",
+      "githubUrl": "GitHub URL",
+      "organization": "Organization (optional)",
+      "createHint": "Use https://github.com or your GitHub Enterprise Server address. With an organization, the app belongs to it; otherwise to your own GitHub account. GitHub must be able to reach the webhook URL of this Ordler.",
+      "create": "Create GitHub App",
+      "recreate": "Create a new GitHub App",
+      "manual": "Enter app details manually",
+      "enabled": "Enabled",
+      "appId": "App ID",
+      "webhookSecret": "Webhook secret",
+      "privateKey": "Private key (PEM)",
+      "webhookUrl": "Webhook URL",
+      "save": "Save",
+      "saved": "Saved",
+      "disconnect": "Disconnect"
     }
   },
   "invite": {
@@ -679,7 +707,23 @@
     "dueDateClear": "Clear due date",
     "createMoreHint": "After creating, the dialog stays open with status, assignees, labels and parent kept, so you can add several issues in a row.",
     "createdKeepOpen": "{identifier} created. Add the next one.",
-    "timeline": "Timeline"
+    "timeline": "Timeline",
+    "github": {
+      "title": "GitHub",
+      "copyBranch": "Copy branch name",
+      "copiedBranch": "Branch name copied",
+      "kind": {
+        "branch": "Branch",
+        "pull_request": "Pull request",
+        "commit": "Commit"
+      },
+      "state": {
+        "open": "Open",
+        "draft": "Draft",
+        "merged": "Merged",
+        "closed": "Closed"
+      }
+    }
   },
   "editor": {
     "toolbar": "Formatting",
@@ -970,7 +1014,14 @@
     "orgLabel": "Organization label",
     "deleteLabel": "Delete {name}",
     "multipleAssignees": "Several assignees per issue",
-    "multipleAssigneesHint": "When off, every issue has at most one assignee."
+    "multipleAssigneesHint": "When off, every issue has at most one assignee.",
+    "github": {
+      "title": "GitHub",
+      "subtitle": "Move linked issues automatically. Opening only moves issues that are not started yet; merging only moves unfinished ones.",
+      "openedStatusId": "When a pull request opens",
+      "mergedStatusId": "When a pull request merges",
+      "off": "Do nothing"
+    }
   },
   "cycles": {
     "cycle": "Cycle",
