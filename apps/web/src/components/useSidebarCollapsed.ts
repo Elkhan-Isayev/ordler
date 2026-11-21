@@ -41,9 +41,17 @@ export function useSidebarCollapsed(): [boolean, () => void] {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const modified = event.metaKey || event.ctrlKey;
+      // The physical key counts too, so the shortcut works on layouts such as Russian ("х").
       const bracket =
-        event.key === '[' && !modified && !event.altKey && !typingInField(event.target);
-      const backslash = event.key === '\\' && modified && !event.altKey && !event.shiftKey;
+        (event.key === '[' || event.code === 'BracketLeft') &&
+        !modified &&
+        !event.altKey &&
+        !typingInField(event.target);
+      const backslash =
+        (event.key === '\\' || event.code === 'Backslash') &&
+        modified &&
+        !event.altKey &&
+        !event.shiftKey;
       if (!bracket && !backslash) return;
       event.preventDefault();
       toggle();

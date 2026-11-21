@@ -39,11 +39,20 @@ describe('useSidebarCollapsed', () => {
     expect(result.current[0]).toBe(true);
   });
 
+  it('follows the physical keys on other layouts', () => {
+    const { result } = renderHook(() => useSidebarCollapsed());
+    press({ key: 'х', code: 'BracketLeft' });
+    expect(result.current[0]).toBe(true);
+    press({ key: 'ё', code: 'Backslash', ctrlKey: true });
+    expect(result.current[0]).toBe(false);
+  });
+
   it('leaves "[" to text fields and ignores a plain backslash', () => {
     const { result } = renderHook(() => useSidebarCollapsed());
     const input = document.createElement('input');
     document.body.append(input);
     press({ key: '[' }, input);
+    press({ key: 'х', code: 'BracketLeft' }, input);
     press({ key: '\\' });
     press({ key: '[', ctrlKey: true });
     expect(result.current[0]).toBe(false);
