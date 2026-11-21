@@ -1,6 +1,8 @@
 {
   "nav": {
     "search": "Axtarış",
+    "collapseSidebar": "Yan paneli yığ",
+    "expandSidebar": "Yan paneli aç",
     "newIssue": "Yeni tapşırıq",
     "inbox": "Gələnlər",
     "myIssues": "Tapşırıqlarım",

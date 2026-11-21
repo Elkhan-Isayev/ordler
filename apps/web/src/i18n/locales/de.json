@@ -1,6 +1,8 @@
 {
   "nav": {
     "search": "Suche",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen",
     "newIssue": "Neue Aufgabe",
     "inbox": "Posteingang",
     "myIssues": "Meine Aufgaben",

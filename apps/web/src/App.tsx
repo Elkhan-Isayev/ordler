@@ -4,6 +4,7 @@ import { AdminPage, adminSections } from './admin/AdminPage.js';
 import { CommandPalette, useCommandPalette } from './components/CommandPalette.js';
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
+import { useSidebarCollapsed } from './components/useSidebarCollapsed.js';
 import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
@@ -72,6 +73,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
   const counts = useInboxCounts(me.member.id);
   const [searching, setSearching] = useCommandPalette();
+  const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
 
   return (
     <div className="flex h-screen">
@@ -84,6 +86,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
         departments={me.departments}
         showAdmin={canAdminister}
         currentPath={path}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={toggleSidebar}
         footer={
           <div className="flex items-center justify-between gap-2 px-2">
             <Link

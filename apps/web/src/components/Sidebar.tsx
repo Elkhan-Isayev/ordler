@@ -9,6 +9,8 @@ import {
   Layers,
   Shapes,
   Mountain,
+  PanelLeftClose,
+  PanelLeftOpen,
   Send,
   Settings,
   Stamp,
@@ -49,7 +51,13 @@ export interface SidebarProps {
   currentPath?: string;
   /** Opens the command palette (Cmd/Ctrl+K). */
   onSearch?: () => void;
+  /** Collapsed, only a thin rail with the expand button remains. */
+  collapsed?: boolean;
+  /** Shows the collapse/expand button when given. */
+  onToggleCollapsed?: () => void;
 }
+
+export const SIDEBAR_ID = 'app-sidebar';
 
 const CurrentPath = createContext<string | undefined>(undefined);
 
@@ -69,20 +77,32 @@ export function Sidebar({
   showAdmin = false,
   currentPath,
   onSearch,
+  collapsed = false,
+  onToggleCollapsed,
 }: SidebarProps) {
   const { t } = useTranslation();
+
+  if (collapsed && onToggleCollapsed) {
+    return (
+      <div className="flex h-full shrink-0 flex-col items-center border-r border-line bg-sidebar px-1.5 py-4">
+        <CollapseButton collapsed onToggle={onToggleCollapsed} />
+      </div>
+    );
+  }
 
   return (
     <CurrentPath.Provider value={currentPath}>
       <nav
+        id={SIDEBAR_ID}
         aria-label={workspaceName}
-        className="flex h-full w-64 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted"
+        className="flex h-full w-64 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted"
       >
         <div className="flex items-center gap-2 px-2">
-          <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-white">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-xs font-semibold text-white">
             {workspaceName.slice(0, 2).toUpperCase()}
           </span>
-          <span className="truncate font-semibold text-ink">{workspaceName}</span>
+          <span className="flex-1 truncate font-semibold text-ink">{workspaceName}</span>
+          {onToggleCollapsed && <CollapseButton collapsed={false} onToggle={onToggleCollapsed} />}
         </div>
         {onSearch && (
           <button
@@ -164,6 +184,27 @@ export function Sidebar({
         </div>
       </nav>
     </CurrentPath.Provider>
+  );
+}
+
+/** Shows or hides the sidebar; the tooltip names both shortcuts. */
+function CollapseButton({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+  const label = t(collapsed ? 'nav.expandSidebar' : 'nav.collapseSidebar');
+  const Icon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      aria-expanded={!collapsed}
+      aria-controls={collapsed ? undefined : SIDEBAR_ID}
+      aria-keyshortcuts={`[ ${MOD_KEY === '⌘' ? 'Meta' : 'Control'}+\\`}
+      title={`${label} ([ · ${MOD_KEY} \\)`}
+      className="flex size-7 shrink-0 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-hover hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+    >
+      <Icon aria-hidden size={16} strokeWidth={1.75} />
+    </button>
   );
 }
 

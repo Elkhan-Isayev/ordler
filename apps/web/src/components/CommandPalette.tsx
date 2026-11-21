@@ -24,7 +24,7 @@ const DEBOUNCE_MS = 200;
 const GROUPS: readonly Group[] = ['issues', 'requests', 'wiki'];
 
 /** Typing in a field must keep its own meaning of "/". */
-function typingInField(target: EventTarget | null): boolean {
+export function typingInField(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return (
     target.isContentEditable ||

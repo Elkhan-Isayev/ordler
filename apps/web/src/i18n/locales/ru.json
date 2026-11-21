@@ -1,6 +1,8 @@
 {
   "nav": {
     "search": "Поиск",
+    "collapseSidebar": "Свернуть боковую панель",
+    "expandSidebar": "Развернуть боковую панель",
     "newIssue": "Новая задача",
     "inbox": "Входящие",
     "myIssues": "Мои задачи",

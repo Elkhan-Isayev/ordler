@@ -175,4 +175,34 @@ describe('Sidebar administration link', () => {
       'page',
     );
   });
+
+  it('collapses to a rail and expands again from its button', async () => {
+    const onToggleCollapsed = vi.fn();
+    const { rerender } = await renderSidebar('en', { onToggleCollapsed });
+    const collapse = screen.getByRole('button', { name: 'Collapse sidebar' });
+    expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    expect(collapse).toHaveAttribute('aria-controls', 'app-sidebar');
+    expect(collapse).toHaveAttribute('title', expect.stringMatching(/^Collapse sidebar \(\[/));
+    await userEvent.click(collapse);
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+
+    const i18n = await createI18n('ru');
+    rerender(
+      <I18nextProvider i18n={i18n}>
+        <Sidebar {...props} collapsed onToggleCollapsed={onToggleCollapsed} />
+      </I18nextProvider>,
+    );
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    const expand = screen.getByRole('button', { name: 'Развернуть боковую панель' });
+    expect(expand).toHaveAttribute('aria-expanded', 'false');
+    expand.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(2);
+  });
+
+  it('has no collapse button when the shell cannot collapse it', async () => {
+    await renderSidebar('en', { collapsed: true });
+    expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /sidebar/ })).not.toBeInTheDocument();
+  });
 });
