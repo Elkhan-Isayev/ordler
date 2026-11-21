@@ -149,7 +149,7 @@ export function TokensPage({ baseUrl = window.location.origin }: { baseUrl?: str
   const choices = EXPIRY_CHOICES.filter((days) => !settings || days <= settings.maxExpiryDays);
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4 p-6">
+    <div className="flex max-w-3xl flex-col gap-4 p-4 md:p-6">
       <SectionHeader title={t('tokens.title')} subtitle={t('tokens.subtitle')} />
       {error && <FormError message={error} />}
       {settings && !settings.mcpEnabled && (
@@ -178,9 +178,9 @@ export function TokensPage({ baseUrl = window.location.origin }: { baseUrl?: str
       <Panel>
         <h3 className="text-sm font-semibold text-ink">{t('tokens.connect')}</h3>
         <p className="text-sm text-ink-muted">{t('tokens.connectHint')}</p>
-        <code className="rounded-md bg-hover px-2 py-1 text-sm text-ink">{`${baseUrl}/mcp`}</code>
+        <code className="rounded-md bg-hover px-2 py-1 text-sm break-all text-ink">{`${baseUrl}/mcp`}</code>
         <p className="text-sm text-ink-muted">{t('tokens.restHint')}</p>
-        <code className="rounded-md bg-hover px-2 py-1 text-sm text-ink">{`${baseUrl}/api/v1`}</code>
+        <code className="rounded-md bg-hover px-2 py-1 text-sm break-all text-ink">{`${baseUrl}/api/v1`}</code>
         <a
           href="/api/v1/openapi.json"
           target="_blank"

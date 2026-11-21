@@ -91,7 +91,8 @@ export function AuditSection() {
                 </summary>
                 <div className="mt-2 grid gap-2 md:grid-cols-2">
                   {(['before', 'after'] as const).map((side) => (
-                    <div key={side}>
+                    // min-w-0: a long JSON line scrolls inside its box instead of widening the page.
+                    <div key={side} className="min-w-0">
                       <div className="text-xs text-ink-faint">{t(`admin.audit.${side}`)}</div>
                       <pre className="overflow-x-auto rounded-md bg-hover p-2 text-xs text-ink">
                         {entry[side] === null ? '—' : JSON.stringify(entry[side], null, 2)}

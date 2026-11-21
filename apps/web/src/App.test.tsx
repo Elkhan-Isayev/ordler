@@ -34,6 +34,30 @@ describe('App', () => {
     expect(onSignOut).toHaveBeenCalledOnce();
   });
 
+  it('on phones opens the sidebar as a drawer that closes on navigation and Escape', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('max-width'),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    navigate('/');
+    await renderWithI18n(<App me={ME} onSignOut={vi.fn()} />);
+    // Phones start with the page, not the menu.
+    expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('link', { name: 'My issues' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument();
+    navigate('/');
+  });
+
   it('opens admin sections whose id is camelCase', async () => {
     navigate('/admin/requestTypes');
     const me: MeResponse = {

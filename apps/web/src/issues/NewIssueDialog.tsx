@@ -133,7 +133,7 @@ export function NewIssueDialog({
         onSubmit={submit}
         className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-xl border border-line bg-card shadow-2xl"
       >
-        <header className="flex items-center gap-2 px-5 pt-4 text-xs text-ink-faint">
+        <header className="flex flex-wrap items-center gap-2 gap-y-2 px-5 pt-4 text-xs text-ink-faint">
           <span className="rounded bg-hover px-1.5 py-0.5 font-mono text-ink-muted">
             {team.key}
           </span>

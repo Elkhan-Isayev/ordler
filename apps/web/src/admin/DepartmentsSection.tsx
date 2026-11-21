@@ -72,7 +72,7 @@ export function DepartmentsSection() {
           maxLength={120}
           aria-label={t('admin.departments.name')}
           placeholder={t('admin.departments.newDepartment')}
-          className={`${inputClass} flex-1`}
+          className={`${inputClass} min-w-0 flex-1`}
         />
         <button type="submit" className={buttonClass}>
           {t('admin.departments.create')}
@@ -265,8 +265,11 @@ function DepartmentCard({
       ) : (
         <ul className="flex flex-col divide-y divide-line">
           {department.teams.map((team) => (
-            <li key={team.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-              <span className="flex items-center gap-2">
+            <li
+              key={team.id}
+              className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+            >
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="rounded bg-hover px-1.5 py-0.5 font-mono text-xs text-ink-muted">
                   {team.key}
                 </span>
@@ -284,7 +287,7 @@ function DepartmentCard({
                   <span className="text-xs text-ink-faint">{t('admin.departments.archived')}</span>
                 )}
               </span>
-              <span className="flex items-center gap-2">
+              <span className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-ink-faint">
                   {t('admin.departments.memberCount', { count: team.memberCount })}
                 </span>

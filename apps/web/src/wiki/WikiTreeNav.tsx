@@ -92,7 +92,8 @@ export function WikiTreeNav({
   return (
     <nav
       aria-label={t('wiki.tree', { name: tree.space.department.name })}
-      className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r border-line p-3"
+      // Phones get the page list in the space page itself; a fixed side tree would squeeze it.
+      className="hidden w-64 shrink-0 flex-col gap-2 overflow-y-auto border-r border-line p-3 md:flex"
     >
       <Link
         href={`/wiki/${tree.space.department.id}`}

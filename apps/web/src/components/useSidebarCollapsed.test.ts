@@ -1,6 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SIDEBAR_COLLAPSED_KEY, useSidebarCollapsed } from './useSidebarCollapsed.js';
+import {
+  SIDEBAR_COLLAPSED_KEY,
+  useNarrowScreen,
+  useSidebarCollapsed,
+} from './useSidebarCollapsed.js';
 
 function press(init: KeyboardEventInit, target: EventTarget = window) {
   act(() => {
@@ -59,11 +63,34 @@ describe('useSidebarCollapsed', () => {
     input.remove();
   });
 
-  it('starts collapsed on a narrow screen when nothing is remembered', () => {
+  it('on phones starts closed and never remembers opening the drawer', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('max-width') }));
-    expect(renderHook(() => useSidebarCollapsed()).result.current[0]).toBe(true);
+    // Even a desktop choice to keep it open does not cover the page on a phone.
     window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, 'false');
-    expect(renderHook(() => useSidebarCollapsed()).result.current[0]).toBe(false);
+    const phone = renderHook(() => useSidebarCollapsed());
+    expect(phone.result.current[0]).toBe(true);
+
+    act(() => phone.result.current[1]());
+    expect(phone.result.current[0]).toBe(false);
+    expect(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY)).toBe('false');
+    act(() => phone.result.current[2]());
+    expect(phone.result.current[0]).toBe(true);
+    expect(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY)).toBe('false');
+  });
+
+  it('reports phone-sized screens and follows changes', () => {
+    let listener: (() => void) | undefined;
+    const query = {
+      matches: true,
+      addEventListener: (_: string, fn: () => void) => (listener = fn),
+      removeEventListener: () => {},
+    };
+    vi.stubGlobal('matchMedia', () => query);
+    const narrow = renderHook(() => useNarrowScreen());
+    expect(narrow.result.current).toBe(true);
+    query.matches = false;
+    act(() => listener?.());
+    expect(narrow.result.current).toBe(false);
   });
 
   it('still works when storage is blocked', () => {

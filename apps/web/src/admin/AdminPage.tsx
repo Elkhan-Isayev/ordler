@@ -48,15 +48,21 @@ export function AdminPage({ me, section }: { me: MeResponse; section: string | u
   const active = section && allowed.includes(section) ? section : allowed[0]!;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6 md:flex-row">
-      <nav aria-label={t('admin.title')} className="flex shrink-0 flex-col gap-1 md:w-52">
-        <h1 className="px-2 pb-2 text-base font-semibold text-ink">{t('admin.title')}</h1>
+    <div className="flex flex-1 flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
+      {/* Phones: one scrolling row of sections above the page, not a long list before it. */}
+      <nav
+        aria-label={t('admin.title')}
+        className="-mx-4 flex shrink-0 gap-1 overflow-x-auto px-4 md:mx-0 md:w-52 md:flex-col md:overflow-visible md:px-0"
+      >
+        <h1 className="hidden px-2 pb-2 text-base font-semibold text-ink md:block">
+          {t('admin.title')}
+        </h1>
         {allowed.map((id) => (
           <Link
             key={id}
             href={`/admin/${id}`}
             aria-current={id === active ? 'page' : undefined}
-            className={`rounded-md px-2 py-1.5 text-sm ${
+            className={`shrink-0 rounded-md px-2 py-1.5 text-sm whitespace-nowrap ${
               id === active ? 'bg-hover text-ink' : 'text-ink-muted hover:bg-hover hover:text-ink'
             }`}
           >

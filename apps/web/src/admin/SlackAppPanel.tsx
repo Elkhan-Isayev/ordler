@@ -168,12 +168,12 @@ export function SlackAppPanel() {
 
         <dl className="grid gap-1 text-xs text-ink-muted">
           <dt>{t('admin.slackApp.redirectUrl')}</dt>
-          <dd className="font-mono text-ink">{view.urls.redirect}</dd>
+          <dd className="font-mono break-all text-ink">{view.urls.redirect}</dd>
           {mode === 'http' && (
             <>
               <dt>{t('admin.slackApp.requestUrl')}</dt>
-              <dd className="font-mono text-ink">{view.urls.events}</dd>
-              <dd className="font-mono text-ink">{view.urls.interactivity}</dd>
+              <dd className="font-mono break-all text-ink">{view.urls.events}</dd>
+              <dd className="font-mono break-all text-ink">{view.urls.interactivity}</dd>
             </>
           )}
         </dl>

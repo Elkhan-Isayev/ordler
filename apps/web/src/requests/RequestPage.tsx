@@ -180,7 +180,7 @@ export function RequestPage({ identifier }: { identifier: string }) {
                           : 'border-line'
                       }`}
                     >
-                      <header className="flex items-center gap-2 text-xs text-ink-faint">
+                      <header className="flex flex-wrap items-center gap-2 gap-y-2 text-xs text-ink-faint">
                         <Avatar member={entry.comment.author} />
                         <span className="font-medium text-ink">
                           {entry.comment.author?.name ?? t('issues.someone')}

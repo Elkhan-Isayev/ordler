@@ -35,7 +35,7 @@ export function CommentItem({
       aria-label={t('comments.by', { author })}
       className="flex flex-col gap-2 rounded-lg border border-line p-3"
     >
-      <header className="flex items-center gap-2 text-xs text-ink-faint">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 text-xs text-ink-faint">
         <Avatar member={comment.author} />
         <span className="font-medium text-ink">{author}</span>
         <span>{formatWhen(comment.createdAt, i18n.language)}</span>

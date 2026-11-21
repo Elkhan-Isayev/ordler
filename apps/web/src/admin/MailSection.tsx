@@ -216,7 +216,7 @@ function TestMail({ defaultRecipient }: { defaultRecipient: string }) {
       >
         <h3 className="font-semibold text-ink">{t('admin.mail.test')}</h3>
         <div className="flex flex-wrap items-end gap-2">
-          <label className={`${labelClass} min-w-56 flex-1`}>
+          <label className={`${labelClass} min-w-0 basis-full sm:basis-56 flex-1`}>
             {t('admin.mail.testRecipient')}
             <input
               name="to"

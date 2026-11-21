@@ -56,7 +56,7 @@ export function InitiativesPage({ canCreate }: { canCreate: boolean }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+      <header className="flex flex-wrap items-center gap-3 gap-y-2 border-b border-line px-4 py-3">
         <h1 className="text-sm font-semibold text-ink">{t('nav.initiatives')}</h1>
         {canCreate && (
           <button
@@ -171,7 +171,7 @@ export function InitiativePage({ initiativeId }: { initiativeId: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <header className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
         <Link href="/initiatives" className="hover:text-ink">
           {t('nav.initiatives')}
         </Link>
@@ -255,7 +255,7 @@ export function InitiativePage({ initiativeId }: { initiativeId: string }) {
             {t('projects.healthLabel')}
             <HealthBadge health={item.health} />
           </div>
-          <div className="flex min-w-48 flex-1 flex-col gap-1 text-xs text-ink-faint">
+          <div className="flex min-w-0 basis-full sm:basis-48 flex-1 flex-col gap-1 text-xs text-ink-faint">
             {t('projects.progress')}
             <ProgressBar progress={item.progress} />
           </div>

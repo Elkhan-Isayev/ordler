@@ -72,7 +72,7 @@ export function TriagePage({ teamKey }: { teamKey: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+      <header className="flex flex-wrap items-center gap-3 gap-y-2 border-b border-line px-4 py-3">
         <h1 className="text-sm font-semibold text-ink">
           <span className="text-ink-faint">{team.name} / </span>
           {t('nav.triage')}
@@ -168,7 +168,7 @@ function TriageItem({
               maxLength={2000}
               aria-label={t('triage.reason')}
               placeholder={t('triage.reason')}
-              className={`${inputClass} min-w-64 flex-1`}
+              className={`${inputClass} min-w-0 basis-full sm:basis-64 flex-1`}
             />
             <button
               type="button"

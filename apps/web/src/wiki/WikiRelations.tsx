@@ -80,7 +80,7 @@ export function WikiRelations({
       aria-label={t('wiki.relations.title')}
       className="flex flex-col gap-3 border-t border-line pt-4"
     >
-      <header className="flex items-center gap-2">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2">
         <h2 className="text-sm font-semibold text-ink">{t('wiki.relations.title')}</h2>
         <Link
           href={`/wiki/map/${departmentId}`}
@@ -165,7 +165,7 @@ export function WikiRelations({
             placeholder={t(`wiki.relations.placeholder.${kind}`)}
             list={kind === 'wiki_page' ? 'wiki-relation-titles' : undefined}
             maxLength={200}
-            className={`${inputClass} min-w-48 flex-1`}
+            className={`${inputClass} min-w-0 basis-full sm:basis-48 flex-1`}
           />
           <datalist id="wiki-relation-titles">
             {titles.map((title) => (

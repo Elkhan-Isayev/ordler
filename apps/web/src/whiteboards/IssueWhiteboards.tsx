@@ -115,7 +115,7 @@ export function IssueWhiteboards({
           aria-label={board.title}
           className="overflow-hidden rounded-xl border border-line bg-card shadow-card"
         >
-          <header className="flex items-center gap-2 border-b border-line px-3 py-2 text-sm">
+          <header className="flex flex-wrap items-center gap-2 gap-y-2 border-b border-line px-3 py-2 text-sm">
             <span className="truncate font-medium text-ink">{board.title}</span>
             <span className="text-xs text-ink-faint">{board.team.key}</span>
             <Link

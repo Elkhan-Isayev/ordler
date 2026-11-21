@@ -1,10 +1,11 @@
+import { useEffect } from 'react';
 import type { MeResponse } from '@ordler/shared';
 import { useTranslation } from 'react-i18next';
 import { AdminPage, adminSections } from './admin/AdminPage.js';
 import { CommandPalette, useCommandPalette } from './components/CommandPalette.js';
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
-import { useSidebarCollapsed } from './components/useSidebarCollapsed.js';
+import { useNarrowScreen, useSidebarCollapsed } from './components/useSidebarCollapsed.js';
 import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
@@ -73,10 +74,24 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
   const counts = useInboxCounts(me.member.id);
   const [searching, setSearching] = useCommandPalette();
-  const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
+  const [sidebarCollapsed, toggleSidebar, closeSidebar] = useSidebarCollapsed();
+  const narrow = useNarrowScreen();
+  // On phones the sidebar is a drawer: following a link or turning to phone size closes it.
+  useEffect(() => {
+    if (narrow) closeSidebar();
+  }, [path, narrow, closeSidebar]);
+  useEffect(() => {
+    if (!narrow || sidebarCollapsed) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeSidebar();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [narrow, sidebarCollapsed, closeSidebar]);
 
   return (
-    <div className="flex h-screen">
+    // dvh: on phones the browser bars come and go, and 100vh would hide the bottom of the page.
+    <div className="flex h-dvh">
       {searching && <CommandPalette onClose={() => setSearching(false)} />}
       <Sidebar
         workspaceName={me.workspace.companyName}
@@ -88,6 +103,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
         currentPath={path}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={toggleSidebar}
+        overlay={narrow}
         footer={
           <div className="flex items-center justify-between gap-2 px-2">
             <Link
@@ -107,7 +123,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           </div>
         }
       />
-      <div className="flex flex-1 flex-col overflow-y-auto">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <UpdateBanner isAdmin={me.organizationPermissions.includes('org.manage')} />
         {adminSection ? (
           <AdminPage me={me} section={adminSection[1]} />

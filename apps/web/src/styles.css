@@ -42,6 +42,23 @@
   --color-chart-done: #9b5de5;
 }
 
+/*
+ * Phones: a select is as wide as its longest option and would push forms off the screen, so
+ * form controls never exceed their box and the labels around them may shrink.
+ */
+@media (max-width: 639px) {
+  select,
+  input,
+  textarea {
+    max-width: 100%;
+  }
+  label,
+  fieldset {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 body {
   margin: 0;
   background: var(--color-surface);

@@ -130,7 +130,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
   const canEdit = team.can.update;
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
         <Link href={`/teams/${team.key}/board`} className="hover:text-ink">
           {team.name}
         </Link>
@@ -239,7 +239,7 @@ export function IssuePage({ identifier }: { identifier: string }) {
         </main>
         <aside
           aria-label={t('issues.properties')}
-          className="m-3 flex w-auto shrink-0 flex-col gap-4 self-start rounded-xl border border-line bg-card p-4 text-sm shadow-card md:w-72"
+          className="m-3 flex min-w-0 shrink-0 flex-col gap-4 self-stretch rounded-xl border border-line bg-card p-4 text-sm shadow-card md:w-72 md:self-start"
         >
           <Property label={t('issues.status.label')}>
             <StatusIcon category={issue.status.category} />

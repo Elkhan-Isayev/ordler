@@ -51,7 +51,7 @@ export function WikiHome() {
           <Network aria-hidden size={14} />
           {t('wiki.map.title')}
         </Link>
-        <label className="relative ml-auto">
+        <label className="relative w-full sm:ml-auto sm:w-auto">
           <Search
             aria-hidden
             size={14}
@@ -63,7 +63,7 @@ export function WikiHome() {
             onChange={(event) => setQuery(event.target.value)}
             aria-label={t('wiki.search')}
             placeholder={t('wiki.search')}
-            className={`${inputClass} w-64 pl-8`}
+            className={`${inputClass} w-full pl-8 sm:w-64`}
           />
         </label>
       </header>

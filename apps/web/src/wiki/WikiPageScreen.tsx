@@ -132,7 +132,7 @@ export function WikiPageScreen({ id, edit = false }: { id: string; edit?: boolea
             </div>
           )}
         </header>
-        <div className="flex gap-6 p-6">
+        <div className="flex flex-col gap-6 p-4 md:flex-row md:p-6">
           <article className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-4">
             {error && <FormError message={t(error)} />}
             {editing && tree ? (
@@ -210,7 +210,7 @@ export function WikiPageScreen({ id, edit = false }: { id: string; edit?: boolea
           {history && !editing && (
             <aside
               aria-label={t('wiki.history')}
-              className="w-60 shrink-0 border-l border-line pl-4"
+              className="w-full shrink-0 border-t border-line pt-4 md:w-60 md:border-t-0 md:border-l md:pt-0 md:pl-4"
             >
               <ul className="flex flex-col gap-1">
                 {history.map((r) => (

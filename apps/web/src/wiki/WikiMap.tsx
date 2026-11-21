@@ -212,7 +212,7 @@ export function WikiMap({ departmentId }: { departmentId?: string }) {
           />
           {t('wiki.map.linked')}
         </label>
-        <label className="relative ml-auto">
+        <label className="relative w-full sm:ml-auto sm:w-auto">
           <Search
             aria-hidden
             size={14}
@@ -224,7 +224,7 @@ export function WikiMap({ departmentId }: { departmentId?: string }) {
             onChange={(event) => setQuery(event.target.value)}
             aria-label={t('wiki.map.search')}
             placeholder={t('wiki.map.search')}
-            className={`${inputClass} w-56 pl-8`}
+            className={`${inputClass} w-full pl-8 sm:w-56`}
           />
         </label>
       </header>

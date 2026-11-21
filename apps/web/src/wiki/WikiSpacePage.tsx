@@ -203,7 +203,7 @@ export function WikiSpacePage({ departmentId }: { departmentId: string }) {
                 defaultValue={form === 'rename' ? folder?.name : ''}
                 aria-label={t(form === 'page' ? 'wiki.pageTitle' : 'wiki.folderName')}
                 placeholder={t(form === 'page' ? 'wiki.pageTitle' : 'wiki.folderName')}
-                className={`${inputClass} w-72`}
+                className={`${inputClass} w-full sm:w-72`}
               />
               <button type="submit" className={buttonClass}>
                 {t(form === 'rename' ? 'wiki.save' : 'wiki.create')}

@@ -70,7 +70,7 @@ export function InboxPage({ memberId }: { memberId: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+      <header className="flex flex-wrap items-center gap-3 gap-y-2 border-b border-line px-4 py-3">
         <h1 className="text-sm font-semibold text-ink">{t('nav.inbox')}</h1>
         <button
           type="button"

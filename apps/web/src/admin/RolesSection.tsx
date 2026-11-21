@@ -64,7 +64,7 @@ function RoleForm({
           {t('admin.customRoles.permissions')}
         </legend>
         {groups().map(([area, permissions]) => (
-          <div key={area} className="flex flex-col gap-1">
+          <div key={area} className="flex min-w-0 flex-col gap-1">
             {permissions.map((permission) => (
               <label key={permission} className="flex items-center gap-1.5 text-xs text-ink">
                 <input
@@ -72,7 +72,7 @@ function RoleForm({
                   name={`perm:${permission}`}
                   defaultChecked={role?.permissions.includes(permission)}
                 />
-                <code>{permission}</code>
+                <code className="break-all">{permission}</code>
               </label>
             ))}
           </div>

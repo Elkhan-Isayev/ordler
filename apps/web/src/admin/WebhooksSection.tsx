@@ -118,7 +118,7 @@ function EventChecklist({
               }
             />
             {t(`webhooks.event.${event.replace('.', '_')}`)}
-            <code className="text-xs text-ink-faint">{event}</code>
+            <code className="text-xs break-all text-ink-faint">{event}</code>
           </label>
         ))}
       </div>
@@ -167,7 +167,7 @@ function CreateForm({
             {t('webhooks.name')}
             <input name="name" required maxLength={120} className={inputClass} />
           </label>
-          <label className="flex min-w-64 flex-1 flex-col gap-1 text-xs text-ink-muted">
+          <label className="flex min-w-0 basis-full sm:basis-64 flex-1 flex-col gap-1 text-xs text-ink-muted">
             {t('webhooks.url')}
             <input
               name="url"

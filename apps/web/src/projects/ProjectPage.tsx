@@ -59,7 +59,7 @@ export function ProjectPage({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <header className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
         <Link href="/projects" className="hover:text-ink">
           {t('nav.projects')}
         </Link>
@@ -154,7 +154,7 @@ export function ProjectPage({ projectId }: { projectId: string }) {
               {project.teams.map((team) => team.name).join(', ')}
             </span>
           </div>
-          <div className="flex min-w-48 flex-1 flex-col gap-1 text-xs text-ink-faint">
+          <div className="flex min-w-0 basis-full sm:basis-48 flex-1 flex-col gap-1 text-xs text-ink-faint">
             {t('projects.progress')}
             <ProgressBar progress={project.progress} />
           </div>

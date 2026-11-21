@@ -68,7 +68,7 @@ export function CyclesPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-6 py-8">
-      <header className="flex items-center gap-3">
+      <header className="flex flex-wrap items-center gap-3 gap-y-2">
         <h1 className="text-xl font-semibold text-ink">
           {teamKey} · {t('nav.cycles')}
         </h1>
@@ -130,7 +130,7 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
   if (!cycle) return <div className="p-8">{error && <FormError message={t(error)} />}</div>;
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 border-b border-line px-4 py-3 text-sm text-ink-muted">
         <Link href={`/teams/${cycle.team.key}/cycles`} className="hover:text-ink">
           {cycle.team.name} · {t('nav.cycles')}
         </Link>

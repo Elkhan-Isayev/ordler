@@ -3,6 +3,27 @@ import { typingInField } from './CommandPalette.js';
 
 export const SIDEBAR_COLLAPSED_KEY = 'ordler.sidebarCollapsed';
 
+/** Phones and narrow windows, below Tailwind's `md` breakpoint. */
+export const NARROW_SCREEN = '(max-width: 767px)';
+
+function narrowNow(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia(NARROW_SCREEN).matches;
+}
+
+/** Whether the screen is phone-sized, following rotation and window resizes. */
+export function useNarrowScreen(): boolean {
+  const [narrow, setNarrow] = useState(narrowNow);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia(NARROW_SCREEN);
+    const update = () => setNarrow(query.matches);
+    update();
+    query.addEventListener?.('change', update);
+    return () => query.removeEventListener?.('change', update);
+  }, []);
+  return narrow;
+}
+
 /** Without a remembered choice, narrow screens start with the sidebar out of the way. */
 function readCollapsed(): boolean {
   try {
@@ -11,9 +32,7 @@ function readCollapsed(): boolean {
   } catch {
     // Blocked storage: fall through to the screen-width default.
   }
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(max-width: 767px)').matches
-    : false;
+  return narrowNow();
 }
 
 function writeCollapsed(collapsed: boolean): void {
@@ -26,17 +45,20 @@ function writeCollapsed(collapsed: boolean): void {
 
 /**
  * Collapsed state of the left sidebar, remembered per browser. Toggles on "[" outside text
- * fields (as in Linear) and on Cmd/Ctrl+\.
+ * fields (as in Linear) and on Cmd/Ctrl+\. On phones the open sidebar is a drawer over the
+ * page: it starts closed and opening it is not remembered, so a reload never covers the page.
+ * `close` shuts it without remembering, for the drawer closing itself.
  */
-export function useSidebarCollapsed(): [boolean, () => void] {
-  const [collapsed, setCollapsed] = useState(readCollapsed);
+export function useSidebarCollapsed(): [boolean, () => void, () => void] {
+  const [collapsed, setCollapsed] = useState(() => narrowNow() || readCollapsed());
 
   const toggle = useCallback(() => {
     setCollapsed((current) => {
-      writeCollapsed(!current);
+      if (!narrowNow()) writeCollapsed(!current);
       return !current;
     });
   }, []);
+  const close = useCallback(() => setCollapsed(true), []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -60,5 +82,5 @@ export function useSidebarCollapsed(): [boolean, () => void] {
     return () => window.removeEventListener('keydown', onKey);
   }, [toggle]);
 
-  return [collapsed, toggle];
+  return [collapsed, toggle, close];
 }

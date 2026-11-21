@@ -99,7 +99,7 @@ export function MembersSection({ currentMemberId }: { currentMemberId: string })
             required
             aria-label={t('admin.members.email')}
             placeholder={t('admin.members.email')}
-            className={`${inputClass} min-w-48 flex-1`}
+            className={`${inputClass} min-w-0 basis-full sm:basis-48 flex-1`}
           />
           <input
             name="name"

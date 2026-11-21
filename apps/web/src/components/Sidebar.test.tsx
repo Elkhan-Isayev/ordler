@@ -200,6 +200,22 @@ describe('Sidebar administration link', () => {
     expect(onToggleCollapsed).toHaveBeenCalledTimes(2);
   });
 
+  it('opens over the page as a drawer on phones and closes when the page is tapped', async () => {
+    const onToggleCollapsed = vi.fn();
+    await renderSidebar('en', { onToggleCollapsed, overlay: true });
+    const nav = screen.getByRole('navigation', { name: 'Push30' });
+    // Fixed over the page instead of taking the page's width.
+    expect(nav.className).toContain('fixed');
+    await userEvent.click(screen.getByTestId('sidebar-backdrop'));
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays in the page flow on wide screens', async () => {
+    await renderSidebar('en', { onToggleCollapsed: vi.fn() });
+    expect(screen.getByRole('navigation', { name: 'Push30' }).className).not.toContain('fixed');
+    expect(screen.queryByTestId('sidebar-backdrop')).not.toBeInTheDocument();
+  });
+
   it('has no collapse button when the shell cannot collapse it', async () => {
     await renderSidebar('en', { collapsed: true });
     expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();

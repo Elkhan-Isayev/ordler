@@ -43,7 +43,7 @@ function Page({
   const { t } = useTranslation();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+      <header className="flex flex-wrap items-center gap-3 gap-y-2 border-b border-line px-4 py-3">
         <h1 className="text-sm font-semibold text-ink">{title}</h1>
       </header>
       {error && (
@@ -76,7 +76,10 @@ export function RequestTable({
             className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-hover"
           >
             <PriorityIcon priority={request.priority} />
-            <span className="w-20 shrink-0 text-ink-faint">{request.identifier}</span>
+            {/* The narrowest phones keep the title and status; the number is in the page. */}
+            <span className="hidden w-20 shrink-0 text-ink-faint min-[360px]:inline">
+              {request.identifier}
+            </span>
             <span className="min-w-0 flex-1 truncate text-ink">{request.title}</span>
             <span className="hidden text-xs text-ink-faint md:inline">
               {request.department.name} · {request.requestType.name}

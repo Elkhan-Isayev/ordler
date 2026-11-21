@@ -115,7 +115,7 @@ function Column({
       }}
       onDrop={(event) => onDrop(status, undefined, event)}
     >
-      <header className="flex items-center gap-2 px-1 text-sm">
+      <header className="flex flex-wrap items-center gap-2 gap-y-2 px-1 text-sm">
         <StatusIcon category={status.category} />
         <h2 className="font-medium text-ink">{label}</h2>
         <span className="text-ink-faint">{issues.length}</span>

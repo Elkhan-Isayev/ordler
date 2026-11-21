@@ -55,6 +55,11 @@ export interface SidebarProps {
   collapsed?: boolean;
   /** Shows the collapse/expand button when given. */
   onToggleCollapsed?: () => void;
+  /**
+   * Phones: the open sidebar floats over the page as a drawer, with the rail kept in place,
+   * instead of squeezing the page into a strip.
+   */
+  overlay?: boolean;
 }
 
 export const SIDEBAR_ID = 'app-sidebar';
@@ -79,23 +84,26 @@ export function Sidebar({
   onSearch,
   collapsed = false,
   onToggleCollapsed,
+  overlay = false,
 }: SidebarProps) {
   const { t } = useTranslation();
+  const rail = (
+    <div className="flex h-full shrink-0 flex-col items-center border-r border-line bg-sidebar px-1.5 py-4">
+      {collapsed && onToggleCollapsed && <CollapseButton collapsed onToggle={onToggleCollapsed} />}
+    </div>
+  );
 
-  if (collapsed && onToggleCollapsed) {
-    return (
-      <div className="flex h-full shrink-0 flex-col items-center border-r border-line bg-sidebar px-1.5 py-4">
-        <CollapseButton collapsed onToggle={onToggleCollapsed} />
-      </div>
-    );
-  }
+  if (collapsed && onToggleCollapsed) return rail;
 
-  return (
+  const drawer = overlay && onToggleCollapsed !== undefined;
+  const nav = (
     <CurrentPath.Provider value={currentPath}>
       <nav
         id={SIDEBAR_ID}
         aria-label={workspaceName}
-        className="flex h-full w-64 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted"
+        className={`flex h-full w-64 shrink-0 flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-4 text-sm text-ink-muted ${
+          drawer ? 'fixed inset-y-0 left-0 z-40 max-w-[85vw] shadow-2xl' : ''
+        }`}
       >
         <div className="flex items-center gap-2 px-2">
           <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-xs font-semibold text-white">
@@ -184,6 +192,20 @@ export function Sidebar({
         </div>
       </nav>
     </CurrentPath.Provider>
+  );
+  if (!drawer) return nav;
+  return (
+    <>
+      {rail}
+      {/* Tapping the dimmed page closes the drawer; Escape and the button close it too. */}
+      <div
+        aria-hidden
+        data-testid="sidebar-backdrop"
+        className="fixed inset-0 z-30 bg-black/40"
+        onClick={onToggleCollapsed}
+      />
+      {nav}
+    </>
   );
 }
 

@@ -93,7 +93,7 @@ export function SlaSection() {
         {t('sla.department')}
         <select
           value={departmentId}
-          className={`${selectClass} w-64`}
+          className={`${selectClass} w-full sm:w-64`}
           onChange={(e) => setDepartmentId(e.target.value)}
         >
           {departments.map((d) => (
