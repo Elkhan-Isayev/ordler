@@ -1437,6 +1437,67 @@
         "failed": "Xəta",
         "canceled": "Ləğv edilib"
       }
+    },
+    "relations": {
+      "title": "Əlaqələr",
+      "empty": "Hələ əlaqə yoxdur.",
+      "fromText": "mətndə",
+      "remove": "{label} ilə əlaqəni sil",
+      "type": "Əlaqə növü",
+      "kind": "Nə ilə əlaqələndirmək",
+      "target": "Hədəf",
+      "add": "Əlaqə əlavə et",
+      "hint": "Mətndəki keçidlər ([[Səhifə adı]], səhifələrə, tapşırıqlara, sorğulara və lövhələrə keçidlər) burada özü görünür.",
+      "out": {
+        "related": "Əlaqəlidir",
+        "part_of": "Hissəsidir",
+        "depends_on": "Asılıdır",
+        "supersedes": "Əvəz edir",
+        "references": "İstinad edir",
+        "in": "Daxilində"
+      },
+      "in": {
+        "related": "Əlaqəlidir",
+        "part_of": "Ehtiva edir",
+        "depends_on": "Lazımdır",
+        "supersedes": "Əvəz olunub",
+        "references": "İstinad olunur"
+      },
+      "kinds": {
+        "wiki_page": "Viki səhifə",
+        "issue": "Tapşırıq",
+        "request": "Sorğu",
+        "whiteboard": "Lövhə"
+      },
+      "placeholder": {
+        "wiki_page": "Səhifə adı",
+        "issue": "HELP-12",
+        "request": "REQ-3",
+        "whiteboard": "Lövhə id-si"
+      }
+    },
+    "map": {
+      "title": "Xəritə",
+      "open": "Xəritədə aç",
+      "space": "Məkan",
+      "allSpaces": "Bütün məkanlar",
+      "clusters": "Qovluqlar və şöbələr",
+      "linked": "Tapşırıqlar, sorğular, lövhələr",
+      "search": "Xəritədə tap",
+      "empty": "Hələ göstəriləcək səhifə yoxdur.",
+      "zoomIn": "Yaxınlaşdır",
+      "zoomOut": "Uzaqlaşdır",
+      "reset": "Görünüşü sıfırla",
+      "legend": "İzahat",
+      "truncated": "Əlaqəli elementlər çoxdur: bəzi tapşırıq, sorğu və lövhələr göstərilmir.",
+      "kinds": {
+        "department": "Şöbə",
+        "folder": "Qovluq",
+        "wiki_page": "Səhifə",
+        "issue": "Tapşırıq",
+        "request": "Sorğu",
+        "whiteboard": "Lövhə"
+      }
     }
   },
   "appearance": {

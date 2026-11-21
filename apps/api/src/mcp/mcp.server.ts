@@ -58,6 +58,22 @@ function truncate(text: string): string {
 }
 
 /**
+ * Told to every client on connect (ADR 0018): the wiki is the company's memory, so an agent reads
+ * it before a task and writes back what it learned.
+ */
+export const MCP_INSTRUCTIONS =
+  'Ordler: issues inside teams, requests between departments, and the company wiki. You act as ' +
+  'the member who owns the token, with their permissions. Approvals are read-only: humans decide ' +
+  'them in Ordler.\n' +
+  'Before working on an issue or request, read its company context: get_issue or get_request ' +
+  'lists `wikiPages` written about it, and get_wiki_context with `issue` or `request` returns ' +
+  'those pages and their related ones with text. For a question, call get_wiki_context with a ' +
+  '`query` of key words; get_wiki_graph shows the whole map.\n' +
+  'When you learn something others will need, write it back with wiki:write: create_wiki_page or ' +
+  'update_wiki_page with `relations` to the issue, request or pages it concerns, and link pages ' +
+  'with [[Page title]]. Then the next person or agent finds it.';
+
+/**
  * Built-in MCP server (SPEC §10.1, ADR 0009): Streamable HTTP in stateless JSON mode. Every
  * call authenticates with a personal token and runs through the same services, RBAC and
  * validation as the UI; nothing here can decide approvals.
@@ -157,9 +173,7 @@ export class McpServer {
           protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
           capabilities: { tools: { listChanged: false }, resources: { listChanged: false } },
           serverInfo: { name: 'ordler', title: 'Ordler', version: this.version },
-          instructions:
-            'Ordler issues and cross-department requests. You act as the member who owns the token, ' +
-            'with their permissions. Approvals are read-only: humans decide them in Ordler.',
+          instructions: MCP_INSTRUCTIONS,
         };
       }
       case 'ping':

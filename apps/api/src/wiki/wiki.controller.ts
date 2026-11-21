@@ -18,6 +18,7 @@ import {
   wikiImportStartSchema,
   wikiPageCreateSchema,
   wikiPageUpdateSchema,
+  wikiRelationCreateSchema,
   wikiSpaceUpdateSchema,
 } from '@ordler/shared';
 import type { FastifyRequest } from 'fastify';
@@ -131,6 +132,31 @@ export class WikiController {
   @HttpCode(204)
   async deletePage(@Param('id') id: string, @Req() request: OrdlerRequest) {
     await this.ctx.wiki.archivePage(request.member!.id, id);
+  }
+
+  @Get('graph')
+  graph(@Query('department') department: string | undefined, @Req() request: OrdlerRequest) {
+    return this.ctx.wikiGraph.graph(request.member!.id, department || undefined);
+  }
+
+  @Get('pages/:id/relations')
+  relations(@Param('id') id: string, @Req() request: OrdlerRequest) {
+    return this.ctx.wikiGraph.relations(request.member!.id, id);
+  }
+
+  @Post('pages/:id/relations')
+  addRelation(@Param('id') id: string, @Body() body: unknown, @Req() request: OrdlerRequest) {
+    return this.ctx.wikiGraph.addRelation(
+      request.member!.id,
+      id,
+      parseBody(wikiRelationCreateSchema, body),
+    );
+  }
+
+  @Delete('relations/:id')
+  @HttpCode(204)
+  async removeRelation(@Param('id') id: string, @Req() request: OrdlerRequest) {
+    await this.ctx.wikiGraph.removeRelation(request.member!.id, id);
   }
 
   @Get('pages/:id/revisions')

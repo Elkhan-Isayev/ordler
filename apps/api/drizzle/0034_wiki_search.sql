@@ -1,0 +1,1 @@
+CREATE INDEX "wiki_pages_search_idx" ON "wiki_pages" USING gin ((setweight(to_tsvector('simple'::regconfig, title), 'A') || setweight(to_tsvector('simple'::regconfig, left(content, 100000)), 'B')));

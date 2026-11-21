@@ -8,6 +8,9 @@ import {
   wikiImportStartSchema,
   wikiPageUpdateSchema,
   wikiPathSelected,
+  wikiLinks,
+  guessWikiTarget,
+  WIKI_LINK_PATTERN,
 } from './wiki.js';
 
 describe('wiki schemas', () => {
@@ -68,5 +71,51 @@ describe('whiteboards embedded in wiki pages', () => {
       { kind: 'whiteboard', id, title: 'A' },
     ]);
     expect(splitWikiContent(embed)).toEqual([{ kind: 'whiteboard', id, title: 'Flow  v2' }]);
+  });
+});
+
+describe('wiki links (ADR 0018)', () => {
+  it('has no bounded {m,n} repeats, which make PostgreSQL extract links ten times slower', () => {
+    expect(WIKI_LINK_PATTERN).not.toMatch(/\{\d+,\d*\}/);
+  });
+
+  it('still reads long [[titles]] and aliases', () => {
+    const title = 'x'.repeat(250);
+    expect(wikiLinks(`[[${title}|alias]]`)).toEqual([
+      { kind: 'wiki_page', ref: title, byTitle: true },
+    ]);
+  });
+
+  const page = '0190a0b0-0000-7000-8000-000000000001';
+  const board = '0190a0b0-0000-7000-8000-000000000002';
+
+  it('finds every kind of link once, in reading order', () => {
+    const content = [
+      `See [[Onboarding]] and [[VPN setup|the VPN guide]], then [setup](/wiki/page/${page}).`,
+      `Tracked in [HELP-12](/issue/help-12) and [REQ-3](https://ordler.test/requests/req-3).`,
+      '',
+      `[Network](/whiteboards/${board})`,
+      '',
+      `Again: [[onboarding]] and /wiki/page/${page}.`,
+    ].join('\n');
+    expect(wikiLinks(content)).toEqual([
+      { kind: 'wiki_page', ref: 'Onboarding', byTitle: true },
+      { kind: 'wiki_page', ref: 'VPN setup', byTitle: true },
+      { kind: 'wiki_page', ref: page },
+      { kind: 'issue', ref: 'HELP-12' },
+      { kind: 'request', ref: 'REQ-3' },
+      { kind: 'whiteboard', ref: board },
+    ]);
+  });
+
+  it('ignores empty or unterminated wikilinks', () => {
+    expect(wikiLinks('[[]] and [[open and /wiki/page/not-a-uuid')).toEqual([]);
+  });
+
+  it('guesses what a bare reference names', () => {
+    expect(guessWikiTarget('REQ-3')).toBe('request');
+    expect(guessWikiTarget('help-12')).toBe('issue');
+    expect(guessWikiTarget(page)).toBe('wiki_page');
+    expect(guessWikiTarget('Onboarding')).toBe('wiki_page');
   });
 });

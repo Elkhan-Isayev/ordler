@@ -1,6 +1,9 @@
 import {
   PRIORITIES,
   WIKI_MAX_CONTENT,
+  WIKI_RELATION_TARGETS,
+  WIKI_RELATION_TYPES,
+  type WikiRelationView,
   wikiWhiteboardEmbed,
   wikiWhiteboards,
   type WikiFolder,
@@ -124,11 +127,29 @@ export function requestFull(ctx: AppContext, request: RequestView) {
 }
 
 /** An issue as agents read it, with the whiteboards attached to it. */
+/** Wiki pages written about a task, so an agent starts with the documentation around it. */
+async function wikiPagesAbout(
+  ctx: AppContext,
+  caller: McpCaller,
+  kind: 'issue' | 'request',
+  identifier: string,
+) {
+  const pages = await ctx.wikiGraph.pagesAbout(caller.memberId, kind, identifier).catch(() => []);
+  return pages.map((p) => ({
+    id: p.id,
+    title: p.title,
+    department: p.department.name,
+    resource: `ordler://wiki/${p.id}`,
+    url: link(ctx, `/wiki/page/${p.id}`),
+  }));
+}
+
 export async function issueWithBoards(ctx: AppContext, caller: McpCaller, identifier: string) {
   const issue = issueFull(ctx, await ctx.issues.get(caller.memberId, identifier));
   const boards = await ctx.whiteboards.forIssue(caller.memberId, identifier);
   return {
     ...issue,
+    wikiPages: await wikiPagesAbout(ctx, caller, 'issue', issue.identifier),
     whiteboards: boards.map((b) => ({
       id: b.id,
       title: b.title,
@@ -225,8 +246,60 @@ export async function wikiPageFull(ctx: AppContext, caller: McpCaller, id: strin
       id: boardId,
       resource: `ordler://whiteboard/${boardId}`,
     })),
+    relations: (await ctx.wikiGraph.relations(caller.memberId, page.id)).map(relationBrief),
     url: link(ctx, `/wiki/page/${page.id}`),
   };
+}
+
+/** A relation as agents read it: which way, what type, and what it points at. */
+function relationBrief(r: WikiRelationView) {
+  return {
+    id: r.id,
+    direction: r.direction,
+    type: r.type,
+    origin: r.origin,
+    kind: r.node.kind,
+    ref: r.node.ref,
+    label: r.node.label,
+    ...(r.note ? { note: r.note } : {}),
+  };
+}
+
+const relationInput = z.object({
+  target: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .describe(
+      'Wiki page id or exact title, issue number (HELP-12), request number (REQ-3) or whiteboard id',
+    ),
+  targetKind: z
+    .enum(WIKI_RELATION_TARGETS)
+    .optional()
+    .describe('Guessed from `target` when omitted'),
+  type: z.enum(WIKI_RELATION_TYPES).default('related'),
+  note: z.string().trim().max(500).optional(),
+});
+type RelationInput = z.infer<typeof relationInput>;
+
+/** Adds relations one by one; the ones that cannot be resolved are reported, not fatal. */
+async function addRelations(
+  ctx: AppContext,
+  caller: McpCaller,
+  pageId: string,
+  relations: readonly RelationInput[],
+): Promise<string[]> {
+  const failed: string[] = [];
+  for (const relation of relations) {
+    try {
+      await ctx.wikiGraph.addRelation(caller.memberId, pageId, relation, caller.tokenName);
+    } catch (error) {
+      if (!(error instanceof DomainError)) throw error;
+      failed.push(relation.target);
+    }
+  }
+  return failed;
 }
 
 const diagramInput = {
@@ -380,7 +453,8 @@ const tools: ToolDefinition[] = [
   },
   {
     name: 'get_issue',
-    description: 'One issue with description and latest comments, e.g. HELP-142.',
+    description:
+      'One issue with description, latest comments, linked whiteboards and `wikiPages`: the wiki pages written about it. Read those (get_wiki_context with `issue`) before working on it.',
     scope: 'read',
     input: z.object({ identifier: identifierSchema }),
     async run(ctx, caller, args: { identifier: string }) {
@@ -654,11 +728,16 @@ const tools: ToolDefinition[] = [
   },
   {
     name: 'get_request',
-    description: 'One request with form answers, approval progress and comments, e.g. REQ-57.',
+    description:
+      'One request with form answers, approval progress, comments and `wikiPages`: the wiki pages written about it, e.g. REQ-57.',
     scope: 'read',
     input: z.object({ identifier: identifierSchema }),
     async run(ctx, caller, args: { identifier: string }) {
-      return requestFull(ctx, await ctx.requests.get(caller.memberId, args.identifier));
+      const request = requestFull(ctx, await ctx.requests.get(caller.memberId, args.identifier));
+      return {
+        ...request,
+        wikiPages: await wikiPagesAbout(ctx, caller, 'request', request.identifier),
+      };
     },
   },
   {
@@ -844,7 +923,7 @@ const tools: ToolDefinition[] = [
   {
     name: 'search_wiki',
     description:
-      'Find wiki pages whose title or text contains the words, across every readable department or one.',
+      'Find wiki pages across every readable department or one: pages with the exact phrase first, then pages with any of its words, best first.',
     scope: 'read',
     input: z.object({
       query: z.string().trim().min(2).max(200),
@@ -855,8 +934,11 @@ const tools: ToolDefinition[] = [
       const department = args.department
         ? await wikiDepartment(ctx, caller, args.department)
         : undefined;
-      const hits = await ctx.wiki.search(caller.memberId, args.query, department);
-      return hits.slice(0, args.limit).map((h) => ({
+      const hits = await ctx.wiki.searchForAgents(caller.memberId, args.query, {
+        departmentId: department,
+        limit: args.limit,
+      });
+      return hits.map((h) => ({
         id: h.id,
         title: h.title,
         department: h.department.name,
@@ -885,11 +967,22 @@ const tools: ToolDefinition[] = [
       folder: z.string().trim().max(1000).optional(),
       title: z.string().trim().min(1).max(200),
       content: z.string().max(WIKI_MAX_CONTENT).default(''),
+      relations: z
+        .array(relationInput)
+        .max(50)
+        .default([])
+        .describe('Typed relations to other pages, issues, requests or boards'),
     }),
     async run(
       ctx,
       caller,
-      args: { department: string; folder?: string; title: string; content: string },
+      args: {
+        department: string;
+        folder?: string;
+        title: string;
+        content: string;
+        relations: RelationInput[];
+      },
     ) {
       const department = await wikiDepartment(ctx, caller, args.department);
       const folderId = args.folder
@@ -906,7 +999,11 @@ const tools: ToolDefinition[] = [
         { department, folderId, title: args.title, content: args.content },
         caller.tokenName,
       );
-      return wikiPageFull(ctx, caller, page.id);
+      const unresolved = await addRelations(ctx, caller, page.id, args.relations);
+      return {
+        ...(await wikiPageFull(ctx, caller, page.id)),
+        ...(unresolved.length > 0 ? { unresolvedRelations: unresolved } : {}),
+      };
     },
   },
   {
@@ -920,11 +1017,23 @@ const tools: ToolDefinition[] = [
       content: z.string().max(WIKI_MAX_CONTENT).optional(),
       folder: z.string().trim().max(1000).optional().describe('Folder path; "" for the root'),
       baseVersion: z.number().int().min(1).optional(),
+      relations: z
+        .array(relationInput)
+        .max(50)
+        .default([])
+        .describe('Relations to add; existing ones stay (remove with remove_wiki_relation)'),
     }),
     async run(
       ctx,
       caller,
-      args: { id: string; title?: string; content?: string; folder?: string; baseVersion?: number },
+      args: {
+        id: string;
+        title?: string;
+        content?: string;
+        folder?: string;
+        baseVersion?: number;
+        relations: RelationInput[];
+      },
     ) {
       const current = await ctx.wiki.page(caller.memberId, args.id);
       const folderId =
@@ -937,18 +1046,139 @@ const tools: ToolDefinition[] = [
               true,
               caller.tokenName,
             );
-      await ctx.wiki.updatePage(
-        caller.memberId,
-        args.id,
-        {
-          ...(args.title !== undefined ? { title: args.title } : {}),
-          ...(args.content !== undefined ? { content: args.content } : {}),
-          ...(folderId !== undefined ? { folderId } : {}),
-          ...(args.baseVersion !== undefined ? { baseVersion: args.baseVersion } : {}),
-        },
-        caller.tokenName,
-      );
-      return wikiPageFull(ctx, caller, args.id);
+      const changed =
+        args.title !== undefined || args.content !== undefined || folderId !== undefined;
+      if (changed) {
+        await ctx.wiki.updatePage(
+          caller.memberId,
+          args.id,
+          {
+            ...(args.title !== undefined ? { title: args.title } : {}),
+            ...(args.content !== undefined ? { content: args.content } : {}),
+            ...(folderId !== undefined ? { folderId } : {}),
+            ...(args.baseVersion !== undefined ? { baseVersion: args.baseVersion } : {}),
+          },
+          caller.tokenName,
+        );
+      } else if (args.relations.length === 0) {
+        throw new DomainError('validation_failed');
+      }
+      const unresolved = await addRelations(ctx, caller, args.id, args.relations);
+      return {
+        ...(await wikiPageFull(ctx, caller, args.id)),
+        ...(unresolved.length > 0 ? { unresolvedRelations: unresolved } : {}),
+      };
+    },
+  },
+  {
+    name: 'list_wiki_relations',
+    description:
+      'Relations of a wiki page in both directions: typed relations people or agents added, and links written in page text ([[Title]], page, issue, request and board links).',
+    scope: 'read',
+    input: z.object({ page: z.uuid() }),
+    async run(ctx, caller, args: { page: string }) {
+      return (await ctx.wikiGraph.relations(caller.memberId, args.page)).map(relationBrief);
+    },
+  },
+  {
+    name: 'add_wiki_relation',
+    description:
+      'Relate a wiki page to another page, an issue, a request or a whiteboard. Types: related, part_of, depends_on, supersedes, references. Adding an existing relation changes nothing.',
+    scope: 'wiki:write',
+    input: relationInput.extend({ page: z.uuid() }),
+    async run(ctx, caller, args: RelationInput & { page: string }) {
+      const { page, ...relation } = args;
+      return (
+        await ctx.wikiGraph.addRelation(caller.memberId, page, relation, caller.tokenName)
+      ).map(relationBrief);
+    },
+  },
+  {
+    name: 'remove_wiki_relation',
+    description:
+      'Remove a stored relation by its id (from list_wiki_relations). Links written in page text are removed by editing the text.',
+    scope: 'wiki:write',
+    input: z.object({ id: z.uuid() }),
+    async run(ctx, caller, args: { id: string }) {
+      await ctx.wikiGraph.removeRelation(caller.memberId, args.id, caller.tokenName);
+      return { removed: args.id };
+    },
+  },
+  {
+    name: 'get_wiki_graph',
+    description:
+      "The company knowledge map: every readable wiki page, its folder and department, and how pages relate to each other and to issues, requests and whiteboards. No page text: use get_wiki_context or get_wiki_page for that. Edges are [source, type, target]; type 'in' places a page or folder in a folder or department.",
+    scope: 'read',
+    input: z.object({ department: departmentRef.optional() }),
+    async run(ctx, caller, args: { department?: string }) {
+      const department = args.department
+        ? await wikiDepartment(ctx, caller, args.department)
+        : undefined;
+      const graph = await ctx.wikiGraph.graph(caller.memberId, department);
+      return {
+        nodes: graph.nodes.map((n) => ({ id: n.id, kind: n.kind, label: n.label })),
+        edges: graph.edges.map((e) => [e.source, e.type, e.target]),
+        truncated: graph.truncated,
+      };
+    },
+  },
+  {
+    name: 'get_wiki_context',
+    description:
+      'Company context in one call. Start from an `issue` (e.g. HELP-12) or `request` (REQ-3) you are working on, from `pages`, or from a `query` of key words (any word matches, best first). Returns those pages plus the pages related to them up to `depth` hops, nearest first, with their Markdown text within `maxChars`, and the issues, requests and boards they point at. Use it before working on a task or answering how the company works.',
+    scope: 'read',
+    input: z
+      .object({
+        query: z.string().trim().min(2).max(200).optional(),
+        pages: z.array(z.uuid()).max(20).optional(),
+        issue: z
+          .string()
+          .trim()
+          .min(3)
+          .max(40)
+          .optional()
+          .describe('Issue identifier, e.g. HELP-12'),
+        request: z
+          .string()
+          .trim()
+          .min(3)
+          .max(40)
+          .optional()
+          .describe('Request identifier, e.g. REQ-3'),
+        depth: z.number().int().min(0).max(3).default(1),
+        limit: z.number().int().min(1).max(50).default(15).describe('Max pages'),
+        maxChars: z.number().int().min(1000).max(200_000).default(60_000),
+      })
+      .refine(
+        (v) =>
+          v.query !== undefined ||
+          (v.pages?.length ?? 0) > 0 ||
+          v.issue !== undefined ||
+          v.request !== undefined,
+        'Give issue, request, pages or query',
+      ),
+    async run(
+      ctx,
+      caller,
+      args: {
+        query?: string;
+        pages?: string[];
+        issue?: string;
+        request?: string;
+        depth: number;
+        limit: number;
+        maxChars: number;
+      },
+    ) {
+      const context = await ctx.wikiGraph.context(caller.memberId, args);
+      return {
+        ...context,
+        pages: context.pages.map((p) => ({
+          ...p,
+          resource: `ordler://wiki/${p.id}`,
+          url: link(ctx, `/wiki/page/${p.id}`),
+        })),
+      };
     },
   },
 ];

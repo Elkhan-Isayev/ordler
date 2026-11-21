@@ -137,6 +137,10 @@ describe('MCP with a personal token (MVP criterion 15)', () => {
       protocolVersion: '2025-06-18',
       serverInfo: { name: 'ordler' },
     });
+    // Agents are told to read the wiki around a task first and to write back what they learn.
+    const { instructions } = init.result as { instructions: string };
+    expect(instructions).toContain('get_wiki_context');
+    expect(instructions).toContain('write it back');
     const initialized = await mcp(token, { jsonrpc: '2.0', method: 'notifications/initialized' });
     expect(initialized.statusCode).toBe(202);
 

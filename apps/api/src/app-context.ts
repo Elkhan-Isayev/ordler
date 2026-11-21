@@ -32,6 +32,7 @@ import { CycleService } from './cycles/cycle.service.js';
 import { ViewService } from './views/view.service.js';
 import { WhiteboardService } from './whiteboards/whiteboard.service.js';
 import { WikiAccess } from './wiki/wiki-access.js';
+import { WikiGraphService } from './wiki/wiki-graph.service.js';
 import { WikiImportService } from './wiki/wiki-import.service.js';
 import { WikiService } from './wiki/wiki.service.js';
 import { ProjectService } from './projects/project.service.js';
@@ -100,6 +101,7 @@ export interface AppContext {
   views: ViewService;
   whiteboards: WhiteboardService;
   wiki: WikiService;
+  wikiGraph: WikiGraphService;
   wikiImports: WikiImportService;
   projects: ProjectService;
   initiatives: InitiativeService;
@@ -358,6 +360,37 @@ export function createAppContext(deps: AppContextDeps): AppContext {
     views: new ViewService(deps.db, teamAccess, now),
     whiteboards,
     wiki,
+    // Issues, requests and boards on the wiki map pass their own module's access checks.
+    wikiGraph: new WikiGraphService({
+      db: deps.db,
+      wiki,
+      targets: {
+        issue: async (memberId, ref) => {
+          const issue = await issues.access(memberId, ref);
+          return { ref: issue.identifier, label: `${issue.identifier} ${issue.title}` };
+        },
+        issues: async (memberId, refs) => {
+          const found = await issues.briefs(memberId, refs);
+          return new Map(
+            [...found].map(([ref, i]) => [ref, i && { ref, label: `${i.identifier} ${i.title}` }]),
+          );
+        },
+        requests: async (memberId, refs) => {
+          const found = await requests.briefs(memberId, refs);
+          return new Map(
+            [...found].map(([ref, r]) => [ref, r && { ref, label: `${r.identifier} ${r.title}` }]),
+          );
+        },
+        request: async (memberId, ref) => {
+          const request = await requests.brief(memberId, ref);
+          return { ref: request.identifier, label: `${request.identifier} ${request.title}` };
+        },
+        whiteboard: async (memberId, ref) => {
+          const board = await whiteboards.get(memberId, ref);
+          return { ref: board.id, label: board.title };
+        },
+      },
+    }),
     wikiImports: new WikiImportService({
       db: deps.db,
       box,

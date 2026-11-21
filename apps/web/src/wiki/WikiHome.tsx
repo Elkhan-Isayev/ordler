@@ -1,5 +1,5 @@
 import type { WikiSearchHit, WikiSpace } from '@ordler/shared';
-import { BookOpen, Globe, Search } from 'lucide-react';
+import { BookOpen, Globe, Network, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { inputClass } from '../admin/common.js';
@@ -44,6 +44,13 @@ export function WikiHome() {
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
         <h1 className="text-sm font-semibold text-ink">{t('nav.wiki')}</h1>
+        <Link
+          href="/wiki/map"
+          className="flex items-center gap-1 text-sm text-accent hover:underline"
+        >
+          <Network aria-hidden size={14} />
+          {t('wiki.map.title')}
+        </Link>
         <label className="relative ml-auto">
           <Search
             aria-hidden

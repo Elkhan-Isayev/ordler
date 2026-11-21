@@ -1,18 +1,21 @@
 import type {
   WhiteboardView,
   WikiImportSourcePage,
+  WikiGraph,
   WikiImportView,
   WikiPageView,
+  WikiRelationView,
   WikiSpace,
   WikiTree,
 } from '@ordler/shared';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockApi } from '../test/api-mock.js';
 import { renderWithI18n } from '../test/render.js';
 import { WikiHome } from './WikiHome.js';
 import { WikiImport } from './WikiImport.js';
+import { WikiMap } from './WikiMap.js';
 import { WikiPageScreen } from './WikiPageScreen.js';
 import { WikiSpacePage } from './WikiSpacePage.js';
 
@@ -321,5 +324,192 @@ describe('WikiImport', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('wiki relations and map (ADR 0018)', () => {
+  const VPN_ID = '0193a000-0000-7000-8000-0000000000a2';
+  const relationsOf = (canRemove: boolean): WikiRelationView[] => [
+    {
+      id: 'r1',
+      type: 'depends_on',
+      direction: 'out',
+      origin: 'manual',
+      node: {
+        kind: 'wiki_page',
+        ref: VPN_ID,
+        label: 'VPN setup',
+        href: `/wiki/page/${VPN_ID}`,
+        department: { id: DEPT, name: 'IT' },
+      },
+      note: null,
+      canRemove,
+    },
+    {
+      id: null,
+      type: 'references',
+      direction: 'in',
+      origin: 'link',
+      node: { kind: 'wiki_page', ref: 'p2', label: 'Onboarding', href: '/wiki/page/p2' },
+      note: null,
+      canRemove: false,
+    },
+  ];
+
+  it('shows relations both ways, links [[titles]] and lets editors add and remove', async () => {
+    const calls = mockApi({
+      [`GET /api/wiki/pages/${PAGE_ID}`]: () => ({
+        json: { ...PAGE, content: 'Needs [[vpn setup]] first.' },
+      }),
+      [`GET /api/wiki/spaces/${DEPT}`]: () => ({ json: TREE }),
+      [`GET /api/wiki/pages/${PAGE_ID}/relations`]: () => ({ json: relationsOf(true) }),
+      [`POST /api/wiki/pages/${PAGE_ID}/relations`]: () => ({
+        status: 201,
+        json: [
+          ...relationsOf(true),
+          {
+            id: 'r2',
+            type: 'related',
+            direction: 'out',
+            origin: 'manual',
+            node: { kind: 'issue', ref: 'HELP-1', label: 'HELP-1 Printer', href: '/issue/HELP-1' },
+            note: null,
+            canRemove: true,
+          },
+        ],
+      }),
+      'DELETE /api/wiki/relations/r1': () => ({ status: 204 }),
+    });
+    await renderWithI18n(<WikiPageScreen id={PAGE_ID} />);
+    const section = await screen.findByRole('region', { name: 'Relations' });
+    expect(await within(section).findByRole('link', { name: 'VPN setup' })).toHaveAttribute(
+      'href',
+      `/wiki/page/${VPN_ID}`,
+    );
+    const list = within(within(section).getByRole('list'));
+    expect(list.getByText('Depends on')).toBeInTheDocument();
+    expect(list.getByText('Linked from')).toBeInTheDocument();
+    expect(list.getByText('in text')).toBeInTheDocument();
+    // The [[title]] in the text became a link to the page it names.
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('link', { name: 'vpn setup' })
+          .some((a) => a.getAttribute('href') === `/wiki/page/${VPN_ID}`),
+      ).toBe(true),
+    );
+
+    await userEvent.selectOptions(within(section).getByLabelText('What to relate'), 'issue');
+    await userEvent.type(within(section).getByLabelText('Target'), 'HELP-1');
+    await userEvent.click(within(section).getByRole('button', { name: 'Add relation' }));
+    expect(
+      await within(section).findByRole('link', { name: 'HELP-1 Printer' }),
+    ).toBeInTheDocument();
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
+      targetKind: 'issue',
+      target: 'HELP-1',
+      type: 'related',
+    });
+
+    await userEvent.click(
+      within(section).getByRole('button', { name: 'Remove relation to VPN setup' }),
+    );
+    await waitFor(() =>
+      expect(within(section).queryByRole('link', { name: 'VPN setup' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('hides the relation form and remove buttons from readers', async () => {
+    mockApi({
+      [`GET /api/wiki/pages/${PAGE_ID}`]: () => ({ json: { ...PAGE, canEdit: false } }),
+      [`GET /api/wiki/spaces/${DEPT}`]: () => ({ json: TREE }),
+      [`GET /api/wiki/pages/${PAGE_ID}/relations`]: () => ({ json: relationsOf(false) }),
+    });
+    await renderWithI18n(<WikiPageScreen id={PAGE_ID} />);
+    const section = await screen.findByRole('region', { name: 'Relations' });
+    await within(section).findByRole('link', { name: 'VPN setup' });
+    expect(
+      within(section).queryByRole('button', { name: /Remove relation/ }),
+    ).not.toBeInTheDocument();
+    expect(within(section).queryByLabelText('Target')).not.toBeInTheDocument();
+  });
+
+  const GRAPH: WikiGraph = {
+    nodes: [
+      {
+        id: `department:${DEPT}`,
+        kind: 'department',
+        label: 'IT',
+        href: `/wiki/${DEPT}`,
+        departmentId: DEPT,
+      },
+      {
+        id: 'folder:f1',
+        kind: 'folder',
+        label: 'Runbooks',
+        href: `/wiki/${DEPT}`,
+        departmentId: DEPT,
+      },
+      {
+        id: `wiki_page:${PAGE_ID}`,
+        kind: 'wiki_page',
+        label: 'Incidents',
+        href: `/wiki/page/${PAGE_ID}`,
+        departmentId: DEPT,
+      },
+      {
+        id: `wiki_page:${VPN_ID}`,
+        kind: 'wiki_page',
+        label: 'VPN setup',
+        href: `/wiki/page/${VPN_ID}`,
+        departmentId: DEPT,
+      },
+      {
+        id: 'issue:HELP-1',
+        kind: 'issue',
+        label: 'HELP-1 Printer',
+        href: '/issue/HELP-1',
+        departmentId: null,
+      },
+    ],
+    edges: [
+      { source: 'folder:f1', target: `department:${DEPT}`, type: 'in' },
+      { source: `wiki_page:${PAGE_ID}`, target: 'folder:f1', type: 'in' },
+      { source: `wiki_page:${VPN_ID}`, target: `department:${DEPT}`, type: 'in' },
+      { source: `wiki_page:${PAGE_ID}`, target: `wiki_page:${VPN_ID}`, type: 'depends_on' },
+      { source: `wiki_page:${PAGE_ID}`, target: 'issue:HELP-1', type: 'references' },
+    ],
+    truncated: false,
+  };
+
+  it('draws the map with clusters and opens a page on click', async () => {
+    mockApi({
+      'GET /api/wiki/graph': () => ({ json: GRAPH }),
+      'GET /api/wiki/spaces': () => ({ json: [SPACE] }),
+    });
+    await renderWithI18n(<WikiMap />);
+    expect(await screen.findByRole('link', { name: 'Department: IT' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Folder: Runbooks' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Issue: HELP-1 Printer' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByLabelText('Issues, requests, boards'));
+    expect(screen.queryByRole('link', { name: 'Issue: HELP-1 Printer' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText('Folders and departments'));
+    expect(screen.queryByRole('link', { name: 'Folder: Runbooks' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('link', { name: 'Page: VPN setup' }));
+    expect(window.location.pathname).toBe(`/wiki/page/${VPN_ID}`);
+  });
+
+  it('narrows the map to one space and says when there is nothing yet', async () => {
+    const calls = mockApi({
+      [`GET /api/wiki/graph?department=${DEPT}`]: () => ({
+        json: { nodes: [GRAPH.nodes[0]], edges: [], truncated: false },
+      }),
+      'GET /api/wiki/spaces': () => ({ json: [SPACE] }),
+    });
+    await renderWithI18n(<WikiMap departmentId={DEPT} />);
+    expect(await screen.findByText('No pages to show yet.')).toBeInTheDocument();
+    expect(calls.some((c) => c.path === `/api/wiki/graph?department=${DEPT}`)).toBe(true);
   });
 });

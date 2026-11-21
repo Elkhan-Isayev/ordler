@@ -25,7 +25,14 @@ import { storeAttachment, type UploadedFile } from '../attachments/attachment.se
 import { writeAudit } from '../audit/audit.js';
 import { DomainError } from '../auth/errors.js';
 import type { Db } from '../db/client.js';
-import { departments, members, wikiFolders, wikiPageRevisions, wikiPages } from '../db/schema.js';
+import {
+  departments,
+  members,
+  WIKI_SEARCH_DOCUMENT,
+  wikiFolders,
+  wikiPageRevisions,
+  wikiPages,
+} from '../db/schema.js';
 import type { WikiAccess, WikiPermissions } from './wiki-access.js';
 
 type DepartmentRow = typeof departments.$inferSelect;
@@ -46,6 +53,30 @@ export interface WikiServiceDeps {
 /** Escapes LIKE wildcards so a search for "100%" means the text "100%". */
 function likePattern(text: string): string {
   return `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+}
+
+/**
+ * Function words of the four UI languages: `simple` search has no stop list, and "the" or "как"
+ * would match every page.
+ */
+const STOP_WORDS = new Set(
+  (
+    'the a an and or of to in on at for with how do does did i my me we our you your is are was ' +
+    'be it its this that what where when why who can from by as about into there here not ' +
+    'как что где когда почему зачем и в во на с со к по о об у для из от до это мне мой моя мои ' +
+    'я мы наш вы ли не а но или же то там тут ' +
+    'der die das ein eine und oder wie was wo wann warum ich mein wir ist sind mit für auf im zu ' +
+    'von den dem des nicht es ' +
+    'və bir bu necə nə harada niyə mən mənim biz bizim siz üçün ilə da də ki yoxsa'
+  ).split(' '),
+);
+
+/** The words of a search: lower-cased letters and digits, no function words, at most twelve. */
+export function wikiSearchWords(query: string): string[] {
+  const words = (query.toLowerCase().match(/[\p{L}\p{N}]{2,}/gu) ?? []).filter(
+    (w) => !STOP_WORDS.has(w),
+  );
+  return [...new Set(words)].slice(0, 12);
 }
 
 export function snippet(content: string, query: string): string {
@@ -453,6 +484,66 @@ export class WikiService {
       };
     });
   }
+  /**
+   * Search for AI agents (ADR 0018): pages with the exact phrase first, then pages with any of its
+   * words (prefixes too), best ranked first, so a question in plain words still finds the pages.
+   */
+  async searchForAgents(
+    memberId: string,
+    query: string,
+    options: { departmentId?: string; limit?: number } = {},
+  ): Promise<WikiSearchHit[]> {
+    const limit = options.limit ?? 20;
+    const exact = await this.search(memberId, query, options.departmentId);
+    const words = wikiSearchWords(query);
+    if (words.length === 0 || exact.length >= limit) return exact.slice(0, limit);
+    const spaces = options.departmentId
+      ? [(await this.readable(memberId, options.departmentId)).department]
+      : await this.readableDepartments(memberId);
+    if (spaces.length === 0) return exact.slice(0, limit);
+    // Words are reduced to letters and digits, so the tsquery syntax cannot be injected.
+    const tsquery = sql`to_tsquery('simple'::regconfig, ${words.map((w) => `${w}:*`).join(' | ')})`;
+    const rows = await this.db
+      .select({
+        id: wikiPages.id,
+        title: wikiPages.title,
+        content: wikiPages.content,
+        departmentId: wikiPages.departmentId,
+        updatedAt: wikiPages.updatedAt,
+      })
+      .from(wikiPages)
+      .where(
+        and(
+          inArray(
+            wikiPages.departmentId,
+            spaces.map((d) => d.id),
+          ),
+          isNull(wikiPages.archivedAt),
+          sql`${WIKI_SEARCH_DOCUMENT} @@ ${tsquery}`,
+        ),
+      )
+      .orderBy(
+        desc(sql`ts_rank_cd(${WIKI_SEARCH_DOCUMENT}, ${tsquery})`),
+        desc(wikiPages.updatedAt),
+      )
+      .limit(limit);
+    const seen = new Set(exact.map((h) => h.id));
+    const ranked = rows
+      .filter((r) => !seen.has(r.id))
+      .map((r) => {
+        const d = spaces.find((s) => s.id === r.departmentId)!;
+        const lower = r.content.toLowerCase();
+        const word = words.find((w) => lower.includes(w)) ?? words[0]!;
+        return {
+          id: r.id,
+          title: r.title,
+          department: { id: d.id, name: d.name },
+          snippet: snippet(r.content, word),
+          updatedAt: r.updatedAt.toISOString(),
+        };
+      });
+    return [...exact, ...ranked].slice(0, limit);
+  }
 
   /**
    * The folder at a path like `Guides/Setup`, for agents that think in paths. Missing folders
@@ -534,9 +625,18 @@ export class WikiService {
   }
 
   private async readableDepartments(memberId: string): Promise<DepartmentRow[]> {
+    return (await this.readableSpaces(memberId)).map((s) => s.department);
+  }
+
+  /** Every space the member can read, with what they may do there; one access load. */
+  async readableSpaces(
+    memberId: string,
+  ): Promise<Array<{ department: DepartmentRow; can: WikiPermissions }>> {
     const rows = await this.db.select().from(departments).where(isNull(departments.archivedAt));
     const permissions = await this.deps.access.forDepartments(memberId, rows);
-    return rows.filter((d) => permissions.get(d.id)!.read);
+    return rows
+      .filter((d) => permissions.get(d.id)!.read)
+      .map((department) => ({ department, can: permissions.get(department.id)! }));
   }
 
   async pageRow(id: string): Promise<PageRow> {

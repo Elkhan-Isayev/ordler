@@ -1,5 +1,5 @@
 import type { WikiTree } from '@ordler/shared';
-import { FileText, Folder, FolderPlus, Pencil, Plus, Trash2 } from 'lucide-react';
+import { FileText, Folder, FolderPlus, Network, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClass, ghostButtonClass, inputClass } from '../admin/common.js';
@@ -112,6 +112,13 @@ export function WikiSpacePage({ departmentId }: { departmentId: string }) {
             ))}
           </nav>
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Link
+              href={`/wiki/map/${space.department.id}`}
+              className={`${ghostButtonClass} flex items-center gap-1`}
+            >
+              <Network aria-hidden size={14} />
+              {t('wiki.map.title')}
+            </Link>
             {space.canEdit && (
               <>
                 <button type="button" className={buttonClass} onClick={() => setForm('page')}>

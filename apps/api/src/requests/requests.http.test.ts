@@ -176,6 +176,28 @@ describe('approvals (MVP criteria 2, 3, 4, 5)', () => {
     ).toBe('active');
   });
 
+  it('sees requests in batches exactly as one by one: requester, approver, agent, nobody', async () => {
+    await submitHeadsets((await hardwareType()).id);
+    const visibility = async (name: string) => {
+      const id = people[name]!.id;
+      const single = await t.ctx.requests.brief(id, 'REQ-1').then(
+        () => true,
+        () => false,
+      );
+      const found = await t.ctx.requests.briefs(id, ['req-1', 'REQ-99', 'nonsense']);
+      // Hidden requests come back as null, unknown ones not at all.
+      expect([...found.keys()]).toEqual(['REQ-1']);
+      const batch = found.get('REQ-1') !== null;
+      expect(batch, name).toBe(single);
+      return batch;
+    };
+    expect(await visibility('agent')).toBe(true); // requester
+    expect(await visibility('csboss')).toBe(true); // approver of the active step
+    expect(await visibility('itlead')).toBe(true); // agent of the receiving team
+    expect(await visibility('accountant')).toBe(false);
+    for (const name of ['finboss', 'itmember']) await visibility(name);
+  });
+
   it('CS supervisor, then Finance supervisor, then IT triage', async () => {
     const type = await hardwareType();
     const request = await submitHeadsets(type.id);
@@ -524,6 +546,15 @@ describe('receiving team (MVP criteria 6)', () => {
     expect(
       (await call('GET', '/api/teams/HELP/requests', people.accountant!.cookie)).statusCode,
     ).toBe(404);
+  });
+
+  it('gives a brief (identifier and title) only to members who may see the request', async () => {
+    await openRequest();
+    await expect(t.ctx.requests.brief(people.agent!.id, 'req-1')).resolves.toEqual({
+      identifier: 'REQ-1',
+      title: 'VPN for Ann',
+    });
+    await expect(t.ctx.requests.brief(people.accountant!.id, 'REQ-1')).rejects.toThrow('not_found');
   });
 
   it('lists my requests', async () => {

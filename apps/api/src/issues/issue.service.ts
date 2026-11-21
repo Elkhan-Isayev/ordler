@@ -649,6 +649,41 @@ export class IssueService {
   }
 
   /** The issue behind an identifier and what the member may do in its team; unreadable = not_found. */
+  /**
+   * Identifier and title of many issues at once, for the wiki map: one query and one access check
+   * per team. Issues the member may not read map to null; imported keys are not looked up here.
+   */
+  async briefs(
+    memberId: string,
+    identifiers: readonly string[],
+  ): Promise<Map<string, { identifier: string; title: string } | null>> {
+    const wanted = identifiers
+      .map((id) => parseIssueIdentifier(id.toUpperCase()))
+      .filter((p) => p !== undefined);
+    const result = new Map<string, { identifier: string; title: string } | null>();
+    if (wanted.length === 0) return result;
+    const rows = await this.db
+      .select({ number: issues.number, title: issues.title, team: teams })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(
+        and(
+          isNull(issues.archivedAt),
+          isNull(teams.archivedAt),
+          or(...wanted.map((p) => and(eq(teams.key, p.teamKey), eq(issues.number, p.number)))),
+        ),
+      );
+    const readable = new Map<string, boolean>();
+    for (const row of rows) {
+      if (!readable.has(row.team.id)) {
+        readable.set(row.team.id, (await this.deps.access.forTeam(memberId, row.team)).read);
+      }
+      const identifier = formatIssueIdentifier(row.team.key, row.number);
+      result.set(identifier, readable.get(row.team.id) ? { identifier, title: row.title } : null);
+    }
+    return result;
+  }
+
   async access(memberId: string, identifier: string) {
     const { issueId, team, can } = await this.readableIssue(memberId, identifier);
     const [row] = await this.db

@@ -336,10 +336,27 @@ A Wiki.js-like knowledge base built into Ordler ([ADR 0017](adr/0017-wiki.md)):
 - **MCP**: `list_wiki_spaces`, `list_wiki_pages`, `search_wiki`, `get_wiki_page` (with the
   embedded boards), `create_wiki_page` (folder paths are created on demand),
   `update_wiki_page` (optional `baseVersion`), `embed_whiteboard_in_wiki`; `create_whiteboard`
-  takes `wikiPage` to draw a diagram straight into a page. Resource `ordler://wiki/{id}`.
+  takes `wikiPage` to draw a diagram straight into a page. Relations: `list_wiki_relations`,
+  `add_wiki_relation`, `remove_wiki_relation`, `relations` on create/update; company context:
+  `get_wiki_graph` (the whole map without text) and `get_wiki_context` (pages about an `issue`
+  or `request`, given `pages` or a `query`, a few relation hops out, with text within a budget);
+  `get_issue` and `get_request` list the `wikiPages` written about the task. Agent search
+  (`search_wiki`, context `query`) puts exact-phrase hits first, then pages with any of the
+  words, ranked by full-text search. Resource `ordler://wiki/{id}`.
   Writes need the `wiki:write` scope.
-- Audit: folder and page creation, moves, deletions, visibility and imports; content edits
-  are in the page history, and also audited when made through a token.
+- **Relations** ([ADR 0018](adr/0018-wiki-relations-and-map.md)): a page relates to other
+  pages, issues, requests and whiteboards. Typed relations (`related`, `part_of`,
+  `depends_on`, `supersedes`, `references`, optional note) are added in the page's Relations
+  panel or through MCP by members with `wiki.edit`; links in the text (`[[Page title]]`, links
+  to pages, issues, requests and boards) appear there on their own as `references`. The panel
+  shows both directions (backlinks included) and only what the reader may open.
+- **Map**: Workspace → Wiki → Map shows the readable wiki as a graph, like Obsidian's graph
+  view: departments and folders are clusters, pages are sized by connections, linked issues,
+  requests and boards can be shown or hidden; search highlights a node and its neighbours; one
+  space can be opened on its own. Like all diagrams it is drawn light.
+- Audit: folder and page creation, moves, deletions, visibility and imports, relations added
+  and removed; content edits are in the page history, and also audited when made through a
+  token.
 
 ---
 
@@ -714,7 +731,8 @@ access, but self-service: **every member creates tokens for themselves**.
   - `list_whiteboards`, `get_whiteboard`, `create_whiteboard`, `add_to_whiteboard`,
     `attach_whiteboard` (§5.5)
   - `list_wiki_spaces`, `list_wiki_pages`, `search_wiki`, `get_wiki_page`, `create_wiki_page`,
-    `update_wiki_page`, `embed_whiteboard_in_wiki` (§5.6)
+    `update_wiki_page`, `embed_whiteboard_in_wiki`, `list_wiki_relations`,
+    `add_wiki_relation`, `remove_wiki_relation`, `get_wiki_graph`, `get_wiki_context` (§5.6)
 - Resources: `ordler://issue/HELP-142`, `ordler://request/IT-REQ-57`, `ordler://team/HELP`,
   `ordler://whiteboard/<id>`, `ordler://wiki/<id>`,
   so clients can attach items as context.
@@ -957,6 +975,7 @@ wiki_folder(id, department_id, parent_id, name, created_by, created_at)
 wiki_page(id, department_id, folder_id, title, content, version, created_by, updated_by, created_at, updated_at, archived_at)
 wiki_page_revision(page_id, version, title, content, author_id, created_at)   -- append-only
 wiki_import(id, department_id, folder_id, base_url, token_encrypted, status, page_ids, cursor, counts, report)
+wiki_relation(id, page_id, target_kind, target_ref, type, note, created_by, created_at)   -- links in text are not stored
 department.wiki_visibility ∈ {department, organization}; attachment.team_id | attachment.department_id
 audit_log(id, actor_type, actor_id, action, target_type, target_id,
           before JSONB, after JSONB, ip, user_agent, created_at)

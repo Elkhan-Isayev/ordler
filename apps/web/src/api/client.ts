@@ -2,6 +2,9 @@ import type {
   AboutResponse,
   WikiFolder,
   WikiFolderCreate,
+  WikiGraph,
+  WikiRelationCreate,
+  WikiRelationView,
   WikiFolderUpdate,
   WikiImportConnect,
   WikiImportSourcePage,
@@ -509,6 +512,13 @@ export const api = {
   updateWikiPage: (id: string, body: WikiPageUpdate) =>
     apiRequest<WikiPageView>(`/api/wiki/pages/${id}`, { method: 'PATCH', body }),
   deleteWikiPage: (id: string) => apiRequest<void>(`/api/wiki/pages/${id}`, { method: 'DELETE' }),
+  wikiRelations: (id: string) => apiRequest<WikiRelationView[]>(`/api/wiki/pages/${id}/relations`),
+  addWikiRelation: (id: string, body: WikiRelationCreate) =>
+    apiRequest<WikiRelationView[]>(`/api/wiki/pages/${id}/relations`, { method: 'POST', body }),
+  removeWikiRelation: (id: string) =>
+    apiRequest<void>(`/api/wiki/relations/${id}`, { method: 'DELETE' }),
+  wikiGraph: (departmentId?: string) =>
+    apiRequest<WikiGraph>(`/api/wiki/graph${departmentId ? `?department=${departmentId}` : ''}`),
   wikiRevisions: (id: string) => apiRequest<WikiRevision[]>(`/api/wiki/pages/${id}/revisions`),
   wikiRevision: (id: string, version: number) =>
     apiRequest<WikiRevisionView>(`/api/wiki/pages/${id}/revisions/${version}`),

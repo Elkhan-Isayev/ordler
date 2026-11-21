@@ -832,6 +832,97 @@ export class RequestService {
   // Reading
   // -------------------------------------------------------------------------------------------
 
+  /**
+   * `brief` for many requests at once, for the wiki map: the same rule as canSee (requester,
+   * agent or approver) with roles, teams and approval steps loaded once instead of per request.
+   * Requests the member may not see map to null.
+   */
+  async briefs(
+    memberId: string,
+    identifiers: readonly string[],
+  ): Promise<Map<string, { identifier: string; title: string } | null>> {
+    const numbers = [
+      ...new Set(
+        identifiers.map((id) => parseRequestIdentifier(id)).filter((n) => n !== undefined),
+      ),
+    ];
+    const result = new Map<string, { identifier: string; title: string } | null>();
+    if (numbers.length === 0) return result;
+    const rows = await this.db.select().from(requests).where(inArray(requests.number, numbers));
+    if (rows.length === 0) return result;
+
+    const visible = await this.visibleAmong(memberId, rows);
+    for (const row of rows) {
+      const identifier = formatRequestIdentifier(row.number);
+      result.set(identifier, visible.has(row.id) ? { identifier, title: row.title } : null);
+    }
+    return result;
+  }
+
+  /**
+   * Ids of the rows the member may see: canSee's rule (requester, agent or approver) with roles,
+   * teams and approval steps loaded once for all rows instead of once per row.
+   */
+  private async visibleAmong(memberId: string, rows: RequestRow[]): Promise<Set<string>> {
+    if (rows.length === 0) return new Set();
+    const loaded = await this.deps.access.load(memberId);
+    const has = (permission: Permission, scope: Scope) =>
+      can(loaded.assignments, loaded.rolePermissions, permission, scope, loaded.directory);
+    const orgManager = has('org.manage', ORGANIZATION_SCOPE);
+    const teamIds = [...new Set(rows.map((r) => r.targetTeamId))];
+    const teamRows = await this.db.select().from(teams).where(inArray(teams.id, teamIds));
+    const teamRead = new Map<string, boolean>();
+    for (const team of teamRows) {
+      teamRead.set(team.id, (await this.deps.teamAccess.forTeam(memberId, team)).read);
+    }
+    const identities = [memberId, ...(await this.delegatorsOf(memberId))];
+    const groupIds = [...new Set(rows.map((r) => r.groupId).filter((g) => g !== null))];
+    const owners: SQL[] = [
+      inArray(
+        approvalSteps.requestId,
+        rows.map((r) => r.id),
+      ),
+    ];
+    if (groupIds.length > 0) owners.push(inArray(approvalSteps.groupId, groupIds));
+    const steps = await this.db
+      .select({
+        requestId: approvalSteps.requestId,
+        groupId: approvalSteps.groupId,
+        ids: approvalSteps.resolvedApproverIds,
+      })
+      .from(approvalSteps)
+      .where(sql`(${sql.join(owners, sql` or `)})`);
+    const approverOf = new Set<string>();
+    for (const step of steps) {
+      if (!step.ids.some((id) => identities.includes(id))) continue;
+      if (step.requestId) approverOf.add(step.requestId);
+      if (step.groupId) approverOf.add(step.groupId);
+    }
+
+    const result = new Set<string>();
+    for (const row of rows) {
+      const visible =
+        row.requesterId === memberId ||
+        teamRead.get(row.targetTeamId) === true ||
+        has('request.read_department', { type: 'department', id: row.targetDepartmentId }) ||
+        orgManager ||
+        approverOf.has(row.id) ||
+        (row.groupId !== null && approverOf.has(row.groupId));
+      if (visible) result.add(row.id);
+    }
+    return result;
+  }
+
+  /** Identifier and title when the member may see the request, without building the full view. */
+  async brief(
+    memberId: string,
+    identifier: string,
+  ): Promise<{ identifier: string; title: string }> {
+    const row = await this.byIdentifier(identifier);
+    if (!(await this.canSee(memberId, row))) throw new DomainError('not_found');
+    return { identifier: formatRequestIdentifier(row.number), title: row.title };
+  }
+
   async get(memberId: string, identifier: string): Promise<RequestView> {
     const row = await this.byIdentifier(identifier);
     if (!(await this.canSee(memberId, row))) throw new DomainError('not_found');
@@ -868,11 +959,11 @@ export class RequestService {
       )
       .orderBy(sql`case when ${byNumber} then 0 else 1 end`, desc(requests.updatedAt))
       .limit(200);
-    const visible: string[] = [];
-    for (const row of candidates) {
-      if (visible.length >= limit) break;
-      if (await this.canSee(memberId, row)) visible.push(row.id);
-    }
+    const seen = await this.visibleAmong(memberId, candidates);
+    const visible = candidates
+      .filter((row) => seen.has(row.id))
+      .slice(0, limit)
+      .map((row) => row.id);
     if (visible.length === 0) return [];
     const found = await this.summaries(inArray(requests.id, visible), true);
     const order = new Map(visible.map((id, index) => [id, index]));

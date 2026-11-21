@@ -16,6 +16,7 @@ import { ViewsPage } from './issues/ViewsPage.js';
 import { WhiteboardPage } from './whiteboards/WhiteboardPage.js';
 import { WhiteboardsPage } from './whiteboards/WhiteboardsPage.js';
 import { WikiHome } from './wiki/WikiHome.js';
+import { WikiMap } from './wiki/WikiMap.js';
 import { WikiPageScreen } from './wiki/WikiPageScreen.js';
 import { WikiSpacePage } from './wiki/WikiSpacePage.js';
 import { TeamSettingsPage } from './issues/TeamSettingsPage.js';
@@ -65,6 +66,7 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
   const groupPage = /^\/request-groups\/(REQ-G-\d+)\/?$/i.exec(path);
   const whiteboardPage = /^\/whiteboards\/([0-9a-f-]{36})\/?$/.exec(path);
   const wikiSpace = /^\/wiki\/([0-9a-f-]{36})\/?$/.exec(path);
+  const wikiMap = /^\/wiki\/map(?:\/([0-9a-f-]{36}))?\/?$/.exec(path);
   const wikiPage = /^\/wiki\/page\/([0-9a-f-]{36})(\/edit)?\/?$/.exec(path);
   const issuePage = /^\/issue\/([A-Za-z0-9]+-\d+)\/?$/.exec(path);
   const canAdminister = adminSections(me.organizationPermissions).length > 0;
@@ -123,6 +125,11 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <InitiativePage key={initiativePage[1]} initiativeId={initiativePage[1]!} />
         ) : path === '/wiki' ? (
           <WikiHome />
+        ) : wikiMap ? (
+          <WikiMap
+            key={wikiMap[1] ?? 'all'}
+            {...(wikiMap[1] ? { departmentId: wikiMap[1] } : {})}
+          />
         ) : wikiSpace ? (
           <WikiSpacePage key={wikiSpace[1]} departmentId={wikiSpace[1]!} />
         ) : wikiPage ? (

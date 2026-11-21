@@ -377,6 +377,139 @@ database written by a newer one.
 - Logs go to stdout; `LOG_LEVEL=debug` for troubleshooting.
 - Webhook delivery failures are visible in **Administration → Webhooks**.
 
+### Capacity and load test
+
+Measured on 2026-11-21 with one Ordler container limited to **1 CPU and 1 GB of memory**, and
+PostgreSQL 18 in a separate container without limits (Docker Desktop on a 14-core Apple
+laptop). The load came from the scripts in [`scripts/load`](scripts/load) on the same machine.
+
+**Short answer.** With one CPU, Ordler serves:
+
+- about **500 people working at the same time** with room to spare (p95 59 ms, CPU 66%);
+- up to **700** before slowing down (p95 254 ms, CPU 93%). At 800 the CPU is saturated and
+  p95 climbs to 2.5 s.
+
+A "person working" opens a screen every 2.5–7.5 s, writes about one action in eight and keeps a
+realtime WebSocket open. On top of that, **10 000 idle open tabs** held their WebSockets with
+389 MiB of memory and 13% CPU. The test machine, not Ordler, failed beyond that, so higher
+counts are unmeasured.
+
+CPU is the limit, at about 200 API requests per second per core. Memory peaked at 375 MiB in
+every test, so the 1 GB limit was never close. Typically 10–20% of staff use the tool at the
+same moment, so one core suits a company of roughly 2 500–5 000 people; this is an estimate,
+not a measurement. Replicas are stateless: add them, or CPU, to scale.
+
+**Data.** The seed made, through the public API:
+
+- 10 departments, 20 teams and 200 members;
+- 3 000 issues and 1 000 requests with approval steps;
+- 38 projects and 40 whiteboards;
+- 2 000 wiki pages in 60 folders, with about 4 900 links in their text and 1 958 typed
+  relations.
+
+Writes during the runs grew this to 15 000 issues, 7 700 requests and 21 600 comments.
+
+**People working, ramped in stages of 60 s:**
+
+| People | API requests/s | p50 ms | p95 ms | p99 ms | Errors | CPU % | Memory MiB |
+| -----: | -------------: | -----: | -----: | -----: | -----: | ----: | ---------: |
+|    100 |             32 |      7 |     38 |     54 |     0% |    25 |        357 |
+|    300 |             94 |      7 |     38 |     80 |     0% |    47 |        360 |
+|    500 |            157 |      9 |     59 |    115 |     0% |    66 |        360 |
+|    600 |            187 |     14 |     99 |    192 |     0% |    79 |        361 |
+|    700 |            211 |     37 |    254 |    559 |     0% |    93 |        361 |
+|    800 |            208 |    394 |  2 499 |  4 957 |     0% |    99 |        364 |
+
+**Idle open tabs (WebSocket only), with one person working alongside:**
+
+| Open WebSockets | Failed | p95 of `/api/me` ms | CPU % | Memory MiB |
+| --------------: | -----: | ------------------: | ----: | ---------: |
+|           1 000 |      0 |                  13 |     6 |        355 |
+|           5 000 |      0 |                  14 |     7 |        371 |
+|          10 000 |      0 |                  14 |    13 |        389 |
+
+**Every section alone.** In this test, 20 people open the same screen with no pauses for 15 s.
+A screen is all the API calls the web app makes to open it, run in parallel. "Screens/s" is the
+most one CPU serves.
+
+| Section                  | Screen                       |           Screens/s |      p50 ms |        p95 ms |
+| ------------------------ | ---------------------------- | ------------------: | ----------: | ------------: |
+| Inbox                    | inbox, counts, notifications |                 428 |          37 |            94 |
+| My issues                | list                         |                 833 |          18 |            63 |
+| My requests              | list                         |                 554 |          32 |            75 |
+| Approvals                | list                         |                 780 |           8 |            50 |
+| Team issues              | board of a 750-issue team    |                  93 |         222 |           248 |
+| Issue                    | detail and linked boards     |                 353 |          52 |            98 |
+| Triage / Cycles / Views  | team pages                   | 1 369 / 1 854 / 256 | 10 / 8 / 73 | 44 / 30 / 121 |
+| Projects / Project       | list / detail                |            83 / 104 |   247 / 197 |     281 / 233 |
+| Initiatives              | list                         |                  81 |         253 |           282 |
+| Service portals          | portals and a request form   |                 814 |          18 |            68 |
+| Team request queue       | list                         |               1 217 |          12 |            51 |
+| Request                  | detail                       |                 254 |          73 |           127 |
+| Search                   | issues, requests and wiki    |                 104 |         200 |           237 |
+| Directory                | members                      |               2 222 |           7 |            21 |
+| Whiteboards / Whiteboard | list / board and scene       |           256 / 767 |     73 / 19 |      123 / 69 |
+| Wiki home / space        | spaces / page tree           |         1 786 / 669 |      8 / 25 |       32 / 71 |
+| Wiki page                | page and its relations       |                 127 |         157 |           241 |
+| Wiki search              | full text                    |                 626 |          28 |            69 |
+| Wiki map                 | one department (~240 nodes)  |                  64 |         305 |           395 |
+| Wiki map                 | whole company (~2 400 nodes) |                  21 |         942 |         1 218 |
+| Writes                   | new issue / issue comment    |           346 / 339 |     53 / 54 |     100 / 102 |
+| Writes                   | wiki edit / request comment  |           448 / 222 |     35 / 80 |      91 / 150 |
+| Writes                   | new request / approve        |           189 / 753 |      88 / 9 |      256 / 47 |
+
+No request failed in any run.
+
+**Fixed because of this test:**
+
+- The wiki map made about 10 400 SQL queries per call, because it checked each linked issue
+  and request one by one. Now visibility is checked in batches with the same rules, at about
+  110 queries per call. The map is **7× faster**: the whole company went from 2.7 to 21 maps/s,
+  one department from 9 to 64.
+- The link pattern no longer uses `{m,n}` repeats, which PostgreSQL's regex engine expands. Link
+  extraction is **9× faster** (680 → 76 ms for 2 000 pages).
+- Global search checked up to 200 requests one by one. It now uses the same batch check and is
+  **5× faster** (p50 969 → 200 ms).
+- The map's browser layout runs 120 ticks instead of 300 above 1 000 nodes. For a company-sized
+  map this cuts it from 1.9 to 0.8 s.
+
+**Known limits, not fixed yet:**
+
+- Every permission check reloads the member's roles. A cache per HTTP request would cut CPU on
+  every screen.
+- Lists that return everything grow with the data: a team board with 750 issues, projects and
+  initiatives each take about 250 ms under load.
+- In the browser, the company map with about 2 400 nodes still takes a few seconds to draw as SVG.
+
+**Reproduce:**
+
+```bash
+docker build -t ordler:load .
+```
+
+```bash
+scripts/load/reset.sh 1 1g
+```
+
+```bash
+node scripts/load/seed.mjs
+```
+
+```bash
+MODE=sections node scripts/load/run.mjs
+```
+
+```bash
+MODE=users STAGES=100,300,500,600,700,800 node scripts/load/run.mjs
+```
+
+```bash
+MODE=idle STAGES=1000,5000,10000 node scripts/load/run.mjs
+```
+
+`reset.sh` recreates the throwaway stack: Ordler on <http://localhost:3100>, PostgreSQL on port 5434. The seed signs in its owner as `owner@load.test` with the test-only password in
+`scripts/load/common.mjs`. Never point these scripts at a real installation.
+
 ### Configuration reference
 
 | Variable                                                                                            | Default                 | Purpose                                                                      |
@@ -471,6 +604,67 @@ approvals (replaces <current tool or spreadsheets>).
 - **Import**: **Administration → Import** moves teams, issues, comments and attachments from
   Linear, Jira or Trello; see [ADR 0010](docs/adr/0010-import-from-linear-and-jira.md) and
   [ADR 0016](docs/adr/0016-import-from-trello.md).
+
+### The wiki as company context for AI agents
+
+The wiki is a graph that an agent can query, in the spirit of tools such as Graphify:
+
+- **Nodes:** pages, folders, departments, issues, requests and whiteboards.
+- **Edges:** typed relations people or agents add (related, part of, depends on, supersedes,
+  links to), plus links written in the text (`[[Page title]]`, `/issue/HELP-12`,
+  `/requests/REQ-3`, page and board URLs).
+
+Through MCP, an agent working on a task can pull the documentation around it instead of
+guessing ([ADR 0018](docs/adr/0018-wiki-relations-and-map.md)). The server tells every client
+this on connect, in its `instructions`. A typical run:
+
+1. `get_issue HELP-12` (or `get_request REQ-3`) reads the task. Its `wikiPages` lists the pages
+   written about it: those with a relation to the task or a link to it in their text.
+2. `get_wiki_context { issue: "HELP-12" }` returns three things:
+   - those pages;
+   - the pages related to them, up to `depth` hops (0–3) away, nearest first;
+   - their Markdown text within a `maxChars` budget, with the issues, requests and boards they
+     point at.
+
+   Instead of a task, it can also start from given `pages` or a `query` in plain words, such
+   as "How do I set up the VPN on my new laptop?".
+
+3. `search_wiki` finds pages in two passes:
+   - pages with the exact phrase come first;
+   - then pages with any of its words or word starts, best ranked first, title words above body
+     words. Common words such as "the", "как", "und" or "və" are ignored, in all four UI
+     languages.
+
+   `get_wiki_graph` gives the whole map without text, and `list_wiki_relations` gives one
+   page's neighbours.
+
+4. Afterwards the agent writes back, so the next person or agent finds what this one learned:
+   - `create_wiki_page` or `update_wiki_page` with `relations` to the task or to other pages;
+   - `add_wiki_relation`;
+   - `add_comment` on the issue.
+
+The agent works as its member: same permissions and the same visibility as in the UI. It never
+sees a page, issue or request that person could not open, and it can never decide an approval.
+Read-only work needs the `read` scope; writing pages and relations needs `wiki:write`.
+
+**Measured** on the load-test wiki (2 000 pages, one CPU; see
+[Capacity and load test](#capacity-and-load-test)):
+
+| Call                              | One call | Under load (20 agents at once) |
+| --------------------------------- | -------: | -----------------------------: |
+| `get_issue` with `wikiPages`      |    23 ms |          108 per s, p50 190 ms |
+| `get_wiki_context` from a task    |   118 ms |            19 per s, p50 1.1 s |
+| `get_wiki_context` for a question |   129 ms |            20 per s, p50 1.0 s |
+| `search_wiki`                     |    38 ms |           73 per s, p50 259 ms |
+
+**Limits:**
+
+- Search matches words, not meaning: a question that shares no word with a page will not find
+  it. Semantic search would need embeddings, that is a model and a vector store, which Ordler
+  does not add today.
+- Context is cut by `limit` (up to 50 pages) and `maxChars` (up to 200 000 characters), so a
+  question about the whole company gets the nearest pages, not all of them.
+- MCP allows 120 calls a minute per token.
 
 ## Security
 

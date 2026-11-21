@@ -1,6 +1,7 @@
 import {
   wikiWhiteboardEmbed,
   type WikiPageView,
+  type WikiRelationView,
   type WikiRevision,
   type WikiRevisionView,
   type WikiTree,
@@ -15,9 +16,11 @@ import { FormError } from '../auth/form.js';
 import { RichEditor } from '../editor/RichEditor.js';
 import { selectClass } from '../issues/ui.js';
 import { Link, navigate } from '../router.js';
+import { linkWikiTitles } from './graph.js';
 import { InsertWhiteboard } from './InsertWhiteboard.js';
 import { folderPaths } from './tree.js';
 import { WikiContent } from './WikiContent.js';
+import { WikiRelations } from './WikiRelations.js';
 import { WikiTreeNav } from './WikiTreeNav.js';
 
 /** /wiki/page/:id (and /edit): read, edit with conflict protection, browse history. */
@@ -28,12 +31,18 @@ export function WikiPageScreen({ id, edit = false }: { id: string; edit?: boolea
   const [editing, setEditing] = useState(edit);
   const [history, setHistory] = useState<WikiRevision[]>();
   const [revision, setRevision] = useState<WikiRevisionView>();
+  const [relations, setRelations] = useState<WikiRelationView[]>([]);
   const [error, setError] = useState<string>();
 
   const load = useCallback(async () => {
     try {
       const view = await api.wikiPage(id);
       setPage(view);
+      // Relations are extra: the page still reads well if they fail to load.
+      void api
+        .wikiRelations(id)
+        .then(setRelations)
+        .catch(() => setRelations([]));
       setTree(await api.wikiTree(view.department.id));
     } catch (failure) {
       setError(errorKey(failure));
@@ -181,10 +190,20 @@ export function WikiPageScreen({ id, edit = false }: { id: string; edit?: boolea
                   </div>
                 )}
                 <WikiContent
-                  key={`${shown.title}:${revision?.version ?? page.version}`}
-                  content={shown.content}
+                  key={`${shown.title}:${revision?.version ?? page.version}:${relations.length}`}
+                  content={linkWikiTitles(shown.content, relations)}
                   label={t('wiki.content')}
                 />
+                {!revision && (
+                  <WikiRelations
+                    pageId={page.id}
+                    departmentId={page.department.id}
+                    canEdit={page.canEdit}
+                    relations={relations}
+                    titles={(tree?.pages ?? []).filter((p) => p.id !== page.id).map((p) => p.title)}
+                    onChange={setRelations}
+                  />
+                )}
               </>
             )}
           </article>

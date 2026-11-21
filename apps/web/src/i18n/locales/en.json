@@ -1437,6 +1437,67 @@
         "failed": "Failed",
         "canceled": "Canceled"
       }
+    },
+    "relations": {
+      "title": "Relations",
+      "empty": "No relations yet.",
+      "fromText": "in text",
+      "remove": "Remove relation to {label}",
+      "type": "Relation type",
+      "kind": "What to relate",
+      "target": "Target",
+      "add": "Add relation",
+      "hint": "Links written in the text ([[Page title]], links to pages, issues, requests and boards) show here on their own.",
+      "out": {
+        "related": "Related to",
+        "part_of": "Part of",
+        "depends_on": "Depends on",
+        "supersedes": "Supersedes",
+        "references": "Links to",
+        "in": "Inside"
+      },
+      "in": {
+        "related": "Related to",
+        "part_of": "Contains",
+        "depends_on": "Needed by",
+        "supersedes": "Superseded by",
+        "references": "Linked from"
+      },
+      "kinds": {
+        "wiki_page": "Wiki page",
+        "issue": "Issue",
+        "request": "Request",
+        "whiteboard": "Whiteboard"
+      },
+      "placeholder": {
+        "wiki_page": "Page title",
+        "issue": "HELP-12",
+        "request": "REQ-3",
+        "whiteboard": "Whiteboard id"
+      }
+    },
+    "map": {
+      "title": "Map",
+      "open": "Open on the map",
+      "space": "Space",
+      "allSpaces": "All spaces",
+      "clusters": "Folders and departments",
+      "linked": "Issues, requests, boards",
+      "search": "Find on the map",
+      "empty": "No pages to show yet.",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "reset": "Reset view",
+      "legend": "Legend",
+      "truncated": "Too many linked items: some issues, requests and boards are left out.",
+      "kinds": {
+        "department": "Department",
+        "folder": "Folder",
+        "wiki_page": "Page",
+        "issue": "Issue",
+        "request": "Request",
+        "whiteboard": "Whiteboard"
+      }
     }
   },
   "appearance": {

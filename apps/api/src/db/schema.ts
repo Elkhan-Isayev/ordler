@@ -1318,6 +1318,13 @@ export const wikiFolders = pgTable(
   (t) => [index('wiki_folders_department_idx').on(t.departmentId, t.parentId)],
 );
 
+/**
+ * The text agents search pages by (ADR 0018): title words weigh more than body words. The same
+ * expression backs the GIN index and the queries, so PostgreSQL uses the index. `simple` keeps
+ * every language (en, ru, de, az) without stemming; the body is capped below tsvector's 1 MB limit.
+ */
+export const WIKI_SEARCH_DOCUMENT = sql`(setweight(to_tsvector('simple'::regconfig, title), 'A') || setweight(to_tsvector('simple'::regconfig, left(content, 100000)), 'B'))`;
+
 /** Markdown pages; `version` grows with every saved edit and guards against lost updates. */
 export const wikiPages = pgTable(
   'wiki_pages',
@@ -1336,7 +1343,10 @@ export const wikiPages = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
   },
-  (t) => [index('wiki_pages_department_idx').on(t.departmentId, t.folderId)],
+  (t) => [
+    index('wiki_pages_department_idx').on(t.departmentId, t.folderId),
+    index('wiki_pages_search_idx').using('gin', WIKI_SEARCH_DOCUMENT),
+  ],
 );
 
 /** Every saved version of a page, append-only: the page history. */
@@ -1353,6 +1363,35 @@ export const wikiPageRevisions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.pageId, t.version] })],
+);
+
+/**
+ * Typed relations from a wiki page to a page, issue, request or whiteboard (ADR 0018). Links in
+ * the text are not stored here: they are read from the page itself.
+ */
+export const wikiRelations = pgTable(
+  'wiki_relations',
+  {
+    id: id(),
+    pageId: uuid('page_id')
+      .notNull()
+      .references(() => wikiPages.id),
+    targetKind: text('target_kind', {
+      enum: ['wiki_page', 'issue', 'request', 'whiteboard'],
+    }).notNull(),
+    /** Page or whiteboard id; issue or request number as people write it (`HELP-12`). */
+    targetRef: text('target_ref').notNull(),
+    type: text('type', {
+      enum: ['related', 'part_of', 'depends_on', 'supersedes', 'references'],
+    }).notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('wiki_relations_unique_idx').on(t.pageId, t.targetKind, t.targetRef, t.type),
+    index('wiki_relations_target_idx').on(t.targetKind, t.targetRef),
+  ],
 );
 
 /** One import from Wiki.js (ADR 0017); the cursor makes it resumable, like `import_runs`. */

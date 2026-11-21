@@ -1437,6 +1437,67 @@
         "failed": "Fehlgeschlagen",
         "canceled": "Abgebrochen"
       }
+    },
+    "relations": {
+      "title": "Beziehungen",
+      "empty": "Noch keine Beziehungen.",
+      "fromText": "im Text",
+      "remove": "Beziehung zu {label} entfernen",
+      "type": "Art der Beziehung",
+      "kind": "Was verknüpfen",
+      "target": "Ziel",
+      "add": "Beziehung hinzufügen",
+      "hint": "Links im Text ([[Seitentitel]], Links auf Seiten, Issues, Anfragen und Boards) erscheinen hier von selbst.",
+      "out": {
+        "related": "Verwandt mit",
+        "part_of": "Teil von",
+        "depends_on": "Hängt ab von",
+        "supersedes": "Ersetzt",
+        "references": "Verweist auf",
+        "in": "In"
+      },
+      "in": {
+        "related": "Verwandt mit",
+        "part_of": "Enthält",
+        "depends_on": "Benötigt von",
+        "supersedes": "Ersetzt durch",
+        "references": "Verwiesen von"
+      },
+      "kinds": {
+        "wiki_page": "Wiki-Seite",
+        "issue": "Issue",
+        "request": "Anfrage",
+        "whiteboard": "Whiteboard"
+      },
+      "placeholder": {
+        "wiki_page": "Seitentitel",
+        "issue": "HELP-12",
+        "request": "REQ-3",
+        "whiteboard": "Whiteboard-ID"
+      }
+    },
+    "map": {
+      "title": "Karte",
+      "open": "Auf der Karte öffnen",
+      "space": "Bereich",
+      "allSpaces": "Alle Bereiche",
+      "clusters": "Ordner und Abteilungen",
+      "linked": "Issues, Anfragen, Boards",
+      "search": "Auf der Karte suchen",
+      "empty": "Noch keine Seiten zum Anzeigen.",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "reset": "Ansicht zurücksetzen",
+      "legend": "Legende",
+      "truncated": "Zu viele verknüpfte Elemente: einige Issues, Anfragen und Boards fehlen.",
+      "kinds": {
+        "department": "Abteilung",
+        "folder": "Ordner",
+        "wiki_page": "Seite",
+        "issue": "Issue",
+        "request": "Anfrage",
+        "whiteboard": "Whiteboard"
+      }
     }
   },
   "appearance": {
