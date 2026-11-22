@@ -24,6 +24,11 @@ self-hosted on your own infrastructure.
 
 <img src="docs/assets/screenshots/demo.gif" alt="Ordler tour: a team board, an issue with a diagram, search, a wiki page with a whiteboard and Mermaid diagram, a whiteboard, a request with approvals, and the dark theme" width="900" />
 
+<br/><br/>
+
+<a href="docs/assets/video/ordler-overview.mp4"><img src="docs/assets/video/ordler-overview-poster.jpg" alt="Watch the 1-minute video overview of Ordler with voice-over" width="640" /></a><br/>
+<sub>▶ <a href="docs/assets/video/ordler-overview.mp4">1-minute video overview</a> with voice-over (MP4)</sub>
+
 </div>
 
 ---
