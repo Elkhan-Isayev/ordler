@@ -230,6 +230,32 @@ nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
 nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
 ```
 
+**Behind an authenticating proxy** (oauth2-proxy, Google IAP, Cloudflare Access, ALB OIDC
+auth): AI agents, Slack and GitHub call Ordler with their own tokens or signatures, not with
+a browser session. A proxy that redirects them to a sign-in page breaks MCP (Claude, Cursor
+and other clients cannot connect) and the integration webhooks.
+
+- **Preferred: skip the proxy.** Ordler has Google sign-in built in, limited to your
+  Workspace domain. Enable it with that domain and turn off password and email-code sign-in:
+  only company accounts get in, and MCP and webhooks keep working. Use network rules (WAF, IP
+  allowlist) for extra protection.
+- **If the proxy must stay**, let these paths through without proxy auth. Ordler checks its
+  own tokens or signatures on each of them:
+
+  | Path (regex)                     | Why                                          |
+  | -------------------------------- | -------------------------------------------- |
+  | `^/mcp`                          | MCP endpoint, bearer tokens                  |
+  | `^/\.well-known/oauth-`          | OAuth metadata for MCP clients               |
+  | `^/api/oauth/(token\|register)$` | OAuth token exchange and client registration |
+  | `^/api/slack/`                   | Slack events and interactivity (signed)      |
+  | `^/api/github/webhook$`          | GitHub webhook (HMAC-signed)                 |
+  | `^/(api/)?healthz$`, `^/readyz$` | Probes                                       |
+
+  Keep `/oauth/authorize` (the consent page) behind the proxy: a person opens it in the
+  browser. With oauth2-proxy, pass each path as `--skip-auth-route`; with ingress-nginx
+  `auth-url`, add a second Ingress for the same host with only these paths and no auth
+  annotations. People then sign in twice (proxy, then Ordler).
+
 **Outbound**: everything is optional except the database.
 
 | Destination                                    | Port      | When                                                                               |
@@ -582,6 +608,9 @@ approvals (replaces <current tool or spreadsheets>).
 - Optional: Microsoft Entra app registration (single tenant), redirect URI
   `https://<tasks.company.com>/api/auth/microsoft/callback`
 - Optional: IMAP mailbox `<requests@company.com>` for email-in, outbound access to the IMAP server
+- No authenticating proxy (oauth2-proxy, IAP) in front of `/mcp`, `/.well-known/oauth-*`,
+  `/api/oauth/*`, `/api/slack/*`, `/api/github/webhook`: it breaks MCP and webhooks (see
+  "Behind an authenticating proxy" in the README)
 
 ### Steps
 
