@@ -1,5 +1,17 @@
 <div align="center">
 
+[Features](#features) ·
+[Screenshots](#screenshots) ·
+[Architecture](#architecture) ·
+[Deploy in your company](#deploy-in-your-company) ·
+[Load test results](#capacity-and-load-test) ·
+[DevOps ticket template](#devops-ticket-template) ·
+[Integrations](#integrations) ·
+[Security](#security) ·
+[Specification](docs/SPEC.md) ·
+[Architecture decisions](docs/adr/) ·
+[License and terms](#license-and-legal)
+
 <img src="docs/assets/logo.png" alt="Ordler logo" width="128" height="128" />
 
 # Ordler
@@ -14,15 +26,6 @@ self-hosted on your own infrastructure.
 ![PostgreSQL 18+](https://img.shields.io/badge/postgresql-18%2B-336791)
 ![Kubernetes](https://img.shields.io/badge/deploy-Helm_·_Compose_·_Docker-326ce5)
 ![Languages](https://img.shields.io/badge/i18n-en_·_ru_·_de_·_az-8b3fbf)
-
-[Deploy in your company](#deploy-in-your-company) ·
-[DevOps ticket template](#devops-ticket-template) ·
-[Specification](docs/SPEC.md) ·
-[Architecture decisions](docs/adr/)
-
-<br/>
-
-<img src="docs/assets/screenshots/demo.gif" alt="Ordler tour: a team board, an issue with a diagram, search, a wiki page with a whiteboard and Mermaid diagram, a whiteboard, a request with approvals, and the dark theme" width="900" />
 
 </div>
 
@@ -99,6 +102,10 @@ SAML, LDAP and SCIM, Microsoft Teams notifications, analytics dashboards, automa
 the [roadmap](docs/SPEC.md#14-delivery-phases).
 
 ## Screenshots
+
+<p align="center">
+  <img src="docs/assets/screenshots/demo.gif" alt="Ordler tour: a team board, an issue with a diagram, search, a wiki page with a whiteboard and Mermaid diagram, a whiteboard, a request with approvals, and the dark theme" width="900" />
+</p>
 
 <table>
   <tr>
@@ -763,7 +770,7 @@ trademarks of their respective owners. They are mentioned only to describe compa
 imports. Ordler is an independent project, not affiliated with, endorsed by or sponsored by
 any of them, and it uses none of their code, logos or designs.
 
-**Demo content.** Screenshots and the GIF show a fictional company ("Acme") with made-up people
+**Demo content.** Screenshots, the GIF and the video show a fictional company ("Acme") with made-up people
 and data.
 
 This section is a plain-language summary, not legal advice; the [LICENSE](LICENSE) text is what
