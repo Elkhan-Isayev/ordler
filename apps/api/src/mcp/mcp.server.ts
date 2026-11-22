@@ -4,6 +4,7 @@ import type { AppContext } from '../app-context.js';
 import { DomainError } from '../auth/errors.js';
 import { holdsAnywhere } from '../tokens/token.service.js';
 import { DiagramError } from '../whiteboards/diagram.js';
+import { fitJson } from './fit-result.js';
 import {
   issueWithBoards,
   requestFull,
@@ -12,6 +13,7 @@ import {
   wikiPageFull,
   type McpCaller,
 } from './tools.js';
+import { WikiEditError } from './wiki-text.js';
 
 export const MCP_PATH = '/mcp';
 
@@ -50,12 +52,6 @@ const rpcSchema = z.object({
   method: z.string(),
   params: z.record(z.string(), z.unknown()).optional(),
 });
-
-function truncate(text: string): string {
-  return text.length > MAX_RESULT_CHARS
-    ? `${text.slice(0, MAX_RESULT_CHARS)}\n… truncated; narrow the query or lower "limit".`
-    : text;
-}
 
 /**
  * Told to every client on connect (ADR 0018): the wiki is the company's memory, so an agent reads
@@ -225,10 +221,11 @@ export class McpServer {
     }
     try {
       const result = await tool.run(this.ctx, caller, args.data as never);
-      return { content: [{ type: 'text', text: truncate(JSON.stringify(result, null, 2)) }] };
+      return { content: [{ type: 'text', text: fitJson(result, MAX_RESULT_CHARS) }] };
     } catch (error) {
       if (error instanceof DomainError) return this.toolError(`Ordler refused: ${error.code}`);
       if (error instanceof DiagramError) return this.toolError(`Invalid diagram: ${error.message}`);
+      if (error instanceof WikiEditError) return this.toolError(`Invalid edit: ${error.message}`);
       throw error;
     }
   }
@@ -266,9 +263,7 @@ export class McpServer {
       throw error;
     }
     return {
-      contents: [
-        { uri, mimeType: 'application/json', text: truncate(JSON.stringify(data, null, 2)) },
-      ],
+      contents: [{ uri, mimeType: 'application/json', text: fitJson(data, MAX_RESULT_CHARS) }],
     };
   }
 }

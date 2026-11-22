@@ -658,4 +658,99 @@ describe('MCP wiki tools (SPEC §10.1)', () => {
       .where(eq(auditLog.action, 'wiki.page_created'));
     expect(audited[0]).toMatchObject({ after: { title: 'Restart the router', via: 'Claude' } });
   });
+
+  it('reads a page larger than one result in parts and edits it without losing text (issue #1)', async () => {
+    // ~180 KB, three times the 60 000-character result limit; ends with a marker line.
+    const lines = Array.from({ length: 3000 }, (_, i) => `Step ${i}: ${'diagram '.repeat(7)}`);
+    const content = `${lines.join('\n')}\nLast line.\n`;
+    const page = await createPage(people.anna.cookie, { title: 'Huge', content });
+    const reader = await token(people.anna.cookie, ['read']);
+
+    const parts: string[] = [];
+    let offset: number | null = 0;
+    while (offset !== null) {
+      const part = await tool(reader, 'get_wiki_page', { id: page.id, offset });
+      // Every result parses: no more cut in the middle of the JSON.
+      const data = part.data();
+      expect(data).toMatchObject({ version: 1, contentLength: content.length, truncated: true });
+      parts.push(data.content);
+      offset = data.nextOffset;
+    }
+    expect(parts.length).toBeGreaterThan(3);
+    expect(parts.join('')).toBe(content);
+
+    // A part never passes for the whole page, and a write does not echo the page back.
+    const writer = await token(people.anna.cookie, ['read', 'wiki:write']);
+    const edited = await tool(writer, 'edit_wiki_page', {
+      id: page.id,
+      baseVersion: 1,
+      edits: [
+        { oldString: 'Last line.', newString: 'Last line, edited.' },
+        { oldString: 'Step 0: ', newString: 'First step: ' },
+      ],
+    });
+    expect(edited.isError).toBe(false);
+    expect(edited.data()).toMatchObject({ version: 2, replacements: 2 });
+    expect(edited.data()).not.toHaveProperty('content');
+    const stored = (
+      await call('GET', `/api/wiki/pages/${page.id}`, people.anna.cookie)
+    ).json<WikiPageView>();
+    expect(stored.content).toBe(
+      content.replace('Last line.', 'Last line, edited.').replace('Step 0: ', 'First step: '),
+    );
+
+    // Refused: a stale base version, a missing or ambiguous fragment, no wiki:write, no access.
+    const stale = await tool(writer, 'edit_wiki_page', {
+      id: page.id,
+      baseVersion: 1,
+      edits: [{ oldString: 'First step', newString: 'x' }],
+    });
+    expect(stale.text).toContain('wiki_conflict');
+    const missing = await tool(writer, 'edit_wiki_page', {
+      id: page.id,
+      edits: [{ oldString: 'Not on the page', newString: 'x' }],
+    });
+    expect(missing).toMatchObject({ isError: true });
+    expect(missing.text).toContain('does not occur');
+    const ambiguous = await tool(writer, 'edit_wiki_page', {
+      id: page.id,
+      edits: [{ oldString: 'diagram', newString: 'x' }],
+    });
+    expect(ambiguous.text).toContain('occurs');
+    expect((await tool(reader, 'edit_wiki_page', { id: page.id, edits: [] })).isError).toBe(true);
+    const readOnly = await tool(reader, 'edit_wiki_page', {
+      id: page.id,
+      edits: [{ oldString: 'First step', newString: 'x' }],
+    });
+    expect(readOnly.text).toContain('wiki:write');
+    const outsider = await token(people.outsider.cookie, ['read', 'wiki:write']);
+    const hidden = await tool(outsider, 'edit_wiki_page', {
+      id: page.id,
+      edits: [{ oldString: 'First step', newString: 'x' }],
+    });
+    expect(hidden.text).toContain('not_found');
+    const version = (await tool(reader, 'get_wiki_page', { id: page.id })).data().version;
+    expect(version).toBe(2);
+
+    // The resource form of the page stays valid JSON too.
+    const response = await t.app.inject({
+      method: 'POST',
+      url: '/mcp',
+      headers: { authorization: `Bearer ${reader}`, 'content-type': 'application/json' },
+      payload: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'resources/read',
+        params: { uri: `ordler://wiki/${page.id}` },
+      }),
+    });
+    const resource = JSON.parse(
+      response.json<{ result: { contents: Array<{ text: string }> } }>().result.contents[0]!.text,
+    );
+    expect(resource).toMatchObject({
+      offset: 0,
+      truncated: true,
+      contentLength: stored.content.length,
+    });
+  });
 });
