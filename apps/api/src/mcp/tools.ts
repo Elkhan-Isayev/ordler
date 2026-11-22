@@ -27,6 +27,13 @@ import {
   type DiagramEdge,
   type DiagramNode,
 } from '../whiteboards/diagram.js';
+import {
+  applyTextEdits,
+  textWindow,
+  WIKI_PAGE_CHARS,
+  WIKI_PAGE_MAX_CHARS,
+  WikiEditError,
+} from './wiki-text.js';
 
 /** Who is calling: always a member, through one of their tokens. */
 export interface McpCaller {
@@ -229,8 +236,29 @@ async function embedInWikiPage(
   );
 }
 
-/** A wiki page as agents read it, with the diagrams (whiteboards) it embeds. */
-export async function wikiPageFull(ctx: AppContext, caller: McpCaller, id: string) {
+/**
+ * A wiki page as agents read it, with the diagrams (whiteboards) it embeds. The text comes in
+ * parts of at most `maxChars` from `offset`, so a long page is read whole over several calls
+ * instead of being cut off (issue #1).
+ */
+export async function wikiPageFull(
+  ctx: AppContext,
+  caller: McpCaller,
+  id: string,
+  window: { offset: number; maxChars: number } = { offset: 0, maxChars: WIKI_PAGE_CHARS },
+) {
+  const { content, ...brief } = await wikiPageBrief(ctx, caller, id);
+  return { ...brief, ...textWindow(content, window.offset, window.maxChars) };
+}
+
+/** What a write returns: the page without its text, which the agent has just sent anyway. */
+export async function wikiPageSummary(ctx: AppContext, caller: McpCaller, id: string) {
+  const { content, ...brief } = await wikiPageBrief(ctx, caller, id);
+  return { ...brief, contentLength: content.length };
+}
+
+/** The page with its whole text and everything around it. */
+async function wikiPageBrief(ctx: AppContext, caller: McpCaller, id: string) {
   const page = await ctx.wiki.page(caller.memberId, id);
   return {
     id: page.id,
@@ -849,7 +877,7 @@ const tools: ToolDefinition[] = [
     async run(ctx, caller, args: { id: string; page: string }) {
       const board = await ctx.whiteboards.get(caller.memberId, args.id);
       await embedInWikiPage(ctx, caller, args.page, board.id, board.title);
-      return wikiPageFull(ctx, caller, args.page);
+      return wikiPageSummary(ctx, caller, args.page);
     },
   },
   {
@@ -950,11 +978,16 @@ const tools: ToolDefinition[] = [
   },
   {
     name: 'get_wiki_page',
-    description: 'A wiki page with its Markdown text, folder path and version.',
+    description:
+      'A wiki page with its Markdown text, folder path and version. A long text comes in parts: `content` holds up to `maxChars` characters from `offset`, `contentLength` is the whole length, and while `nextOffset` is not null call again with `offset: nextOffset` for the rest. When `truncated` is true you do not have the whole page: never send it back with update_wiki_page, change it with edit_wiki_page instead.',
     scope: 'read',
-    input: z.object({ id: z.uuid() }),
-    async run(ctx, caller, args: { id: string }) {
-      return wikiPageFull(ctx, caller, args.id);
+    input: z.object({
+      id: z.uuid(),
+      offset: z.number().int().min(0).default(0).describe('First character to return'),
+      maxChars: z.number().int().min(1000).max(WIKI_PAGE_MAX_CHARS).default(WIKI_PAGE_CHARS),
+    }),
+    async run(ctx, caller, args: { id: string; offset: number; maxChars: number }) {
+      return wikiPageFull(ctx, caller, args.id, args);
     },
   },
   {
@@ -1001,7 +1034,7 @@ const tools: ToolDefinition[] = [
       );
       const unresolved = await addRelations(ctx, caller, page.id, args.relations);
       return {
-        ...(await wikiPageFull(ctx, caller, page.id)),
+        ...(await wikiPageSummary(ctx, caller, page.id)),
         ...(unresolved.length > 0 ? { unresolvedRelations: unresolved } : {}),
       };
     },
@@ -1009,7 +1042,7 @@ const tools: ToolDefinition[] = [
   {
     name: 'update_wiki_page',
     description:
-      "Change a wiki page: title, full Markdown text, or folder path. Pass `baseVersion` from get_wiki_page to refuse overwriting someone else's newer edit.",
+      "Change a wiki page: title, full Markdown text, or folder path. `content` replaces the whole text, so send it only when you have read the whole page (`truncated` false); to change part of a page use edit_wiki_page. Pass `baseVersion` from get_wiki_page to refuse overwriting someone else's newer edit.",
     scope: 'wiki:write',
     input: z.object({
       id: z.uuid(),
@@ -1065,8 +1098,56 @@ const tools: ToolDefinition[] = [
       }
       const unresolved = await addRelations(ctx, caller, args.id, args.relations);
       return {
-        ...(await wikiPageFull(ctx, caller, args.id)),
+        ...(await wikiPageSummary(ctx, caller, args.id)),
         ...(unresolved.length > 0 ? { unresolvedRelations: unresolved } : {}),
+      };
+    },
+  },
+  {
+    name: 'edit_wiki_page',
+    description:
+      'Change part of a wiki page text without sending the whole page: each edit replaces `oldString` with `newString`, in order. `oldString` must match the text exactly (whitespace included) and occur once, or set `replaceAll`. Works on pages of any length; read the part you change with get_wiki_page first. The edit is refused if the page changed since `baseVersion`.',
+    scope: 'wiki:write',
+    input: z.object({
+      id: z.uuid(),
+      edits: z
+        .array(
+          z.object({
+            oldString: z.string().min(1).max(WIKI_MAX_CONTENT),
+            newString: z.string().max(WIKI_MAX_CONTENT),
+            replaceAll: z.boolean().default(false),
+          }),
+        )
+        .min(1)
+        .max(50),
+      baseVersion: z.number().int().min(1).optional(),
+    }),
+    async run(
+      ctx,
+      caller,
+      args: {
+        id: string;
+        edits: Array<{ oldString: string; newString: string; replaceAll: boolean }>;
+        baseVersion?: number;
+      },
+    ) {
+      const page = await editableWikiPage(ctx, caller, args.id);
+      const edited = applyTextEdits(page.content, args.edits);
+      if (edited.text.length > WIKI_MAX_CONTENT) {
+        throw new WikiEditError(`the page would exceed ${WIKI_MAX_CONTENT} characters.`);
+      }
+      if (edited.text !== page.content) {
+        await ctx.wiki.updatePage(
+          caller.memberId,
+          args.id,
+          // Without a baseVersion the edits still apply only to the text they were matched in.
+          { content: edited.text, baseVersion: args.baseVersion ?? page.version },
+          caller.tokenName,
+        );
+      }
+      return {
+        ...(await wikiPageSummary(ctx, caller, args.id)),
+        replacements: edited.replacements,
       };
     },
   },
@@ -1147,7 +1228,8 @@ const tools: ToolDefinition[] = [
           .describe('Request identifier, e.g. REQ-3'),
         depth: z.number().int().min(0).max(3).default(1),
         limit: z.number().int().min(1).max(50).default(15).describe('Max pages'),
-        maxChars: z.number().int().min(1000).max(200_000).default(60_000),
+        // Accepted up to 200 000 for older clients; capped below in run to fit one result.
+        maxChars: z.number().int().min(1000).max(200_000).default(40_000),
       })
       .refine(
         (v) =>
@@ -1170,7 +1252,10 @@ const tools: ToolDefinition[] = [
         maxChars: number;
       },
     ) {
-      const context = await ctx.wikiGraph.context(caller.memberId, args);
+      const context = await ctx.wikiGraph.context(caller.memberId, {
+        ...args,
+        maxChars: Math.min(args.maxChars, WIKI_PAGE_MAX_CHARS),
+      });
       return {
         ...context,
         pages: context.pages.map((p) => ({

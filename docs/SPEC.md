@@ -334,8 +334,11 @@ A Wiki.js-like knowledge base built into Ordler ([ADR 0017](adr/0017-wiki.md)):
   over; HTML pages are converted to Markdown. Runs in the background, resumable; re-running
   updates changed pages and skips the rest; the key is erased when the import ends.
 - **MCP**: `list_wiki_spaces`, `list_wiki_pages`, `search_wiki`, `get_wiki_page` (with the
-  embedded boards), `create_wiki_page` (folder paths are created on demand),
-  `update_wiki_page` (optional `baseVersion`), `embed_whiteboard_in_wiki`; `create_whiteboard`
+  embedded boards; a long text comes in parts by `offset` / `maxChars`, with `contentLength`,
+  `nextOffset` and `truncated`), `create_wiki_page` (folder paths are created on demand),
+  `update_wiki_page` (whole text, optional `baseVersion`), `edit_wiki_page` (exact
+  `oldString` → `newString` replacements, for pages of any length), `embed_whiteboard_in_wiki`;
+  writes answer with the page without its text (`contentLength`); `create_whiteboard`
   takes `wikiPage` to draw a diagram straight into a page. Relations: `list_wiki_relations`,
   `add_wiki_relation`, `remove_wiki_relation`, `relations` on create/update; company context:
   `get_wiki_graph` (the whole map without text) and `get_wiki_context` (pages about an `issue`
@@ -343,7 +346,9 @@ A Wiki.js-like knowledge base built into Ordler ([ADR 0017](adr/0017-wiki.md)):
   `get_issue` and `get_request` list the `wikiPages` written about the task. Agent search
   (`search_wiki`, context `query`) puts exact-phrase hits first, then pages with any of the
   words, ranked by full-text search. Resource `ordler://wiki/{id}`.
-  Writes need the `wiki:write` scope.
+  Writes need the `wiki:write` scope. A tool result is at most 60 000 characters and always
+  valid JSON: anything longer has its longest texts and lists shortened, marked in the text and
+  in `resultShortened`.
 - **Relations** ([ADR 0018](adr/0018-wiki-relations-and-map.md)): a page relates to other
   pages, issues, requests and whiteboards. Typed relations (`related`, `part_of`,
   `depends_on`, `supersedes`, `references`, optional note) are added in the page's Relations
