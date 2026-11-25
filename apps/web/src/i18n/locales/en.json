@@ -28,7 +28,8 @@
     "whiteboards": "Whiteboards",
     "wiki": "Wiki",
     "license": "AGPL-3.0",
-    "sourceCode": "Source code"
+    "sourceCode": "Source code",
+    "help": "Help"
   },
   "settings": {
     "language": "Language"
@@ -735,6 +736,7 @@
     "quote": "Quote",
     "code": "Code block",
     "insertDiagram": "Insert diagram (Mermaid)",
+    "insertTable": "Insert table",
     "attach": "Attach files",
     "uploading": "Uploading…",
     "diagram": "Diagram",
@@ -1563,5 +1565,24 @@
       "dark": "Dark"
     },
     "diagramsHint": "Diagrams and whiteboards always stay light, so they look the same to everyone."
+  },
+  "help": {
+    "title": "Help",
+    "comingSoon": "Video coming soon",
+    "sections": {
+      "requests": "Requests and approvals",
+      "work": "Issues",
+      "knowledge": "Wiki and whiteboards"
+    },
+    "topics": {
+      "request-other-department": "Send a request to another department",
+      "request-several-departments": "One request to several departments",
+      "request-add-approvals": "Add approvals to a request",
+      "approval-decide": "Approve or reject a request",
+      "issue-create": "Create an issue",
+      "wiki-page": "Write a wiki page",
+      "whiteboard-diagram": "Draw a diagram on a whiteboard",
+      "wiki-table": "Create a table in the wiki"
+    }
   }
 }

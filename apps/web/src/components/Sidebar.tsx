@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
   CircleCheck,
+  CircleHelp,
   FolderKanban,
   Inbox,
   Layers,
@@ -142,6 +143,9 @@ export function Sidebar({
             badgeLabel={t('nav.pendingApprovals', { count: pendingApprovals })}
           >
             {t('nav.approvals')}
+          </NavItem>
+          <NavItem icon={CircleHelp} href="/help">
+            {t('nav.help')}
           </NavItem>
         </ul>
 

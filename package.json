@@ -14,12 +14,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "notices": "node scripts/third-party-notices.mjs",
-    "notices:check": "node scripts/third-party-notices.mjs --check"
+    "notices:check": "node scripts/third-party-notices.mjs --check",
+    "help:clips": "scripts/help-clips/record.sh"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "eslint": "9.39.5",
     "globals": "17.13.0",
+    "playwright": "1.57.0",
     "prettier": "3.9.10",
     "turbo": "2.11.8",
     "typescript": "5.9.3",

@@ -28,7 +28,8 @@
     "whiteboards": "Доски",
     "wiki": "Вики",
     "license": "AGPL-3.0",
-    "sourceCode": "Исходный код"
+    "sourceCode": "Исходный код",
+    "help": "Справка"
   },
   "settings": {
     "language": "Язык"
@@ -735,6 +736,7 @@
     "quote": "Цитата",
     "code": "Блок кода",
     "insertDiagram": "Вставить диаграмму (Mermaid)",
+    "insertTable": "Вставить таблицу",
     "attach": "Прикрепить файлы",
     "uploading": "Загрузка…",
     "diagram": "Диаграмма",
@@ -1563,5 +1565,24 @@
       "dark": "Тёмная"
     },
     "diagramsHint": "Диаграммы и доски всегда остаются светлыми, чтобы у всех они выглядели одинаково."
+  },
+  "help": {
+    "title": "Справка",
+    "comingSoon": "Видео скоро появится",
+    "sections": {
+      "requests": "Запросы и согласования",
+      "work": "Задачи",
+      "knowledge": "Вики и доски"
+    },
+    "topics": {
+      "request-other-department": "Отправить запрос в другой департамент",
+      "request-several-departments": "Один запрос в несколько департаментов",
+      "request-add-approvals": "Добавить согласования к запросу",
+      "approval-decide": "Согласовать или отклонить запрос",
+      "issue-create": "Создать задачу",
+      "wiki-page": "Написать страницу вики",
+      "whiteboard-diagram": "Нарисовать диаграмму на доске",
+      "wiki-table": "Создать таблицу в вики"
+    }
   }
 }

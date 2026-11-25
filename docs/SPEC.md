@@ -241,6 +241,7 @@ Inbox                                   99+
 My issues
 My requests            ← requests I created
 Approvals              ← items waiting for my decision (badge)
+Help                   ← silent how-to clips, one per task (ADR 0020)
 
 Workspace
   Initiatives

@@ -28,7 +28,8 @@
     "whiteboards": "Whiteboards",
     "wiki": "Wiki",
     "license": "AGPL-3.0",
-    "sourceCode": "Quellcode"
+    "sourceCode": "Quellcode",
+    "help": "Hilfe"
   },
   "settings": {
     "language": "Sprache"
@@ -735,6 +736,7 @@
     "quote": "Zitat",
     "code": "Codeblock",
     "insertDiagram": "Diagramm einfügen (Mermaid)",
+    "insertTable": "Tabelle einfügen",
     "attach": "Dateien anhängen",
     "uploading": "Wird hochgeladen…",
     "diagram": "Diagramm",
@@ -1563,5 +1565,24 @@
       "dark": "Dunkel"
     },
     "diagramsHint": "Diagramme und Whiteboards bleiben immer hell, damit sie für alle gleich aussehen."
+  },
+  "help": {
+    "title": "Hilfe",
+    "comingSoon": "Video folgt in Kürze",
+    "sections": {
+      "requests": "Anfragen und Genehmigungen",
+      "work": "Aufgaben",
+      "knowledge": "Wiki und Whiteboards"
+    },
+    "topics": {
+      "request-other-department": "Anfrage an eine andere Abteilung senden",
+      "request-several-departments": "Eine Anfrage an mehrere Abteilungen",
+      "request-add-approvals": "Genehmigungen zu einer Anfrage hinzufügen",
+      "approval-decide": "Anfrage genehmigen oder ablehnen",
+      "issue-create": "Aufgabe erstellen",
+      "wiki-page": "Wiki-Seite schreiben",
+      "whiteboard-diagram": "Diagramm auf einem Whiteboard zeichnen",
+      "wiki-table": "Tabelle im Wiki anlegen"
+    }
   }
 }

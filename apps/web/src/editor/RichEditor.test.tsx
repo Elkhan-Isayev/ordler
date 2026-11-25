@@ -128,6 +128,18 @@ describe('RichEditor', () => {
     expect(await screen.findByRole('img', { name: 'Diagram' })).toBeInTheDocument();
   });
 
+  it('inserts a table with a header row that saves as Markdown', async () => {
+    const onChange = vi.fn();
+    await renderWithI18n(<RichEditor label="Description" value="" onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Insert table' }));
+    const table = await screen.findByRole('table');
+    expect(within(table).getAllByRole('row')).toHaveLength(3);
+    expect(within(table).getAllByRole('columnheader')).toHaveLength(3);
+    await userEvent.type(textbox(), 'x');
+    await waitFor(() => expect(onChange).toHaveBeenCalled());
+    expect(onChange.mock.calls.at(-1)![0]).toContain('| --- | --- | --- |');
+  });
+
   it('shows diagrams instead of their source when read-only', async () => {
     await renderWithI18n(
       <RichEditor
