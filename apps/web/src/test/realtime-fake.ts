@@ -23,7 +23,16 @@ export function fakeRealtime() {
   setRealtimeClient(client);
   return {
     push(message: RealtimeServerMessage) {
+      // Nothing subscribed yet means the message would vanish and the test would race;
+      // wait for `listening()` first.
+      if (!sockets.some((socket) => socket.onmessage)) {
+        throw new Error(`realtime.push(${message.type}) before anything subscribed`);
+      }
       for (const socket of sockets) socket.onmessage?.({ data: JSON.stringify(message) });
+    },
+    /** True once a component has subscribed, so pushed messages reach it. */
+    listening() {
+      return sockets.some((socket) => socket.onmessage);
     },
     reset() {
       client.stop();
