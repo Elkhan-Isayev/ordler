@@ -107,6 +107,8 @@ describe('TeamIssuesPage', () => {
     });
     await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
     await screen.findByText('Issue 2');
+    // The board subscribes in an effect after the first render; an earlier push is lost.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     deleted = true;
     act(() => realtime.push({ type: 'issue.removed', issueId: 'i2', teamId: TEAM.id }));
     await waitFor(() => expect(screen.queryByText('Issue 2')).not.toBeInTheDocument());

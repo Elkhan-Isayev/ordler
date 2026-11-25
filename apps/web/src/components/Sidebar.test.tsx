@@ -78,6 +78,15 @@ describe('Sidebar', () => {
     expect(screen.getByRole('heading', { name: 'Your departments' })).toBeInTheDocument();
   });
 
+  it('links Help right after Approvals and highlights it on /help', async () => {
+    await renderSidebar('en', { currentPath: '/help' });
+    const links = screen.getAllByRole('link').map((link) => link.textContent);
+    const approvals = links.findIndex((text) => text?.startsWith('Approvals'));
+    expect(links[approvals + 1]).toBe('Help');
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute('href', '/help');
+  });
+
   it('caps the inbox badge and labels the approvals badge', async () => {
     await renderSidebar();
     expect(

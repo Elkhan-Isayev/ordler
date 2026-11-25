@@ -6,6 +6,7 @@ import { CommandPalette, useCommandPalette } from './components/CommandPalette.j
 import { Sidebar } from './components/Sidebar.js';
 import { UpdateBanner } from './components/UpdateBanner.js';
 import { useNarrowScreen, useSidebarCollapsed } from './components/useSidebarCollapsed.js';
+import { HelpPage } from './help/HelpPage.js';
 import { IssuePage } from './issues/IssuePage.js';
 import { MyIssuesPage } from './issues/MyIssuesPage.js';
 import { InboxPage, useInboxCounts } from './notifications/InboxPage.js';
@@ -217,6 +218,8 @@ export function App({ me, onSignOut }: { me: MeResponse; onSignOut: () => void }
           <MyRequestsPage />
         ) : path === '/approvals' ? (
           <ApprovalsPage />
+        ) : path === '/help' ? (
+          <HelpPage />
         ) : issuePage ? (
           <IssuePage key={issuePage[1]} identifier={issuePage[1]!.toUpperCase()} />
         ) : path === '/my-issues' ? (

@@ -24,4 +24,31 @@ describe('templateSkeleton', () => {
       expect(ids.has((arrow.end as { id: string }).id)).toBe(true);
     }
   });
+
+  // The editor binds arrows but keeps their geometry; without explicit points every arrow
+  // became a 100px horizontal stub beside the shapes.
+  it.each(['flowchart', 'mindmap'] as const)(
+    'draws %s arrows from one shape to the other',
+    (key) => {
+      const skeleton = templateSkeleton(key, {}, { x: 500, y: 500 });
+      const byId = new Map(skeleton.map((s) => [s.id, s]));
+      const near = (shape: Record<string, unknown>, p: { x: number; y: number }) => {
+        const [x, y, w, h] = [shape.x, shape.y, shape.width, shape.height].map(Number);
+        return p.x >= x! - 12 && p.x <= x! + w! + 12 && p.y >= y! - 12 && p.y <= y! + h! + 12;
+      };
+      const arrows = skeleton.filter((s) => s.type === 'arrow');
+      expect(arrows.length).toBeGreaterThan(0);
+      for (const arrow of arrows) {
+        const points = arrow.points as [number, number][] | undefined;
+        expect(points, 'explicit points').toBeDefined();
+        const [dx, dy] = points!.at(-1)!;
+        const from = { x: Number(arrow.x), y: Number(arrow.y) };
+        const to = { x: from.x + dx, y: from.y + dy };
+        const start = byId.get((arrow.start as { id: string }).id)!;
+        const end = byId.get((arrow.end as { id: string }).id)!;
+        expect(near(start, from), `${String(start.id)} → start`).toBe(true);
+        expect(near(end, to), `${String(end.id)} ← end`).toBe(true);
+      }
+    },
+  );
 });

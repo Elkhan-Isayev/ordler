@@ -50,15 +50,39 @@ function sticky(id: string, x: number, y: number, text = ''): Skeleton {
   });
 }
 
-function arrow(from: string, to: string, at: Point, text?: string): Skeleton {
+/**
+ * An arrow along `path` (absolute points). The editor binds it to both shapes but keeps the
+ * geometry it is given, so the points must already run from one shape to the other.
+ */
+function arrow(from: string, to: string, path: Point[], text?: string): Skeleton {
+  const [origin] = path as [Point];
   return {
     type: 'arrow',
-    x: at.x,
-    y: at.y,
+    x: origin.x,
+    y: origin.y,
+    points: path.map((p) => [p.x - origin.x, p.y - origin.y]),
     start: { id: from },
     end: { id: to },
     ...(text ? { label: { text } } : {}),
   };
+}
+
+/** Where the ray from an ellipse's centre towards `toward` leaves it, plus a small gap. */
+function ellipseEdge(c: Point, rx: number, ry: number, toward: Point, gap = 6): Point {
+  const dx = toward.x - c.x;
+  const dy = toward.y - c.y;
+  const t = 1 / Math.hypot(dx / rx, dy / ry);
+  const len = Math.hypot(dx, dy);
+  return { x: c.x + dx * t + (dx / len) * gap, y: c.y + dy * t + (dy / len) * gap };
+}
+
+/** Where the ray from a box's centre towards `from` leaves the box, plus a small gap. */
+function boxEdge(c: Point, halfW: number, halfH: number, from: Point, gap = 6): Point {
+  const dx = from.x - c.x;
+  const dy = from.y - c.y;
+  const t = Math.min(halfW / Math.abs(dx || 1e-9), halfH / Math.abs(dy || 1e-9));
+  const len = Math.hypot(dx, dy);
+  return { x: c.x + dx * t + (dx / len) * gap, y: c.y + dy * t + (dy / len) * gap };
 }
 
 function columns(titles: string[], center: Point, cardText?: string): Skeleton[] {
@@ -129,10 +153,35 @@ export function templateSkeleton(
           height: 70,
           label: { text: l('end') },
         },
-        arrow('fc-start', 'fc-step', { x: x + 90, y: y + 75 }),
-        arrow('fc-step', 'fc-decision', { x: x + 90, y: y + 235 }),
-        arrow('fc-decision', 'fc-end', { x: x + 90, y: y + 445 }, l('yes')),
-        arrow('fc-decision', 'fc-step', { x: x + 205, y: y + 375 }, l('no')),
+        arrow('fc-start', 'fc-step', [
+          { x: x + 90, y: y + 75 },
+          { x: x + 90, y: y + 145 },
+        ]),
+        arrow('fc-step', 'fc-decision', [
+          { x: x + 90, y: y + 235 },
+          { x: x + 90, y: y + 305 },
+        ]),
+        arrow(
+          'fc-decision',
+          'fc-end',
+          [
+            { x: x + 90, y: y + 445 },
+            { x: x + 90, y: y + 515 },
+          ],
+          l('yes'),
+        ),
+        // "No" loops back round the right side to the step.
+        arrow(
+          'fc-decision',
+          'fc-step',
+          [
+            { x: x + 205, y: y + 375 },
+            { x: x + 270, y: y + 375 },
+            { x: x + 270, y: y + 190 },
+            { x: x + 185, y: y + 190 },
+          ],
+          l('no'),
+        ),
       ];
     }
     case 'retrospective':
@@ -159,10 +208,16 @@ export function templateSkeleton(
       ];
       return [
         hub,
-        ...spots.flatMap((spot, i) => [
-          box(`mm-${i}`, center.x + spot.x, center.y + spot.y, 160, 70, l('idea')),
-          arrow('mm-hub', `mm-${i}`, { x: center.x, y: center.y }),
-        ]),
+        ...spots.flatMap((spot, i) => {
+          const idea = { x: center.x + spot.x + 80, y: center.y + spot.y + 35 };
+          return [
+            box(`mm-${i}`, center.x + spot.x, center.y + spot.y, 160, 70, l('idea')),
+            arrow('mm-hub', `mm-${i}`, [
+              ellipseEdge(center, 110, 50, idea),
+              boxEdge(idea, 80, 35, center),
+            ]),
+          ];
+        }),
       ];
     }
   }

@@ -28,7 +28,8 @@
     "whiteboards": "Lövhələr",
     "wiki": "Viki",
     "license": "AGPL-3.0",
-    "sourceCode": "Mənbə kodu"
+    "sourceCode": "Mənbə kodu",
+    "help": "Kömək"
   },
   "settings": {
     "language": "Dil"
@@ -735,6 +736,7 @@
     "quote": "Sitat",
     "code": "Kod bloku",
     "insertDiagram": "Diaqram əlavə et (Mermaid)",
+    "insertTable": "Cədvəl əlavə et",
     "attach": "Fayl əlavə et",
     "uploading": "Yüklənir…",
     "diagram": "Diaqram",
@@ -1563,5 +1565,24 @@
       "dark": "Tünd"
     },
     "diagramsHint": "Diaqramlar və lövhələr hamıya eyni görünsün deyə həmişə açıq qalır."
+  },
+  "help": {
+    "title": "Kömək",
+    "comingSoon": "Video tezliklə əlavə olunacaq",
+    "sections": {
+      "requests": "Sorğular və təsdiqlər",
+      "work": "Tapşırıqlar",
+      "knowledge": "Viki və lövhələr"
+    },
+    "topics": {
+      "request-other-department": "Başqa departamentə sorğu göndərmək",
+      "request-several-departments": "Bir sorğunu bir neçə departamentə göndərmək",
+      "request-add-approvals": "Sorğuya təsdiqlər əlavə etmək",
+      "approval-decide": "Sorğunu təsdiqləmək və ya rədd etmək",
+      "issue-create": "Tapşırıq yaratmaq",
+      "wiki-page": "Viki səhifəsi yazmaq",
+      "whiteboard-diagram": "Lövhədə diaqram çəkmək",
+      "wiki-table": "Vikidə cədvəl yaratmaq"
+    }
   }
 }

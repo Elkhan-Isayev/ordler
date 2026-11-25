@@ -359,6 +359,13 @@ function Toolbar({
       >
         ◇
       </Tool>
+      <Tool
+        label={t('editor.insertTable')}
+        // Tab in the last cell adds a row, so a small start is enough.
+        onClick={() => chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+      >
+        ▦
+      </Tool>
       {onFiles && (
         <>
           <Tool
