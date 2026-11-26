@@ -729,7 +729,8 @@ Found a vulnerability? Please report it privately through GitHub security adviso
 
 ## Development
 
-Requirements: **Node.js 24** (`.nvmrc`), **pnpm** via Corepack, **PostgreSQL 18+**.
+Requirements: **Node.js 24+** (24 in `.nvmrc`), **pnpm** via Corepack, **PostgreSQL 18+**.
+Node 25 no longer bundles Corepack: run `npm install -g corepack` before `corepack enable`.
 
 ```bash
 git clone https://github.com/Elkhan-Isayev/ordler.git
