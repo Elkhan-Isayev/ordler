@@ -99,6 +99,8 @@ describe('App', () => {
     expect(screen.getByLabelText('1 approval waiting')).toBeInTheDocument();
 
     counts = { unread: 3, approvals: 0 };
+    // Pushes before the page subscribes are lost; wait for the subscription.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     realtime.push({ type: 'inbox.changed' });
     await waitFor(() => expect(inbox).toHaveTextContent('3'));
   });

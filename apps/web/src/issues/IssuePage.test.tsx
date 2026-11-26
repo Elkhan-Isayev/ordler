@@ -169,6 +169,8 @@ describe('IssuePage', () => {
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     await screen.findByDisplayValue('Issue 7');
     version = 2;
+    // Pushes before the page subscribes are lost; wait for the subscription.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     act(() =>
       realtime.push({ type: 'issue.changed', issue: issue(7, { title: 'Renamed elsewhere' }) }),
     );

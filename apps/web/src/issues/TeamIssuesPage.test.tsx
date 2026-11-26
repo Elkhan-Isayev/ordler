@@ -38,6 +38,8 @@ describe('TeamIssuesPage', () => {
     mockApi(base());
     await renderWithI18n(<TeamIssuesPage teamKey="HELP" view="board" />);
     await screen.findByText('Issue 2');
+    // Pushes before the page subscribes are lost; wait for the subscription.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     act(() =>
       realtime.push({
         type: 'issue.changed',
