@@ -59,7 +59,11 @@ export function MicrosoftIcon({ size = 18, className }: IconProps) {
 }
 
 /** The icon for a sign-in strategy; generic ones follow the theme's text colour. */
-export function StrategyIcon({ kind, size = 18, className }: IconProps & { kind: AuthStrategyKind }) {
+export function StrategyIcon({
+  kind,
+  size = 18,
+  className,
+}: IconProps & { kind: AuthStrategyKind }) {
   switch (kind) {
     case 'google':
       return <GoogleIcon size={size} className={className} />;
