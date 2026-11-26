@@ -72,6 +72,24 @@ ingress:
   tls: []
   #  - secretName: ordler-tls
   #    hosts: [tasks.company.com]
+  # When `annotations` above put Ordler behind an authenticating proxy (e.g. ingress-nginx
+  # auth-url to oauth2-proxy), enable this: a second Ingress for the same host, class and TLS
+  # that serves only the paths whose callers bring their own token or signature (MCP clients,
+  # REST API scripts, Slack, GitHub), so the proxy does not send them to a sign-in page.
+  # Ordler checks the credentials on each of these paths itself.
+  bypassAuth:
+    enabled: false
+    # Annotations for this Ingress only; repeat the non-auth ones you need, e.g. timeouts.
+    annotations: {}
+    paths:
+      - { path: /mcp, pathType: Prefix } # MCP endpoint, bearer tokens
+      - { path: /api/v1, pathType: Prefix } # REST API, bearer tokens
+      - { path: /.well-known/oauth-protected-resource, pathType: Prefix } # MCP OAuth metadata
+      - { path: /.well-known/oauth-authorization-server, pathType: Exact }
+      - { path: /api/oauth/token, pathType: Exact } # OAuth token exchange
+      - { path: /api/oauth/register, pathType: Exact } # OAuth client registration
+      - { path: /api/slack, pathType: Prefix } # Slack events and interactivity (signed)
+      - { path: /api/github/webhook, pathType: Exact } # GitHub webhook (HMAC-signed)
 
 resources:
   requests:

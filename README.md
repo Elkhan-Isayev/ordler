@@ -245,6 +245,7 @@ and other clients cannot connect) and the integration webhooks.
   | Path (regex)                     | Why                                          |
   | -------------------------------- | -------------------------------------------- |
   | `^/mcp`                          | MCP endpoint, bearer tokens                  |
+  | `^/api/v1/`                      | REST API, bearer tokens                      |
   | `^/\.well-known/oauth-`          | OAuth metadata for MCP clients               |
   | `^/api/oauth/(token\|register)$` | OAuth token exchange and client registration |
   | `^/api/slack/`                   | Slack events and interactivity (signed)      |
@@ -254,7 +255,9 @@ and other clients cannot connect) and the integration webhooks.
   Keep `/oauth/authorize` (the consent page) behind the proxy: a person opens it in the
   browser. With oauth2-proxy, pass each path as `--skip-auth-route`; with ingress-nginx
   `auth-url`, add a second Ingress for the same host with only these paths and no auth
-  annotations. People then sign in twice (proxy, then Ordler).
+  annotations. The Helm chart creates it with `ingress.bypassAuth.enabled: true` (put any
+  non-auth annotations you need, such as timeouts, in `ingress.bypassAuth.annotations`).
+  People then sign in twice (proxy, then Ordler).
 
 **Outbound**: everything is optional except the database.
 

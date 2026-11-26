@@ -65,3 +65,9 @@ jobs:
           helm template t deploy/helm/ordler --set database.host=db.example.com \
             --set database.ssl=verify-full --set-string database.sslCa=CA --set replicaCount=3 > /dev/null
           ! helm template t deploy/helm/ordler --set replicaCount=2 2>/dev/null
+      - name: Render the auth-bypass Ingress
+        run: |
+          test "$(helm template t deploy/helm/ordler --set ingress.enabled=true \
+            --set ingress.bypassAuth.enabled=true | grep -c '^kind: Ingress')" = 2
+          test "$(helm template t deploy/helm/ordler --set ingress.bypassAuth.enabled=true \
+            | grep -c '^kind: Ingress')" = 0

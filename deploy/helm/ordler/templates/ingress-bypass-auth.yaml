@@ -1,0 +1,33 @@
+{{- if and .Values.ingress.enabled .Values.ingress.bypassAuth.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ordler.fullname" . }}-bypass-auth
+  labels:
+    {{- include "ordler.labels" . | nindent 4 }}
+  {{- with .Values.ingress.bypassAuth.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          {{- range .Values.ingress.bypassAuth.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "ordler.fullname" $ }}
+                port:
+                  name: http
+          {{- end }}
+{{- end }}
