@@ -42,11 +42,12 @@ describe('IssuePage', () => {
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     fireEvent.click(await screen.findByRole('button', { name: 'Copy ID' }));
     expect(writeText).toHaveBeenLastCalledWith('HELP-7');
-    expect(await screen.findByRole('status')).toHaveTextContent('ID copied');
+    // The live region is always mounted, so wait for its text rather than for the element.
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('ID copied'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
     expect(writeText).toHaveBeenLastCalledWith(`${window.location.origin}/issue/HELP-7`);
-    expect(await screen.findByRole('status')).toHaveTextContent('Link copied');
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Link copied'));
   });
 
   it('falls back to the copy command when the clipboard API is unavailable', async () => {
@@ -59,7 +60,7 @@ describe('IssuePage', () => {
     });
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     fireEvent.click(await screen.findByRole('button', { name: 'Copy link' }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Link copied');
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Link copied'));
     expect(execCommand).toHaveBeenCalledWith('copy');
   });
 
@@ -73,7 +74,9 @@ describe('IssuePage', () => {
     });
     await renderWithI18n(<IssuePage identifier="HELP-7" />);
     fireEvent.click(await screen.findByRole('button', { name: 'Copy ID' }));
-    await waitFor(() => expect(writeText).toHaveBeenCalled());
+    // Wait for the fallback too: only after it fails is the empty status meaningful.
+    await waitFor(() => expect(document.execCommand).toHaveBeenCalledWith('copy'));
+    await act(async () => {});
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
