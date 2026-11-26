@@ -124,6 +124,8 @@ describe('WhiteboardPage', () => {
     expect(screen.getByLabelText('1 person here')).toBeInTheDocument();
 
     title = 'Renamed elsewhere';
+    // Pushes before the page subscribes are lost; wait for the subscription.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     act(() => realtime.push({ type: 'whiteboard.changed', whiteboardId: BOARD.id }));
     expect(await screen.findByDisplayValue('Renamed elsewhere')).toBeInTheDocument();
   });

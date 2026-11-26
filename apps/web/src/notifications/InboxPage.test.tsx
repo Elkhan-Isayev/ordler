@@ -74,6 +74,8 @@ describe('InboxPage', () => {
       notification('n2', { subject: { ...list[0]!.subject, title: 'Printer jam' } }),
       ...list,
     ];
+    // Pushes before the page subscribes are lost; wait for the subscription.
+    await waitFor(() => expect(realtime.listening()).toBe(true));
     realtime.push({ type: 'inbox.changed' });
     await waitFor(() => expect(screen.getByText('Printer jam')).toBeInTheDocument());
   });
