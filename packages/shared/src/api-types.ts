@@ -14,6 +14,8 @@ export interface MeResponse {
   departments: Array<{
     id: string;
     name: string;
+    /** The member may open the department-wide request queue (request.read_department). */
+    readRequests?: boolean;
     /** `manage`: the member may change team settings such as Slack channels (team.update). */
     teams: Array<{ id: string; key: string; name: string; manage?: boolean }>;
   }>;

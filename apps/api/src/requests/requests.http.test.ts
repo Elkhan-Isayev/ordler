@@ -421,6 +421,36 @@ describe('approvals (MVP criteria 2, 3, 4, 5)', () => {
   });
 });
 
+describe('department queue', () => {
+  type Me = { departments: Array<{ id: string; readRequests?: boolean }> };
+  const me = async (name: string) =>
+    (await call('GET', '/api/me', people[name]!.cookie)).json<Me>();
+
+  it('is open to department supervisors and flagged for their sidebar', async () => {
+    const response = await call(
+      'GET',
+      `/api/departments/${ids.cs}/requests`,
+      people.csboss!.cookie,
+    );
+    expect(response.statusCode).toBe(200);
+    expect((await me('csboss')).departments).toEqual([
+      expect.objectContaining({ id: ids.cs, readRequests: true }),
+    ]);
+  });
+
+  it('is closed to a team lead, whose sidebar then hides the link', async () => {
+    const response = await call(
+      'GET',
+      `/api/departments/${ids.it}/requests`,
+      people.itlead!.cookie,
+    );
+    expect(response.statusCode).toBe(403);
+    const [it] = (await me('itlead')).departments;
+    expect(it).toMatchObject({ id: ids.it });
+    expect(it!.readRequests).toBeUndefined();
+  });
+});
+
 describe('receiving team (MVP criteria 6)', () => {
   async function openRequest() {
     const type = await requestType(ids.it, { name: 'VPN access', targetTeamId: ids.help });

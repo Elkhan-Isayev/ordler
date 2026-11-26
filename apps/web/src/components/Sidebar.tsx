@@ -37,6 +37,8 @@ export interface SidebarTeam {
 export interface SidebarDepartment {
   id: string;
   name: string;
+  /** Department admins and supervisors see the department-wide request queue. */
+  readRequests?: boolean;
   teams: SidebarTeam[];
 }
 
@@ -284,7 +286,9 @@ function DepartmentNode({
       </Toggle>
       {open && (
         <ul className="ml-3 flex flex-col gap-0.5 border-l border-line pl-2">
-          <NavItem href={`/departments/${department.id}/requests`}>{t('nav.requests')}</NavItem>
+          {department.readRequests && (
+            <NavItem href={`/departments/${department.id}/requests`}>{t('nav.requests')}</NavItem>
+          )}
           {department.teams.map((team) => (
             <TeamNode key={team.id} team={team} />
           ))}
