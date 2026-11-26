@@ -1591,7 +1591,8 @@
     "sections": {
       "requests": "Anfragen und Genehmigungen",
       "work": "Aufgaben",
-      "knowledge": "Wiki und Whiteboards"
+      "knowledge": "Wiki und Whiteboards",
+      "agents": "KI-Agenten (MCP)"
     },
     "topics": {
       "request-other-department": "Anfrage an eine andere Abteilung senden",
@@ -1601,7 +1602,15 @@
       "issue-create": "Aufgabe erstellen",
       "wiki-page": "Wiki-Seite schreiben",
       "whiteboard-diagram": "Diagramm auf einem Whiteboard zeichnen",
-      "wiki-table": "Tabelle im Wiki anlegen"
+      "wiki-table": "Tabelle im Wiki anlegen",
+      "issue-blocking": "Ein Issue als durch ein anderes blockiert markieren",
+      "cycle-enable": "Zyklen (Sprints) für ein Team aktivieren",
+      "cycle-add-issue": "Ein Issue zum aktuellen Zyklus hinzufügen",
+      "cycle-from-backlog": "Einen Zyklus aus dem Backlog planen",
+      "cycle-to-backlog": "Ein Issue zurück ins Backlog legen",
+      "cycle-progress": "Den Fortschritt eines Zyklus verfolgen",
+      "mcp-connect-claude": "Claude mit Ordler verbinden",
+      "mcp-token": "Ein Token für Claude Code und andere MCP-Clients erstellen"
     }
   }
 }

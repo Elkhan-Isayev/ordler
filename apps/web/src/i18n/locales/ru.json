@@ -1591,7 +1591,8 @@
     "sections": {
       "requests": "Запросы и согласования",
       "work": "Задачи",
-      "knowledge": "Вики и доски"
+      "knowledge": "Вики и доски",
+      "agents": "ИИ-агенты (MCP)"
     },
     "topics": {
       "request-other-department": "Отправить запрос в другой департамент",
@@ -1601,7 +1602,15 @@
       "issue-create": "Создать задачу",
       "wiki-page": "Написать страницу вики",
       "whiteboard-diagram": "Нарисовать диаграмму на доске",
-      "wiki-table": "Создать таблицу в вики"
+      "wiki-table": "Создать таблицу в вики",
+      "issue-blocking": "Отметить, что задача заблокирована другой",
+      "cycle-enable": "Включить циклы (спринты) для команды",
+      "cycle-add-issue": "Добавить задачу в текущий цикл",
+      "cycle-from-backlog": "Спланировать цикл из бэклога",
+      "cycle-to-backlog": "Вернуть задачу в бэклог",
+      "cycle-progress": "Следить за прогрессом цикла",
+      "mcp-connect-claude": "Подключить Claude к Ordler",
+      "mcp-token": "Создать токен для Claude Code и других MCP-клиентов"
     }
   }
 }

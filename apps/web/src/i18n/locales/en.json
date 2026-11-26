@@ -1591,7 +1591,8 @@
     "sections": {
       "requests": "Requests and approvals",
       "work": "Issues",
-      "knowledge": "Wiki and whiteboards"
+      "knowledge": "Wiki and whiteboards",
+      "agents": "AI agents (MCP)"
     },
     "topics": {
       "request-other-department": "Send a request to another department",
@@ -1601,7 +1602,15 @@
       "issue-create": "Create an issue",
       "wiki-page": "Write a wiki page",
       "whiteboard-diagram": "Draw a diagram on a whiteboard",
-      "wiki-table": "Create a table in the wiki"
+      "wiki-table": "Create a table in the wiki",
+      "issue-blocking": "Mark an issue as blocked by another",
+      "cycle-enable": "Turn on cycles (sprints) for a team",
+      "cycle-add-issue": "Add an issue to the current cycle",
+      "cycle-from-backlog": "Plan a cycle from the backlog",
+      "cycle-to-backlog": "Send an issue back to the backlog",
+      "cycle-progress": "Follow the progress of a cycle",
+      "mcp-connect-claude": "Connect Claude to Ordler",
+      "mcp-token": "Create a token for Claude Code and other MCP clients"
     }
   }
 }

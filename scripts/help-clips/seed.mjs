@@ -91,6 +91,42 @@ for (const [title, content] of [
   await owner.ok('POST', '/api/wiki/pages', { department: it.id, title, content });
 }
 
+// Issues for the relations clip: installing waits for the order.
+for (const title of ['Order a new projector', 'Install the new projector']) {
+  await chris.client.ok('POST', '/api/teams/HELP/issues', { title });
+}
+
+// Helpdesk plans two-week cycles, so the sprint clips have a current and an upcoming cycle.
+// Accounting keeps them off: the "turn on cycles" clip switches them on there.
+await chris.client.ok('PUT', '/api/teams/HELP/cycle-settings', {
+  enabled: true,
+  weeks: 2,
+  startDay: 1,
+  cooldownWeeks: 0,
+  upcoming: 2,
+});
+const { cycles } = await chris.client.ok('GET', '/api/teams/HELP/cycles');
+const current = cycles.find((c) => c.state === 'current');
+if (!current) throw new Error('Helpdesk has no current cycle.');
+const helpdesk = await chris.client.ok('GET', '/api/teams/HELP');
+const status = (key) => helpdesk.statuses.find((s) => s.key === key).id;
+for (const [title, key, cycleId] of [
+  ['Replace the printer toner', 'done', current.id],
+  ['Move the server rack', 'in_progress', current.id],
+  ['Renew the SSL certificate', 'todo', current.id],
+  ['Fix the door badge reader', 'todo', current.id],
+  ['Label the network cables', 'backlog', null],
+  ['Set up the guest Wi-Fi', 'backlog', null],
+  ['Clean up old user accounts', 'backlog', null],
+  ['Order spare keyboards', 'backlog', null],
+]) {
+  const created = await chris.client.ok('POST', '/api/teams/HELP/issues', { title });
+  await chris.client.ok('PATCH', `/api/issues/${created.identifier}`, {
+    statusId: status(key),
+    ...(cycleId ? { cycleId } : {}),
+  });
+}
+
 writeFileSync(
   STATE,
   JSON.stringify(
@@ -99,6 +135,7 @@ writeFileSync(
       users: { alex: 'alex@demo.test', sam: sam.email, dana: dana.email, chris: chris.email },
       departments: { it: it.id, finance: finance.id, sales: sales.id },
       waitingRequest: waiting.identifier,
+      currentCycle: `Cycle ${current.number}`,
     },
     null,
     1,

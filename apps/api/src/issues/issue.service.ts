@@ -53,6 +53,7 @@ const blocker = aliasedTable(issues, 'blocker');
 const blockerStatus = aliasedTable(workflowStatuses, 'blocker_status');
 
 type BlockSide = 'blockedBy' | 'blocking';
+const NOT_COLUMNS = new Set(['assigneeId', 'assigneeIds', 'blockedBy', 'blocking']);
 const OTHER_SIDE: Record<BlockSide, BlockSide> = { blockedBy: 'blocking', blocking: 'blockedBy' };
 
 /** The stored pair for "issue <side> other". */
@@ -527,11 +528,11 @@ export class IssueService {
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
     const changes: IssueEvent['changes'] = { ...blocks?.changes };
-    const { labelIds, blockedBy: _blockedBy, blocking: _blocking, ...rest } = input;
-    // Assignees are written through issue_assignees below, not as a plain column.
+    const { labelIds, ...rest } = input;
+    // Assignees and relations are written to their own tables below, not as plain columns.
     const fields = Object.fromEntries(
-      Object.entries(rest).filter(([key]) => key !== 'assigneeId' && key !== 'assigneeIds'),
-    ) as Omit<typeof rest, 'assigneeId' | 'assigneeIds'>;
+      Object.entries(rest).filter(([key]) => !NOT_COLUMNS.has(key)),
+    ) as Omit<typeof rest, 'assigneeId' | 'assigneeIds' | 'blockedBy' | 'blocking'>;
     const currentAssignees =
       (await this.assigneesOf([issueId])).get(issueId)?.map((a) => a.id) ?? [];
     const addedAssignees = (nextAssignees ?? []).filter((id) => !currentAssignees.includes(id));

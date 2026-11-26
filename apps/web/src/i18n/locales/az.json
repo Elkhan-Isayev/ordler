@@ -1591,7 +1591,8 @@
     "sections": {
       "requests": "Sorğular və təsdiqlər",
       "work": "Tapşırıqlar",
-      "knowledge": "Viki və lövhələr"
+      "knowledge": "Viki və lövhələr",
+      "agents": "Süni intellekt agentləri (MCP)"
     },
     "topics": {
       "request-other-department": "Başqa departamentə sorğu göndərmək",
@@ -1601,7 +1602,15 @@
       "issue-create": "Tapşırıq yaratmaq",
       "wiki-page": "Viki səhifəsi yazmaq",
       "whiteboard-diagram": "Lövhədə diaqram çəkmək",
-      "wiki-table": "Vikidə cədvəl yaratmaq"
+      "wiki-table": "Vikidə cədvəl yaratmaq",
+      "issue-blocking": "Tapşırığın başqası tərəfindən bloklandığını qeyd et",
+      "cycle-enable": "Komanda üçün dövrləri (sprintləri) aktivləşdir",
+      "cycle-add-issue": "Tapşırığı cari dövrə əlavə et",
+      "cycle-from-backlog": "Dövrü bekloqdan planlaşdır",
+      "cycle-to-backlog": "Tapşırığı bekloqa qaytar",
+      "cycle-progress": "Dövrün gedişatını izlə",
+      "mcp-connect-claude": "Claude-u Ordler-ə qoşmaq",
+      "mcp-token": "Claude Code və digər MCP müştəriləri üçün token yaratmaq"
     }
   }
 }
