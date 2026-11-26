@@ -1,5 +1,7 @@
 import type { IssueStatusCategory, MemberRef, Priority, WorkflowStatus } from '@ordler/shared';
 import type { TFunction } from 'i18next';
+import { Ban } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /** Default statuses are translated; custom ones keep the name the team gave them. */
 export function statusLabel(t: TFunction, status: Pick<WorkflowStatus, 'key' | 'name'>): string {
@@ -143,4 +145,19 @@ export function avatarColor(seed: string): string {
   let hash = 0;
   for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]!;
+}
+
+/** Red mark on issues another open issue blocks (SPEC §5.1 relations), as in Linear. */
+export function BlockedMark() {
+  const { t } = useTranslation();
+  return (
+    <span
+      role="img"
+      title={t('issues.blocks.blocked')}
+      aria-label={t('issues.blocks.blocked')}
+      className="inline-flex shrink-0 text-[#e5484d]"
+    >
+      <Ban aria-hidden size={13} />
+    </span>
+  );
 }

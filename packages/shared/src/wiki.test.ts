@@ -11,6 +11,8 @@ import {
   wikiLinks,
   guessWikiTarget,
   WIKI_LINK_PATTERN,
+  headingSlug,
+  headingSlugs,
 } from './wiki.js';
 
 describe('wiki schemas', () => {
@@ -117,5 +119,28 @@ describe('wiki links (ADR 0018)', () => {
     expect(guessWikiTarget('help-12')).toBe('issue');
     expect(guessWikiTarget(page)).toBe('wiki_page');
     expect(guessWikiTarget('Onboarding')).toBe('wiki_page');
+  });
+});
+
+describe('heading slugs', () => {
+  it.each([
+    ['Partner selection', 'partner-selection'],
+    ['Выбор партнёра', 'выбор-партнёра'],
+    ['Заключение', 'заключение'],
+    ['Şəhər üçün ağıllı çözüm', 'şəhər-üçün-ağıllı-çözüm'],
+    ['  Step 1: Install (v2.0)!  ', 'step-1-install-v20'],
+    ['🚀 Launch plan', '-launch-plan'],
+    ['snake_case & kebab-case', 'snake_case--kebab-case'],
+    ['C++ / C#', 'c--c'],
+  ])('slugs %j as %j', (text, slug) => {
+    expect(headingSlug(text)).toBe(slug);
+  });
+
+  it('suffixes repeated headings', () => {
+    expect(headingSlugs(['Notes', 'Notes', 'Notes'])).toEqual(['notes', 'notes-1', 'notes-2']);
+  });
+
+  it('skips suffixes a real heading already uses', () => {
+    expect(headingSlugs(['Intro', 'Intro-1', 'Intro'])).toEqual(['intro', 'intro-1', 'intro-2']);
   });
 });

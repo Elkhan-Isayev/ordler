@@ -55,6 +55,16 @@ describe('AuthSection', () => {
     expect(screen.getByText('Saved. Enter a new value to replace it.')).toBeInTheDocument();
   });
 
+  it('marks each strategy with the same icon as the sign-in page', async () => {
+    mockApi(base);
+    await renderWithI18n(<AuthSection />);
+    await screen.findByRole('form', { name: 'Email and password' });
+    const icons = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.querySelector('svg')?.getAttribute('data-icon'));
+    expect(icons).toEqual(['local', 'email_otp', 'google', 'microsoft', 'oidc']);
+  });
+
   it('saves Google settings and keeps the stored secret when the field is empty', async () => {
     const calls = mockApi({
       ...base,

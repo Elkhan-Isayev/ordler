@@ -3,7 +3,14 @@ import { Fragment, useState, type DragEvent, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
 import { positionBetween } from './position.js';
-import { AvatarStack, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
+import {
+  AvatarStack,
+  BlockedMark,
+  LabelChip,
+  PriorityIcon,
+  StatusIcon,
+  statusLabel,
+} from './ui.js';
 
 const DRAG_TYPE = 'application/x-ordler-issue';
 
@@ -183,7 +190,10 @@ function Card({ issue }: { issue: IssueSummary }) {
       className="flex cursor-grab flex-col gap-2 rounded-lg border border-line bg-card p-3 text-sm shadow-card select-none hover:border-ink-faint active:cursor-grabbing"
     >
       <div className="flex items-center justify-between text-xs text-ink-faint">
-        <span>{issue.identifier}</span>
+        <span className="flex items-center gap-1">
+          {issue.identifier}
+          {issue.blocked && <BlockedMark />}
+        </span>
         <AvatarStack members={issue.assignees} />
       </div>
       <span className="text-ink">{issue.title}</span>

@@ -45,6 +45,29 @@ describe('SignInPage', () => {
     );
   });
 
+  it('shows each provider its own icon, hidden from screen readers', async () => {
+    mockApi({
+      'GET /api/auth/strategies': () => ({
+        json: [
+          { kind: 'google', displayName: null },
+          { kind: 'microsoft', displayName: null },
+          { kind: 'oidc', displayName: 'Company SSO' },
+        ],
+      }),
+    });
+    await renderWithI18n(<SignInPage onSignedIn={vi.fn()} />);
+    for (const [name, icon] of [
+      ['Continue with Google', 'google'],
+      ['Continue with Microsoft', 'microsoft'],
+      ['Company SSO', 'oidc'],
+    ] as const) {
+      const link = await screen.findByRole('link', { name });
+      const svg = link.querySelector('svg');
+      expect(svg).toHaveAttribute('data-icon', icon);
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
   it('signs in with a password', async () => {
     const calls = mockApi({
       'GET /api/auth/strategies': strategies('local'),

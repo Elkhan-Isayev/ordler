@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api, type AdminStrategy } from '../api/client.js';
 import { errorKey } from '../auth/errors.js';
 import { FormError } from '../auth/form.js';
+import { StrategyIcon } from '../auth/provider-icons.js';
 import { buttonClass, inputClass, Panel, roleLabel, SectionHeader } from './common.js';
 
 /** Admin → Sign-in methods (SPEC §8.1), Wiki.js-style per-strategy settings. */
@@ -101,7 +102,10 @@ function StrategyCard({
     <Panel>
       <form onSubmit={save} aria-label={title} className="flex flex-col gap-3 text-sm">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-ink">{title}</h3>
+          <h3 className="flex items-center gap-2 font-semibold text-ink">
+            <StrategyIcon kind={strategy.kind} size={16} className="shrink-0 text-ink-muted" />
+            {title}
+          </h3>
           <label className="flex items-center gap-2 text-ink-muted">
             <input type="checkbox" name="enabled" defaultChecked={strategy.enabled} />
             {t('admin.auth.enabled')}

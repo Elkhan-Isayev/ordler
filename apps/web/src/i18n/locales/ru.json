@@ -149,7 +149,8 @@
     "import_running": "Сейчас идёт импорт. Сначала приостановите его или дождитесь окончания.",
     "github_not_configured": "GitHub App ещё не настроено полностью: нужны App ID, закрытый ключ и секрет вебхука.",
     "github_rejected": "GitHub отклонил запрос. Проверьте данные приложения и попробуйте снова.",
-    "github_unreachable": "Не удалось связаться с GitHub. Проверьте адрес GitHub и сеть."
+    "github_unreachable": "Не удалось связаться с GitHub. Проверьте адрес GitHub и сеть.",
+    "invalid_relation": "Такая связь невозможна: задача не может блокировать саму себя или одновременно блокировать и ждать одну и ту же задачу."
   },
   "updates": {
     "title": "Доступна версия Ordler {latest}",
@@ -659,7 +660,11 @@
       "projectRemoved": "убрана из проекта",
       "milestone": "веха → {to}",
       "imported": "{actor} импортировал(а) задачу из {source} ({key})",
-      "reimported": "{actor} обновил(а) задачу из {source} ({key})"
+      "reimported": "{actor} обновил(а) задачу из {source} ({key})",
+      "blockedByAdded": "заблокирована задачей {issues}",
+      "blockedByRemoved": "больше не заблокирована задачей {issues}",
+      "blockingAdded": "блокирует {issues}",
+      "blockingRemoved": "больше не блокирует {issues}"
     },
     "viaToken": "{actor} через токен «{token}»",
     "filters": {
@@ -724,6 +729,20 @@
         "merged": "Слит",
         "closed": "Закрыт"
       }
+    },
+    "blocks": {
+      "title": "Связи",
+      "blockedBy": "Заблокирована",
+      "blocking": "Блокирует",
+      "add": "Добавить связь",
+      "type": "Тип связи",
+      "search": "Поиск задач по номеру или названию",
+      "results": "Найденные задачи",
+      "noResults": "Ничего не найдено",
+      "remove": "Удалить связь с {identifier}",
+      "cancel": "Отмена",
+      "blocked": "Заблокирована",
+      "help": "Как работают связи"
     }
   },
   "editor": {
@@ -1572,7 +1591,8 @@
     "sections": {
       "requests": "Запросы и согласования",
       "work": "Задачи",
-      "knowledge": "Вики и доски"
+      "knowledge": "Вики и доски",
+      "agents": "ИИ-агенты (MCP)"
     },
     "topics": {
       "request-other-department": "Отправить запрос в другой департамент",
@@ -1582,7 +1602,15 @@
       "issue-create": "Создать задачу",
       "wiki-page": "Написать страницу вики",
       "whiteboard-diagram": "Нарисовать диаграмму на доске",
-      "wiki-table": "Создать таблицу в вики"
+      "wiki-table": "Создать таблицу в вики",
+      "issue-blocking": "Отметить, что задача заблокирована другой",
+      "cycle-enable": "Включить циклы (спринты) для команды",
+      "cycle-add-issue": "Добавить задачу в текущий цикл",
+      "cycle-from-backlog": "Спланировать цикл из бэклога",
+      "cycle-to-backlog": "Вернуть задачу в бэклог",
+      "cycle-progress": "Следить за прогрессом цикла",
+      "mcp-connect-claude": "Подключить Claude к Ordler",
+      "mcp-token": "Создать токен для Claude Code и других MCP-клиентов"
     }
   }
 }

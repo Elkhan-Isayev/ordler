@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api, oauthStartUrl } from '../api/client.js';
 import { errorKey, isKnownErrorCode } from './errors.js';
 import { Card, FormError, PrimaryButton, TextField } from './form.js';
+import { StrategyIcon } from './provider-icons.js';
 
 /** Renders exactly the strategies the admin enabled, in their order (SPEC §8.1). */
 export function SignInPage({
@@ -51,9 +52,11 @@ export function SignInPage({
           <a
             key={strategy.kind}
             href={oauthStartUrl(strategy.kind)}
-            className="rounded-md border border-line px-3 py-2 text-center text-sm font-medium text-ink hover:bg-hover"
+            // Same height for every provider; the icon is decoration, the label names the link.
+            className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-line bg-card px-3 text-sm font-medium text-ink hover:bg-hover"
           >
-            {strategy.displayName ?? t(`auth.${strategy.kind}`)}
+            <StrategyIcon kind={strategy.kind} className="shrink-0 text-ink-muted" />
+            <span>{strategy.displayName ?? t(`auth.${strategy.kind}`)}</span>
           </a>
         );
     }

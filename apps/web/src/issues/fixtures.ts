@@ -104,6 +104,8 @@ export function detail(number: number, overrides: Partial<IssueDetail> = {}): Is
     description: 'Screen flickers',
     parent: null,
     duplicateOf: null,
+    blockedBy: [],
+    blocking: [],
     children: [],
     grandchildren: [],
     ancestors: [],

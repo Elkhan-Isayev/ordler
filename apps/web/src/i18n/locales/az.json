@@ -149,7 +149,8 @@
     "import_running": "Hazırda başqa idxal gedir. Əvvəlcə onu dayandırın və ya bitməsini gözləyin.",
     "github_not_configured": "GitHub App hələ tam qurulmayıb: App ID, gizli açar və webhook sirri lazımdır.",
     "github_rejected": "GitHub sorğunu rədd etdi. Tətbiq məlumatlarını yoxlayın və yenidən cəhd edin.",
-    "github_unreachable": "GitHub-a qoşulmaq mümkün olmadı. GitHub ünvanını və şəbəkəni yoxlayın."
+    "github_unreachable": "GitHub-a qoşulmaq mümkün olmadı. GitHub ünvanını və şəbəkəni yoxlayın.",
+    "invalid_relation": "Bu əlaqə mümkün deyil: tapşırıq özünü bloklaya, ya da eyni tapşırığı həm bloklayıb, həm də onu gözləyə bilməz."
   },
   "updates": {
     "title": "Ordler {latest} versiyası mövcuddur",
@@ -659,7 +660,11 @@
       "projectRemoved": "layihədən çıxarıldı",
       "milestone": "mərhələ → {to}",
       "imported": "{actor} bu tapşırığı {source} sistemindən idxal etdi ({key})",
-      "reimported": "{actor} bu tapşırığı {source} sistemindən yenilədi ({key})"
+      "reimported": "{actor} bu tapşırığı {source} sistemindən yenilədi ({key})",
+      "blockedByAdded": "{issues} tərəfindən bloklandığını qeyd etdi",
+      "blockedByRemoved": "artıq {issues} tərəfindən bloklanmır",
+      "blockingAdded": "{issues} tapşırığını blokladığını qeyd etdi",
+      "blockingRemoved": "artıq {issues} tapşırığını bloklamır"
     },
     "viaToken": "{actor} “{token}” tokeni ilə",
     "filters": {
@@ -724,6 +729,20 @@
         "merged": "Birləşdirilib",
         "closed": "Bağlı"
       }
+    },
+    "blocks": {
+      "title": "Əlaqələr",
+      "blockedBy": "Bloklayan",
+      "blocking": "Bloklayır",
+      "add": "Əlaqə əlavə et",
+      "type": "Əlaqənin növü",
+      "search": "Tapşırıqları ID və ya ada görə axtar",
+      "results": "Uyğun tapşırıqlar",
+      "noResults": "Uyğun tapşırıq yoxdur",
+      "remove": "{identifier} ilə əlaqəni sil",
+      "cancel": "Ləğv et",
+      "blocked": "Bloklanıb",
+      "help": "Əlaqələr necə işləyir"
     }
   },
   "editor": {
@@ -1572,7 +1591,8 @@
     "sections": {
       "requests": "Sorğular və təsdiqlər",
       "work": "Tapşırıqlar",
-      "knowledge": "Viki və lövhələr"
+      "knowledge": "Viki və lövhələr",
+      "agents": "Süni intellekt agentləri (MCP)"
     },
     "topics": {
       "request-other-department": "Başqa departamentə sorğu göndərmək",
@@ -1582,7 +1602,15 @@
       "issue-create": "Tapşırıq yaratmaq",
       "wiki-page": "Viki səhifəsi yazmaq",
       "whiteboard-diagram": "Lövhədə diaqram çəkmək",
-      "wiki-table": "Vikidə cədvəl yaratmaq"
+      "wiki-table": "Vikidə cədvəl yaratmaq",
+      "issue-blocking": "Tapşırığın başqası tərəfindən bloklandığını qeyd et",
+      "cycle-enable": "Komanda üçün dövrləri (sprintləri) aktivləşdir",
+      "cycle-add-issue": "Tapşırığı cari dövrə əlavə et",
+      "cycle-from-backlog": "Dövrü bekloqdan planlaşdır",
+      "cycle-to-backlog": "Tapşırığı bekloqa qaytar",
+      "cycle-progress": "Dövrün gedişatını izlə",
+      "mcp-connect-claude": "Claude-u Ordler-ə qoşmaq",
+      "mcp-token": "Claude Code və digər MCP müştəriləri üçün token yaratmaq"
     }
   }
 }

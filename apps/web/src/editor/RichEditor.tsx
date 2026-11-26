@@ -9,6 +9,7 @@ import { EditorContent, ReactNodeViewRenderer, useEditor, type Editor } from '@t
 import { StarterKit } from '@tiptap/starter-kit';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { HeadingIds } from './heading-ids.js';
 import { CodeBlockView } from './MermaidBlock.js';
 import { DIAGRAM_TEMPLATE } from './mermaid.js';
 
@@ -99,6 +100,7 @@ export function RichEditor({
       TableKit.configure({ table: { resizable: false } }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      HeadingIds,
       Markdown,
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],

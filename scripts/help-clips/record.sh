@@ -9,7 +9,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 API_PORT="${HELP_CLIPS_API_PORT:-3210}"
 WEB_PORT="${HELP_CLIPS_WEB_PORT:-5210}"
 DB_PORT="${ORDLER_DEV_DB_PORT:-5433}"
-DB=ordler_help_clips
+DB="${HELP_CLIPS_DB:-ordler_help_clips}"
 PGBIN="${PGBIN:-$(brew --prefix postgresql@18 2>/dev/null)/bin}"
 WORK="$ROOT/.data/help-clips"
 mkdir -p "$WORK"

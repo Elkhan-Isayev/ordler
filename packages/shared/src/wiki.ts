@@ -391,3 +391,29 @@ export function guessWikiTarget(ref: string): WikiRelationTarget {
   if (/^[A-Za-z][A-Za-z0-9]*-\d+$/.test(text)) return 'issue';
   return 'wiki_page';
 }
+
+// GitHub's heading slugs keep letters, marks, digits, `_`, `-` and spaces; the rest goes.
+const SLUG_DROPPED = /[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu;
+
+/**
+ * A heading's anchor as GitHub, Wiki.js and Confluence exports write it, so imported tables of
+ * contents keep working: `## Выбор партнёра` → `выбор-партнёра`.
+ */
+export function headingSlug(text: string): string {
+  return text.trim().toLowerCase().replace(SLUG_DROPPED, '').replace(/ /g, '-');
+}
+
+/** Slugs for one page's headings in order; repeats get `-1`, `-2`, as on GitHub. */
+export function headingSlugs(texts: readonly string[]): string[] {
+  const used = new Map<string, number>();
+  return texts.map((text) => {
+    const base = headingSlug(text);
+    let slug = base;
+    let n = used.get(base) ?? 0;
+    // A later heading may literally be "intro-1": skip suffixes already taken.
+    while (used.has(slug)) slug = `${base}-${++n}`;
+    used.set(base, n);
+    used.set(slug, used.get(slug) ?? 0);
+    return slug;
+  });
+}

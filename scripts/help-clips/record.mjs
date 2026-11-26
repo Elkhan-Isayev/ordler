@@ -65,6 +65,36 @@ function director(page) {
       await page.keyboard.type(text, { delay: 55 });
       await pause(400);
     },
+    /** A caption bar over the page for steps that happen outside Ordler; null removes it. */
+    async caption(text) {
+      await page.evaluate((value) => {
+        let bar = document.getElementById('help-clip-caption');
+        if (!value) return bar?.remove();
+        if (!bar) {
+          bar = document.createElement('div');
+          bar.id = 'help-clip-caption';
+          Object.assign(bar.style, {
+            position: 'fixed',
+            left: '50%',
+            bottom: '28px',
+            transform: 'translateX(-50%)',
+            zIndex: 2147483646,
+            maxWidth: '900px',
+            padding: '12px 18px',
+            borderRadius: '10px',
+            background: 'rgba(17,17,17,0.88)',
+            color: '#fff',
+            font: '500 16px/1.45 system-ui, sans-serif',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
+            pointerEvents: 'none',
+            whiteSpace: 'pre-line',
+          });
+          document.body.appendChild(bar);
+        }
+        bar.textContent = value;
+      }, text);
+      await pause(400);
+    },
     async select(locator, label) {
       await moveTo(locator);
       await locator.selectOption({ label });
