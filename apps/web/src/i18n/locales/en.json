@@ -1609,6 +1609,7 @@
       "cycle-from-backlog": "Plan a cycle from the backlog",
       "cycle-to-backlog": "Send an issue back to the backlog",
       "cycle-progress": "Follow the progress of a cycle",
+      "cycle-board-assignee": "Show one person's issues on the cycle board",
       "mcp-connect-claude": "Connect Claude to Ordler",
       "mcp-token": "Create a token for Claude Code and other MCP clients"
     }

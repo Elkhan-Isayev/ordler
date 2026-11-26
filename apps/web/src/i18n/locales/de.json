@@ -1609,6 +1609,7 @@
       "cycle-from-backlog": "Einen Zyklus aus dem Backlog planen",
       "cycle-to-backlog": "Ein Issue zurück ins Backlog legen",
       "cycle-progress": "Den Fortschritt eines Zyklus verfolgen",
+      "cycle-board-assignee": "Auf dem Zyklus-Board nur die Issues einer Person zeigen",
       "mcp-connect-claude": "Claude mit Ordler verbinden",
       "mcp-token": "Ein Token für Claude Code und andere MCP-Clients erstellen"
     }

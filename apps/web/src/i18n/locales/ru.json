@@ -1609,6 +1609,7 @@
       "cycle-from-backlog": "Спланировать цикл из бэклога",
       "cycle-to-backlog": "Вернуть задачу в бэклог",
       "cycle-progress": "Следить за прогрессом цикла",
+      "cycle-board-assignee": "Показать на борде цикла задачи одного исполнителя",
       "mcp-connect-claude": "Подключить Claude к Ordler",
       "mcp-token": "Создать токен для Claude Code и других MCP-клиентов"
     }

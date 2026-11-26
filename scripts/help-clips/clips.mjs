@@ -332,6 +332,27 @@ export const CLIPS = [
     },
   },
   {
+    id: 'cycle-board-assignee',
+    user: 'chris',
+    start: () => '/inbox',
+    async run(ui) {
+      const { page } = ui;
+      await ui.click(page.getByRole('button', { name: 'Helpdesk' }));
+      await ui.click(page.getByRole('link', { name: /Cycles · Current/ }));
+      // The cycle's board opens already filtered to that cycle.
+      await ui.click(page.getByRole('link', { name: 'Open on the board' }));
+      const filters = page.getByRole('group', { name: 'Filters' });
+      await ui.moveTo(filters.getByLabel('Cycle', { exact: true }));
+      await ui.pause(900);
+      await ui.select(filters.getByLabel('Assignee'), 'Jordan Reyes');
+      await ui.pause(1500);
+      await ui.select(filters.getByLabel('Assignee'), 'Chris Park');
+      await ui.pause(1500);
+      await ui.select(filters.getByLabel('Assignee'), 'Any assignee');
+      await ui.pause(1200);
+    },
+  },
+  {
     id: 'mcp-connect-claude',
     user: 'alex',
     start: () => '/settings/tokens',

@@ -54,6 +54,8 @@ async function member(name, email, team, role) {
 const sam = await member('Sam Lee', 'sam@demo.test', sales, 'member');
 const dana = await member('Dana Fox', 'dana@demo.test', finance, 'team_lead');
 const chris = await member('Chris Park', 'chris@demo.test', it, 'team_lead');
+// A second Helpdesk member, so the board can be filtered down to one person's issues.
+const jordan = await member('Jordan Reyes', 'jordan@demo.test', it, 'member');
 
 const byDana = [{ selector: { type: 'user', memberId: dana.id }, rule: 'any' }];
 const types = {};
@@ -110,20 +112,23 @@ const current = cycles.find((c) => c.state === 'current');
 if (!current) throw new Error('Helpdesk has no current cycle.');
 const helpdesk = await chris.client.ok('GET', '/api/teams/HELP');
 const status = (key) => helpdesk.statuses.find((s) => s.key === key).id;
-for (const [title, key, cycleId] of [
-  ['Replace the printer toner', 'done', current.id],
-  ['Move the server rack', 'in_progress', current.id],
-  ['Renew the SSL certificate', 'todo', current.id],
-  ['Fix the door badge reader', 'todo', current.id],
-  ['Label the network cables', 'backlog', null],
-  ['Set up the guest Wi-Fi', 'backlog', null],
-  ['Clean up old user accounts', 'backlog', null],
-  ['Order spare keyboards', 'backlog', null],
+// The current cycle is split between Chris and Jordan for the "filter the board" clip.
+for (const [title, key, cycleId, assignee] of [
+  ['Replace the printer toner', 'done', current.id, jordan],
+  ['Move the server rack', 'in_progress', current.id, chris],
+  ['Update the meeting room screens', 'in_progress', current.id, jordan],
+  ['Renew the SSL certificate', 'todo', current.id, jordan],
+  ['Fix the door badge reader', 'todo', current.id, chris],
+  ['Label the network cables', 'backlog', null, null],
+  ['Set up the guest Wi-Fi', 'backlog', null, null],
+  ['Clean up old user accounts', 'backlog', null, null],
+  ['Order spare keyboards', 'backlog', null, null],
 ]) {
   const created = await chris.client.ok('POST', '/api/teams/HELP/issues', { title });
   await chris.client.ok('PATCH', `/api/issues/${created.identifier}`, {
     statusId: status(key),
     ...(cycleId ? { cycleId } : {}),
+    ...(assignee ? { assigneeIds: [assignee.id] } : {}),
   });
 }
 
