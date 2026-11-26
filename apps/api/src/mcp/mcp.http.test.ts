@@ -254,6 +254,19 @@ describe('MCP with a personal token (MVP criterion 15)', () => {
     expect(invalid.text).toMatch(/^Invalid arguments: title/);
     const status = await tool(token, 'update_issue', { identifier: 'HELP-1', status: 'Done' });
     expect(status.data()).toMatchObject({ status: 'Done' });
+
+    await tool(token, 'create_issue', { team: 'HELP', title: 'Order a new projector' });
+    const blocked = await tool(token, 'update_issue', {
+      identifier: 'HELP-1',
+      blockedBy: ['HELP-2'],
+    });
+    expect(blocked.data()).toMatchObject({
+      blockedBy: [{ identifier: 'HELP-2', title: 'Order a new projector' }],
+      blocking: [],
+    });
+    expect((await tool(token, 'get_issue', { identifier: 'HELP-2' })).data()).toMatchObject({
+      blocking: [{ identifier: 'HELP-1' }],
+    });
     expect((await rpc(token, 'nope')).error).toMatchObject({ code: -32601 });
   });
 

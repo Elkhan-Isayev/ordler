@@ -26,6 +26,7 @@ import { ProjectPicker } from '../projects/ProjectPicker.js';
 import { cycleName } from '../cycles/format.js';
 import { DueDatePicker } from './DueDatePicker.js';
 import { CopyBranchButton, IssueGithubLinks, useIssueGithub } from './IssueGithub.js';
+import { IssueBlocks } from './IssueBlocks.js';
 import { IssueRelations, LabelPicker } from './IssueRelations.js';
 import { IssueWhiteboards } from '../whiteboards/IssueWhiteboards.js';
 import { Avatar, PriorityIcon, quietSelectClass, StatusIcon, statusLabel } from './ui.js';
@@ -195,6 +196,12 @@ export function IssuePage({ identifier }: { identifier: string }) {
             <IssueRelations
               issue={issue}
               team={team}
+              onChanged={() => void reload()}
+              onError={(code) => setError(code)}
+            />
+            <IssueBlocks
+              issue={issue}
+              editable={canEdit}
               onChanged={() => void reload()}
               onError={(code) => setError(code)}
             />
@@ -454,6 +461,9 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
             : t('issues.event.declined');
       case 'duplicateOf':
         return '';
+      case 'blockedBy':
+      case 'blocking':
+        return relationChange(t, field, change);
       case 'labelIds':
         return t('issues.event.labels', {
           to: (change.to as string[]).map((id) => labelName(t, team, id)).join(', ') || '—',
@@ -484,6 +494,24 @@ export function describeEvent(t: TFunction, event: IssueEvent, team: TeamView): 
     }
   });
   return `${actor}: ${parts.filter(Boolean).join(', ')}`;
+}
+
+/** "blocked by IT-2", "no longer blocking IT-3": what was added and what was removed. */
+function relationChange(
+  t: TFunction,
+  field: 'blockedBy' | 'blocking',
+  change: { from: unknown; to: unknown },
+): string {
+  const from = (change.from as string[] | null) ?? [];
+  const to = (change.to as string[] | null) ?? [];
+  const added = to.filter((id) => !from.includes(id));
+  const removed = from.filter((id) => !to.includes(id));
+  return [
+    added.length > 0 ? t(`issues.event.${field}Added`, { issues: added.join(', ') }) : '',
+    removed.length > 0 ? t(`issues.event.${field}Removed`, { issues: removed.join(', ') }) : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 function statusName(t: TFunction, team: TeamView, id: unknown): string {

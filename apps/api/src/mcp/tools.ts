@@ -74,6 +74,10 @@ export function issueBrief(ctx: AppContext, issue: IssueSummary) {
   };
 }
 
+function blockBrief(issue: IssueDetail['blockedBy'][number]) {
+  return { identifier: issue.identifier, title: issue.title, status: issue.status.name };
+}
+
 export function issueFull(ctx: AppContext, issue: IssueDetail) {
   return {
     ...issueBrief(ctx, issue),
@@ -84,6 +88,8 @@ export function issueFull(ctx: AppContext, issue: IssueDetail) {
       title: c.title,
       status: c.status.name,
     })),
+    blockedBy: issue.blockedBy.map(blockBrief),
+    blocking: issue.blocking.map(blockBrief),
     createdBy: issue.createdBy?.name ?? null,
     createdAt: issue.createdAt,
     // Long threads are cut to the latest comments to keep agent context small.
@@ -602,7 +608,7 @@ const tools: ToolDefinition[] = [
   {
     name: 'update_issue',
     description:
-      'Change an issue’s title, description, status, priority or assignee (null to unassign).',
+      'Change an issue’s title, description, status, priority, assignee (null to unassign), or its "blocked by" / "blocking" issues.',
     scope: 'issues:write',
     input: z.object({
       identifier: identifierSchema,
@@ -613,6 +619,16 @@ const tools: ToolDefinition[] = [
       assignee: z.string().max(200).nullable().optional(),
       assignees: z.array(z.string().max(200)).max(10).optional().describe('Replaces all assignees'),
       labels: z.array(z.string().max(60)).max(20).optional().describe('Replaces all labels'),
+      blockedBy: z
+        .array(identifierSchema)
+        .max(50)
+        .optional()
+        .describe('Issues that must be done first (e.g. ["IT-3"]); replaces the list'),
+      blocking: z
+        .array(identifierSchema)
+        .max(50)
+        .optional()
+        .describe('Issues waiting for this one; replaces the list'),
     }),
     async run(
       ctx,
@@ -626,6 +642,8 @@ const tools: ToolDefinition[] = [
         assignee?: string | null;
         assignees?: string[];
         labels?: string[];
+        blockedBy?: string[];
+        blocking?: string[];
       },
     ) {
       const team = await ctx.issues.team(caller.memberId, teamKeyOf(args.identifier));
@@ -641,6 +659,8 @@ const tools: ToolDefinition[] = [
           ? { assigneeIds: args.assignees.map((name) => assigneeId(team, caller, name)!) }
           : {}),
         ...(args.labels !== undefined ? { labelIds: labelIds(team, args.labels) } : {}),
+        ...(args.blockedBy !== undefined ? { blockedBy: args.blockedBy } : {}),
+        ...(args.blocking !== undefined ? { blocking: args.blocking } : {}),
       };
       if (Object.keys(patch).length === 0) throw new DomainError('validation_failed');
       return issueFull(

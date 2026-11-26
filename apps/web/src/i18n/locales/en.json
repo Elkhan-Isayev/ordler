@@ -149,7 +149,8 @@
     "import_running": "Another import is running. Pause or wait for it first.",
     "github_not_configured": "The GitHub App is not fully configured yet: it needs the app ID, private key and webhook secret.",
     "github_rejected": "GitHub rejected the request. Check the app details and try again.",
-    "github_unreachable": "GitHub could not be reached. Check the GitHub URL and the network."
+    "github_unreachable": "GitHub could not be reached. Check the GitHub URL and the network.",
+    "invalid_relation": "This relation is not possible: an issue cannot block itself, or block and wait for the same issue."
   },
   "updates": {
     "title": "Ordler {latest} is available",
@@ -659,7 +660,11 @@
       "projectRemoved": "removed from the project",
       "milestone": "milestone → {to}",
       "imported": "{actor} imported this issue from {source} ({key})",
-      "reimported": "{actor} updated this issue from {source} ({key})"
+      "reimported": "{actor} updated this issue from {source} ({key})",
+      "blockedByAdded": "marked as blocked by {issues}",
+      "blockedByRemoved": "no longer blocked by {issues}",
+      "blockingAdded": "marked as blocking {issues}",
+      "blockingRemoved": "no longer blocking {issues}"
     },
     "viaToken": "{actor} via token “{token}”",
     "filters": {
@@ -724,6 +729,20 @@
         "merged": "Merged",
         "closed": "Closed"
       }
+    },
+    "blocks": {
+      "title": "Relations",
+      "blockedBy": "Blocked by",
+      "blocking": "Blocking",
+      "add": "Add relation",
+      "type": "Relation type",
+      "search": "Search issues by ID or title",
+      "results": "Matching issues",
+      "noResults": "No matching issues",
+      "remove": "Remove relation to {identifier}",
+      "cancel": "Cancel",
+      "blocked": "Blocked",
+      "help": "How relations work"
     }
   },
   "editor": {

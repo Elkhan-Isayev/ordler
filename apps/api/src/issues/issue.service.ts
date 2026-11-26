@@ -29,6 +29,7 @@ import {
   projects,
   projectTeams,
   issueAssignees,
+  issueBlocks,
   issueEvents,
   issueLabels,
   issues,
@@ -48,6 +49,28 @@ import { teamStatuses } from './workflows.js';
 type TeamRow = typeof teams.$inferSelect;
 
 const assignee = aliasedTable(members, 'assignee');
+const blocker = aliasedTable(issues, 'blocker');
+const blockerStatus = aliasedTable(workflowStatuses, 'blocker_status');
+
+type BlockSide = 'blockedBy' | 'blocking';
+const OTHER_SIDE: Record<BlockSide, BlockSide> = { blockedBy: 'blocking', blocking: 'blockedBy' };
+
+/** The stored pair for "issue <side> other". */
+function blockPair(side: BlockSide, issueId: string, otherId: string) {
+  return side === 'blockedBy'
+    ? { blockerId: otherId, blockedId: issueId }
+    : { blockerId: issueId, blockedId: otherId };
+}
+
+/** Changes to issue relations, worked out before the write so it can run in one transaction. */
+interface BlockPlan {
+  add: Array<{ blockerId: string; blockedId: string }>;
+  remove: Array<{ blockerId: string; blockedId: string }>;
+  /** History of the edited issue: full identifier lists before and after. */
+  changes: IssueEvent['changes'];
+  /** History of each other issue touched: the edited issue added to or removed from a side. */
+  others: Map<string, { teamId: string; changes: IssueEvent['changes'] }>;
+}
 
 /** Sub-issues in their chosen order; equal positions keep creation order (IT-3 before IT-4). */
 function bySubOrder(list: IssueSummary[]): IssueSummary[] {
@@ -64,7 +87,14 @@ export function likeEscape(text: string): string {
 const TRACKED: Array<
   Exclude<
     IssueField,
-    'triage' | 'labelIds' | 'duplicateOf' | 'assigneeId' | 'assigneeIds' | 'imported'
+    | 'triage'
+    | 'labelIds'
+    | 'duplicateOf'
+    | 'assigneeId'
+    | 'assigneeIds'
+    | 'imported'
+    | 'blockedBy'
+    | 'blocking'
   >
 > = [
   'title',
@@ -493,10 +523,11 @@ export class IssueService {
       input = { ...input, projectId: placement.projectId, milestoneId: placement.milestoneId };
     }
     if (input.parentId) await this.assertParent(team.id, input.parentId, issueId);
+    const blocks = await this.planBlocks(memberId, issueId, input);
 
     const [before] = await this.db.select().from(issues).where(eq(issues.id, issueId));
-    const changes: IssueEvent['changes'] = {};
-    const { labelIds, ...rest } = input;
+    const changes: IssueEvent['changes'] = { ...blocks?.changes };
+    const { labelIds, blockedBy: _blockedBy, blocking: _blocking, ...rest } = input;
     // Assignees are written through issue_assignees below, not as a plain column.
     const fields = Object.fromEntries(
       Object.entries(rest).filter(([key]) => key !== 'assigneeId' && key !== 'assigneeIds'),
@@ -549,6 +580,7 @@ export class IssueService {
           await tx.insert(issueLabels).values(labelIds!.map((labelId) => ({ issueId, labelId })));
         }
       }
+      if (blocks) await this.writeBlocks(tx, blocks, memberId, via, now);
       if (Object.keys(changes).length > 0) {
         await tx.insert(issueEvents).values({
           issueId,
@@ -562,6 +594,13 @@ export class IssueService {
     });
 
     await this.deps.events.publish({ type: 'issue.changed', teamId: team.id, issueId });
+    for (const [otherId, other] of blocks?.others ?? []) {
+      await this.deps.events.publish({
+        type: 'issue.changed',
+        teamId: other.teamId,
+        issueId: otherId,
+      });
+    }
     const updated = await this.detailById(issueId, memberId);
     await this.auditVia(via, memberId, 'issue.updated', issueId, {
       identifier: updated.identifier,
@@ -820,6 +859,182 @@ export class IssueService {
     if (!row) throw new DomainError('assignee_not_in_team');
   }
 
+  /**
+   * Compares the requested relation lists with the stored ones. Each named issue must be
+   * readable; relations to issues the member cannot see are kept, since they could not list them.
+   */
+  private async planBlocks(
+    memberId: string,
+    issueId: string,
+    input: UpdateIssueInput,
+  ): Promise<BlockPlan | undefined> {
+    if (input.blockedBy === undefined && input.blocking === undefined) return undefined;
+    const self = (await this.summary(issueId))!;
+    const plan: BlockPlan = { add: [], remove: [], changes: {}, others: new Map() };
+    const wantedBySide = new Map<BlockSide, Set<string>>();
+    for (const side of ['blockedBy', 'blocking'] as const) {
+      const refs = input[side];
+      if (refs === undefined) continue;
+      const wanted = new Set<string>();
+      for (const ref of refs) {
+        const other = await this.readableIssue(memberId, ref);
+        if (other.issueId === issueId) throw new DomainError('invalid_relation');
+        wanted.add(other.issueId);
+      }
+      wantedBySide.set(side, wanted);
+    }
+    // One issue cannot both block this one and wait for it.
+    const [blockedBy, blocking] = [wantedBySide.get('blockedBy'), wantedBySide.get('blocking')];
+    if (blockedBy && blocking && [...blockedBy].some((id) => blocking.has(id))) {
+      throw new DomainError('invalid_relation');
+    }
+
+    for (const [side, wanted] of wantedBySide) {
+      const current = await this.blockIds(issueId, side);
+      const visible = await this.visibleIssues(memberId, current);
+      const kept = current.filter((id) => !visible.has(id) || wanted.has(id));
+      const added = [...wanted].filter((id) => !current.includes(id));
+      const removed = current.filter((id) => !kept.includes(id));
+      if (added.length === 0 && removed.length === 0) continue;
+      const opposite = wantedBySide.get(OTHER_SIDE[side]);
+      const reverse = await this.blockIds(issueId, OTHER_SIDE[side]);
+      for (const id of added) {
+        if (reverse.includes(id) && !(opposite && !opposite.has(id))) {
+          throw new DomainError('invalid_relation');
+        }
+      }
+      plan.add.push(...added.map((id) => blockPair(side, issueId, id)));
+      plan.remove.push(...removed.map((id) => blockPair(side, issueId, id)));
+      const refs = await this.identifiers([...current, ...added]);
+      plan.changes[side] = {
+        from: current.filter((id) => visible.has(id)).map((id) => refs.get(id)!),
+        to: [...kept.filter((id) => visible.has(id)), ...added].map((id) => refs.get(id)!),
+      };
+      for (const [list, change] of [
+        [added, { from: [], to: [self.identifier] }],
+        [removed, { from: [self.identifier], to: [] }],
+      ] as const) {
+        for (const id of list) {
+          const entry = plan.others.get(id) ?? {
+            teamId: (await this.summary(id))!.teamId,
+            changes: {},
+          };
+          entry.changes[OTHER_SIDE[side]] = change;
+          plan.others.set(id, entry);
+        }
+      }
+    }
+    return plan;
+  }
+
+  private async writeBlocks(
+    tx: Db,
+    plan: BlockPlan,
+    memberId: string,
+    via: string | undefined,
+    now: Date,
+  ): Promise<void> {
+    for (const pair of plan.remove) {
+      await tx
+        .delete(issueBlocks)
+        .where(
+          and(eq(issueBlocks.blockerId, pair.blockerId), eq(issueBlocks.blockedId, pair.blockedId)),
+        );
+    }
+    if (plan.add.length > 0) {
+      await tx
+        .insert(issueBlocks)
+        .values(plan.add.map((pair) => ({ ...pair, createdBy: memberId, createdAt: now })))
+        .onConflictDoNothing();
+    }
+    for (const [otherId, other] of plan.others) {
+      await tx.insert(issueEvents).values({
+        issueId: otherId,
+        actorId: memberId,
+        kind: 'updated',
+        changes: other.changes,
+        viaToken: via ?? null,
+        createdAt: now,
+      });
+      await tx.update(issues).set({ updatedAt: now }).where(eq(issues.id, otherId));
+    }
+  }
+
+  /** The issues on one side of an issue's relations, archived ones left out. */
+  private async blockIds(issueId: string, side: BlockSide): Promise<string[]> {
+    const [mine, theirs] =
+      side === 'blockedBy'
+        ? [issueBlocks.blockedId, issueBlocks.blockerId]
+        : [issueBlocks.blockerId, issueBlocks.blockedId];
+    const rows = await this.db
+      .select({ id: theirs })
+      .from(issueBlocks)
+      .innerJoin(issues, eq(issues.id, theirs))
+      .where(and(eq(mine, issueId), isNull(issues.archivedAt)))
+      .orderBy(asc(issueBlocks.createdAt));
+    return rows.map((r) => r.id);
+  }
+
+  private async identifiers(issueIds: string[]): Promise<Map<string, string>> {
+    if (issueIds.length === 0) return new Map();
+    const rows = await this.db
+      .select({ id: issues.id, number: issues.number, teamKey: teams.key })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(inArray(issues.id, issueIds));
+    return new Map(rows.map((r) => [r.id, formatIssueIdentifier(r.teamKey, r.number)]));
+  }
+
+  /** Which of these issues the member may read, checked once per team. */
+  private async visibleIssues(memberId: string, issueIds: string[]): Promise<Set<string>> {
+    if (issueIds.length === 0) return new Set();
+    const rows = await this.db
+      .select({ id: issues.id, team: teams })
+      .from(issues)
+      .innerJoin(teams, eq(teams.id, issues.teamId))
+      .where(inArray(issues.id, issueIds));
+    const readable = new Map<string, boolean>();
+    const result = new Set<string>();
+    for (const { id, team } of rows) {
+      if (!readable.has(team.id)) {
+        readable.set(team.id, (await this.deps.access.forTeam(memberId, team)).read);
+      }
+      if (readable.get(team.id)) result.add(id);
+    }
+    return result;
+  }
+
+  /** One side of the relations as the viewer may see it. */
+  private async blockSummaries(
+    viewerId: string,
+    issueId: string,
+    side: BlockSide,
+  ): Promise<IssueSummary[]> {
+    const ids = await this.blockIds(issueId, side);
+    const visible = [...(await this.visibleIssues(viewerId, ids))];
+    if (visible.length === 0) return [];
+    const list = await this.summaries(inArray(issues.id, visible));
+    return ids.flatMap((id) => list.find((s) => s.id === id) ?? []);
+  }
+
+  /** Issues with at least one open blocker; finished or canceled blockers no longer count. */
+  private async blockedOf(issueIds: string[]): Promise<Set<string>> {
+    if (issueIds.length === 0) return new Set();
+    const rows = await this.db
+      .selectDistinct({ id: issueBlocks.blockedId })
+      .from(issueBlocks)
+      .innerJoin(blocker, eq(blocker.id, issueBlocks.blockerId))
+      .innerJoin(blockerStatus, eq(blockerStatus.id, blocker.statusId))
+      .where(
+        and(
+          inArray(issueBlocks.blockedId, issueIds),
+          isNull(blocker.archivedAt),
+          sql`${blockerStatus.category} not in ('completed', 'canceled')`,
+        ),
+      );
+    return new Set(rows.map((r) => r.id));
+  }
+
   private async summaries(where: ReturnType<typeof and>): Promise<IssueSummary[]> {
     const rows = await this.db
       .select({
@@ -841,6 +1056,7 @@ export class IssueService {
       .orderBy(asc(issues.sortOrder), desc(issues.number));
     const labelMap = await this.labelsOf(rows.map((r) => r.issue.id));
     const assigneeMap = await this.assigneesOf(rows.map((r) => r.issue.id));
+    const blocked = await this.blockedOf(rows.map((r) => r.issue.id));
     return rows.map(({ issue, teamKey, assigneeName, status }) => ({
       id: issue.id,
       identifier: formatIssueIdentifier(teamKey, issue.number),
@@ -864,6 +1080,7 @@ export class IssueService {
       cycleId: issue.cycleId,
       projectId: issue.projectId,
       milestoneId: issue.milestoneId,
+      blocked: blocked.has(issue.id),
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
     }));
@@ -1236,6 +1453,8 @@ export class IssueService {
       ...summary,
       parent: parent ? { id: parent.id, identifier: parent.identifier, title: parent.title } : null,
       duplicateOf: original ? { identifier: original.identifier, title: original.title } : null,
+      blockedBy: await this.blockSummaries(viewerId, issueId, 'blockedBy'),
+      blocking: await this.blockSummaries(viewerId, issueId, 'blocking'),
       children,
       grandchildren:
         children.length === 0

@@ -149,7 +149,8 @@
     "import_running": "Ein anderer Import läuft gerade. Pausieren Sie ihn oder warten Sie, bis er fertig ist.",
     "github_not_configured": "Die GitHub App ist noch nicht vollständig eingerichtet: App-ID, privater Schlüssel und Webhook-Secret fehlen.",
     "github_rejected": "GitHub hat die Anfrage abgelehnt. Prüfen Sie die App-Daten und versuchen Sie es erneut.",
-    "github_unreachable": "GitHub ist nicht erreichbar. Prüfen Sie die GitHub-URL und das Netzwerk."
+    "github_unreachable": "GitHub ist nicht erreichbar. Prüfen Sie die GitHub-URL und das Netzwerk.",
+    "invalid_relation": "Diese Beziehung ist nicht möglich: Ein Issue kann sich nicht selbst blockieren oder dasselbe Issue zugleich blockieren und darauf warten."
   },
   "updates": {
     "title": "Ordler {latest} ist verfügbar",
@@ -659,7 +660,11 @@
       "projectRemoved": "aus dem Projekt entfernt",
       "milestone": "Meilenstein → {to}",
       "imported": "{actor} hat dieses Issue aus {source} importiert ({key})",
-      "reimported": "{actor} hat dieses Issue aus {source} aktualisiert ({key})"
+      "reimported": "{actor} hat dieses Issue aus {source} aktualisiert ({key})",
+      "blockedByAdded": "als blockiert durch {issues} markiert",
+      "blockedByRemoved": "nicht mehr blockiert durch {issues}",
+      "blockingAdded": "als blockierend für {issues} markiert",
+      "blockingRemoved": "blockiert {issues} nicht mehr"
     },
     "viaToken": "{actor} über Token „{token}“",
     "filters": {
@@ -724,6 +729,20 @@
         "merged": "Gemergt",
         "closed": "Geschlossen"
       }
+    },
+    "blocks": {
+      "title": "Beziehungen",
+      "blockedBy": "Blockiert durch",
+      "blocking": "Blockiert",
+      "add": "Beziehung hinzufügen",
+      "type": "Art der Beziehung",
+      "search": "Issues nach ID oder Titel suchen",
+      "results": "Passende Issues",
+      "noResults": "Keine passenden Issues",
+      "remove": "Beziehung zu {identifier} entfernen",
+      "cancel": "Abbrechen",
+      "blocked": "Blockiert",
+      "help": "So funktionieren Beziehungen"
     }
   },
   "editor": {

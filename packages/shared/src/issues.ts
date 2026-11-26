@@ -56,6 +56,9 @@ export type CreateIssueInput = z.input<typeof createIssueSchema>;
 export type CreateIssueData = z.output<typeof createIssueSchema>;
 
 /** Partial update; `sortOrder` positions the issue inside its board column. */
+/** Issues named by identifier in a relation list; readable to the member, at most 50. */
+const issueRefsSchema = z.array(z.string().trim().min(3).max(40)).max(50);
+
 export const updateIssueSchema = z
   .object({
     title: titleSchema,
@@ -73,6 +76,9 @@ export const updateIssueSchema = z
     cycleId: z.uuid().nullable(),
     projectId: z.uuid().nullable(),
     milestoneId: z.uuid().nullable(),
+    /** Full lists of issue identifiers (ENG-12); the other issue shows the reverse side. */
+    blockedBy: issueRefsSchema,
+    blocking: issueRefsSchema,
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, 'empty_update');
@@ -105,6 +111,7 @@ export const ISSUE_ERROR_CODES = [
   'cycle_not_in_team',
   'project_not_in_team',
   'whiteboard_full',
+  'invalid_relation',
 ] as const;
 export type IssueErrorCode = (typeof ISSUE_ERROR_CODES)[number];
 
@@ -198,6 +205,8 @@ export interface IssueSummary {
   cycleId: string | null;
   projectId: string | null;
   milestoneId: string | null;
+  /** Another open issue blocks it (SPEC §5.1 relations); lists show a blocked mark. */
+  blocked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -217,6 +226,8 @@ export type IssueField =
   | 'milestoneId'
   | 'imported'
   | 'duplicateOf'
+  | 'blockedBy'
+  | 'blocking'
   | 'triage';
 
 /** One entry of an issue's append-only history. */
@@ -251,6 +262,9 @@ export interface IssueDetail extends IssueSummary {
   parent: { id: string; identifier: string; title: string } | null;
   /** Set when triage closed it as a duplicate (SPEC §5.2). */
   duplicateOf: { identifier: string; title: string } | null;
+  /** Issues that must be done first, and issues waiting for this one; only readable ones. */
+  blockedBy: IssueSummary[];
+  blocking: IssueSummary[];
   /** Direct sub-issues; the UI shows two levels (SPEC §5.1). */
   children: IssueSummary[];
   /** Sub-issues of the children (second level), grouped by `parentId` in the UI. */

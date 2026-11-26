@@ -960,6 +960,28 @@ export const issueLabels = pgTable(
 );
 
 /**
+ * "Blocked by" / "Blocking" between issues (SPEC §5.1 relations), stored once per pair and
+ * shown on both sides; the teams may differ.
+ */
+export const issueBlocks = pgTable(
+  'issue_blocks',
+  {
+    blockerId: uuid('blocker_id')
+      .notNull()
+      .references(() => issues.id),
+    blockedId: uuid('blocked_id')
+      .notNull()
+      .references(() => issues.id),
+    createdBy: uuid('created_by').references(() => members.id),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    index('issue_blocks_blocked_idx').on(t.blockedId),
+  ],
+);
+
+/**
  * Every assignee of an issue. `issues.assignee_id` stays the first one, so single-assignee
  * teams and older readers keep working (expand/contract).
  */

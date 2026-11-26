@@ -65,6 +65,7 @@ const STATUS: Record<DomainErrorCode, number> = {
   label_not_in_team: 400,
   label_name_taken: 409,
   invalid_parent: 400,
+  invalid_relation: 400,
   status_in_use: 409,
   status_required: 409,
   single_assignee: 400,

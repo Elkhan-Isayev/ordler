@@ -7,7 +7,14 @@ import {
 import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '../router.js';
-import { AvatarStack, LabelChip, PriorityIcon, StatusIcon, statusLabel } from './ui.js';
+import {
+  AvatarStack,
+  BlockedMark,
+  LabelChip,
+  PriorityIcon,
+  StatusIcon,
+  statusLabel,
+} from './ui.js';
 
 interface Group {
   id: string;
@@ -79,6 +86,7 @@ export function IssueList({
                   <PriorityIcon priority={issue.priority} />
                   <span className="w-20 shrink-0 text-ink-faint">{issue.identifier}</span>
                   <StatusIcon category={issue.status.category} />
+                  {issue.blocked && <BlockedMark />}
                   <span className="min-w-0 flex-1 truncate text-ink">{issue.title}</span>
                   <span className="hidden gap-1 md:flex">
                     {issue.labels.map((label) => (
