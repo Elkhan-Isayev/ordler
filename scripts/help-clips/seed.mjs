@@ -86,6 +86,14 @@ const waiting = await sam.client.ok('POST', '/api/requests', {
   priority: 'high',
 });
 
+// Already open in Helpdesk's queue for the "handle an incoming request" clip (no approvals).
+await sam.client.ok('POST', '/api/requests', {
+  title: 'VPN access for a trip to Berlin',
+  description: 'Travelling next week and need to reach the CRM from the hotel.',
+  requestTypeId: types['VPN access'],
+  priority: 'medium',
+});
+
 for (const [title, content] of [
   ['VPN setup guide', '# VPN setup guide\n\nInstall the client, sign in, pick the office.'],
   ['Laptop policy', '# Laptop policy\n\nEvery employee gets one laptop, replaced every 3 years.'],

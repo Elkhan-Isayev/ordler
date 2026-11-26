@@ -5,6 +5,7 @@ import {
   CalendarPlus,
   ChartLine,
   CircleCheck,
+  Inbox,
   IterationCw,
   KeyRound,
   ListFilter,
@@ -38,6 +39,7 @@ const clip = (id: string) => `/help/${id}.webm`;
 export const HELP_TOPICS: HelpTopic[] = (
   [
     { id: 'request-other-department', section: 'requests', icon: Send },
+    { id: 'request-receive', section: 'requests', icon: Inbox },
     { id: 'request-several-departments', section: 'requests', icon: Network },
     { id: 'request-add-approvals', section: 'requests', icon: UserPlus },
     { id: 'approval-decide', section: 'requests', icon: Stamp },

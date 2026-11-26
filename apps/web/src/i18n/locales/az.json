@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Başqa departamentə sorğu göndərmək",
+      "request-receive": "Departamentinizə gələn sorğunu emal et",
       "request-several-departments": "Bir sorğunu bir neçə departamentə göndərmək",
       "request-add-approvals": "Sorğuya təsdiqlər əlavə etmək",
       "approval-decide": "Sorğunu təsdiqləmək və ya rədd etmək",

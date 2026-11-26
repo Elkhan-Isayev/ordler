@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Отправить запрос в другой департамент",
+      "request-receive": "Обработать запрос, пришедший в ваш департамент",
       "request-several-departments": "Один запрос в несколько департаментов",
       "request-add-approvals": "Добавить согласования к запросу",
       "approval-decide": "Согласовать или отклонить запрос",

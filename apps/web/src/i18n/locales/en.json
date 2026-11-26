@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Send a request to another department",
+      "request-receive": "Handle a request sent to your department",
       "request-several-departments": "One request to several departments",
       "request-add-approvals": "Add approvals to a request",
       "approval-decide": "Approve or reject a request",

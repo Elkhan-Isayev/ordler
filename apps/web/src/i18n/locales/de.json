@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Anfrage an eine andere Abteilung senden",
+      "request-receive": "Eine Anfrage an Ihre Abteilung bearbeiten",
       "request-several-departments": "Eine Anfrage an mehrere Abteilungen",
       "request-add-approvals": "Genehmigungen zu einer Anfrage hinzufügen",
       "approval-decide": "Anfrage genehmigen oder ablehnen",
