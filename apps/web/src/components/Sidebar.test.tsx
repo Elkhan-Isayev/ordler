@@ -137,6 +137,21 @@ describe('Sidebar', () => {
     expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
   });
 
+  it('links the department request queue only to those who may read it', async () => {
+    const departments = [
+      { id: 'it', name: 'IT', readRequests: true, teams: [] },
+      { id: 'fin', name: 'Finance', teams: [] },
+    ];
+    await renderSidebar('en', { departments });
+    expect(screen.getByRole('link', { name: 'Requests' })).toHaveAttribute(
+      'href',
+      '/departments/it/requests',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /IT/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Finance/ }));
+    expect(screen.queryByRole('link', { name: 'Requests' })).not.toBeInTheDocument();
+  });
+
   it('collapses a department', async () => {
     await renderSidebar();
     await userEvent.click(screen.getByRole('button', { name: /IT/ }));

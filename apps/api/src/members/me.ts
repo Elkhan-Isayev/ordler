@@ -40,6 +40,16 @@ export async function loadMe(db: Db, memberId: string): Promise<MeView | undefin
     const department = byDepartment.get(row.departmentId) ?? {
       id: row.departmentId,
       name: row.departmentName,
+      // Mirrors the check on GET /departments/:id/requests, so the sidebar never links a 403.
+      ...(can(
+        access.assignments,
+        access.rolePermissions,
+        'request.read_department',
+        { type: 'department', id: row.departmentId },
+        access.directory,
+      )
+        ? { readRequests: true }
+        : {}),
       teams: [],
     };
     const manage = can(

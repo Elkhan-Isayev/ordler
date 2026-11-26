@@ -52,6 +52,44 @@ export const CLIPS = [
     },
   },
   {
+    id: 'request-receive',
+    user: 'chris',
+    start: () => '/inbox',
+    async run(ui) {
+      const { page } = ui;
+      // Requests sent to IT land in the queue of the team the request type routes to.
+      await ui.click(page.getByRole('button', { name: 'Helpdesk' }));
+      await ui.click(page.getByRole('link', { name: 'Requests', exact: true }).last());
+      await ui.click(page.getByRole('link', { name: /VPN access for a trip to Berlin/ }));
+      await ui.click(page.getByRole('button', { name: 'Accept' }));
+      const properties = page.getByRole('complementary');
+      await ui.select(properties.getByLabel('Assignee'), 'Jordan Reyes');
+
+      await ui.caption('A comment is visible to the requester.');
+      await ui.click(page.getByRole('textbox', { name: 'New comment' }));
+      await ui.type('Jordan will set up your VPN access today.');
+      await ui.click(page.getByRole('button', { name: 'Comment', exact: true }));
+      await ui.pause(900);
+
+      await ui.caption('An internal comment stays inside your team.');
+      await ui.click(page.getByRole('textbox', { name: 'New comment' }));
+      await ui.type('Use the travel profile, it expires after two weeks.');
+      await ui.click(page.getByLabel('Internal (team only)'));
+      await ui.click(page.getByRole('button', { name: 'Comment', exact: true }));
+      await ui.pause(900);
+
+      await ui.caption('Create an issue to track the work in your team.');
+      await ui.click(page.getByRole('button', { name: /Create issue/ }));
+      const linked = page.getByRole('region', { name: 'Linked issues' }).getByRole('link').first();
+      await ui.moveTo(linked);
+      await ui.pause(1200);
+      await ui.caption('Then assign the issue to the person who will do it.');
+      await ui.click(linked);
+      await ui.select(page.getByRole('complementary').getByLabel('Assignee'), 'Jordan Reyes');
+      await ui.pause(1500);
+    },
+  },
+  {
     id: 'approval-decide',
     user: 'dana',
     start: () => '/inbox',
@@ -329,6 +367,27 @@ export const CLIPS = [
       await ui.pause(1200);
       await ui.click(page.getByRole('link', { name: 'Open on the board' }));
       await ui.pause(1500);
+    },
+  },
+  {
+    id: 'cycle-board-assignee',
+    user: 'chris',
+    start: () => '/inbox',
+    async run(ui) {
+      const { page } = ui;
+      await ui.click(page.getByRole('button', { name: 'Helpdesk' }));
+      await ui.click(page.getByRole('link', { name: /Cycles · Current/ }));
+      // The cycle's board opens already filtered to that cycle.
+      await ui.click(page.getByRole('link', { name: 'Open on the board' }));
+      const filters = page.getByRole('group', { name: 'Filters' });
+      await ui.moveTo(filters.getByLabel('Cycle', { exact: true }));
+      await ui.pause(900);
+      await ui.select(filters.getByLabel('Assignee'), 'Jordan Reyes');
+      await ui.pause(1500);
+      await ui.select(filters.getByLabel('Assignee'), 'Chris Park');
+      await ui.pause(1500);
+      await ui.select(filters.getByLabel('Assignee'), 'Any assignee');
+      await ui.pause(1200);
     },
   },
   {

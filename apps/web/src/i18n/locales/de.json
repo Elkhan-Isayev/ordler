@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Anfrage an eine andere Abteilung senden",
+      "request-receive": "Eine Anfrage an Ihre Abteilung bearbeiten",
       "request-several-departments": "Eine Anfrage an mehrere Abteilungen",
       "request-add-approvals": "Genehmigungen zu einer Anfrage hinzufügen",
       "approval-decide": "Anfrage genehmigen oder ablehnen",
@@ -1609,6 +1610,7 @@
       "cycle-from-backlog": "Einen Zyklus aus dem Backlog planen",
       "cycle-to-backlog": "Ein Issue zurück ins Backlog legen",
       "cycle-progress": "Den Fortschritt eines Zyklus verfolgen",
+      "cycle-board-assignee": "Auf dem Zyklus-Board nur die Issues einer Person zeigen",
       "mcp-connect-claude": "Claude mit Ordler verbinden",
       "mcp-token": "Ein Token für Claude Code und andere MCP-Clients erstellen"
     }

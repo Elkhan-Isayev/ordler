@@ -5,8 +5,10 @@ import {
   CalendarPlus,
   ChartLine,
   CircleCheck,
+  Inbox,
   IterationCw,
   KeyRound,
+  ListFilter,
   ListPlus,
   Network,
   Send,
@@ -37,6 +39,7 @@ const clip = (id: string) => `/help/${id}.webm`;
 export const HELP_TOPICS: HelpTopic[] = (
   [
     { id: 'request-other-department', section: 'requests', icon: Send },
+    { id: 'request-receive', section: 'requests', icon: Inbox },
     { id: 'request-several-departments', section: 'requests', icon: Network },
     { id: 'request-add-approvals', section: 'requests', icon: UserPlus },
     { id: 'approval-decide', section: 'requests', icon: Stamp },
@@ -47,6 +50,7 @@ export const HELP_TOPICS: HelpTopic[] = (
     { id: 'cycle-from-backlog', section: 'work', icon: ListPlus },
     { id: 'cycle-to-backlog', section: 'work', icon: Undo2 },
     { id: 'cycle-progress', section: 'work', icon: ChartLine },
+    { id: 'cycle-board-assignee', section: 'work', icon: ListFilter },
     { id: 'wiki-page', section: 'knowledge', icon: BookOpen },
     { id: 'whiteboard-diagram', section: 'knowledge', icon: Shapes },
     { id: 'wiki-table', section: 'knowledge', icon: Table },

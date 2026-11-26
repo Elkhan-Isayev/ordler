@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Send a request to another department",
+      "request-receive": "Handle a request sent to your department",
       "request-several-departments": "One request to several departments",
       "request-add-approvals": "Add approvals to a request",
       "approval-decide": "Approve or reject a request",
@@ -1609,6 +1610,7 @@
       "cycle-from-backlog": "Plan a cycle from the backlog",
       "cycle-to-backlog": "Send an issue back to the backlog",
       "cycle-progress": "Follow the progress of a cycle",
+      "cycle-board-assignee": "Show one person's issues on the cycle board",
       "mcp-connect-claude": "Connect Claude to Ordler",
       "mcp-token": "Create a token for Claude Code and other MCP clients"
     }

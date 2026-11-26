@@ -1596,6 +1596,7 @@
     },
     "topics": {
       "request-other-department": "Отправить запрос в другой департамент",
+      "request-receive": "Обработать запрос, пришедший в ваш департамент",
       "request-several-departments": "Один запрос в несколько департаментов",
       "request-add-approvals": "Добавить согласования к запросу",
       "approval-decide": "Согласовать или отклонить запрос",
@@ -1609,6 +1610,7 @@
       "cycle-from-backlog": "Спланировать цикл из бэклога",
       "cycle-to-backlog": "Вернуть задачу в бэклог",
       "cycle-progress": "Следить за прогрессом цикла",
+      "cycle-board-assignee": "Показать на борде цикла задачи одного исполнителя",
       "mcp-connect-claude": "Подключить Claude к Ordler",
       "mcp-token": "Создать токен для Claude Code и других MCP-клиентов"
     }
