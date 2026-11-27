@@ -72,6 +72,19 @@ ingress:
   tls: []
   #  - secretName: ordler-tls
   #    hosts: [tasks.company.com]
+  # Behind an authenticating proxy (nginx auth-url / auth-signin): these paths get a second
+  # Ingress without the auth-* annotations. Ordler checks the token or signature on each of them.
+  # Paths are nginx regexes (ingress-nginx anchors them with ^); /oauth/authorize (consent page) stays behind the proxy.
+  publicPaths:
+    enabled: false
+    paths:
+      - /mcp
+      - /\.well-known/oauth-
+      - /api/oauth/(token|register)$
+      - /api/slack/
+      - /api/github/webhook$
+      - /(api/)?healthz$
+      - /readyz$
 
 resources:
   requests:

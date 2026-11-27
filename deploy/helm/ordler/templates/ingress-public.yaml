@@ -1,0 +1,43 @@
+{{- if and .Values.ingress.enabled .Values.ingress.publicPaths.enabled }}
+{{- /*
+Second Ingress for the paths that Ordler authenticates itself (bearer tokens, OAuth, signed webhooks, probes).
+It reuses the main ingress annotations without the auth-* ones, so an authenticating proxy in front
+(nginx auth-url / auth-signin) does not block MCP clients, Slack or GitHub.
+*/}}
+{{- $annotations := dict }}
+{{- range $k, $v := .Values.ingress.annotations }}
+{{- if not (hasPrefix "nginx.ingress.kubernetes.io/auth-" $k) }}
+{{- $_ := set $annotations $k $v }}
+{{- end }}
+{{- end }}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/use-regex" "true" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ordler.fullname" . }}-public
+  labels:
+    {{- include "ordler.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml $annotations | nindent 4 }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          {{- range .Values.ingress.publicPaths.paths }}
+          - path: {{ . | quote }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "ordler.fullname" $ }}
+                port:
+                  name: http
+          {{- end }}
+{{- end }}

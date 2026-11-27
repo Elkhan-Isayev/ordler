@@ -254,7 +254,9 @@ and other clients cannot connect) and the integration webhooks.
   Keep `/oauth/authorize` (the consent page) behind the proxy: a person opens it in the
   browser. With oauth2-proxy, pass each path as `--skip-auth-route`; with ingress-nginx
   `auth-url`, add a second Ingress for the same host with only these paths and no auth
-  annotations. People then sign in twice (proxy, then Ordler).
+  annotations. People then sign in twice (proxy, then Ordler). The Helm chart does this for
+  you: set `ingress.publicPaths.enabled: true` and it adds an `<release>-public` Ingress for
+  these paths, with the main Ingress annotations minus the `auth-*` ones.
 
 **Outbound**: everything is optional except the database.
 
