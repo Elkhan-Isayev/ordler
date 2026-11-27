@@ -67,5 +67,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    // Node 25+ ships its own localStorage, which shadows jsdom's and has no methods without
+    // --localstorage-file; turn it off so tests get jsdom's storage on every supported Node.
+    poolOptions: { forks: { execArgv: ['--no-experimental-webstorage'] } },
   },
 });
