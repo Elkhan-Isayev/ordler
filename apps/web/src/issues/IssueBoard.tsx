@@ -187,7 +187,7 @@ function Card({ issue }: { issue: IssueSummary }) {
       href={`/issue/${issue.identifier}`}
       // The list item is dragged, not the link: browsers would otherwise drag a URL.
       draggable={false}
-      className="flex cursor-grab flex-col gap-2 rounded-lg border border-line bg-card p-3 text-sm shadow-card select-none hover:border-ink-faint active:cursor-grabbing"
+      className="flex min-w-0 cursor-grab flex-col gap-2 rounded-lg border border-line bg-card p-3 text-sm shadow-card select-none hover:border-ink-faint active:cursor-grabbing"
     >
       <div className="flex items-center justify-between text-xs text-ink-faint">
         <span className="flex items-center gap-1">
@@ -196,8 +196,9 @@ function Card({ issue }: { issue: IssueSummary }) {
         </span>
         <AvatarStack members={issue.assignees} />
       </div>
-      <span className="text-ink">{issue.title}</span>
-      <div className="flex items-center gap-2 text-xs text-ink-faint">
+      {/* Long unbroken words wrap too, so nothing spills into the next column. */}
+      <span className="text-ink [overflow-wrap:anywhere]">{issue.title}</span>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-faint">
         <PriorityIcon priority={issue.priority} />
         {issue.dueDate && <span>{issue.dueDate}</span>}
         {issue.labels.map((label) => (

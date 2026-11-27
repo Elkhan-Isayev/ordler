@@ -743,7 +743,8 @@
       "cancel": "Ləğv et",
       "blocked": "Bloklanıb",
       "help": "Əlaqələr necə işləyir"
-    }
+    },
+    "moreLabels": "{count, plural, one {daha # etiket} other {daha # etiket}}"
   },
   "editor": {
     "toolbar": "Formatlama",

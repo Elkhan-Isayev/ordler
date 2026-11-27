@@ -743,7 +743,8 @@
       "cancel": "Abbrechen",
       "blocked": "Blockiert",
       "help": "So funktionieren Beziehungen"
-    }
+    },
+    "moreLabels": "{count, plural, one {# weiteres Label} other {# weitere Labels}}"
   },
   "editor": {
     "toolbar": "Formatierung",
