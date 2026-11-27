@@ -168,19 +168,27 @@ export function IssuePage({ identifier }: { identifier: string }) {
         <main className="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-8 md:px-12">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
             <FormError message={error ? t(error) : undefined} />
-            <input
+            {/* A textarea, so a long title wraps instead of being cut; Enter still saves. */}
+            <textarea
               key={`title-${issue.updatedAt}`}
+              ref={fitTitleHeight}
+              rows={1}
               defaultValue={issue.title}
               readOnly={!canEdit}
               aria-label={t('issues.title')}
               maxLength={255}
-              className="bg-transparent text-2xl font-semibold tracking-tight text-ink outline-none"
+              className="resize-none overflow-hidden bg-transparent [field-sizing:content] text-2xl font-semibold tracking-tight text-ink outline-none [overflow-wrap:anywhere]"
+              onInput={(event) => fitTitleHeight(event.currentTarget)}
               onBlur={(event) => {
-                const title = event.currentTarget.value.trim();
+                // A pasted line break must not end up inside a one-line title.
+                const title = event.currentTarget.value.replace(/\s+/g, ' ').trim();
                 if (title && title !== issue.title) void save({ title });
               }}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') event.currentTarget.blur();
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }
               }}
             />
             <RichEditor
@@ -530,4 +538,12 @@ function labelName(t: TFunction, team: TeamView, id: string): string {
 
 function memberName(t: TFunction, team: TeamView, id: unknown): string {
   return team.members.find((m) => m.id === id)?.name ?? t('issues.someone');
+}
+
+/** Grows the title box to its text, so every line of a long title stays visible. */
+function fitTitleHeight(element: HTMLTextAreaElement | null) {
+  // Browsers with field-sizing grow it themselves and also follow width changes.
+  if (!element || (typeof CSS !== 'undefined' && CSS.supports?.('field-sizing', 'content'))) return;
+  element.style.height = 'auto';
+  element.style.height = `${element.scrollHeight}px`;
 }

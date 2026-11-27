@@ -102,6 +102,26 @@ describe('IssuePage', () => {
     ]);
   });
 
+  it('shows a long title on several lines and saves pasted line breaks as spaces', async () => {
+    const calls = mockApi({
+      'GET /api/issues/HELP-7': () => ({ json: detail(7) }),
+      'GET /api/teams/HELP': () => ({ json: TEAM }),
+      'PATCH /api/issues/HELP-7': (body) => ({ json: { ...detail(7), ...(body as object) } }),
+    });
+    await renderWithI18n(<IssuePage identifier="HELP-7" />);
+    const title = await screen.findByLabelText('Issue title');
+    // A textarea wraps; a single-line input would cut a long title off.
+    expect(title.tagName).toBe('TEXTAREA');
+    fireEvent.change(title, { target: { value: 'Printer\n  on floor 3' } });
+    fireEvent.keyDown(title, { key: 'Enter' });
+    fireEvent.blur(title);
+    await waitFor(() =>
+      expect(calls.filter((c) => c.method === 'PATCH').map((c) => c.body)).toEqual([
+        { title: 'Printer on floor 3' },
+      ]),
+    );
+  });
+
   it('is read-only without update permission', async () => {
     mockApi({
       'GET /api/issues/HELP-7': () => ({ json: detail(7) }),

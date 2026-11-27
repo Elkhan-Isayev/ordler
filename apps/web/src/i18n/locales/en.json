@@ -743,7 +743,8 @@
       "cancel": "Cancel",
       "blocked": "Blocked",
       "help": "How relations work"
-    }
+    },
+    "moreLabels": "{count, plural, one {# more label} other {# more labels}}"
   },
   "editor": {
     "toolbar": "Formatting",

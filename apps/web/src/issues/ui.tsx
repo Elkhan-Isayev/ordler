@@ -103,11 +103,48 @@ export const quietSelectClass =
 
 /** A label as a small pill with its color dot. */
 export function LabelChip({ label }: { label: { name: string; color: string } }) {
+  // Never squeezed or wrapped mid-name; a name wider than its row is cut with an ellipsis.
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-line px-1.5 py-0.5 text-[11px] text-ink-muted">
-      <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: label.color }} />
-      {label.name}
+    <span
+      title={label.name}
+      className="inline-flex max-w-full min-w-0 shrink-0 items-center gap-1 rounded-full border border-line px-1.5 py-0.5 text-[11px] whitespace-nowrap text-ink-muted"
+    >
+      <span
+        aria-hidden
+        className="size-2 shrink-0 rounded-full"
+        style={{ backgroundColor: label.color }}
+      />
+      <span className="truncate">{label.name}</span>
     </span>
+  );
+}
+
+/** The first `max` labels, then a "+N" chip naming the rest, so a row keeps room for its title. */
+export function LabelChips({
+  labels,
+  max,
+}: {
+  labels: { id: string; name: string; color: string }[];
+  max: number;
+}) {
+  const { t } = useTranslation();
+  const shown = labels.slice(0, max);
+  const hidden = labels.slice(max);
+  return (
+    <>
+      {shown.map((label) => (
+        <LabelChip key={label.id} label={label} />
+      ))}
+      {hidden.length > 0 && (
+        <span
+          title={hidden.map((label) => label.name).join(', ')}
+          aria-label={t('issues.moreLabels', { count: hidden.length })}
+          className="inline-flex shrink-0 items-center rounded-full border border-line px-1.5 py-0.5 text-[11px] whitespace-nowrap text-ink-muted"
+        >
+          +{hidden.length}
+        </span>
+      )}
+    </>
   );
 }
 

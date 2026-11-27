@@ -10,7 +10,7 @@ import { Link } from '../router.js';
 import {
   AvatarStack,
   BlockedMark,
-  LabelChip,
+  LabelChips,
   PriorityIcon,
   StatusIcon,
   statusLabel,
@@ -88,10 +88,9 @@ export function IssueList({
                   <StatusIcon category={issue.status.category} />
                   {issue.blocked && <BlockedMark />}
                   <span className="min-w-0 flex-1 truncate text-ink">{issue.title}</span>
-                  <span className="hidden gap-1 md:flex">
-                    {issue.labels.map((label) => (
-                      <LabelChip key={label.id} label={label} />
-                    ))}
+                  {/* A few labels only: the title keeps the room it needs. */}
+                  <span className="hidden max-w-[40%] shrink-0 gap-1 overflow-hidden md:flex">
+                    <LabelChips labels={issue.labels} max={3} />
                   </span>
                   {showTeam && <span className="text-xs text-ink-faint">{issue.teamKey}</span>}
                   {issue.dueDate && <span className="text-xs text-ink-faint">{issue.dueDate}</span>}
