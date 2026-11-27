@@ -79,6 +79,7 @@ ingress:
     enabled: false
     paths:
       - /mcp
+      - /api/v1/
       - /\.well-known/oauth-
       - /api/oauth/(token|register)$
       - /api/slack/

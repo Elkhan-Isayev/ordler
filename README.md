@@ -245,6 +245,7 @@ and other clients cannot connect) and the integration webhooks.
   | Path (regex)                     | Why                                          |
   | -------------------------------- | -------------------------------------------- |
   | `^/mcp`                          | MCP endpoint, bearer tokens                  |
+  | `^/api/v1/`                      | REST API, bearer tokens                      |
   | `^/\.well-known/oauth-`          | OAuth metadata for MCP clients               |
   | `^/api/oauth/(token\|register)$` | OAuth token exchange and client registration |
   | `^/api/slack/`                   | Slack events and interactivity (signed)      |
