@@ -58,10 +58,10 @@ describe('renderOtpEmail', () => {
     const email = await renderOtpEmail(db, {
       locale: 'ru',
       code: '042917',
-      company: 'Push30',
+      company: 'Acme',
       minutes: 10,
     });
-    expect(email.subject).toBe('042917 — ваш код входа в Push30');
+    expect(email.subject).toBe('042917 — ваш код входа в Acme');
     expect(email.text).toContain('Код действует 10 минут.');
   });
 
@@ -80,11 +80,11 @@ describe('renderInviteEmail', () => {
   it('includes the link and expiry in the recipient language', async () => {
     const email = await renderInviteEmail(db, {
       locale: 'ru',
-      company: 'Push30',
+      company: 'Acme',
       url: 'https://ordler.test/invite/abc',
       days: 7,
     });
-    expect(email.subject).toBe('Приглашение в Push30 в Ordler');
+    expect(email.subject).toBe('Приглашение в Acme в Ordler');
     expect(email.text).toContain('https://ordler.test/invite/abc');
     expect(email.text).toContain('7 дней');
   });
@@ -92,15 +92,15 @@ describe('renderInviteEmail', () => {
 
 describe('renderTestEmail', () => {
   it('names the company in the recipient language', () => {
-    const email = renderTestEmail({ locale: 'de', company: 'Push30' });
-    expect(email.subject).toBe('Test-E-Mail von Push30 in Ordler');
+    const email = renderTestEmail({ locale: 'de', company: 'Acme' });
+    expect(email.subject).toBe('Test-E-Mail von Acme in Ordler');
     expect(email.text).toContain('Mailserver-Einstellungen');
   });
 });
 
 describe('renderNotificationEmail', () => {
   const input = {
-    company: 'Push30',
+    company: 'Acme',
     kind: 'approval_requested',
     actor: 'Aysel',
     item: 'REQ-7',
@@ -110,7 +110,7 @@ describe('renderNotificationEmail', () => {
 
   it.each(SUPPORTED_LOCALES)('names the event and links to it in %s', async (locale) => {
     const mail = await renderNotificationEmail(db, { ...input, locale });
-    expect(mail.subject).toMatch(/^\[Push30\] .*REQ-7/);
+    expect(mail.subject).toMatch(/^\[Acme\] .*REQ-7/);
     expect(mail.text).toContain(input.url);
     expect(mail.text).toContain('New laptop');
   });
@@ -119,7 +119,7 @@ describe('renderNotificationEmail', () => {
     expect(
       (await renderNotificationEmail(db, { ...input, locale: 'en', kind: 'something_else' }))
         .subject,
-    ).toBe('[Push30] REQ-7');
+    ).toBe('[Acme] REQ-7');
   });
 
   it('wraps the event line in the admin wording', async () => {
@@ -153,10 +153,10 @@ describe('editable templates', () => {
       { subject: 'Код {code}', body: 'Ваш код: {code}. Компания {company}.' },
       actor(),
     );
-    const ru = await renderOtpEmail(db, { locale: 'ru', code: '1', company: 'Push30', minutes: 5 });
-    expect(ru).toEqual({ subject: 'Код 1', text: 'Ваш код: 1. Компания Push30.' });
-    const en = await renderOtpEmail(db, { locale: 'en', code: '1', company: 'Push30', minutes: 5 });
-    expect(en.subject).toBe('1 is your Push30 sign-in code');
+    const ru = await renderOtpEmail(db, { locale: 'ru', code: '1', company: 'Acme', minutes: 5 });
+    expect(ru).toEqual({ subject: 'Код 1', text: 'Ваш код: 1. Компания Acme.' });
+    const en = await renderOtpEmail(db, { locale: 'en', code: '1', company: 'Acme', minutes: 5 });
+    expect(en.subject).toBe('1 is your Acme sign-in code');
 
     const list = await listEmailTemplates(db);
     const otp = list.find((t) => t.key === 'otp')!;
@@ -176,11 +176,11 @@ describe('editable templates', () => {
     await resetEmailTemplate(db, 'invite', 'en', actor());
     const email = await renderInviteEmail(db, {
       locale: 'en',
-      company: 'Push30',
+      company: 'Acme',
       url: 'https://ordler.test/i',
       days: 7,
     });
-    expect(email.subject).toBe('You are invited to Push30 on Ordler');
+    expect(email.subject).toBe('You are invited to Acme on Ordler');
     expect(
       await db.select().from(auditLog).where(eq(auditLog.action, 'email_template.reset')),
     ).toHaveLength(1);

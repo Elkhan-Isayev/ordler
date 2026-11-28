@@ -23,14 +23,14 @@ const NONE: MailSettingsView = {
 const SAVED: MailSettingsView = {
   ...NONE,
   source: 'database',
-  host: 'smtp.push30.test',
+  host: 'smtp.acme.test',
   username: 'ordler',
   passwordSet: true,
-  fromName: 'Push30',
-  fromEmail: 'tasks@push30.test',
+  fromName: 'Acme',
+  fromEmail: 'tasks@acme.test',
 };
 
-const render = () => renderWithI18n(<MailSection defaultTestRecipient="owner@push30.test" />, 'en');
+const render = () => renderWithI18n(<MailSection defaultTestRecipient="owner@acme.test" />, 'en');
 
 describe('MailSection', () => {
   it('saves SMTP settings entered by the admin', async () => {
@@ -41,24 +41,24 @@ describe('MailSection', () => {
     await render();
     expect(await screen.findByText(/Mail is not configured yet/)).toBeInTheDocument();
     const form = screen.getByRole('form', { name: 'Mail server' });
-    await userEvent.type(within(form).getByLabelText('SMTP host'), 'smtp.push30.test');
+    await userEvent.type(within(form).getByLabelText('SMTP host'), 'smtp.acme.test');
     await userEvent.type(within(form).getByLabelText('Username'), 'ordler');
     await userEvent.type(within(form).getByLabelText('Password'), 'smtp-secret');
-    await userEvent.type(within(form).getByLabelText('Sender email'), 'tasks@push30.test');
+    await userEvent.type(within(form).getByLabelText('Sender email'), 'tasks@acme.test');
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByRole('status')).toHaveTextContent('Saved');
     // The typed password does not linger in the form after saving.
     expect(within(form).getByLabelText('Password')).toHaveValue('');
     expect(calls.find((c) => c.method === 'PUT')!.body).toEqual({
-      host: 'smtp.push30.test',
+      host: 'smtp.acme.test',
       port: 587,
       security: 'starttls',
       verifyTls: true,
       username: 'ordler',
       password: 'smtp-secret',
       fromName: null,
-      fromEmail: 'tasks@push30.test',
+      fromEmail: 'tasks@acme.test',
     });
   });
 
@@ -101,7 +101,7 @@ describe('MailSection', () => {
     });
     await render();
     const test = await screen.findByRole('form', { name: 'Send a test email' });
-    expect(within(test).getByLabelText('Recipient')).toHaveValue('owner@push30.test');
+    expect(within(test).getByLabelText('Recipient')).toHaveValue('owner@acme.test');
     await userEvent.click(within(test).getByRole('button', { name: 'Send' }));
     expect(await within(test).findByRole('status')).toHaveTextContent('Sent');
 

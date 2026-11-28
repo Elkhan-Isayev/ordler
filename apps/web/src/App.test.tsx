@@ -21,7 +21,7 @@ afterEach(() => {
 describe('App', () => {
   it('shows the workspace, the member’s departments and the welcome screen', async () => {
     await renderWithI18n(<App me={ME} onSignOut={vi.fn()} />, 'de');
-    expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Acme' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /IT/ })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Willkommen bei Ordler' })).toBeInTheDocument();
     expect(screen.getByText('Ann Lee')).toBeInTheDocument();
@@ -43,18 +43,18 @@ describe('App', () => {
     navigate('/');
     await renderWithI18n(<App me={ME} onSignOut={vi.fn()} />);
     // Phones start with the page, not the menu.
-    expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Acme' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }));
-    expect(screen.getByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Acme' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('link', { name: 'My issues' }));
     await waitFor(() =>
-      expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('navigation', { name: 'Acme' })).not.toBeInTheDocument(),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }));
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('navigation', { name: 'Push30' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Acme' })).not.toBeInTheDocument();
     navigate('/');
   });
 

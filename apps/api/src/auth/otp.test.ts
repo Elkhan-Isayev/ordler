@@ -37,7 +37,7 @@ describe('OtpService.request', () => {
     await otp.request(OWNER.email);
     expect(mailer.sent).toHaveLength(1);
     expect(mailer.sent[0]!.to).toBe(OWNER.email);
-    expect(mailer.sent[0]!.text).toContain('Push30');
+    expect(mailer.sent[0]!.text).toContain('Acme');
   });
 
   it('writes in the member language', async () => {
@@ -47,7 +47,7 @@ describe('OtpService.request', () => {
   });
 
   it('stays silent for unknown emails when self-registration is closed', async () => {
-    await otp.request('stranger@push30.test');
+    await otp.request('stranger@acme.test');
     expect(mailer.sent).toHaveLength(0);
   });
 

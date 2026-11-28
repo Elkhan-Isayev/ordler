@@ -4,7 +4,7 @@ import type { DatabaseConfig } from '../config/env.js';
 import { classify, probeDatabase, type ProbeClient } from './probe.js';
 
 const CONFIG: DatabaseConfig = {
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',

@@ -51,7 +51,7 @@ async function memberWith(
 ) {
   const [member] = await db
     .insert(members)
-    .values({ email: `${roleKey}@push30.test`, name: roleKey, status: 'active' })
+    .values({ email: `${roleKey}@acme.test`, name: roleKey, status: 'active' })
     .returning({ id: members.id });
   await db.insert(roleAssignments).values({
     memberId: member!.id,
@@ -95,7 +95,7 @@ describe('DbAccessContext', () => {
   it('grants nothing to a member without assignments', async () => {
     const [member] = await db
       .insert(members)
-      .values({ email: 'plain@push30.test', name: 'Plain', status: 'active' })
+      .values({ email: 'plain@acme.test', name: 'Plain', status: 'active' })
       .returning({ id: members.id });
     const access = await new DbAccessContext(db).load(member!.id);
     expect(access.assignments).toEqual([]);
@@ -111,7 +111,7 @@ describe('loadMe', () => {
     const me = await loadMe(db, ownerId);
     expect(me).toMatchObject({
       member: { id: ownerId, name: 'Owner' },
-      workspace: { companyName: 'Push30', defaultLocale: 'en' },
+      workspace: { companyName: 'Acme', defaultLocale: 'en' },
       departments: [
         { name: 'Finance', teams: [{ key: 'ACC', name: 'Accounting' }] },
         { name: 'IT', teams: [{ key: 'HELP', name: 'Helpdesk' }] },

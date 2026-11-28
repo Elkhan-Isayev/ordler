@@ -21,7 +21,7 @@ let read: Set<number>;
 let connected: InboxConfig[];
 let failConnect: string | undefined;
 
-const ADDRESS = 'it@push30.test';
+const ADDRESS = 'it@acme.test';
 
 /** In-memory IMAP mailbox: uid = position + 1. */
 const connector: MailboxConnector = async (config) => {
@@ -53,7 +53,7 @@ function email(options: {
     `From: Sender <${options.from ?? OWNER.email}>`,
     `To: Helpdesk <${options.to ?? ADDRESS}>`,
     `Subject: ${options.subject ?? 'Printer on floor 3 is jammed'}`,
-    `Message-ID: ${options.messageId ?? `<${Math.random().toString(36).slice(2)}@mail.push30.test>`}`,
+    `Message-ID: ${options.messageId ?? `<${Math.random().toString(36).slice(2)}@mail.acme.test>`}`,
     'Date: Sun, 01 Nov 2026 09:00:00 +0000',
     'MIME-Version: 1.0',
     ...(options.headers ?? []),
@@ -97,7 +97,7 @@ function call(method: Method, url: string, cookie?: string, payload?: object) {
 
 async function plainMember(): Promise<{ cookie: string; email: string }> {
   const invite = (
-    await call('POST', '/api/admin/members', owner, { email: 'ann@push30.test', name: 'Ann' })
+    await call('POST', '/api/admin/members', owner, { email: 'ann@acme.test', name: 'Ann' })
   ).json<InviteResponse>();
   const accepted = await call('POST', '/api/invites/accept', undefined, {
     token: invite.inviteUrl.split('/invite/')[1]!,
@@ -106,13 +106,13 @@ async function plainMember(): Promise<{ cookie: string; email: string }> {
   });
   return {
     cookie: cookieFrom(accepted.headers['set-cookie'], SESSION_COOKIE),
-    email: 'ann@push30.test',
+    email: 'ann@acme.test',
   };
 }
 
 const SETTINGS = {
   enabled: true,
-  host: 'imap.push30.test',
+  host: 'imap.acme.test',
   port: 993,
   security: 'tls',
   verifyTls: true,
@@ -138,7 +138,7 @@ beforeEach(async () => {
   failConnect = undefined;
   t = await createTestApp({ mailboxConnector: connector });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -155,7 +155,7 @@ beforeEach(async () => {
   const created = await call('POST', `/api/admin/departments/${department}/request-types`, owner, {
     name: 'IT support',
     targetTeamId: team,
-    emailAddress: 'IT@push30.test',
+    emailAddress: 'IT@acme.test',
   });
   expect(created.statusCode).toBe(201);
   helpdesk = created.json<RequestTypeView>();
@@ -194,7 +194,7 @@ describe('email-in', () => {
   it('turns a member email into a request and confirms it in the same thread', async () => {
     inbox.push(
       email({
-        messageId: '<m1@mail.push30.test>',
+        messageId: '<m1@mail.acme.test>',
         attachment: {
           name: 'error.png',
           type: 'image/png',
@@ -204,7 +204,7 @@ describe('email-in', () => {
     );
     expect(await poll()).toEqual({ ok: true, processed: 1 });
     expect(read.has(1)).toBe(true);
-    expect(connected[0]).toMatchObject({ host: 'imap.push30.test', password: 'imap-secret' });
+    expect(connected[0]).toMatchObject({ host: 'imap.acme.test', password: 'imap-secret' });
 
     const [entry] = await log();
     expect(entry).toMatchObject({ status: 'created', from: OWNER.email, to: [ADDRESS] });
@@ -220,14 +220,14 @@ describe('email-in', () => {
     expect(t.mailer.sent).toHaveLength(1);
     expect(t.mailer.sent[0]).toMatchObject({
       to: OWNER.email,
-      inReplyTo: '<m1@mail.push30.test>',
+      inReplyTo: '<m1@mail.acme.test>',
       headers: { 'Auto-Submitted': 'auto-replied' },
     });
     expect(t.mailer.sent[0]!.text).toContain(`https://ordler.test/requests/${request.identifier}`);
   });
 
   it('handles each Message-ID once, even when the mailbox shows it again', async () => {
-    const message = email({ messageId: '<again@mail.push30.test>' });
+    const message = email({ messageId: '<again@mail.acme.test>' });
     inbox.push(message, message);
     await poll();
     expect(await t.database.db.select().from(requests)).toHaveLength(1);
@@ -238,9 +238,9 @@ describe('email-in', () => {
   it('ignores strangers, unknown addresses and robots without replying', async () => {
     inbox.push(
       email({ from: 'stranger@elsewhere.test' }),
-      email({ to: 'nobody@push30.test' }),
+      email({ to: 'nobody@acme.test' }),
       email({ headers: ['Auto-Submitted: auto-replied'] }),
-      email({ from: 'MAILER-DAEMON@push30.test' }),
+      email({ from: 'MAILER-DAEMON@acme.test' }),
     );
     await poll();
     expect((await log()).map((e) => e.status).sort()).toEqual([
@@ -254,7 +254,7 @@ describe('email-in', () => {
   });
 
   it('routes by a Delivered-To alias when the To header names a list', async () => {
-    inbox.push(email({ to: 'all-staff@push30.test', headers: [`Delivered-To: ${ADDRESS}`] }));
+    inbox.push(email({ to: 'all-staff@acme.test', headers: [`Delivered-To: ${ADDRESS}`] }));
     await poll();
     expect((await log())[0]!.status).toBe('created');
   });

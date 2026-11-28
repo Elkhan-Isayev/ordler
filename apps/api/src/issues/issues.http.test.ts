@@ -81,7 +81,7 @@ beforeEach(async () => {
   });
   t = await createTestApp({ events: bus });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -143,7 +143,7 @@ describe('team issues', () => {
   });
 
   it('updates fields, records each change and publishes it', async () => {
-    const ann = await person('ann@push30.test', { teams: [helpdeskId] });
+    const ann = await person('ann@acme.test', { teams: [helpdeskId] });
     const team = (await call('GET', '/api/teams/HELP', owner)).json<TeamView>();
     await call('POST', '/api/teams/HELP/issues', owner, { title: 'Printer' });
     const done = team.statuses.find((s) => s.key === 'done')!.id;
@@ -182,7 +182,7 @@ describe('team issues', () => {
     await createTeam('Infrastructure', 'INFRA');
     const infra = (await call('GET', '/api/teams/INFRA', owner)).json<TeamView>();
     await call('POST', '/api/teams/HELP/issues', owner, { title: 'Disk' });
-    const outsider = await person('bob@push30.test');
+    const outsider = await person('bob@acme.test');
 
     expect(
       (
@@ -204,7 +204,7 @@ describe('team issues', () => {
 
 describe('issue permissions', () => {
   it('lets team members with the Member role work and see their issues', async () => {
-    const ann = await person('ann@push30.test', {
+    const ann = await person('ann@acme.test', {
       role: 'member',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],
@@ -220,7 +220,7 @@ describe('issue permissions', () => {
 
   it('lets viewers read but not create or change', async () => {
     await call('POST', '/api/teams/HELP/issues', owner, { title: 'Monitor' });
-    const viewer = await person('vic@push30.test', {
+    const viewer = await person('vic@acme.test', {
       role: 'viewer',
       scope: { type: 'team', id: helpdeskId },
     });
@@ -244,7 +244,7 @@ describe('issue permissions', () => {
 
   it('hides teams from members without any role on them', async () => {
     await call('POST', '/api/teams/HELP/issues', owner, { title: 'Keyboard' });
-    const stranger = await person('sam@push30.test');
+    const stranger = await person('sam@acme.test');
     expect((await call('GET', '/api/teams/HELP', stranger.cookie)).statusCode).toBe(404);
     expect((await call('GET', '/api/issues/HELP-1', stranger.cookie)).statusCode).toBe(404);
     expect((await call('GET', '/api/teams/HELP/issues', stranger.cookie)).statusCode).toBe(404);
@@ -252,7 +252,7 @@ describe('issue permissions', () => {
 
   it('shows private teams only to their members', async () => {
     const secretId = await createTeam('Security', 'SEC', true);
-    const deptMember = await person('dee@push30.test', {
+    const deptMember = await person('dee@acme.test', {
       role: 'member',
       scope: { type: 'department', id: departmentId },
     });
@@ -271,7 +271,7 @@ describe('issue permissions', () => {
 
 describe('comments', () => {
   it('adds, edits and deletes own comments, publishing each change', async () => {
-    const ann = await person('ann@push30.test', {
+    const ann = await person('ann@acme.test', {
       role: 'member',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],
@@ -307,7 +307,7 @@ describe('comments', () => {
 
   it("never lets anyone edit another person's comment", async () => {
     await call('POST', '/api/teams/HELP/issues', owner, { title: 'Monitor' });
-    const ann = await person('ann@push30.test', {
+    const ann = await person('ann@acme.test', {
       role: 'member',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],
@@ -331,7 +331,7 @@ describe('comments', () => {
     const comment = (
       await call('POST', '/api/issues/HELP-1/comments', owner, { body: 'Owner note' })
     ).json<IssueDetail>().comments[0]!;
-    const ann = await person('ann@push30.test', {
+    const ann = await person('ann@acme.test', {
       role: 'member',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],
@@ -344,11 +344,11 @@ describe('comments', () => {
     const comment = (
       await call('POST', '/api/issues/HELP-1/comments', owner, { body: 'Hello' })
     ).json<IssueDetail>().comments[0]!;
-    const viewer = await person('vic@push30.test', {
+    const viewer = await person('vic@acme.test', {
       role: 'viewer',
       scope: { type: 'team', id: helpdeskId },
     });
-    const stranger = await person('sam@push30.test');
+    const stranger = await person('sam@acme.test');
     expect(
       (await call('POST', '/api/issues/HELP-1/comments', viewer.cookie, { body: 'x' })).statusCode,
     ).toBe(403);
@@ -364,7 +364,7 @@ describe('comments', () => {
 describe('triage', () => {
   async function outsider() {
     // Department-wide Member role: may file issues in Helpdesk without belonging to it.
-    return person('dee@push30.test', {
+    return person('dee@acme.test', {
       role: 'member',
       scope: { type: 'department', id: departmentId },
     });
@@ -471,7 +471,7 @@ describe('triage', () => {
   it('lets only members who may update issues decide', async () => {
     const dee = await outsider();
     await call('POST', '/api/teams/HELP/issues', dee.cookie, { title: 'Chair' });
-    const viewer = await person('vic@push30.test', {
+    const viewer = await person('vic@acme.test', {
       role: 'viewer',
       scope: { type: 'team', id: helpdeskId },
     });
@@ -488,12 +488,12 @@ describe('triage', () => {
 
 describe('deleting issues', () => {
   it('archives the issue for team leads and hides it everywhere', async () => {
-    const member = await person('mo@push30.test', {
+    const member = await person('mo@acme.test', {
       role: 'member',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],
     });
-    const lead = await person('lee@push30.test', {
+    const lead = await person('lee@acme.test', {
       role: 'team_lead',
       scope: { type: 'team', id: helpdeskId },
       teams: [helpdeskId],

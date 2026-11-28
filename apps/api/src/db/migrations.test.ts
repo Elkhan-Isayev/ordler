@@ -60,12 +60,12 @@ async function seedFirstRelease(client: PGlite) {
   await client.exec(`
     insert into departments (id, name) values ('01a13d37-d040-7000-b257-000000000001', 'IT');
     insert into teams (department_id, key, name) values ('01a13d37-d040-7000-b257-000000000001', 'HELP', 'Helpdesk');
-    insert into members (id, email, name, status) values ('01a13d37-d040-7000-b257-000000000002', 'ann@push30.test', 'Ann', 'active');
+    insert into members (id, email, name, status) values ('01a13d37-d040-7000-b257-000000000002', 'ann@acme.test', 'Ann', 'active');
     insert into roles (id, system_key, name) values ('01a13d37-d040-7000-b257-000000000003', 'owner', 'Owner');
     insert into role_permissions (role_id, permission) values ('01a13d37-d040-7000-b257-000000000003', 'org.manage');
     insert into role_assignments (member_id, role_id, scope_type) values ('01a13d37-d040-7000-b257-000000000002', '01a13d37-d040-7000-b257-000000000003', 'organization');
     insert into audit_log (actor_type, action, target_type) values ('system', 'setup.completed', 'instance');
-    insert into instance_settings (company_name, base_url, setup_completed_at) values ('Push30', 'https://ordler.test', now());
+    insert into instance_settings (company_name, base_url, setup_completed_at) values ('Acme', 'https://ordler.test', now());
   `);
 }
 
@@ -140,7 +140,7 @@ describe('upgrades keep data', () => {
     await migrate(db, { migrationsFolder: MIGRATIONS });
 
     const member = await client.query(`select email, name, status from members`);
-    expect(member.rows).toEqual([{ email: 'ann@push30.test', name: 'Ann', status: 'active' }]);
+    expect(member.rows).toEqual([{ email: 'ann@acme.test', name: 'Ann', status: 'active' }]);
     const team = await client.query(`select key from teams`);
     expect(team.rows).toEqual([{ key: 'HELP' }]);
     const grants = await client.query(`select count(*)::int as n from role_assignments`);

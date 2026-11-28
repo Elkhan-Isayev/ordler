@@ -8,10 +8,10 @@ import type { DatabaseConfig } from '../config/env.js';
 import { buildInstaller, generateInstallToken, installBanner } from './installer.js';
 
 const TOKEN = 'K7QX-2M9P-WD4T';
-const BASE_URL = 'https://tasks.push30.test';
+const BASE_URL = 'https://tasks.acme.test';
 
 const BODY = {
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',
@@ -82,7 +82,7 @@ describe('installer', () => {
     expect(result.statusCode).toBe(200);
     expect(saved).toEqual([
       {
-        host: 'db.push30.test',
+        host: 'db.acme.test',
         port: 5432,
         database: 'ordler',
         user: 'ordler',
@@ -92,7 +92,7 @@ describe('installer', () => {
       },
     ]);
     expect(probe).toHaveBeenCalledWith(
-      expect.objectContaining({ host: 'db.push30.test', poolMax: 20 }),
+      expect.objectContaining({ host: 'db.acme.test', poolMax: 20 }),
     );
     await vi.waitFor(() => expect(configured).toHaveBeenCalledOnce());
     expect((await post('/api/install/database', BODY)).statusCode).toBe(409);

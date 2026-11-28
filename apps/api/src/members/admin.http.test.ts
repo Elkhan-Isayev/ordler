@@ -49,7 +49,7 @@ beforeEach(async () => {
   const setup = await t.app.inject({
     method: 'POST',
     url: '/api/setup',
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   owner = cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
 });
@@ -170,19 +170,19 @@ describe('departments and teams', () => {
 describe('invitations', () => {
   it('creates an invited member with a one-time link the invitee accepts', async () => {
     const invited = await call('POST', '/api/admin/members', owner, {
-      email: 'Ann@Push30.test',
+      email: 'Ann@Acme.test',
       name: 'Ann',
     });
     const body = invited.json<InviteResponse>();
-    expect(body.member).toMatchObject({ email: 'ann@push30.test', status: 'invited' });
+    expect(body.member).toMatchObject({ email: 'ann@acme.test', status: 'invited' });
     expect(body.inviteUrl).toMatch(/^https:\/\/ordler\.test\/invite\/[A-Za-z0-9_-]{43}$/);
     expect(body.emailed).toBe(true);
-    expect(t.mailer.sent[0]).toMatchObject({ to: 'ann@push30.test' });
+    expect(t.mailer.sent[0]).toMatchObject({ to: 'ann@acme.test' });
     expect(t.mailer.sent[0]!.text).toContain(body.inviteUrl);
 
     const token = body.inviteUrl.split('/invite/')[1]!;
     const peek = await t.app.inject({ method: 'GET', url: `/api/invites/${token}` });
-    expect(peek.json()).toEqual({ email: 'ann@push30.test', companyName: 'Push30' });
+    expect(peek.json()).toEqual({ email: 'ann@acme.test', companyName: 'Acme' });
 
     const accepted = await t.app.inject({
       method: 'POST',
@@ -191,7 +191,7 @@ describe('invitations', () => {
     });
     expect(accepted.statusCode).toBe(200);
     expect(accepted.json()).toMatchObject({
-      member: { name: 'Ann Lee', email: 'ann@push30.test' },
+      member: { name: 'Ann Lee', email: 'ann@acme.test' },
     });
 
     const again = await t.app.inject({
@@ -205,7 +205,7 @@ describe('invitations', () => {
     const signIn = await t.app.inject({
       method: 'POST',
       url: '/api/auth/password',
-      payload: { email: 'ann@push30.test', password: 'ann-password-123' },
+      payload: { email: 'ann@acme.test', password: 'ann-password-123' },
     });
     expect(signIn.statusCode).toBe(200);
   });
@@ -222,7 +222,7 @@ describe('invitations', () => {
 
   it('re-invites with a new link and retires the old one', async () => {
     const first = (
-      await call('POST', '/api/admin/members', owner, { email: 'b@push30.test', name: 'B' })
+      await call('POST', '/api/admin/members', owner, { email: 'b@acme.test', name: 'B' })
     ).json<InviteResponse>();
     const second = (
       await call('POST', `/api/admin/members/${first.member.id}/invite`, owner)
@@ -245,7 +245,7 @@ describe('invitations', () => {
       })
     ).json<{ id: string }>();
     const invited = await call('POST', '/api/admin/members', owner, {
-      email: 'lead@push30.test',
+      email: 'lead@acme.test',
       name: 'Lead',
       role: { roleId: await roleId('team_lead'), scope: { type: 'team', id: team.id } },
       teamIds: [team.id],
@@ -264,7 +264,7 @@ describe('roles and status', () => {
     const dept = (await call('POST', '/api/admin/departments', owner, { name: 'Finance' })).json<{
       id: string;
     }>();
-    const person = await onboard('p@push30.test');
+    const person = await onboard('p@acme.test');
     const granted = await call('POST', `/api/admin/members/${person.id}/roles`, owner, {
       roleId: await roleId('department_supervisor'),
       scope: { type: 'department', id: dept.id },
@@ -285,11 +285,11 @@ describe('roles and status', () => {
   });
 
   it('lets only Owners grant the Owner role', async () => {
-    const admin = await onboard('admin@push30.test', {
+    const admin = await onboard('admin@acme.test', {
       key: 'org_admin',
       scope: { type: 'organization' },
     });
-    const target = await onboard('t@push30.test');
+    const target = await onboard('t@acme.test');
     const response = await call('POST', `/api/admin/members/${target.id}/roles`, admin.cookie, {
       roleId: await roleId('owner'),
       scope: { type: 'organization' },
@@ -314,7 +314,7 @@ describe('roles and status', () => {
   });
 
   it('deactivation ends sessions immediately, reactivation restores access', async () => {
-    const person = await onboard('d@push30.test');
+    const person = await onboard('d@acme.test');
     expect((await call('GET', '/api/me', person.cookie)).statusCode).toBe(200);
     const off = await call('PATCH', `/api/admin/members/${person.id}`, owner, {
       status: 'deactivated',
@@ -335,7 +335,7 @@ describe('roles and status', () => {
         key: 'HELP',
       })
     ).json<{ id: string }>();
-    const person = await onboard('m@push30.test');
+    const person = await onboard('m@acme.test');
     expect(
       (
         await call('PUT', `/api/admin/teams/${team.id}/members/${person.id}`, owner)
@@ -355,7 +355,7 @@ describe('roles and status', () => {
 
 describe('access control', () => {
   it('forbids admin endpoints to plain members', async () => {
-    const member = await onboard('plain@push30.test', {
+    const member = await onboard('plain@acme.test', {
       key: 'member',
       scope: { type: 'organization' },
     });
@@ -378,7 +378,7 @@ describe('access control', () => {
     const finance = (
       await call('POST', '/api/admin/departments', owner, { name: 'Finance' })
     ).json<{ id: string }>();
-    const deptAdmin = await onboard('da@push30.test', {
+    const deptAdmin = await onboard('da@acme.test', {
       key: 'department_admin',
       scope: { type: 'department', id: it.id },
     });
@@ -405,7 +405,7 @@ describe('access control', () => {
       id: string;
     }>();
     await call('POST', `/api/admin/departments/${it.id}/archive`, owner);
-    const member = await onboard('plain2@push30.test', {
+    const member = await onboard('plain2@acme.test', {
       key: 'member',
       scope: { type: 'organization' },
     });
@@ -418,7 +418,7 @@ describe('access control', () => {
   });
 
   it('records who did what', async () => {
-    await call('POST', '/api/admin/members', owner, { email: 'audit@push30.test', name: 'Audit' });
+    await call('POST', '/api/admin/members', owner, { email: 'audit@acme.test', name: 'Audit' });
     const [entry] = await t.database.db
       .select()
       .from(auditLog)

@@ -22,7 +22,7 @@ afterEach(() => test.close());
 
 describe('PasswordAuthService', () => {
   it('signs in with the right password, case-insensitive email', async () => {
-    expect(await auth.signIn('OWNER@push30.test', OWNER.password)).toBe(ownerId);
+    expect(await auth.signIn('OWNER@acme.test', OWNER.password)).toBe(ownerId);
   });
 
   it('rejects a wrong password', async () => {
@@ -32,7 +32,7 @@ describe('PasswordAuthService', () => {
   });
 
   it('gives unknown emails the same answer', async () => {
-    await expect(auth.signIn('nobody@push30.test', OWNER.password)).rejects.toMatchObject({
+    await expect(auth.signIn('nobody@acme.test', OWNER.password)).rejects.toMatchObject({
       code: 'invalid_credentials',
     });
   });

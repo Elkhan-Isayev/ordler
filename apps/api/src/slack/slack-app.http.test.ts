@@ -43,7 +43,7 @@ const slackHttp: SlackHttp = async (url, init) => {
   switch (method) {
     case 'auth.test':
       return init.headers.authorization === `Bearer ${BOT}`
-        ? ok({ team_id: 'T1', team: 'Push30', user_id: 'UBOT' })
+        ? ok({ team_id: 'T1', team: 'Acme', user_id: 'UBOT' })
         : Response.json({ ok: false, error: 'invalid_auth' });
     case 'conversations.list':
       return ok({
@@ -121,7 +121,7 @@ beforeEach(async () => {
   calls = [];
   t = await createTestApp({ slackHttp, slackJwks: jwks });
   const setup = await call('POST', '/api/setup', {
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   owner = cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
   ownerId = (await t.database.db.select().from(members).where(eq(members.email, OWNER.email)))[0]!
@@ -144,7 +144,7 @@ describe('Admin → Slack app', () => {
     expect(view).toMatchObject({
       enabled: true,
       mode: 'socket',
-      workspace: { id: 'T1', name: 'Push30' },
+      workspace: { id: 'T1', name: 'Acme' },
       botTokenSet: true,
       appTokenSet: true,
       signingSecretSet: true,
@@ -194,7 +194,7 @@ describe('Admin → Slack app', () => {
     const invite = (
       await call('POST', '/api/admin/members', {
         cookie: owner,
-        payload: { email: 'ann@push30.test', name: 'Ann' },
+        payload: { email: 'ann@acme.test', name: 'Ann' },
       })
     ).json<{ inviteUrl: string }>();
     const accepted = await call('POST', '/api/invites/accept', {
@@ -246,7 +246,7 @@ describe('linking a Slack account', () => {
     expect((await call('GET', '/api/me/slack', { cookie: owner })).json<SlackLinkView>()).toEqual({
       available: true,
       linked: true,
-      workspace: 'Push30',
+      workspace: 'Acme',
       directMessages: true,
     });
 
@@ -392,7 +392,7 @@ describe('messages from Slack', () => {
       user: { id: 'U1' },
       message: {
         text: 'Printer is out of toner\nfloor 3',
-        permalink: 'https://push30.slack.com/p1',
+        permalink: 'https://acme.slack.com/p1',
       },
     });
     const open = calls.find((c) => c.method === 'views.open');
@@ -405,7 +405,7 @@ describe('messages from Slack', () => {
       user: { id: 'U1' },
       view: {
         callback_id: CALLBACKS.issueModal,
-        private_metadata: JSON.stringify({ permalink: 'https://push30.slack.com/p1' }),
+        private_metadata: JSON.stringify({ permalink: 'https://acme.slack.com/p1' }),
         state: {
           values: {
             target: { value: { selected_option: { value: 'HELP' } } },

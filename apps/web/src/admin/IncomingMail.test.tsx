@@ -26,7 +26,7 @@ const configured: InboxSettingsView = {
   ...empty,
   configured: true,
   enabled: true,
-  host: 'imap.push30.test',
+  host: 'imap.acme.test',
   username: 'ordler',
   passwordSet: true,
   lastPollAt: '2026-11-01T09:00:00.000Z',
@@ -35,8 +35,8 @@ const configured: InboxSettingsView = {
 const messages: InboundEmailView[] = [
   {
     id: 'e1',
-    from: 'ana@push30.test',
-    to: ['it@push30.test'],
+    from: 'ana@acme.test',
+    to: ['it@acme.test'],
     subject: 'Printer jammed',
     status: 'created',
     reason: null,
@@ -45,8 +45,8 @@ const messages: InboundEmailView[] = [
   },
   {
     id: 'e2',
-    from: 'bo@push30.test',
-    to: ['it@push30.test'],
+    from: 'bo@acme.test',
+    to: ['it@acme.test'],
     subject: 'Need a laptop',
     status: 'rejected',
     reason: 'form_invalid',
@@ -65,7 +65,7 @@ describe('IncomingMail', () => {
     await renderWithI18n(<IncomingMail />);
     const form = await screen.findByRole('form', { name: 'Incoming mail' });
     await userEvent.click(within(form).getByLabelText('Read this mailbox'));
-    await userEvent.type(within(form).getByLabelText('IMAP host'), 'imap.push30.test');
+    await userEvent.type(within(form).getByLabelText('IMAP host'), 'imap.acme.test');
     await userEvent.type(within(form).getByLabelText('Username'), 'ordler');
     await userEvent.type(within(form).getByLabelText('Password'), 'imap-secret');
     await userEvent.click(within(form).getByRole('button', { name: 'Save mailbox' }));
@@ -73,7 +73,7 @@ describe('IncomingMail', () => {
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
         enabled: true,
-        host: 'imap.push30.test',
+        host: 'imap.acme.test',
         port: 993,
         security: 'tls',
         verifyTls: true,

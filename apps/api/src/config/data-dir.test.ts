@@ -8,7 +8,7 @@ import { DataDir } from './data-dir.js';
 let path: string;
 
 const SETTINGS = {
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',
@@ -41,7 +41,7 @@ describe('DataDir', () => {
     expect(dir.hasDatabase()).toBe(true);
     expect(readFileSync(join(path, 'database.json'), 'utf8')).not.toContain('db-secret');
     expect(dir.readDatabase(box, 7)).toEqual({
-      host: 'db.push30.test',
+      host: 'db.acme.test',
       port: 5432,
       database: 'ordler',
       user: 'ordler',

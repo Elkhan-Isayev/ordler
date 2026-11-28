@@ -8,7 +8,7 @@ import { systemRoleId } from '../setup/system-roles.js';
 let t: TestApp;
 
 const SETUP_BODY = {
-  companyName: 'Push30',
+  companyName: 'Acme',
   defaultLocale: 'ru',
   owner: { name: OWNER.name, email: OWNER.email, password: OWNER.password },
 };
@@ -51,7 +51,7 @@ describe('setup wizard', () => {
     expect(response.statusCode).toBe(201);
     expect(response.json()).toMatchObject({
       member: { name: OWNER.name, email: OWNER.email },
-      workspace: { companyName: 'Push30', defaultLocale: 'ru' },
+      workspace: { companyName: 'Acme', defaultLocale: 'ru' },
       departments: [],
     });
     const cookie = response.headers['set-cookie'] as string;
@@ -226,7 +226,7 @@ describe('email OTP over HTTP', () => {
     const unknown = await inject({
       method: 'POST',
       url: '/api/auth/otp/request',
-      payload: { email: 'nobody@push30.test' },
+      payload: { email: 'nobody@acme.test' },
     });
     expect(unknown.statusCode).toBe(202);
     expect(t.mailer.sent).toHaveLength(1);
@@ -277,7 +277,7 @@ describe('admin authentication settings', () => {
     await setupOwner();
     const [member] = await t.database.db
       .insert(members)
-      .values({ email: 'member@push30.test', name: 'Member', status: 'active' })
+      .values({ email: 'member@acme.test', name: 'Member', status: 'active' })
       .returning({ id: members.id });
     await t.database.db.insert(roleAssignments).values({
       memberId: member!.id,

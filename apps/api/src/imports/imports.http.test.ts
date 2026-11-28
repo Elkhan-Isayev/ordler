@@ -87,7 +87,7 @@ class FakeSource implements ImportSourceAdapter {
 
   people() {
     return Promise.resolve([
-      { id: 'dev@push30.test', name: 'Dev', email: 'dev@push30.test' },
+      { id: 'dev@acme.test', name: 'Dev', email: 'dev@acme.test' },
       { id: 'Ghost', name: 'Ghost', email: null },
     ]);
   }
@@ -125,7 +125,7 @@ beforeEach(async () => {
   source = new FakeSource();
   t = await createTestApp({ importSources: (c) => source.bind(c) });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -144,7 +144,7 @@ beforeEach(async () => {
   for (const name of ['dev', 'peer'] as const) {
     const invite = (
       await call('POST', '/api/admin/members', owner, {
-        email: `${name}@push30.test`,
+        email: `${name}@acme.test`,
         name,
         role: {
           roleId: roles.find((r) => r.key === 'member')!.id,
@@ -178,7 +178,7 @@ async function connect(): Promise<ImportRunView> {
 async function configure(runId: string, extra: object = {}) {
   return call('PUT', `/api/admin/imports/${runId}/config`, owner, {
     containers: [{ externalId: 'lin-team', teamId: ids.help }],
-    peopleMap: { 'dev@push30.test': people.dev.id, Ghost: null },
+    peopleMap: { 'dev@acme.test': people.dev.id, Ghost: null },
     ...extra,
   });
 }
@@ -247,7 +247,7 @@ describe('import from Linear and Jira (SPEC §10.2)', () => {
     ).json<ImportOptions>();
     expect(options.containers[0]!.key).toBe('ENG');
     expect(options.people).toEqual([
-      expect.objectContaining({ id: 'dev@push30.test', suggestedMemberId: people.dev.id }),
+      expect.objectContaining({ id: 'dev@acme.test', suggestedMemberId: people.dev.id }),
       expect.objectContaining({ id: 'Ghost', suggestedMemberId: null }),
     ]);
     const bad = await configure(run.id, {
@@ -290,14 +290,14 @@ describe('import from Linear and Jira (SPEC §10.2)', () => {
         description: `Steps\n\n![shot](${UPLOAD})`,
         status: { name: 'Doing', category: 'started' },
         priority: 'high',
-        assignees: [{ id: 'dev@push30.test', name: 'Dev', email: 'dev@push30.test' }],
+        assignees: [{ id: 'dev@acme.test', name: 'Dev', email: 'dev@acme.test' }],
         creator: { id: 'Ghost', name: 'Ghost', email: null },
         labels: ['bug', 'Bug', 'backend'],
         dueDate: '2026-02-01',
         comments: [
           {
             externalId: 'c1',
-            author: { id: 'dev@push30.test', name: 'Dev', email: 'dev@push30.test' },
+            author: { id: 'dev@acme.test', name: 'Dev', email: 'dev@acme.test' },
             body: 'Looking',
             createdAt: '2026-01-02T11:00:00.000Z',
           },
@@ -482,7 +482,7 @@ describe('import from Linear and Jira (SPEC §10.2)', () => {
       name: 'Autosave',
       description: 'Never lose a draft',
       status: 'in_progress' as const,
-      lead: { id: 'dev@push30.test', name: 'Dev', email: 'dev@push30.test' },
+      lead: { id: 'dev@acme.test', name: 'Dev', email: 'dev@acme.test' },
       startDate: '2026-01-01',
       targetDate: '2026-03-01',
     };

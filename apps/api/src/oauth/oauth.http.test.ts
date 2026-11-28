@@ -99,7 +99,7 @@ async function mcpStatus(accessToken: string) {
 beforeEach(async () => {
   t = await createTestApp();
   const setup = await call('POST', '/api/setup', {
-    json: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    json: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   owner = cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
 });
@@ -319,7 +319,7 @@ describe('authorization code flow', () => {
       await call('POST', '/api/admin/members', {
         cookie: owner,
         json: {
-          email: 'guest@push30.test',
+          email: 'guest@acme.test',
           name: 'Guest',
           role: { roleId: guest.id, scope: { type: 'organization' } },
         },

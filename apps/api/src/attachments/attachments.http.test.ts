@@ -78,7 +78,7 @@ beforeEach(async () => {
   const setup = await t.app.inject({
     method: 'POST',
     url: '/api/setup',
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   owner = cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
   const dept = (
@@ -171,7 +171,7 @@ describe('attachments', () => {
 
   it('lets viewers download but not upload', async () => {
     const view = (await upload(owner, 'a.png', 'image/png', PNG)).json<AttachmentView>();
-    const viewer = await person('vic@push30.test', { key: 'viewer', teamId: helpdeskId });
+    const viewer = await person('vic@acme.test', { key: 'viewer', teamId: helpdeskId });
     expect((await t.app.inject({ url: view.url, headers: { cookie: viewer } })).statusCode).toBe(
       200,
     );
@@ -182,7 +182,7 @@ describe('attachments', () => {
 
   it('hides files of teams the member cannot read', async () => {
     const view = (await upload(owner, 'a.png', 'image/png', PNG)).json<AttachmentView>();
-    const stranger = await person('sam@push30.test');
+    const stranger = await person('sam@acme.test');
     expect((await t.app.inject({ url: view.url, headers: { cookie: stranger } })).statusCode).toBe(
       404,
     );

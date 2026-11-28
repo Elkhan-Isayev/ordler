@@ -32,7 +32,7 @@ export const ROLES: AdminRole[] = [
 export const ANN: AdminMember = {
   id: 'm-ann',
   name: 'Ann Lee',
-  email: 'ann@push30.test',
+  email: 'ann@acme.test',
   status: 'active',
   createdAt: '2026-10-15T08:00:00Z',
   roles: [
@@ -50,7 +50,7 @@ export const ANN: AdminMember = {
 export const OWNER_MEMBER: AdminMember = {
   id: 'm1',
   name: 'Owner',
-  email: 'owner@push30.test',
+  email: 'owner@acme.test',
   status: 'active',
   createdAt: '2026-10-15T08:00:00Z',
   roles: [],

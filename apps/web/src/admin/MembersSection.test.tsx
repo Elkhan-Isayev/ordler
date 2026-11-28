@@ -32,7 +32,7 @@ describe('MembersSection', () => {
           member: {
             ...ANN,
             id: 'm-new',
-            email: 'new@push30.test',
+            email: 'new@acme.test',
             status: 'invited',
             roles: [],
             teamIds: [],
@@ -44,7 +44,7 @@ describe('MembersSection', () => {
     });
     await renderWithI18n(<MembersSection currentMemberId="m1" />);
     const form = await screen.findByRole('form', { name: 'Invite member' });
-    await userEvent.type(within(form).getByLabelText('Email'), 'new@push30.test');
+    await userEvent.type(within(form).getByLabelText('Email'), 'new@acme.test');
     await userEvent.type(within(form).getByLabelText('Name'), 'New Person');
     await userEvent.selectOptions(within(form).getByLabelText('Role'), 'r-member');
     await userEvent.selectOptions(within(form).getByLabelText('Where'), `team:${TEAM_ID}`);
@@ -53,7 +53,7 @@ describe('MembersSection', () => {
     expect(await screen.findByDisplayValue('https://ordler.test/invite/abc')).toBeInTheDocument();
     expect(screen.getByText(/Mail is not configured/)).toBeInTheDocument();
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({
-      email: 'new@push30.test',
+      email: 'new@acme.test',
       name: 'New Person',
       role: { roleId: 'r-member', scope: { type: 'team', id: TEAM_ID } },
       teamIds: [TEAM_ID],
@@ -74,7 +74,7 @@ describe('MembersSection', () => {
     });
     await renderWithI18n(<MembersSection currentMemberId="m1" />);
     const form = await screen.findByRole('form', { name: 'Invite member' });
-    await userEvent.type(within(form).getByLabelText('Email'), 'x@push30.test');
+    await userEvent.type(within(form).getByLabelText('Email'), 'x@acme.test');
     await userEvent.type(within(form).getByLabelText('Name'), 'X');
     await userEvent.selectOptions(within(form).getByLabelText('Role'), 'r-member');
     await userEvent.click(within(form).getByRole('button', { name: 'Send invite' }));

@@ -45,7 +45,7 @@ const role = (key: string) => roles.find((r) => r.key === key)!.id;
 async function person(name: string, grant: { role: string; scope: object }, teams: string[] = []) {
   const invite = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name}@push30.test`,
+      email: `${name}@acme.test`,
       name,
       role: { roleId: role(grant.role), scope: grant.scope },
       teamIds: teams,
@@ -99,7 +99,7 @@ beforeEach(async () => {
   slackPosts = [];
   t = await createTestApp({ notifier, slackFetch });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -695,7 +695,7 @@ describe('directory', () => {
     }>();
     expect(body.members.map((m) => m.name)).toContain('finboss');
     expect(body.departments.map((d) => d.name)).toEqual(['Customer Support', 'Finance', 'IT']);
-    expect(directory.body).not.toContain('@push30.test');
+    expect(directory.body).not.toContain('@acme.test');
     expect((await call('GET', '/api/directory')).statusCode).toBe(401);
   });
 });

@@ -49,9 +49,9 @@ describe('registerWebAssets', () => {
     });
     expect((await app.inject({ url: '/requests/REQ-7' })).body).not.toContain('og:title');
 
-    setup.site = { companyName: 'Push30', locale: 'en' };
+    setup.site = { companyName: 'Acme', locale: 'en' };
     const page = await app.inject({ url: '/requests/REQ-7' });
-    expect(page.body).toContain('<meta property="og:title" content="REQ-7 · Push30" />');
+    expect(page.body).toContain('<meta property="og:title" content="REQ-7 · Acme" />');
     expect(page.body).toContain('id="root"');
   });
 

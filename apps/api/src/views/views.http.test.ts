@@ -25,7 +25,7 @@ function call(method: Method, url: string, cookie?: string, payload?: object) {
 async function person(name: Person, role: string, departmentId: string) {
   const invite = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name}@push30.test`,
+      email: `${name}@acme.test`,
       name,
       role: {
         roleId: roles.find((r) => r.key === role)!.id,
@@ -48,7 +48,7 @@ async function person(name: Person, role: string, departmentId: string) {
 beforeEach(async () => {
   t = await createTestApp();
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });

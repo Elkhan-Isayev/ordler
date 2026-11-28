@@ -35,7 +35,7 @@ async function start(version = '1.4.0') {
   const setup = await t.app.inject({
     method: 'POST',
     url: '/api/setup',
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   return { setup, cookie: cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE) };
 }
@@ -78,7 +78,7 @@ describe('admin update notification', () => {
     await start();
     const [member] = await t.database.db
       .insert(members)
-      .values({ email: 'm@push30.test', name: 'M', status: 'active' })
+      .values({ email: 'm@acme.test', name: 'M', status: 'active' })
       .returning({ id: members.id });
     await t.database.db.insert(roleAssignments).values({
       memberId: member!.id,

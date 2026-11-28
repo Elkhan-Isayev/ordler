@@ -11,7 +11,7 @@ let t: TestApp;
 afterEach(() => t.close());
 
 const SETTINGS = {
-  host: 'new-db.push30.test',
+  host: 'new-db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',
@@ -20,7 +20,7 @@ const SETTINGS = {
 };
 
 const CURRENT = {
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',
@@ -47,7 +47,7 @@ async function start(databaseSettings?: Partial<AppContextDeps['databaseSettings
   const setup = await t.app.inject({
     method: 'POST',
     url: '/api/setup',
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   return cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
 }
@@ -71,7 +71,7 @@ async function orgAdmin(owner: string): Promise<string> {
       url: '/api/admin/members',
       headers: { cookie: owner },
       payload: {
-        email: 'admin@push30.test',
+        email: 'admin@acme.test',
         name: 'Admin',
         role: {
           roleId: roles.find((r) => r.key === 'org_admin')!.id,
@@ -117,7 +117,7 @@ describe('Admin → Database', () => {
     const owner = await start({ save: (input) => saved.push(input) });
     const result = await call('PUT', owner, SETTINGS);
     expect(result.json()).toEqual({ saved: true, restartRequired: true });
-    expect(saved[0]).toMatchObject({ host: 'new-db.push30.test', password: 'db-secret' });
+    expect(saved[0]).toMatchObject({ host: 'new-db.acme.test', password: 'db-secret' });
 
     const audit = await t.database.db
       .select()

@@ -10,7 +10,7 @@ afterEach(() => vi.unstubAllGlobals());
 async function fill() {
   const form = await screen.findByRole('form', { name: 'Connect a database' });
   const field = (label: string) => within(form).getByLabelText(label);
-  await userEvent.type(field('Host'), 'db.push30.test');
+  await userEvent.type(field('Host'), 'db.acme.test');
   await userEvent.type(field('Password'), 'db-secret');
   await userEvent.selectOptions(field('Encryption (SSL)'), 'require');
   await userEvent.type(field('Install token'), 'K7QX-2M9P-WD4T');
@@ -18,7 +18,7 @@ async function fill() {
 }
 
 const EXPECTED = {
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',

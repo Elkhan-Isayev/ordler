@@ -66,7 +66,7 @@ beforeEach(async () => {
   });
   t = await createTestApp({ events: bus });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -154,7 +154,7 @@ describe('blocked by / blocking', () => {
 
   it('lets viewers see relations but not change them', async () => {
     await call('PATCH', '/api/issues/HELP-1', owner, { blockedBy: ['HELP-2'] });
-    const viewer = await person('vic@push30.test', {
+    const viewer = await person('vic@acme.test', {
       key: 'viewer',
       scope: { type: 'team', id: helpdeskId },
     });
@@ -173,7 +173,7 @@ describe('blocked by / blocking', () => {
     await call('POST', '/api/teams/SEC/issues', owner, { title: 'Audit the badge readers' });
     await call('PATCH', '/api/issues/HELP-1', owner, { blockedBy: ['SEC-1'] });
 
-    const member = await person('dee@push30.test', {
+    const member = await person('dee@acme.test', {
       key: 'member',
       scope: { type: 'department', id: departmentId },
     });
