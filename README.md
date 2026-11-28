@@ -808,8 +808,15 @@ Dependencies whose licenses are not compatible with the AGPL are kept out of the
 **Trademarks.** Linear, Jira, Atlassian, Trello, Wiki.js, Miro, Slack, GitHub, Google,
 Microsoft, Amazon Web Services, Anthropic, Claude, Cursor, Docker, Kubernetes, PostgreSQL and
 other names are trademarks of their respective owners. They are mentioned only to describe
-compatibility, integrations and imports. Ordler is an independent project, not affiliated with, endorsed by or sponsored by
-any of them, and it uses none of their code, logos or designs.
+compatibility, integrations and imports. Ordler is an independent project, not affiliated with,
+endorsed by or sponsored by any of them. Comparisons such as "Linear-style" or "service-desk-style"
+only describe the kind of tool it is.
+
+**Original work.** Ordler is written from scratch. It contains no code, designs, icons or other
+assets taken from the products it is compared with or imports from; importers use only those
+products' public APIs. In the interface, the only third-party brand marks are the Google and
+Microsoft logos on their own "Continue with…" sign-in buttons, as their sign-in branding
+guidelines describe.
 
 **Demo content.** Screenshots, the GIF and the video show a fictional company ("Acme"), and the
 in-app Help clips a fictional "Demo Company"; all people and data in them are made up.
