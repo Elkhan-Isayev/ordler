@@ -34,7 +34,7 @@ const role = (key: string) => roles.find((r) => r.key === key)!.id;
 async function invite(name: string, roleKey: string, scope: object, teamIds: string[]) {
   const created = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name}@push30.test`,
+      email: `${name}@acme.test`,
       name,
       role: { roleId: role(roleKey), scope },
       teamIds,
@@ -88,7 +88,7 @@ beforeEach(async () => {
   clock = new Date('2026-10-21T09:00:00Z');
   t = await createTestApp({ now: () => clock });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });

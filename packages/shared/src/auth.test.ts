@@ -38,12 +38,12 @@ describe('passwordSchema', () => {
 describe('setupSchema', () => {
   it('validates the wizard payload', () => {
     const parsed = setupSchema.parse({
-      companyName: ' Push30 ',
+      companyName: ' Acme ',
       defaultLocale: 'az',
-      owner: { name: 'Owner', email: 'OWNER@push30.com', password: 'a-strong-password' },
+      owner: { name: 'Owner', email: 'OWNER@acme.test', password: 'a-strong-password' },
     });
-    expect(parsed.companyName).toBe('Push30');
-    expect(parsed.owner.email).toBe('owner@push30.com');
+    expect(parsed.companyName).toBe('Acme');
+    expect(parsed.owner.email).toBe('owner@acme.test');
   });
 
   it('rejects unsupported locales', () => {

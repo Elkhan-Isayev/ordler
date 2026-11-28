@@ -24,7 +24,7 @@ const { privateKey: PEM } = generateKeyPairSync('rsa', {
   publicKeyEncoding: { type: 'spki', format: 'pem' },
 });
 const SECRET = 'whsec-github-test-secret-0123456789';
-const REPO = { full_name: 'push30/portal', html_url: 'https://github.com/push30/portal' };
+const REPO = { full_name: 'acme/portal', html_url: 'https://github.com/acme/portal' };
 
 let t: TestApp;
 let owner: string;
@@ -42,7 +42,7 @@ const githubHttp: GithubHttp = async (url, init) => {
   if (url.includes('/app-manifests/good-code/conversions')) {
     return Response.json({
       id: 4242,
-      slug: 'ordler-push30',
+      slug: 'ordler-acme',
       pem: PEM,
       webhook_secret: SECRET,
       client_secret: 'c'.repeat(40),
@@ -101,7 +101,7 @@ function pullRequest(action: string, pr: object) {
       state: 'open',
       draft: false,
       merged: false,
-      html_url: 'https://github.com/push30/portal/pull/5',
+      html_url: 'https://github.com/acme/portal/pull/5',
       user: { login: 'elkhan' },
       head: { ref: 'elkhan/help-1-fix-login' },
       ...pr,
@@ -124,7 +124,7 @@ async function configure() {
 async function invite(name: string, roleId: string, scope: object, teamIds: string[]) {
   const created = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name}@push30.test`,
+      email: `${name}@acme.test`,
       name,
       role: { roleId, scope },
       teamIds,
@@ -157,7 +157,7 @@ beforeEach(async () => {
   failComments = false;
   t = await createTestApp({ githubHttp });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -240,14 +240,14 @@ describe('Admin → Integrations → GitHub (ADR 0019)', () => {
 
   it('creates the app from a manifest on GitHub Enterprise Server', async () => {
     const started = await call('POST', '/api/admin/github-app/manifest', owner, {
-      githubUrl: 'https://ghe.push30.test/',
-      organization: 'push30',
+      githubUrl: 'https://ghe.acme.test/',
+      organization: 'acme',
     });
     expect(started.statusCode).toBe(201);
     const start = started.json<GithubManifestStart>();
     const url = new URL(start.url);
     expect(url.origin + url.pathname).toBe(
-      'https://ghe.push30.test/organizations/push30/settings/apps/new',
+      'https://ghe.acme.test/organizations/acme/settings/apps/new',
     );
     const manifest = JSON.parse(start.manifest) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(manifest.hook_attributes.url).toBe(`${TEST_BASE_URL}/api/github/webhook`);
@@ -263,20 +263,18 @@ describe('Admin → Integrations → GitHub (ADR 0019)', () => {
     });
     expect(back.statusCode).toBe(302);
     expect(back.headers.location).toBe(`${TEST_BASE_URL}/admin/integrations?github=created`);
-    expect(calls[0]!.url).toBe(
-      'https://ghe.push30.test/api/v3/app-manifests/good-code/conversions',
-    );
+    expect(calls[0]!.url).toBe('https://ghe.acme.test/api/v3/app-manifests/good-code/conversions');
 
     const view = (await call('GET', '/api/admin/github-app', owner)).json<GithubAppView>();
     expect(view).toMatchObject({
       enabled: true,
-      githubUrl: 'https://ghe.push30.test',
-      organization: 'push30',
+      githubUrl: 'https://ghe.acme.test',
+      organization: 'acme',
       appId: '4242',
-      appSlug: 'ordler-push30',
+      appSlug: 'ordler-acme',
       privateKeySet: true,
       webhookSecretSet: true,
-      installUrl: 'https://ghe.push30.test/github-apps/ordler-push30/installations/new',
+      installUrl: 'https://ghe.acme.test/github-apps/ordler-acme/installations/new',
     });
     const audit = await t.database.db
       .select()
@@ -348,9 +346,9 @@ describe('GitHub webhooks', () => {
     expect((await links('HELP-1')).links).toMatchObject([
       {
         kind: 'branch',
-        repository: 'push30/portal',
+        repository: 'acme/portal',
         ref: 'elkhan/help-1-fix-login',
-        url: 'https://github.com/push30/portal/tree/elkhan/help-1-fix-login',
+        url: 'https://github.com/acme/portal/tree/elkhan/help-1-fix-login',
         author: 'elkhan',
       },
     ]);
@@ -366,7 +364,7 @@ describe('GitHub webhooks', () => {
         {
           id: 'a'.repeat(40),
           message: 'Fix HELP-1 timeout\n\nLonger text',
-          url: `https://github.com/push30/portal/commit/${'a'.repeat(40)}`,
+          url: `https://github.com/acme/portal/commit/${'a'.repeat(40)}`,
           author: { name: 'Elkhan', username: 'elkhan' },
         },
         { id: 'b'.repeat(40), message: 'Unrelated', url: 'https://github.com/x' },
@@ -390,7 +388,7 @@ describe('GitHub webhooks', () => {
     ]);
     const posts = calls.filter((c) => c.method === 'POST' && c.url.endsWith('/comments'));
     expect(posts).toHaveLength(1);
-    expect(posts[0]!.url).toBe('https://api.github.com/repos/push30/portal/issues/5/comments');
+    expect(posts[0]!.url).toBe('https://api.github.com/repos/acme/portal/issues/5/comments');
     expect(posts[0]!.headers.authorization).toBe('Bearer ghs_installation');
     const body = posts[0]!.body.body as string;
     expect(body).toContain(`[HELP-1](${TEST_BASE_URL}/issue/HELP-1)`);
@@ -410,7 +408,7 @@ describe('GitHub webhooks', () => {
     await pullRequest('edited', { body: '' });
     expect((await links('SEC-1')).links).toEqual([]);
     const patch = calls.find((c) => c.method === 'PATCH')!;
-    expect(patch.url).toBe('https://api.github.com/repos/push30/portal/issues/comments/1001');
+    expect(patch.url).toBe('https://api.github.com/repos/acme/portal/issues/comments/1001');
     expect(patch.body.body).not.toContain('SEC-1');
 
     await pullRequest('closed', { state: 'closed', merged: true });
@@ -423,7 +421,7 @@ describe('GitHub webhooks', () => {
     failComments = true;
     await pullRequest('opened', {});
     expect((await call('GET', '/api/admin/github-app', owner)).json()).toMatchObject({
-      lastError: expect.stringContaining('push30/portal#5'),
+      lastError: expect.stringContaining('acme/portal#5'),
     });
     failComments = false;
     await pullRequest('edited', {});

@@ -52,7 +52,7 @@ beforeEach(async () => {
   clock = testClock();
   t = await createTestApp({ webhookFetch: fakeFetch, now: clock.now });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -74,7 +74,7 @@ beforeEach(async () => {
   for (const name of ['member', 'boss'] as const) {
     const invite = (
       await call('POST', '/api/admin/members', owner, {
-        email: `${name}@push30.test`,
+        email: `${name}@acme.test`,
         name,
         role: {
           roleId: roles.find((r) => r.key === 'member')!.id,

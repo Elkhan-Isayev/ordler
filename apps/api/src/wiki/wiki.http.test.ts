@@ -42,7 +42,7 @@ function call(method: Method, url: string, cookie?: string, payload?: object) {
 async function person(name: Person, role: string, scope: object, teamIds: string[] = []) {
   const invite = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name.toLowerCase()}@push30.test`,
+      email: `${name.toLowerCase()}@acme.test`,
       name,
       role: { roleId: roles.find((r) => r.key === role)!.id, scope },
       teamIds,
@@ -60,7 +60,7 @@ async function person(name: Person, role: string, scope: object, teamIds: string
 }
 
 const PNG = Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex');
-const WIKI = 'https://wiki.push30.test';
+const WIKI = 'https://wiki.acme.test';
 const KEY = 'wikijs-api-key-0123456789abcdef';
 
 interface FakePage extends WikiImportSourcePage {
@@ -150,7 +150,7 @@ beforeEach(async () => {
   wikiJs = new FakeWikiJs();
   t = await createTestApp({ attachmentMaxBytes: 1024, wikiFetch: wikiJs.fetch });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -426,7 +426,7 @@ describe('import from Wiki.js (ADR 0017)', () => {
     expect(refused.json()).toEqual({ error: 'import_auth_failed' });
     const plain = await call('POST', '/api/wiki/imports', people.head.cookie, {
       department: ids.it,
-      baseUrl: 'http://wiki.push30.test',
+      baseUrl: 'http://wiki.acme.test',
       token: KEY,
     });
     expect(plain.statusCode).toBe(400);

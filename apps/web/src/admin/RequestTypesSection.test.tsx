@@ -44,7 +44,7 @@ describe('RequestTypesSection', () => {
     await userEvent.selectOptions(within(form).getByLabelText('SLA policy'), 'p1');
     const address = within(form).getByLabelText('Email address');
     expect(address).toHaveAccessibleDescription(/create a request of this type/);
-    await userEvent.type(address, 'it-buy@push30.test');
+    await userEvent.type(address, 'it-buy@acme.test');
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
@@ -52,7 +52,7 @@ describe('RequestTypesSection', () => {
       name: 'Hardware purchase',
       description: '',
       category: null,
-      emailAddress: 'it-buy@push30.test',
+      emailAddress: 'it-buy@acme.test',
       targetTeamId: TEAM_ID,
       fields: [
         {

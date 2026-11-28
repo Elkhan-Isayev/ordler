@@ -48,7 +48,7 @@ beforeEach(async () => {
   const setup = await t.app.inject({
     method: 'POST',
     url: '/api/setup',
-    payload: { companyName: 'Push30', defaultLocale: 'en', owner: OWNER },
+    payload: { companyName: 'Acme', defaultLocale: 'en', owner: OWNER },
   });
   owner = cookieFrom(setup.headers['set-cookie'], SESSION_COOKIE);
   const headers = { cookie: owner };

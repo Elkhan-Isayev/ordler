@@ -61,7 +61,7 @@ describe('AuthGate', () => {
       'GET /api/me/counts': () => ({ json: { unread: 0, approvals: 1 } }),
     });
     await renderWithI18n(<AuthGate browserLocale="en" />);
-    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@acme.test');
     await userEvent.type(
       screen.getByLabelText('Password', { selector: 'input' }),
       'secret-password',
@@ -94,7 +94,7 @@ describe('AuthGate', () => {
       }),
     });
     await renderWithI18n(<AuthGate browserLocale="en" />);
-    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@acme.test');
     await userEvent.type(
       screen.getByLabelText('Password', { selector: 'input' }),
       'secret-password',
@@ -113,7 +113,7 @@ describe('AuthGate', () => {
       'GET /api/auth/strategies': () => ({ json: [{ kind: 'local', displayName: null }] }),
     });
     await renderWithI18n(<AuthGate browserLocale="en" />);
-    expect(await screen.findByRole('navigation', { name: 'Push30' })).toBeInTheDocument();
+    expect(await screen.findByRole('navigation', { name: 'Acme' })).toBeInTheDocument();
     expect(
       await screen.findByRole('heading', { name: 'Добро пожаловать в Ordler' }),
     ).toBeInTheDocument();
@@ -173,11 +173,11 @@ describe('AuthGate invitations', () => {
     window.history.replaceState(null, '', '/invite/tok123');
     const calls = mockApi({
       'GET /api/invites/tok123': () => ({
-        json: { email: 'ann@push30.test', companyName: 'Push30' },
+        json: { email: 'ann@acme.test', companyName: 'Acme' },
       }),
     });
     await renderWithI18n(<AuthGate browserLocale="en" />);
-    expect(await screen.findByRole('heading', { name: 'Join Push30' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Join Acme' })).toBeInTheDocument();
     expect(calls.map((c) => c.path)).toEqual(['/api/invites/tok123']);
   });
 });

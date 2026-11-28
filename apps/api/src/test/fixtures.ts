@@ -10,7 +10,7 @@ export const FAST_ARGON2: Argon2Params = { memory: 1024, passes: 1, parallelism:
 
 export const OWNER = {
   name: 'Owner',
-  email: 'owner@push30.test',
+  email: 'owner@acme.test',
   password: 'owner-password-123',
 };
 
@@ -21,7 +21,7 @@ export function testBox(): SecretBox {
 export async function completeSetup(db: Db): Promise<string> {
   const setup = new SetupService(db, 'https://ordler.test', FAST_ARGON2);
   const { ownerId } = await setup.completeSetup({
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });

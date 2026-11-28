@@ -27,7 +27,7 @@ const issue = async (cookie: string, body: object, key = 'HELP') =>
 beforeEach(async () => {
   t = await createTestApp();
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -49,7 +49,7 @@ beforeEach(async () => {
   const roles = (await call('GET', '/api/admin/roles', owner)).json<AdminRole[]>();
   const invite = (
     await call('POST', '/api/admin/members', owner, {
-      email: 'dev@push30.test',
+      email: 'dev@acme.test',
       name: 'dev',
       role: {
         roleId: roles.find((r) => r.key === 'member')!.id,

@@ -11,14 +11,14 @@ describe('AcceptInvitePage', () => {
   it('lets the invitee set a name and password', async () => {
     const calls = mockApi({
       'GET /api/invites/tok123': () => ({
-        json: { email: 'ann@push30.test', companyName: 'Push30' },
+        json: { email: 'ann@acme.test', companyName: 'Acme' },
       }),
       'POST /api/invites/accept': () => ({ json: ME }),
     });
     const onAccepted = vi.fn();
     await renderWithI18n(<AcceptInvitePage token="tok123" onAccepted={onAccepted} />);
-    expect(await screen.findByRole('heading', { name: 'Join Push30' })).toBeInTheDocument();
-    expect(screen.getByText(/invited as ann@push30.test/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Join Acme' })).toBeInTheDocument();
+    expect(screen.getByText(/invited as ann@acme.test/)).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText('Your name'), 'Ann Lee');
     await userEvent.type(screen.getByLabelText('Password'), 'ann-password-123');
     await userEvent.type(screen.getByLabelText('Repeat password'), 'ann-password-123');

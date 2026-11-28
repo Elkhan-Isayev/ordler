@@ -40,7 +40,7 @@ const slackFetch: FetchFn = async (url, init) => {
 async function invite(name: string, roleId: string, scope: object, teamIds: string[]) {
   const created = (
     await call('POST', '/api/admin/members', owner, {
-      email: `${name}@push30.test`,
+      email: `${name}@acme.test`,
       name,
       role: { roleId, scope },
       teamIds,
@@ -66,7 +66,7 @@ beforeEach(async () => {
   posted = [];
   t = await createTestApp({ slackFetch });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -114,8 +114,8 @@ describe('Inbox and email (SPEC §7)', () => {
 
     expect(t.mailer.sent).toHaveLength(1);
     const mail = t.mailer.sent[0]!;
-    expect(mail.to).toBe('dev@push30.test');
-    expect(mail.subject).toBe(`[Push30] ${OWNER.name} assigned you HELP-1`);
+    expect(mail.to).toBe('dev@acme.test');
+    expect(mail.subject).toBe(`[Acme] ${OWNER.name} assigned you HELP-1`);
     expect(mail.text).toContain(`${TEST_BASE_URL}/issue/HELP-1`);
   });
 

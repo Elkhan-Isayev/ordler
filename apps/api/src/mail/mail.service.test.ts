@@ -17,14 +17,14 @@ let failWith: string | undefined;
 const actor = () => ({ type: 'member' as const, id: ownerId });
 
 const SETTINGS = {
-  host: 'smtp.push30.test',
+  host: 'smtp.acme.test',
   port: 587,
   security: 'starttls' as const,
   verifyTls: true,
   username: 'ordler',
   password: 'smtp-secret',
-  fromName: 'Push30 Tasks',
-  fromEmail: 'tasks@push30.test',
+  fromName: 'Acme Tasks',
+  fromEmail: 'tasks@acme.test',
 };
 
 function service(env?: SmtpConfig, now?: () => Date) {
@@ -57,26 +57,26 @@ describe('MailService', () => {
     const mail = service();
     expect(await mail.isConfigured()).toBe(false);
     expect((await mail.view()).source).toBe('none');
-    await expect(mail.send({ to: 'a@push30.test', subject: 's', text: 't' })).rejects.toMatchObject(
-      { code: 'mail_not_configured' },
-    );
+    await expect(mail.send({ to: 'a@acme.test', subject: 's', text: 't' })).rejects.toMatchObject({
+      code: 'mail_not_configured',
+    });
   });
 
   it('stores admin settings with the password encrypted and never returns it', async () => {
     const mail = service();
     const view = await mail.update(SETTINGS, actor());
-    expect(view).toMatchObject({ source: 'database', host: 'smtp.push30.test', passwordSet: true });
+    expect(view).toMatchObject({ source: 'database', host: 'smtp.acme.test', passwordSet: true });
     expect(view).not.toHaveProperty('password');
 
     const [row] = await db.select().from(mailSettings);
     expect(row!.passwordEncrypted).not.toContain('smtp-secret');
 
-    await mail.send({ to: 'ann@push30.test', subject: 'Hi', text: 'Body' });
+    await mail.send({ to: 'ann@acme.test', subject: 'Hi', text: 'Body' });
     expect(sent[0]!.config).toMatchObject({
-      host: 'smtp.push30.test',
+      host: 'smtp.acme.test',
       user: 'ordler',
       password: 'smtp-secret',
-      from: '"Push30 Tasks" <tasks@push30.test>',
+      from: '"Acme Tasks" <tasks@acme.test>',
     });
   });
 
@@ -134,11 +134,11 @@ describe('MailService', () => {
   it('reports test email success and the SMTP error on failure', async () => {
     const mail = service();
     await mail.update(SETTINGS, actor());
-    expect(await mail.sendTest('admin@push30.test', 'ru', 'Push30')).toEqual({ sent: true });
-    expect(sent[0]!.message.subject).toBe('Тестовое письмо от Push30 в Ordler');
+    expect(await mail.sendTest('admin@acme.test', 'ru', 'Acme')).toEqual({ sent: true });
+    expect(sent[0]!.message.subject).toBe('Тестовое письмо от Acme в Ordler');
 
     failWith = '535 Authentication failed';
-    expect(await mail.sendTest('admin@push30.test', 'en', 'Push30')).toEqual({
+    expect(await mail.sendTest('admin@acme.test', 'en', 'Acme')).toEqual({
       sent: false,
       error: '535 Authentication failed',
     });
@@ -147,9 +147,7 @@ describe('MailService', () => {
 
 describe('formatFrom', () => {
   it('quotes the display name', () => {
-    expect(formatFrom('Ann "IT" Desk', 'it@push30.test')).toBe(
-      '"Ann \\"IT\\" Desk" <it@push30.test>',
-    );
-    expect(formatFrom(null, 'it@push30.test')).toBe('it@push30.test');
+    expect(formatFrom('Ann "IT" Desk', 'it@acme.test')).toBe('"Ann \\"IT\\" Desk" <it@acme.test>');
+    expect(formatFrom(null, 'it@acme.test')).toBe('it@acme.test');
   });
 });

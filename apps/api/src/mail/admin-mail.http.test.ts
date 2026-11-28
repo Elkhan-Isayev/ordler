@@ -8,14 +8,14 @@ let t: TestApp;
 let owner: string;
 
 const SETTINGS = {
-  host: 'smtp.push30.test',
+  host: 'smtp.acme.test',
   port: 587,
   security: 'starttls',
   verifyTls: true,
   username: 'ordler',
   password: 'smtp-secret',
-  fromName: 'Push30',
-  fromEmail: 'tasks@push30.test',
+  fromName: 'Acme',
+  fromEmail: 'tasks@acme.test',
 };
 
 function call(
@@ -35,7 +35,7 @@ function call(
 /** A signed-in member with no admin permissions. */
 async function plainMember(): Promise<string> {
   const invite = (
-    await call('POST', '/api/admin/members', owner, { email: 'ann@push30.test', name: 'Ann' })
+    await call('POST', '/api/admin/members', owner, { email: 'ann@acme.test', name: 'Ann' })
   ).json<InviteResponse>();
   const accepted = await call('POST', '/api/invites/accept', undefined, {
     token: invite.inviteUrl.split('/invite/')[1]!,
@@ -49,7 +49,7 @@ beforeEach(async () => {
   // No SMTP_* variables: mail is configured through the admin panel.
   t = await createTestApp({ smtp: undefined });
   const setup = await call('POST', '/api/setup', undefined, {
-    companyName: 'Push30',
+    companyName: 'Acme',
     defaultLocale: 'en',
     owner: OWNER,
   });
@@ -67,7 +67,7 @@ describe('Admin → Mail server', () => {
     expect(saved.body).not.toContain('smtp-secret');
 
     const view = (await call('GET', '/api/admin/mail', owner)).json<MailSettingsView>();
-    expect(view).toMatchObject({ source: 'database', host: 'smtp.push30.test', passwordSet: true });
+    expect(view).toMatchObject({ source: 'database', host: 'smtp.acme.test', passwordSet: true });
     expect(JSON.stringify(view)).not.toContain('smtp-secret');
   });
 
@@ -81,9 +81,9 @@ describe('Admin → Mail server', () => {
 
   it('sends a test email', async () => {
     await call('PUT', '/api/admin/mail', owner, SETTINGS);
-    const result = await call('POST', '/api/admin/mail/test', owner, { to: 'owner@push30.test' });
+    const result = await call('POST', '/api/admin/mail/test', owner, { to: 'owner@acme.test' });
     expect(result.json()).toEqual({ sent: true });
-    expect(t.mailer.sent.at(-1)).toMatchObject({ to: 'owner@push30.test' });
+    expect(t.mailer.sent.at(-1)).toMatchObject({ to: 'owner@acme.test' });
   });
 
   it('rejects invalid settings', async () => {
@@ -96,7 +96,7 @@ describe('Admin → Mail server', () => {
     expect((await call('GET', '/api/admin/mail', ann)).statusCode).toBe(403);
     expect((await call('PUT', '/api/admin/mail', ann, SETTINGS)).statusCode).toBe(403);
     expect(
-      (await call('POST', '/api/admin/mail/test', ann, { to: 'a@push30.test' })).statusCode,
+      (await call('POST', '/api/admin/mail/test', ann, { to: 'a@acme.test' })).statusCode,
     ).toBe(403);
   });
 

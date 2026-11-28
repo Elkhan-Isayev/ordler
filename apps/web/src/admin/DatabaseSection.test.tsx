@@ -10,7 +10,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 const FILE: DatabaseSettingsView = {
   source: 'file',
-  host: 'db.push30.test',
+  host: 'db.acme.test',
   port: 5432,
   database: 'ordler',
   user: 'ordler',
@@ -24,7 +24,7 @@ describe('DatabaseSection', () => {
   it('shows the connection without secrets', async () => {
     mockApi({ 'GET /api/admin/database': () => ({ json: { ...FILE, source: 'env' } }) });
     await renderWithI18n(<DatabaseSection canEdit />);
-    expect(await screen.findByText('db.push30.test')).toBeInTheDocument();
+    expect(await screen.findByText('db.acme.test')).toBeInTheDocument();
     expect(screen.getByText('18.1')).toBeInTheDocument();
     expect(screen.getByText(/DATABASE_URL or DB_\*/)).toBeInTheDocument();
     expect(screen.queryByRole('form', { name: 'Change connection' })).not.toBeInTheDocument();
@@ -39,12 +39,12 @@ describe('DatabaseSection', () => {
     const form = await screen.findByRole('form', { name: 'Change connection' });
     const host = within(form).getByLabelText('Host');
     await userEvent.clear(host);
-    await userEvent.type(host, 'new-db.push30.test');
+    await userEvent.type(host, 'new-db.acme.test');
     await userEvent.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await within(form).findByRole('status')).toHaveTextContent('Restart Ordler');
     const body = calls.find((c) => c.method === 'PUT')!.body;
-    expect(body).toMatchObject({ host: 'new-db.push30.test', ssl: 'require' });
+    expect(body).toMatchObject({ host: 'new-db.acme.test', ssl: 'require' });
     // An empty password field keeps the stored password.
     expect(body).not.toHaveProperty('password');
   });
@@ -65,7 +65,7 @@ describe('DatabaseSection', () => {
   it('hides the form from admins who are not Owners', async () => {
     mockApi({ 'GET /api/admin/database': () => ({ json: FILE }) });
     await renderWithI18n(<DatabaseSection canEdit={false} />);
-    expect(await screen.findByText('db.push30.test')).toBeInTheDocument();
+    expect(await screen.findByText('db.acme.test')).toBeInTheDocument();
     expect(screen.queryByRole('form', { name: 'Change connection' })).not.toBeInTheDocument();
   });
 });

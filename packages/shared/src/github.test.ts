@@ -37,7 +37,7 @@ describe('findIssueIdentifiers', () => {
 
 describe('issueBranchName', () => {
   it('builds <handle>/<identifier>-<short-title>', () => {
-    expect(issueBranchName('elkhan@push30.test', 'ENG-12', 'Fix the login page!')).toBe(
+    expect(issueBranchName('elkhan@acme.test', 'ENG-12', 'Fix the login page!')).toBe(
       'elkhan/eng-12-fix-the-login-page',
     );
   });

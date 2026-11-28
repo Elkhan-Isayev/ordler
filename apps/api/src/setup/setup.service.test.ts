@@ -35,7 +35,7 @@ describe('SetupService', () => {
     const ownerId = await completeSetup(db);
 
     expect(await getInstance(db)).toEqual({
-      companyName: 'Push30',
+      companyName: 'Acme',
       baseUrl: 'https://ordler.test',
       defaultLocale: 'en',
     });
@@ -72,7 +72,7 @@ describe('SetupService', () => {
     const input = { companyName: 'A', defaultLocale: 'ru' as const, owner: OWNER };
     const results = await Promise.allSettled([
       service.completeSetup(input),
-      service.completeSetup({ ...input, owner: { ...OWNER, email: 'other@push30.test' } }),
+      service.completeSetup({ ...input, owner: { ...OWNER, email: 'other@acme.test' } }),
     ]);
     expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
     const rejected = results.find((r) => r.status === 'rejected');

@@ -76,11 +76,11 @@ describe('SignInPage', () => {
     const onSignedIn = vi.fn();
     await renderWithI18n(<SignInPage onSignedIn={onSignedIn} />);
     const form = await screen.findByRole('form', { name: 'Password' });
-    await userEvent.type(within(form).getByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(within(form).getByLabelText('Email'), 'ann@acme.test');
     await userEvent.type(within(form).getByLabelText('Password'), 'secret-password');
     await userEvent.click(within(form).getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(onSignedIn).toHaveBeenCalledWith(ME));
-    expect(calls.at(-1)!.body).toEqual({ email: 'ann@push30.test', password: 'secret-password' });
+    expect(calls.at(-1)!.body).toEqual({ email: 'ann@acme.test', password: 'secret-password' });
   });
 
   it('shows a translated error for wrong credentials', async () => {
@@ -90,7 +90,7 @@ describe('SignInPage', () => {
     });
     await renderWithI18n(<SignInPage onSignedIn={vi.fn()} />, 'ru');
     const form = await screen.findByRole('form', { name: 'Пароль' });
-    await userEvent.type(within(form).getByLabelText('Эл. почта'), 'ann@push30.test');
+    await userEvent.type(within(form).getByLabelText('Эл. почта'), 'ann@acme.test');
     await userEvent.type(within(form).getByLabelText('Пароль'), 'wrong-password');
     await userEvent.click(within(form).getByRole('button', { name: 'Войти' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Неверная почта или пароль.');
@@ -104,14 +104,14 @@ describe('SignInPage', () => {
     });
     const onSignedIn = vi.fn();
     await renderWithI18n(<SignInPage onSignedIn={onSignedIn} />);
-    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@acme.test');
     await userEvent.click(screen.getByRole('button', { name: 'Email me a sign-in code' }));
 
-    expect(await screen.findByText(/ann@push30.test can sign in/)).toBeInTheDocument();
+    expect(await screen.findByText(/ann@acme.test can sign in/)).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText('Sign-in code'), '042917');
     await userEvent.click(screen.getByRole('button', { name: 'Verify code' }));
     await waitFor(() => expect(onSignedIn).toHaveBeenCalledWith(ME));
-    expect(calls.at(-1)!.body).toEqual({ email: 'ann@push30.test', code: '042917' });
+    expect(calls.at(-1)!.body).toEqual({ email: 'ann@acme.test', code: '042917' });
   });
 
   it('lets the user go back and use another email', async () => {
@@ -120,7 +120,7 @@ describe('SignInPage', () => {
       'POST /api/auth/otp/request': () => ({ status: 202, json: {} }),
     });
     await renderWithI18n(<SignInPage onSignedIn={vi.fn()} />);
-    await userEvent.type(await screen.findByLabelText('Email'), 'ann@push30.test');
+    await userEvent.type(await screen.findByLabelText('Email'), 'ann@acme.test');
     await userEvent.click(screen.getByRole('button', { name: 'Email me a sign-in code' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Use another email' }));
     expect(screen.getByLabelText('Email')).toBeInTheDocument();

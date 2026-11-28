@@ -29,10 +29,10 @@ const CONNECTED: GithubAppView = {
   ...EMPTY,
   enabled: true,
   appId: '42',
-  appSlug: 'ordler-push30',
+  appSlug: 'ordler-acme',
   privateKeySet: true,
   webhookSecretSet: true,
-  installUrl: 'https://github.com/apps/ordler-push30/installations/new',
+  installUrl: 'https://github.com/apps/ordler-acme/installations/new',
 };
 
 describe('GithubAppPanel', () => {
@@ -41,7 +41,7 @@ describe('GithubAppPanel', () => {
       'GET /api/admin/github-app': () => ({ json: EMPTY }),
       'POST /api/admin/github-app/manifest': () => ({
         json: {
-          url: 'https://ghe.push30.test/organizations/push30/settings/apps/new?state=s',
+          url: 'https://ghe.acme.test/organizations/acme/settings/apps/new?state=s',
           manifest: '{"name":"Ordler"}',
         },
       }),
@@ -52,21 +52,21 @@ describe('GithubAppPanel', () => {
     const create = screen.getByRole('form', { name: 'Create GitHub App' });
     const url = create.querySelector('input[name="githubUrl"]') as HTMLInputElement;
     await userEvent.clear(url);
-    await userEvent.type(url, 'https://ghe.push30.test');
+    await userEvent.type(url, 'https://ghe.acme.test');
     await userEvent.type(
       create.querySelector('input[name="organization"]') as HTMLInputElement,
-      'push30',
+      'acme',
     );
     await userEvent.click(screen.getByRole('button', { name: 'Create GitHub App' }));
     await waitFor(() =>
       expect(submit).toHaveBeenCalledWith(
-        'https://ghe.push30.test/organizations/push30/settings/apps/new?state=s',
+        'https://ghe.acme.test/organizations/acme/settings/apps/new?state=s',
         '{"name":"Ordler"}',
       ),
     );
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
-      githubUrl: 'https://ghe.push30.test',
-      organization: 'push30',
+      githubUrl: 'https://ghe.acme.test',
+      organization: 'acme',
     });
   });
 
@@ -91,7 +91,7 @@ describe('GithubAppPanel', () => {
       }),
     );
     expect(
-      await screen.findByText('Connected as GitHub App “ordler-push30”', { exact: false }),
+      await screen.findByText('Connected as GitHub App “ordler-acme”', { exact: false }),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Install the app' })).toHaveAttribute(
       'href',

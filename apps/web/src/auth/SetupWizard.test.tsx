@@ -8,9 +8,9 @@ import { SetupWizard } from './SetupWizard.js';
 afterEach(() => vi.unstubAllGlobals());
 
 async function fill(password = 'a-strong-password', confirm = password) {
-  await userEvent.type(screen.getByLabelText('Company name'), 'Push30');
+  await userEvent.type(screen.getByLabelText('Company name'), 'Acme');
   await userEvent.type(screen.getByLabelText('Your name'), 'Ann Lee');
-  await userEvent.type(screen.getByLabelText('Email'), 'ann@push30.test');
+  await userEvent.type(screen.getByLabelText('Email'), 'ann@acme.test');
   await userEvent.type(screen.getByLabelText('Password'), password);
   await userEvent.type(screen.getByLabelText('Repeat password'), confirm);
 }
@@ -29,9 +29,9 @@ describe('SetupWizard', () => {
       method: 'POST',
       path: '/api/setup',
       body: {
-        companyName: 'Push30',
+        companyName: 'Acme',
         defaultLocale: 'az',
-        owner: { name: 'Ann Lee', email: 'ann@push30.test', password: 'a-strong-password' },
+        owner: { name: 'Ann Lee', email: 'ann@acme.test', password: 'a-strong-password' },
       },
     });
   });

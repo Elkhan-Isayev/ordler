@@ -14,13 +14,14 @@ describe('SlackPage', () => {
   it('offers to link when the app is connected', async () => {
     mockApi({
       'GET /api/me/slack': () => ({
-        json: { available: true, linked: false, workspace: 'Push30', directMessages: true },
+        json: { available: true, linked: false, workspace: 'Acme', directMessages: true },
       }),
     });
     await renderWithI18n(<SlackPage />);
-    expect(
-      await screen.findByRole('link', { name: 'Link Slack account (Push30)' }),
-    ).toHaveAttribute('href', '/api/me/slack/start');
+    expect(await screen.findByRole('link', { name: 'Link Slack account (Acme)' })).toHaveAttribute(
+      'href',
+      '/api/me/slack/start',
+    );
   });
 
   it('explains when the admin has not connected Slack', async () => {
@@ -36,7 +37,7 @@ describe('SlackPage', () => {
   });
 
   it('turns DMs off and unlinks a linked account', async () => {
-    let link = { available: true, linked: true, workspace: 'Push30', directMessages: true };
+    let link = { available: true, linked: true, workspace: 'Acme', directMessages: true };
     const calls = mockApi({
       'GET /api/me/slack': () => ({ json: link }),
       'PATCH /api/me/slack': (body) => {
@@ -61,7 +62,7 @@ describe('SlackPage', () => {
     window.history.replaceState(null, '', '/settings/slack?slack_error=oauth_failed');
     mockApi({
       'GET /api/me/slack': () => ({
-        json: { available: true, linked: false, workspace: 'Push30', directMessages: true },
+        json: { available: true, linked: false, workspace: 'Acme', directMessages: true },
       }),
     });
     await renderWithI18n(<SlackPage />);

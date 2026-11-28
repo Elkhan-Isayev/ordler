@@ -38,7 +38,7 @@ describe('SlackAppPanel', () => {
         json: {
           ...EMPTY,
           enabled: true,
-          workspace: { id: 'T1', name: 'Push30' },
+          workspace: { id: 'T1', name: 'Acme' },
           botTokenSet: true,
         },
       }),
@@ -64,7 +64,7 @@ describe('SlackAppPanel', () => {
         appToken: 'xapp-1',
       }),
     );
-    expect(await screen.findByText('Workspace: Push30', { exact: false })).toBeInTheDocument();
+    expect(await screen.findByText('Workspace: Acme', { exact: false })).toBeInTheDocument();
   });
 
   it('asks for the signing secret and shows request URLs in HTTPS mode', async () => {
