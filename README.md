@@ -93,6 +93,7 @@ and a service desk for requests between departments. Ordler is both, in one plac
 | 📦  | **Import from Linear, Jira and Trello** by API token, with dry run, pause and safe re-runs                                                                      |
 | 🔗  | **Link previews** in Teams, WhatsApp, Telegram and others, showing only the item number and company name                                                        |
 | 🧾  | **Audit log**, read-only and append-only                                                                                                                        |
+| 🎬  | **Built-in Help**: short how-to clips for everyday tasks (boards, cycles, requests, approvals), right inside the app                                            |
 | 🌍  | **Four languages**: English, Русский, Deutsch, Azərbaycanca                                                                                                     |
 | 🧱  | **Data-safe upgrades**: one-transaction migrations, destructive-SQL guard, downgrade protection, in-app release notifications                                   |
 
@@ -793,18 +794,25 @@ anonymous daily check of public GitHub releases, which `UPDATE_CHECK=false` turn
 - Redistributing Ordler (for example a changed image): keep [LICENSE](LICENSE) and
   [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and license your changes under the AGPL.
 
+**Contributions.** Pull requests are welcome. By submitting one you agree that your
+contribution is licensed under the AGPL-3.0, the same license as the rest of Ordler
+("inbound = outbound"); you keep the copyright to your own work, and there is no separate
+contributor agreement. Contributions must not include code under an AGPL-incompatible license,
+secrets or real company data.
+
 **Third-party software.** Ordler is built on open source packages used under their own licenses
 (MIT, Apache-2.0, BSD, ISC, OFL and similar); all of them are listed with their license texts in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which also ships in the Docker image.
 Dependencies whose licenses are not compatible with the AGPL are kept out of the build.
 
-**Trademarks.** Linear, Jira, Atlassian, Trello, Wiki.js, Slack, GitHub and other names are
-trademarks of their respective owners. They are mentioned only to describe compatibility and
-imports. Ordler is an independent project, not affiliated with, endorsed by or sponsored by
+**Trademarks.** Linear, Jira, Atlassian, Trello, Wiki.js, Miro, Slack, GitHub, Google,
+Microsoft, Amazon Web Services, Anthropic, Claude, Cursor, Docker, Kubernetes, PostgreSQL and
+other names are trademarks of their respective owners. They are mentioned only to describe
+compatibility, integrations and imports. Ordler is an independent project, not affiliated with, endorsed by or sponsored by
 any of them, and it uses none of their code, logos or designs.
 
-**Demo content.** Screenshots, the GIF and the video show a fictional company ("Acme") with made-up people
-and data.
+**Demo content.** Screenshots, the GIF and the video show a fictional company ("Acme"), and the
+in-app Help clips a fictional "Demo Company"; all people and data in them are made up.
 
 This section is a plain-language summary, not legal advice; the [LICENSE](LICENSE) text is what
 applies.
