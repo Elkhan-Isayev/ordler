@@ -10,7 +10,7 @@
 [Security](#security) ·
 [Specification](docs/SPEC.md) ·
 [Architecture decisions](docs/adr/) ·
-[License and terms](#license-and-legal)
+[License and legal](#license-and-legal)
 
 <img src="docs/assets/logo.png" alt="Ordler logo" width="128" height="128" />
 
@@ -26,6 +26,9 @@ self-hosted on your own infrastructure.
 ![PostgreSQL 18+](https://img.shields.io/badge/postgresql-18%2B-336791)
 ![Kubernetes](https://img.shields.io/badge/deploy-Helm_·_Compose_·_Docker-326ce5)
 ![Languages](https://img.shields.io/badge/i18n-en_·_ru_·_de_·_az-8b3fbf)
+
+⚖️ **Independent, original open-source project, free under AGPL-3.0.** Not affiliated with any
+product or company named here. **[Read the legal summary →](#license-and-legal)**
 
 </div>
 
